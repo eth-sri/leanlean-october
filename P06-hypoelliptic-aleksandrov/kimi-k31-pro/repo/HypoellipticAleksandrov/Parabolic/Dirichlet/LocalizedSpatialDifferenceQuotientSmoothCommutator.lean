@@ -167,69 +167,6 @@ private theorem energy_deriv_eq_backward
   rw [localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
     η k h φ hηΩ hηshift i y]
 
-private theorem continuousOn_reverseTimeCoefficientEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
-    ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
-  rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-    exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
-      intro z hz
-      exact Set.mem_univ _)
-  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-    constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    intro y hy
-    exact ⟨htime, subset_closure hy⟩
-  simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
-    (Continuous.prodMk_right _).continuousOn hmap
-
-private theorem continuousOn_reverseTimeDivergenceDriftEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
-    ContinuousOn (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
-  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-    constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    intro y hy
-    exact ⟨htime, subset_closure hy⟩
-  have hdiv : ContinuousOn (fun y : PDE.Vec d =>
-      scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
-    have hcont := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-      r₀ r₁ a ha
-    have hvec : ContinuousOn (fun y : PDE.Vec d =>
-        scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
-      simpa only [Function.comp_def] using hcont.comp (Continuous.prodMk_right _).continuousOn hmap
-    have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
-      (continuous_apply j).continuousOn
-    simpa only [scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-      reverseTimeMap_apply, Function.comp_def] using heval.comp hvec (by intro y hy; simp)
-  rcases hb with ⟨V, hVopen, hKV, hV⟩
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
-    simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
-      (Continuous.prodMk_right _).continuousOn hmap
-  simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
-    Pi.sub_def] using hdiv.sub hbcont
-
 /-- The fixed-time smooth localized energy test satisfies the literal
 source-minus-form spatial difference-quotient commutator identity. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator

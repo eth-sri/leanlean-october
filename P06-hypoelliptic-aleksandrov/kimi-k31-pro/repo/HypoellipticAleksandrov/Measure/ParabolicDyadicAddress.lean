@@ -44,7 +44,7 @@ theorem parabolicDyadicTruncate_self {d n : Nat}
   apply congrArg index
   exact Fin.ext (by rfl)
 
-private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent {d m n : Nat}
+theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent {d m n : Nat}
     (hmn : m <= n) (index : ParabolicDyadicIndex d (n + 1)) :
     parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
       parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by

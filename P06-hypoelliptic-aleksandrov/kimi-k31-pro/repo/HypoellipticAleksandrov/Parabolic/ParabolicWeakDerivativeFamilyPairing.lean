@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped Topology
 
-private theorem coordinateIteratedFDeriv_contDiff
+theorem coordinateIteratedFDeriv_contDiff
     {d : ℕ} (gamma : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -32,7 +32,7 @@ private theorem coordinateIteratedFDeriv_contDiff
   exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
     (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
 
-private theorem coordinateIteratedFDeriv_tsupport_subset
+theorem coordinateIteratedFDeriv_tsupport_subset
     {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
     tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
   apply closure_minimal _ isClosed_closure
@@ -44,7 +44,7 @@ private theorem coordinateIteratedFDeriv_tsupport_subset
     rw [hzero]
     exact ContinuousMultilinearMap.zero_apply _)
 
-private theorem coordinateIteratedFDeriv_hasCompactSupport
+theorem coordinateIteratedFDeriv_hasCompactSupport
     {d : ℕ} (gamma : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
     HasCompactSupport
@@ -52,7 +52,7 @@ private theorem coordinateIteratedFDeriv_hasCompactSupport
   hf.of_isClosed_subset isClosed_closure
     (coordinateIteratedFDeriv_tsupport_subset gamma f)
 
-private theorem timeDerivative_coordinateIteratedFDeriv
+theorem timeDerivative_coordinateIteratedFDeriv
     {d : ℕ} (gamma : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : TimeVelocity d) :
     timeDerivative (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) z =
@@ -62,7 +62,7 @@ private theorem timeDerivative_coordinateIteratedFDeriv
   · simp [timeDerivative, timeVelocityBasis, timeCoord]
   · exact contDiff_infty.mp hf _
 
-private theorem velocityGradient_coordinateIteratedFDeriv
+theorem velocityGradient_coordinateIteratedFDeriv
     {d : ℕ} (gamma : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i : Fin d) (z : TimeVelocity d) :
@@ -73,7 +73,7 @@ private theorem velocityGradient_coordinateIteratedFDeriv
   · rfl
   · exact contDiff_infty.mp hf _
 
-private theorem integral_mul_congr_ae
+theorem integral_mul_congr_ae
     {d : ℕ} {U : Set (TimeVelocity d)}
     {f g ψ : TimeVelocity d → ℝ}
     (hfg : f =ᵐ[timeVelocityVolumeOn U] g) :

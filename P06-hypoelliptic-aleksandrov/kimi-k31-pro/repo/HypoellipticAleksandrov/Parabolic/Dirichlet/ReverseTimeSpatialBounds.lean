@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import Mathlib.Analysis.Calculus.FDeriv.Prod
 public import Mathlib.Analysis.Normed.Group.Bounded
 public import Mathlib.MeasureTheory.Function.LpSpace.Basic
@@ -36,20 +37,7 @@ theorem isCompact_scalarParabolicClosedCylinder
 
 /-- The derivative of a fixed-time spatial coefficient slice is the joint
 derivative in a purely spatial direction. -/
-theorem fderiv_scalarSpatialSlice_apply
-    {d : ℕ} (a : CoefficientField d) (r : ℝ)
-    (y v : PDE.Vec d) (i j : Fin d)
-    (ha : DifferentiableAt ℝ
-      (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
-    (fderiv ℝ (fun x : PDE.Vec d => a r x i j) y) v =
-      (fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) (0, v) := by
-  have hslice : HasFDerivAt (fun x : PDE.Vec d => a r x i j)
-      ((fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)).comp
-        (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d))) y := by
-    simpa only [Function.comp_def] using ha.hasFDerivAt.comp y
-      (hasFDerivAt_prodMk_right (𝕜 := ℝ) r y)
-  rw [hslice.fderiv]
-  rfl
+alias fderiv_scalarSpatialSlice_apply := fderiv_spatialSlice_apply
 
 /-- Joint smoothness near the closed cylinder makes the literal fixed-time
 spatial coefficient divergence continuous there. -/
@@ -210,5 +198,53 @@ theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood
   rw [hy]
   simpa only [Real.norm_eq_abs, reverseTimeScalarCoefficient_apply] using
     (hC τ hτ y hyΩ).trans (le_max_left _ _)
+
+theorem continuousOn_reverseTimeCoefficientEntry
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
+    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
+    ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
+  rcases ha with ⟨V, hVopen, hKV, hV⟩
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V :=
+    (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V :=
+    (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by intro z hz; exact Set.mem_univ _)
+  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by constructor <;> linarith [hτ.1, hτ.2]
+  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+      (scalarParabolicClosedCylinder r₀ r₁ Ω) := fun y hy => ⟨htime, subset_closure hy⟩
+  simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
+    (Continuous.prodMk_right _).continuousOn hmap
+
+theorem continuousOn_reverseTimeDivergenceDriftEntry
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ τ : ℝ) (a : CoefficientField d)
+    (b : ℝ → PDE.Vec d → PDE.Vec d) (j : Fin d)
+    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
+    ContinuousOn (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
+  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by constructor <;> linarith [hτ.1, hτ.2]
+  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+      (scalarParabolicClosedCylinder r₀ r₁ Ω) := fun y hy => ⟨htime, subset_closure hy⟩
+  have hdiv : ContinuousOn (fun y : PDE.Vec d =>
+      scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
+    have hcont := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
+      r₀ r₁ a ha
+    have hvec : ContinuousOn (fun y : PDE.Vec d =>
+        scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
+      simpa only [Function.comp_def] using hcont.comp (Continuous.prodMk_right _).continuousOn hmap
+    have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ := (continuous_apply j).continuousOn
+    simpa only [scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
+      reverseTimeMap_apply, Function.comp_def] using heval.comp hvec (by intro y hy; simp)
+  rcases hb with ⟨V, hVopen, hKV, hV⟩
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V :=
+    (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
+  have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
+    simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
+      (Continuous.prodMk_right _).continuousOn hmap
+  simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
+    Pi.sub_def] using hdiv.sub hbcont
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

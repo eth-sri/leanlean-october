@@ -21,22 +21,22 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
-private noncomputable def rawEnergy
+noncomputable def rawEnergy
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ (u t)‖ ^ 2
 
-private noncomputable def rawEnergyRate
+noncomputable def rawEnergyRate
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (g t) (u t)
 
-private noncomputable def reverseTimeEnergyPrimitive
+noncomputable def reverseTimeEnergyPrimitive
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => ∫ r in Set.Ioc 0 t, rawEnergyRate hΩ T u g r ∂reverseTimeVolume T
 
-private theorem integrable_rawEnergy
+theorem integrable_rawEnergy
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :
     Integrable (rawEnergy hΩ T u) (reverseTimeVolume T) := by
@@ -48,7 +48,7 @@ private theorem integrable_rawEnergy
   unfold rawEnergy
   exact hu.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)
 
-private theorem integrable_rawEnergyRate
+theorem integrable_rawEnergyRate
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable (rawEnergyRate hΩ T u g) (reverseTimeVolume T) := by
@@ -56,7 +56,7 @@ private theorem integrable_rawEnergyRate
   exact
     (integrable_reverseTimeDualPairing hΩ T u g).const_mul 2
 
-private theorem continuousOn_reverseTimeEnergyPrimitive
+theorem continuousOn_reverseTimeEnergyPrimitive
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     ContinuousOn (reverseTimeEnergyPrimitive hΩ T u g) (Icc 0 T) := by
@@ -66,7 +66,7 @@ private theorem continuousOn_reverseTimeEnergyPrimitive
   exact intervalIntegral.continuousOn_primitive
     (integrable_rawEnergyRate hΩ T u g).integrableOn
 
-private theorem reverseTimeEnergyPrimitive_sub
+theorem reverseTimeEnergyPrimitive_sub
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     {s t : ℝ} (hs : s ∈ Icc 0 T) (ht : t ∈ Icc 0 T) (hst : s ≤ t) :
@@ -82,7 +82,7 @@ private theorem reverseTimeEnergyPrimitive_sub
       (integrable_rawEnergyRate hΩ T u g).intervalIntegrable,
     intervalIntegral.integral_of_le hst]
 
-private theorem exists_strict_test_collar
+theorem exists_strict_test_collar
     (T : ℝ) (hT : 0 < T) (eta : ReverseTimeScalarTest T) :
     ∃ a b : ℝ, 0 < a ∧ a < b ∧ b < T ∧
       tsupport (eta : ℝ → ℝ) ⊆ Ioo a b ∧ tsupport eta.deriv ⊆ Ioo a b := by
@@ -125,7 +125,7 @@ private theorem exists_strict_test_collar
     · rw [hderiv]
       simp
 
-private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
+theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
     {T a b : ℝ} {F phi : ℝ → ℝ}
     (hK : Icc a b ⊆ Ioo (0 : ℝ) T) (hphi : tsupport phi ⊆ Ioo a b) :
     (∫ t, F t * phi t ∂reverseTimeVolume T) = ∫ t in Icc a b, F t * phi t := by
@@ -136,7 +136,7 @@ private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
     ⟨le_of_lt (hphi hts).1, le_of_lt (hphi hts).2⟩)]
   ring
 
-private theorem integral_energy_mul_deriv_eq_neg_integral_pairing_of_increment
+theorem integral_energy_mul_deriv_eq_neg_integral_pairing_of_increment
     {a b : ℝ} {E Q : ℝ → ℝ} (hab : a ≤ b)
     (hE : Continuous E) (hQ : Continuous Q)
     (hinc : ∀ s ∈ Icc a b, ∀ t ∈ Icc a b, s ≤ t →
@@ -193,7 +193,7 @@ private theorem integral_energy_mul_deriv_eq_neg_integral_pairing_of_increment
       rw [integral_const_mul, htail]
       ring
 
-private theorem abs_sq_sub_le_of_bounds
+theorem abs_sq_sub_le_of_bounds
     {a b N delta y : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hN : 0 ≤ N)
     (hdelta : 0 ≤ delta) (hy : 0 ≤ y)
     (hdiff : |a - b| ≤ N * delta)
@@ -205,7 +205,7 @@ private theorem abs_sq_sub_le_of_bounds
       exact mul_le_mul hsum hdiff (abs_nonneg _) (by positivity)
     _ = N ^ 2 * delta ^ 2 + 2 * N ^ 2 * y * delta := by ring
 
-private theorem abs_sqNorm_valueCLM_sub_le
+theorem abs_sqNorm_valueCLM_sub_le
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (x y : H10HilbertGraph hΩ) :
     |‖valueCLM hΩ x‖ ^ 2 - ‖valueCLM hΩ y‖ ^ 2| ≤
@@ -236,30 +236,7 @@ private theorem abs_sqNorm_valueCLM_sub_le
   exact abs_sq_sub_le_of_bounds (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
     (norm_nonneg _) (norm_nonneg _) hdiff hfactor
 
-private theorem integral_mul_norm_le_sqrt_mul_sqrt
-    {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
-    {μ : Measure ℝ} (f : ℝ → E) (g : ℝ → F)
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ) :
-    ∫ t, ‖f t‖ * ‖g t‖ ∂μ ≤
-      √(∫ t, ‖f t‖ ^ 2 ∂μ) * √(∫ t, ‖g t‖ ^ 2 ∂μ) := by
-  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    Real.HolderConjugate.two_two
-    (μ := μ) (f := fun t => ‖f t‖) (g := fun t => ‖g t‖)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (by simpa only [ENNReal.ofReal_ofNat] using hf.norm)
-    (by simpa only [ENNReal.ofReal_ofNat] using hg.norm)
-  rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-  simpa only [Real.rpow_two] using hholder
-
-private theorem memLp_on_Icc_of_continuous
-    {E : Type*} [NormedAddCommGroup E]
-    (f : ℝ → E) (hf : Continuous f) (a b : ℝ) :
-    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
-  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
-  exact (hf.norm.pow 2).integrableOn_Icc
-
-private theorem tendsto_integral_abs_valueSq_of_sqNorm
+theorem tendsto_integral_abs_valueSq_of_sqNorm
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (μ : Measure ℝ) (u : ℝ → H10HilbertGraph hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ)
@@ -349,7 +326,7 @@ private theorem tendsto_integral_abs_valueSq_of_sqNorm
               mul_le_mul_of_nonneg_left hholder (by positivity : 0 ≤ 2 * C)
   · simpa only [add_zero] using hfirst.add hsecond
 
-private theorem tendsto_forwardSteklov_valueSq_error_on_Icc
+theorem tendsto_forwardSteklov_valueSq_error_on_Icc
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) {a b : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
@@ -379,7 +356,7 @@ private theorem tendsto_forwardSteklov_valueSq_error_on_Icc
     (u : ℝ → H10HilbertGraph hΩ) (fun h t => reverseTimeForwardSteklov T h u t)
     hu huh hU
 
-private theorem tendsto_integral_mul_of_tendsto_integral_abs
+theorem tendsto_integral_mul_of_tendsto_integral_abs
     {μ : Measure ℝ} {F : ℝ → ℝ → ℝ} {f phi : ℝ → ℝ}
     (hF : ∀ᶠ h : ℝ in 𝓝[>] 0, Integrable (F h) μ)
     (hf : Integrable f μ) (hphi : AEStronglyMeasurable phi μ)
@@ -439,22 +416,22 @@ private theorem tendsto_integral_mul_of_tendsto_integral_abs
   filter_upwards with t
   ring
 
-private noncomputable def forwardSteklovEnergy
+noncomputable def forwardSteklovEnergy
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ (reverseTimeForwardSteklov T h u t)‖ ^ 2
 
-private noncomputable def forwardSteklovEnergyRate
+noncomputable def forwardSteklovEnergyRate
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (reverseTimeForwardSteklov T h g t)
     (reverseTimeForwardSteklov T h u t)
 
-private theorem abs_two_mul_sub (x y : ℝ) :
+theorem abs_two_mul_sub (x y : ℝ) :
     |2 * x - 2 * y| = 2 * |x - y| := by
   rw [← mul_sub, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
 
-private theorem abs_forwardSteklovEnergyRate_sub_eq
+theorem abs_forwardSteklovEnergyRate_sub_eq
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (t : ℝ) :
     |forwardSteklovEnergyRate hΩ T h u g t - rawEnergyRate hΩ T u g t| =
@@ -464,7 +441,7 @@ private theorem abs_forwardSteklovEnergyRate_sub_eq
       (reverseTimeForwardSteklov T h u t) - 2 * (g t) (u t)| = _
   exact abs_two_mul_sub _ _
 
-private theorem rawEnergy_test_deriv
+theorem rawEnergy_test_deriv
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
@@ -573,7 +550,7 @@ private theorem rawEnergy_test_deriv
     integral_reverseTime_eq_integral_Icc_of_tsupport_subset hK heta]
   linarith
 
-private theorem integrable_reverseTimeEnergyPrimitive
+theorem integrable_reverseTimeEnergyPrimitive
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable (reverseTimeEnergyPrimitive hΩ T u g) (reverseTimeVolume T) := by
@@ -581,7 +558,7 @@ private theorem integrable_reverseTimeEnergyPrimitive
   exact (continuousOn_reverseTimeEnergyPrimitive hΩ T u g).integrableOn_Icc.mono_set
     Ioo_subset_Icc_self
 
-private theorem integrable_mul_reverseTimeScalarTest_deriv
+theorem integrable_mul_reverseTimeScalarTest_deriv
     {T : ℝ} {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T))
     (eta : ReverseTimeScalarTest T) :
     Integrable (fun t => f t * eta.deriv t) (reverseTimeVolume T) := by
@@ -590,7 +567,7 @@ private theorem integrable_mul_reverseTimeScalarTest_deriv
   filter_upwards with t
   exact hC t
 
-private theorem reverseTimeEnergyPrimitive_test_deriv
+theorem reverseTimeEnergyPrimitive_test_deriv
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (eta : ReverseTimeScalarTest T) :
@@ -627,7 +604,7 @@ private theorem reverseTimeEnergyPrimitive_test_deriv
         PDE.intervalPrimitive_scalar_weak_identity_Ioo hrateIcc
           (eta.contDiff.of_le (by simp)) eta.tsupport_subset
 
-private theorem exists_continuous_reverseTimeScalarEnergyRepresentative_raw
+theorem exists_continuous_reverseTimeScalarEnergyRepresentative_raw
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)

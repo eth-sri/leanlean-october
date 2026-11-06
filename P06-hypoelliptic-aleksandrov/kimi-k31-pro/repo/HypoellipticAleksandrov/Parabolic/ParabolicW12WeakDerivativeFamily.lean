@@ -70,7 +70,7 @@ private theorem parabolicWeight_velocityTwo {d : ℕ} (i j : Fin d) :
   rw [ParabolicDerivativeIndex.parabolicWeight_velocitySucc,
     parabolicWeight_velocityOne]
 
-private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
+theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
     ParabolicDerivativeIndex.velocityTwo i j =
       ParabolicDerivativeIndex.velocityTwo j i := by
   apply Subtype.ext

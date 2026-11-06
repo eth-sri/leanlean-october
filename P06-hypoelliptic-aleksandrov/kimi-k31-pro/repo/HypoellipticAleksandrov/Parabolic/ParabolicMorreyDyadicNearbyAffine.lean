@@ -20,14 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) :
-    0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun _ _ => ?_
-  refine Finset.sum_nonneg fun _ _ => ENNReal.toReal_nonneg
-
 /-- At the dyadic scale comparable to two reference points, the smooth value
 minus the canonical common forward-box affine projection has Morrey decay. -/
 theorem exists_parabolicMorreyDyadicNearbyAffineModuloDecayConst

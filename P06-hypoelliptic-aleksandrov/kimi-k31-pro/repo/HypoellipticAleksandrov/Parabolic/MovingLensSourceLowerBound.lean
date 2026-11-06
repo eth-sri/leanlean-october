@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSpatial
 
 public import HypoellipticAleksandrov.Parabolic.MovingLensSourceABP
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
@@ -31,12 +32,6 @@ private def movingLensSourceConstant (d : Nat) (lam kappa : Real) : Real :=
     ((movingLensVelocityFootprint d kappa ^ d) /
       ((volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d)) ^
         (1 / ((d : Real) + 1) : Real)
-
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
-    parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
-  rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
-  simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
-    (ENNReal.ofReal_natCast (d + 1)).symm
 
 private theorem source_memLp_movingLensClosed
     {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}

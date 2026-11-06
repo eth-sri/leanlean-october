@@ -37,6 +37,22 @@ theorem volume_timeVelocity_eq_prod (d : ℕ) :
 /-- The finite exponent `d + 1` in the parabolic ABP estimate. -/
 def parabolicExponent (d : ℕ) : ℝ≥0∞ := d + 1
 
+@[simp] theorem parabolicExponent_ne_zero (d : ℕ) : parabolicExponent d ≠ 0 := by
+  simp [parabolicExponent]
+
+@[simp] theorem parabolicExponent_ne_top (d : ℕ) : parabolicExponent d ≠ ∞ := by
+  simp [parabolicExponent]
+
+@[simp] theorem parabolicExponent_toReal (d : ℕ) :
+    (parabolicExponent d).toReal = (d : ℝ) + 1 := by
+  unfold parabolicExponent
+  rw [show (d : ℝ≥0∞) + 1 = ((d + 1 : ℕ) : ℝ≥0∞) by norm_num,
+    ENNReal.toReal_natCast]
+  norm_num
+
+theorem parabolicExponent_one_le (d : ℕ) : 1 ≤ parabolicExponent d := by
+  simp [parabolicExponent]
+
 /-- The extended-real `L^(d + 1)` norm on all time--velocity space. -/
 def parabolicELpNorm (d : ℕ) (f : TimeVelocity d → ℝ) : ℝ≥0∞ :=
   eLpNorm f (parabolicExponent d) volume

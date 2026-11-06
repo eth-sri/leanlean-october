@@ -22,14 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by
-    norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
 private theorem parabolicMorreyBox_volume_ratio_rpow_toReal
     {d : Nat}
     (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.Retention
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingComparison
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonRadial
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
@@ -27,7 +28,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter Measur
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped Topology MatrixOrder
 
-private theorem gradient_translate {d : ℕ} {f : PDE.Vec d → ℝ}
+theorem gradient_translate {d : ℕ} {f : PDE.Vec d → ℝ}
     (hf : ContDiff ℝ 2 f) (c x : PDE.Vec d) :
     PDE.classicalGradient (fun y => f (y - c)) x = PDE.classicalGradient f (x - c) := by
   have h := (hf.differentiable (by norm_num) (x - c)).hasFDerivAt.comp x
@@ -38,7 +39,7 @@ private theorem gradient_translate {d : ℕ} {f : PDE.Vec d → ℝ}
   simp only [PDE.classicalGradient_apply, h.fderiv,
     ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply]
 
-private theorem hessian_translate {d : ℕ} {f : PDE.Vec d → ℝ}
+theorem hessian_translate {d : ℕ} {f : PDE.Vec d → ℝ}
     (hf : ContDiff ℝ 2 f) (c x : PDE.Vec d) :
     Hess (fun y => f (y - c)) x = Hess f (x - c) := by
   have hg : ContDiff ℝ 1 (PDE.classicalGradient f) := by
@@ -64,11 +65,11 @@ private theorem hessian_translate {d : ℕ} {f : PDE.Vec d → ℝ}
   rw [h.fderiv]
   rfl
 
-private def movingBarrier {d : ℕ} (N : ℕ) (s rate τ : ℝ)
+def movingBarrier {d : ℕ} (N : ℕ) (s rate τ : ℝ)
     (γ : ℝ → PDE.Vec d) (p : TimeVelocity d) : ℝ :=
   Real.exp (-rate * (τ - p.1)) * barrier N s (p.2 - γ p.1)
 
-private theorem movingBarrier_time_derivative {d N : ℕ} (hN : 3 ≤ N)
+theorem movingBarrier_time_derivative {d N : ℕ} (hN : 3 ≤ N)
     (s rate τ t : ℝ) (γ : ℝ → PDE.Vec d) (y : PDE.Vec d)
     (hγ : DifferentiableAt ℝ γ t) :
     HasDerivAt (fun r => movingBarrier N s rate τ γ (r, y))
@@ -94,7 +95,7 @@ private theorem movingBarrier_time_derivative {d N : ℕ} (hN : 3 ≤ N)
   ring
 
 
-private theorem movingBarrier_hessian {d N : ℕ} (hN : 3 ≤ N)
+theorem movingBarrier_hessian {d N : ℕ} (hN : 3 ≤ N)
     (s rate τ : ℝ) (γ : ℝ → PDE.Vec d) (p : TimeVelocity d) :
     scalarSpatialHessian (movingBarrier N s rate τ γ) p =
       Real.exp (-rate * (τ - p.1)) • Hess (barrier N s) (p.2 - γ p.1) := by
@@ -106,7 +107,7 @@ private theorem movingBarrier_hessian {d N : ℕ} (hN : 3 ≤ N)
   change _ • Hess (fun y => barrier N s (y - γ p.1)) p.2 = _
   rw [hessian_translate (retention_barrier_contDiff hN s)]
 
-private theorem movingBarrier_subsolution {d N : ℕ} (hN : 3 ≤ N)
+theorem movingBarrier_subsolution {d N : ℕ} (hN : 3 ≤ N)
     (lam Lam s H τ : ℝ) (hs : 0 < s) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hc : 0 < barrierC d N lam Lam) (B : CoefficientField d)
     (hB : IsSectionTwoCoefficient lam Lam B) (γ : ℝ → PDE.Vec d)
@@ -128,44 +129,10 @@ private theorem movingBarrier_subsolution {d N : ℕ} (hN : 3 ≤ N)
   ring
 
 
-private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (V : TimeVelocity d → ℝ) (p : KineticPoint d) :
-    transportedForwardOperator (zIndependentCoefficient B) b
-      (fun q => V (q.time, q.position)) p = scalarParabolicOperator B 0 V
-        (p.time, p.position) := by
-  unfold transportedForwardOperator scalarParabolicOperator kineticTimeDerivative
-    diffusedHessian scalarTimeDerivative scalarSpatialHessian kineticVelocityGradient
-    scalarSpatialGradient kineticPositionGradient
-  simp [PDE.classicalGradient, PDE.vecDot]
+alias lifted_operator := Interval.lifted_operator
+alias scalar_difference_operator := Interval.scalar_difference_operator
 
-private theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
-    (U V : TimeVelocity d → ℝ) (p : TimeVelocity d)
-    (hUt : DifferentiableAt ℝ (fun t => U (t, p.2)) p.1)
-    (hVt : DifferentiableAt ℝ (fun t => V (t, p.2)) p.1)
-    (hUy : ContDiffAt ℝ 2 (fun y => U (p.1, y)) p.2)
-    (hVy : ContDiffAt ℝ 2 (fun y => V (p.1, y)) p.2) :
-    scalarParabolicOperator B 0 (fun q => U q - V q) p =
-      scalarParabolicOperator B 0 U p - scalarParabolicOperator B 0 V p := by
-  have htime := deriv_fun_sub hUt hVt
-  have hhess : scalarSpatialHessian (fun q => U q - V q) p =
-      scalarSpatialHessian U p - scalarSpatialHessian V p := by
-    have hneg := sliceHessian_const_mul (-1) hVy
-    have hadd := sliceHessian_add hUy ((contDiffAt_const (c := (-1 : ℝ))).mul hVy)
-    have heq : (fun y => U (p.1, y) - V (p.1, y)) =
-        (fun y => U (p.1, y) + (-1) * V (p.1, y)) := by
-      funext y
-      ring
-    change sliceHessian (fun y => U (p.1, y) - V (p.1, y)) p.2 = _
-    rw [heq, hadd, hneg]
-    simp only [neg_one_smul, sub_eq_add_neg]
-    rfl
-  unfold scalarParabolicOperator scalarTimeDerivative
-  rw [htime, hhess]
-  simp only [matrixContraction, Matrix.sub_apply, mul_sub, Finset.sum_sub_distrib,
-    Pi.zero_apply, PDE.vecDot, zero_mul, Finset.sum_const_zero, add_zero]
-  ring
-
-private theorem lifted_difference_subsolution {d : ℕ} (B : CoefficientField d)
+theorem lifted_difference_subsolution {d : ℕ} (B : CoefficientField d)
     (U V : TimeVelocity d → ℝ) (p : KineticPoint d)
     (hUt : DifferentiableAt ℝ (fun t => U (t, p.position)) p.time)
     (hVt : DifferentiableAt ℝ (fun t => V (t, p.position)) p.time)
@@ -180,7 +147,7 @@ private theorem lifted_difference_subsolution {d : ℕ} (B : CoefficientField d)
   rw [hlift, hdiff, hV, sub_zero]
   exact hU
 
-private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
+theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
     (lam Lam s H ρ : ℝ) (hs : 0 < s) (hsρ : s < ρ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hc : 0 < barrierC d N lam Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -309,7 +276,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
   exact sub_nonpos.mp h
 
 
-private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) (hv : v ∈ movingDomain Ω γ σ)
     (hfirst : (parabolicMarginalKernel K hΩ σ τ hστ) ⟨v, hv⟩ =
@@ -328,7 +295,7 @@ private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
     Measure.map_apply measurable_fst MeasurableSet.univ] at h
   simpa only [preimage_univ] using h
 
-private theorem prelimit_of_partition {d N : ℕ} (hN : 3 ≤ N)
+theorem prelimit_of_partition {d N : ℕ} (hN : 3 ≤ N)
     (lam Lam s H ρ : ℝ) (hs : 0 < s) (hsρ : s < ρ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hc : 0 < barrierC d N lam Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -393,7 +360,7 @@ private theorem prelimit_of_partition {d N : ℕ} (hN : 3 ≤ N)
   exact hint
 
 
-private theorem endpoint_master_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem endpoint_master_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (B : CoefficientField d)
     (K : MovingFiberKernel Ω γ)
     (hpar : HasParabolicMarginalBundle Ω γ hΩ (zIndependentCoefficient B) K)
@@ -405,7 +372,7 @@ private theorem endpoint_master_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hfirst σ σ le_rfl ⟨v, hv⟩ z), hend σ]
   simp
 
-private theorem barrierC_pos_of_choice {d N : ℕ} (hN : 3 ≤ N) (lam Lam : ℝ)
+theorem barrierC_pos_of_choice {d N : ℕ} (hN : 3 ≤ N) (lam Lam : ℝ)
     (hchoice : 2 * (N - 1 : ℕ) * lam > (d : ℝ) * Lam) :
     0 < barrierC d N lam Lam := by
   have hNp : 0 < (N : ℝ) := by exact_mod_cast (show 0 < N by omega)
@@ -491,7 +458,7 @@ theorem moving_ball_retention_at_radius_of_curve (d : ℕ) (hd : 1 ≤ d)
   exact hpre s hs hsρ
 
 
-private theorem master_mass_on_terminal_domain {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_mass_on_terminal_domain {d : ℕ} {Ω : Set (PDE.Vec d)}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) :
     K.master q (evolutionStateSet Ω γ q.val.2.1) = K.master q univ := by
   have h := congrArg (fun μ : Measure (EvolutionAmbientState d) => μ univ)

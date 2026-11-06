@@ -95,6 +95,22 @@ def hilbertVectorLpCoord {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
     HilbertVectorLp U p →L[ℝ] ScalarLp U p :=
   (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL p (volumeOn U)
 
+/-- A coordinate projection is norm-nonexpanding on Hilbert-vector `L²`. -/
+theorem norm_hilbertVectorLpCoord_le {d : ℕ} {U : Set (Vec d)} (i : Fin d)
+    (G : HilbertVectorLp U (2 : ℝ≥0∞)) : ‖hilbertVectorLpCoord U 2 i G‖ ≤ ‖G‖ := by
+  rw [hilbertVectorLpCoord]
+  calc
+    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL 2 (volumeOn U) G‖ ≤
+        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i‖ * ‖G‖ :=
+      ContinuousLinearMap.norm_compLp_le _ _
+    _ ≤ 1 * ‖G‖ := by
+      apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
+      intro x
+      simpa only [ContinuousLinearMap.coe_coe, Function.comp_apply, one_mul,
+        PiLp.proj_apply] using PiLp.norm_apply_le x i
+    _ = ‖G‖ := one_mul _
+
 theorem coeFn_hilbertVectorLpCoord {d : ℕ} (U : Set (Vec d))
     (p : ℝ≥0∞) [Fact (1 ≤ p)] (i : Fin d)
     (F : HilbertVectorLp U p) :

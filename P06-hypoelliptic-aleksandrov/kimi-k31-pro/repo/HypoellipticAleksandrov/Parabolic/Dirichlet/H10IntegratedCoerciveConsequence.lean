@@ -67,7 +67,7 @@ private def parentFixedSlice
   Q + ζ τ * (lam * ‖Gv‖ ^ 2 - Lam * ‖Wv‖ ^ 2) ≤
     ζ τ * (ε * ‖Gv‖ ^ 2 + Cε * (1 + ‖u‖ ^ 2))
 
-private theorem integrable_norm_sq_timewise_apply
+theorem integrable_norm_sq_timewise_apply
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
@@ -80,7 +80,7 @@ private theorem integrable_norm_sq_timewise_apply
   filter_upwards [hLu] with τ hτ
   rw [hτ]
 
-private theorem integrable_weighted
+theorem integrable_weighted
     {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
     {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
     Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by

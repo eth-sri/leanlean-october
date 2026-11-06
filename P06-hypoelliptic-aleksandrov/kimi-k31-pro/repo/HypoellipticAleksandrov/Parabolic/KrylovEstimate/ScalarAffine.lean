@@ -123,7 +123,7 @@ theorem scalarC12On_affine_pullback
       (ρ ^ 2)).congr
     exact fun z hz => hh z hz
 
-private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
+theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
     (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
       fderiv ℝ w z (timeVelocityBasis c) := by

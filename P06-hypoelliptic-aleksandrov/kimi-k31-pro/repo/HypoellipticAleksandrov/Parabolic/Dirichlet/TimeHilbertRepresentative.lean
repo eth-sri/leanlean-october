@@ -62,19 +62,6 @@ private theorem tendstoInMeasure_of_tendsto_sqNorm_integral
   rw [(hMem n).eLpNorm_eq_integral_rpow_norm (by norm_num) (by simp)]
   norm_num
 
-private theorem memLp_two_on_Icc_of_continuous
-    {E : Type*} [NormedAddCommGroup E] (f : ℝ → E) (hf : Continuous f)
-    (a b : ℝ) :
-    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
-  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
-  exact (hf.norm.pow 2).integrableOn_Icc
-
-private theorem memLp_two_on_full_Icc
-    {E : Type*} [NormedAddCommGroup E] (T : ℝ)
-    (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) :
-    MemLp (f : ℝ → E) (2 : ℝ≥0∞) (volume.restrict (Icc 0 T)) := by
-  simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-    restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
 
 private theorem tendsto_value_sqNorm_integral_on_Icc
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)

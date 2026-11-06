@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import PDEFoundation.Measure.LpSpace
 public import Mathlib.Analysis.Normed.Lp.SmoothApprox
 public import Mathlib.Geometry.Manifold.SmoothApprox
 public import Mathlib.Topology.UrysohnsLemma
@@ -199,18 +200,7 @@ private theorem compactCore_cutoff_eLpNorm_sub_lt_timeVelocity
   have hhsupport : tsupport h ⊆ U := tsupport_mul_subset_left.trans hχsupport
   exact ⟨h, hhcont, hhcompact, hhsupport, hcutoff⟩
 
-private theorem lp_dist_toLp_toLp_le_timeVelocity
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {f g : α → ℝ} {ε : ℝ}
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ)
-    (hε : 0 ≤ ε)
-    (hfg : eLpNorm (f - g) (2 : ℝ≥0∞) μ ≤ ENNReal.ofReal ε) :
-    dist (hf.toLp f) (hg.toLp g) ≤ ε := by
-  rw [Lp.dist_def, eLpNorm_congr_ae (hf.coeFn_toLp.sub hg.coeFn_toLp)]
-  calc
-    (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
-      ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
-    _ = ε := ENNReal.toReal_ofReal hε
+alias lp_dist_toLp_toLp_le_timeVelocity := PDE.dist_toLp_toLp_le
 
 private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
     {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)

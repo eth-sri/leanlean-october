@@ -18,7 +18,7 @@ open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
+theorem lifted_operator {d : ℕ} (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (V : TimeVelocity d → ℝ) (p : KineticPoint d) :
     transportedForwardOperator (zIndependentCoefficient B) b
       (fun q => V (q.time, q.position)) p = scalarParabolicOperator B 0 V
@@ -28,7 +28,7 @@ private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
     scalarSpatialGradient kineticPositionGradient
   simp [PDE.classicalGradient, PDE.vecDot]
 
-private theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
+theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
     (U V : TimeVelocity d → ℝ) (p : TimeVelocity d)
     (hUt : DifferentiableAt ℝ (fun t => U (t, p.2)) p.1)
     (hVt : DifferentiableAt ℝ (fun t => V (t, p.2)) p.1)

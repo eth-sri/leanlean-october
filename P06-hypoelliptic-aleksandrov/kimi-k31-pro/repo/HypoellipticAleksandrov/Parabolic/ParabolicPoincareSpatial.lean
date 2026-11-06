@@ -46,7 +46,7 @@ end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
+theorem parabolicExponent_eq_ofReal (d : Nat) :
     parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
   rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
   simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using

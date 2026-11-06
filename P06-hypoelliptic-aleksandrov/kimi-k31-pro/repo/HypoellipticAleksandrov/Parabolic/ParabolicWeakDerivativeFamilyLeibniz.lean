@@ -86,33 +86,6 @@ private theorem representative_zero
   · intro b hb
     exact (hb (split_zero_eq b)).elim
 
-private theorem ae_restrict_of_forall_mem
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (S : Set α) (hS : MeasurableSet S) {P : α → Prop} (hP : ∀ x ∈ S, P x) :
-    ∀ᵐ x ∂μ.restrict S, P x := by
-  filter_upwards [ae_restrict_mem hS] with x hx
-  exact hP x hx
-
-private theorem toReal_eLpNorm_mul_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
-    (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
-    (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
-    MemLp (fun x => a x * f x) p μ ∧
-      ENNReal.toReal (eLpNorm (fun x => a x * f x) p μ) ≤
-        M * ENNReal.toReal (eLpNorm f p μ) := by
-  have hmeas : AEStronglyMeasurable (fun x => a x * f x) μ := ha.mul hf.aestronglyMeasurable
-  have hpoint : ∀ᵐ x ∂μ, ‖a x * f x‖ ≤ M * ‖f x‖ := by
-    filter_upwards [haM] with x hx
-    simpa only [Real.norm_eq_abs, abs_mul] using
-      mul_le_mul hx le_rfl (abs_nonneg (f x)) hM
-  have haf : MemLp (fun x => a x * f x) p μ := MemLp.of_le_mul hf hmeas hpoint
-  have hle := eLpNorm_le_mul_eLpNorm_of_ae_le_mul hmeas hpoint p
-  have htop : ENNReal.ofReal M * eLpNorm f p μ ≠ ∞ :=
-    ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono htop hle
-  exact ⟨haf, by simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr⟩
-
 private theorem mulTerm_memLp_norm
     {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
     (B : ℝ) (hB : 0 ≤ B) (a f : TimeVelocity d → ℝ)
@@ -124,7 +97,7 @@ private theorem mulTerm_memLp_norm
   have haMeas : AEStronglyMeasurable a (timeVelocityVolumeOn U) :=
     ha.aestronglyMeasurable hU.measurableSet
   have haAE : ∀ᵐ z ∂timeVelocityVolumeOn U, |a z| ≤ B :=
-    ae_restrict_of_forall_mem U hU.measurableSet haB
+    ae_restrict_of_forall_mem hU.measurableSet haB
   exact toReal_eLpNorm_mul_le hB haMeas hf haAE
 
 private def leftAddIndex {d L : ℕ} (beta : ParabolicDerivativeIndex d L)

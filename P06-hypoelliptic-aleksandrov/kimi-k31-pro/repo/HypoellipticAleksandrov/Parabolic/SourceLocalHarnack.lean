@@ -20,13 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-private theorem parabolicBox_subset_closedBox {d : ℕ} {vartheta r t0 : ℝ}
-    {v0 : PDE.Vec d} :
-    parabolicBox vartheta r t0 v0 ⊆ parabolicClosedBox vartheta r t0 v0 := by
-  intro z hz
-  rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
-  exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
-
 private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
     {v0 : PDE.Vec d} (_hR : 0 < R) (U : Set (TimeVelocity d))
     (q : TimeVelocity d → ℝ) (_hU : IsOpen U)
@@ -86,34 +79,6 @@ private theorem parabolicLpNormOn_abs {d : ℕ} (F : TimeVelocity d → ℝ)
   apply eLpNorm_congr_enorm_ae habs hF
   filter_upwards [] with z
   exact Real.enorm_abs (F z)
-
-private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
-    {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
-    (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
-    (hTK : T ⊆ K) (hST : S ⊆ T) :
-    parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
-  have hFK : ContinuousOn F K := hF.mono hKU
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
-  letI : IsFiniteMeasure (volume.restrict K) :=
-    ⟨by
-      rw [Measure.restrict_apply_univ]
-      exact hKcompact.measure_lt_top⟩
-  obtain ⟨M, hM⟩ := hKcompact.exists_bound_of_continuousOn hFK
-  have hKmem : MemLp F (parabolicExponent d) (volume.restrict K) := by
-    refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) M ?_
-    filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact hM z hz
-  have hTmem : MemLp F (parabolicExponent d) (volume.restrict T) :=
-    hKmem.mono_measure (Measure.restrict_mono_set volume hTK)
-  have hSmem : MemLp F (parabolicExponent d) (volume.restrict S) :=
-    hTmem.mono_measure (Measure.restrict_mono_set volume hST)
-  have hTtop : parabolicELpNormOn d F T ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hTmem.eLpNorm_ne_top
-  have hStop : parabolicELpNormOn d F S ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hSmem.eLpNorm_ne_top
-  unfold parabolicLpNormOn
-  exact (ENNReal.toReal_le_toReal hStop hTtop).mpr
-    (eLpNorm_mono_measure F (Measure.restrict_mono_set volume hST))
 
 private theorem supersolution_of_equation_abs {d : ℕ} {B : CoefficientField d}
     {F q : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)}

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSlices
+public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareMoments
 public import PDEFoundation.Sobolev.Mean
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Constructions.Pi
@@ -40,95 +41,11 @@ noncomputable def parabolicMorreyUnitVelocityAffineProjection {d : Nat}
         (3 * PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
           (fun w => g w * w i)) * v i
 
-private theorem unit_velocity_cube_measure (d : ℕ) :
-    volume.restrict (velocityCube (0 : PDE.Vec d) 1) =
-      Measure.pi (fun _ : Fin d => volume.restrict (Set.Ioo (-1 : ℝ) 1)) := by
-  rw [velocityCube_eq_pi]
-  simp only [Pi.zero_apply, zero_sub, zero_add]
-  change (Measure.pi (fun _ : Fin d => volume)).restrict
-    (Set.univ.pi fun _ : Fin d => Set.Ioo (-1 : ℝ) 1) = _
-  rw [Measure.restrict_pi_pi]
-
-private theorem unit_interval_integral_id :
-    ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
-  rw [← integral_Ioc_eq_integral_Ioo,
-    ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_id]
-
-private theorem unit_interval_integral_sq :
-    ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
-  rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext x; ring,
-    ← integral_Ioc_eq_integral_Ioo,
-    ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_pow]
-
-private theorem unit_velocity_cube_integral_eval {d : ℕ} (i : Fin d) :
-    ∫ v in velocityCube (0 : PDE.Vec d) 1, v i = 0 := by
-  rw [unit_velocity_cube_measure]
-  let q : Fin d → ℝ → ℝ := fun k x => if k = i then x else 1
-  have hq : (fun v : PDE.Vec d => v i) = fun v => ∏ k, q k (v k) := by
-    ext v
-    simp [q]
-  rw [hq, integral_fintype_prod_eq_prod]
-  simp only [q]
-  apply Finset.prod_eq_zero (Finset.mem_univ i)
-  simpa [q] using unit_interval_integral_id
-
-private theorem unit_velocity_cube_integral_eval_mul_eval {d : ℕ} (i j : Fin d) :
-    ∫ v in velocityCube (0 : PDE.Vec d) 1, v i * v j =
-      if i = j then (2 : ℝ) ^ d / 3 else 0 := by
-  classical
-  rw [unit_velocity_cube_measure]
-  by_cases hij : i = j
-  · subst j
-    let q : Fin d → ℝ → ℝ := fun k x => if k = i then x * x else 1
-    have hq : (fun v : PDE.Vec d => v i * v i) = fun v => ∏ k, q k (v k) := by
-      ext v
-      simp [q]
-    rw [hq, integral_fintype_prod_eq_prod]
-    have hqint : (fun k : Fin d => ∫ x in Set.Ioo (-1 : ℝ) 1, q k x) =
-        fun k => if k = i then 2 / 3 else 2 := by
-      funext k
-      by_cases hki : k = i
-      · subst k
-        simpa [q] using unit_interval_integral_sq
-      · simp [q, hki]
-        norm_num
-    rw [hqint, if_pos rfl]
-    have hfactor : (fun k : Fin d => if k = i then (2 / 3 : ℝ) else 2) =
-        fun k => 2 * (if k = i then (1 / 3 : ℝ) else 1) := by
-      funext k
-      by_cases hki : k = i
-      · simp [hki]
-        norm_num
-      · simp [hki]
-    rw [hfactor, Finset.prod_mul_distrib, Finset.prod_const, Fintype.prod_ite_eq']
-    simp only [Finset.card_univ, Fintype.card_fin]
-    ring
-  · let q : Fin d → ℝ → ℝ := fun k x =>
-      if k = i then x else if k = j then x else 1
-    have hq : (fun v : PDE.Vec d => v i * v j) = fun v => ∏ k, q k (v k) := by
-      ext v
-      calc
-        v i * v j = q i (v i) * q j (v j) := by simp [q]
-        _ = q i (v i) * (q j (v j) *
-            ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k)) := by
-          congr 1
-          have hprod : ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k) = 1 := by
-            apply Finset.prod_eq_one
-            intro k hk
-            rcases Finset.mem_erase.mp hk with ⟨hkj, hki_mem⟩
-            exact by simp [q, hkj, (Finset.mem_erase.mp hki_mem).1]
-          rw [hprod, mul_one]
-        _ = ∏ k, q k (v k) := by
-          rw [Finset.mul_prod_erase (Finset.univ.erase i) (fun k => q k (v k))]
-          · rw [Finset.mul_prod_erase Finset.univ (fun k => q k (v k))]
-            exact Finset.mem_univ _
-          · exact Finset.mem_erase.mpr ⟨fun h => hij h.symm, Finset.mem_univ _⟩
-    rw [hq, integral_fintype_prod_eq_prod]
-    rw [if_neg hij]
-    apply Finset.prod_eq_zero (Finset.mem_univ i)
-    simpa [q, hij] using unit_interval_integral_id
+alias unit_velocity_cube_measure := cube_measure
+alias unit_interval_integral_id := int_id
+alias unit_interval_integral_sq := int_sq
+alias unit_velocity_cube_integral_eval := cube_int_eval
+alias unit_velocity_cube_integral_eval_mul_eval := cube_int_eval_mul_eval
 
 private theorem unit_velocity_average_one (d : ℕ) :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)

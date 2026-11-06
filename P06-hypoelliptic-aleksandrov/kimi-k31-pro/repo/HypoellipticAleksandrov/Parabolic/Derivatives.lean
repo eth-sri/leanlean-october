@@ -363,31 +363,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Matrix
 open scoped BigOperators Topology
 
-private theorem deriv_deriv_nonpos_of_isLocalMax_local
-    {f : ℝ → ℝ} {a c : ℝ}
-    (hmax : IsLocalMax f a)
-    (hsecond : HasDerivAt (deriv f) c a)
-    (hcont : ContinuousAt f a) :
-    c ≤ 0 := by
-  by_contra hc
-  have hcpos : 0 < c := lt_of_not_ge hc
-  have hmin : IsLocalMin f a :=
-    isLocalMin_of_deriv_deriv_pos
-      (by simpa only [hsecond.deriv] using hcpos)
-      hmax.deriv_eq_zero hcont
-  have heq : f =ᶠ[𝓝 a] fun _ => f a := by
-    filter_upwards [hmax, hmin] with y hymax hymin
-    exact le_antisymm hymax hymin
-  have hderivEq : deriv f =ᶠ[𝓝 a] fun _ => 0 := by
-    filter_upwards [heq.deriv] with y hy
-    rw [hy]
-    exact deriv_const y (f a)
-  have : c = 0 := by
-    calc
-      c = deriv (deriv f) a := hsecond.deriv.symm
-      _ = deriv (fun _ => 0) a := hderivEq.deriv_eq
-      _ = 0 := deriv_const _ _
-  exact hcpos.ne' this
+alias deriv_deriv_nonpos_of_isLocalMax_local := deriv_deriv_nonpos_of_isLocalMax
 
 private theorem hasDerivAt_fderiv_restrict_affine_line_at
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]

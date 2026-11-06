@@ -24,10 +24,6 @@ namespace HypoellipticAleksandrov.Parabolic.ParabolicW12Function
 open Filter MeasureTheory Set
 open scoped BigOperators Convolution ENNReal Pointwise Topology
 
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) <= parabolicExponent d := by
-  simp [parabolicExponent]
-
 private theorem support_parabolicConvolution_subset_common
     {d : Nat} (g : TimeVelocity d -> Real) (n : Nat) :
     Function.support (parabolicConvolution g (parabolicMollifier d n)) ⊆

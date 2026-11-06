@@ -18,7 +18,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-private theorem continuous_parabolicMorreyBoxAffineProjection
+theorem continuous_parabolicMorreyBoxAffineProjection
     {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) :
     Continuous (parabolicMorreyBoxAffineProjection t v r u) := by

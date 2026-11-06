@@ -23,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped Convolution ENNReal Pointwise Topology
 
-private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
+theorem parabolicConvolution_eq_leftConvolution {d : Nat}
     (f rho : TimeVelocity d → Real) :
     parabolicConvolution f rho =
       rho ⋆[ContinuousLinearMap.lsmul Real Real,

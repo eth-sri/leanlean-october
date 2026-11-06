@@ -46,7 +46,7 @@ private theorem reverseTimeVolume_noAtoms (T : ℝ) :
   change NullSingletonClass (volume.restrict (Ioo (0 : ℝ) T))
   infer_instance
 
-private theorem forward_window_product_memLp
+theorem forward_window_product_memLp
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ) :
     MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
@@ -72,7 +72,7 @@ private theorem forward_window_product_memLp
       hplus.restrict (univ ×ˢ K)
   exact hplusK.sub hzeroK
 
-private theorem forward_window_sqNorm_integral_swap
+theorem forward_window_sqNorm_integral_swap
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
@@ -87,7 +87,7 @@ private theorem forward_window_sqNorm_integral_swap
   simpa only [MeasureTheory.integral] using
     integral_integral_swap hPhiSq
 
-private theorem ae_memLp_forward_window_slice
+theorem ae_memLp_forward_window_slice
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
@@ -106,7 +106,7 @@ private theorem ae_memLp_forward_window_slice
   filter_upwards [hPhiInt.prod_left_ae, hPhiSq.prod_left_ae] with t ht htSq
   exact (memLp_two_iff_integrable_sq_norm ht.aestronglyMeasurable).mpr htSq
 
-private theorem sqNorm_smul_window_integral_le
+theorem sqNorm_smul_window_integral_le
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (h : ℝ) (hh : 0 < h) (φ : ℝ → E)
     (hφ : MemLp φ (2 : ℝ≥0∞) (volume.restrict (Ioc 0 h))) :
@@ -157,7 +157,7 @@ private theorem sqNorm_smul_window_integral_le
     _ ≤ (h⁻¹ * (√(∫ s, ‖φ s‖ ^ 2 ∂μ) * √h)) ^ 2 := hmain
     _ = h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂μ := hcalc
 
-private theorem sqNorm_forward_window_average_le
+theorem sqNorm_forward_window_average_le
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (hh : 0 < h) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
@@ -217,7 +217,7 @@ private theorem forwardSteklov_eq_primitive_sub
     (eq_sub_iff_add_eq).mpr (by simpa [add_comm] using hadd)
   rw [reverseTimeForwardSteklov, ← intervalIntegral.integral_of_le (by linarith), hsub]
 
-private theorem tendsto_inv_mul_setIntegral_Ioc_zero
+theorem tendsto_inv_mul_setIntegral_Ioc_zero
     (q : ℝ → ℝ) (hq : Tendsto q (𝓝[>] 0) (𝓝 0))
     (hq0 : ∀ s, 0 ≤ q s) :
     Tendsto (fun h : ℝ => h⁻¹ * ∫ s in Ioc 0 h, q s) (𝓝[>] 0) (𝓝 0) := by
@@ -412,5 +412,34 @@ theorem tendsto_forwardSteklov_sqNorm_integral_on_Icc
         sqNorm_forward_window_average_le F hF h hh K
       _ = h⁻¹ * ∫ s in Ioc 0 h, q s := hright
   · exact haverage
+
+theorem memLp_two_on_full_Icc
+    {E : Type*} [NormedAddCommGroup E] (T : ℝ)
+    (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) :
+    MemLp (f : ℝ → E) (2 : ℝ≥0∞) (volume.restrict (Icc 0 T)) := by
+  simpa only [reverseTimeVolume, reverseTimeOpenInterval,
+    restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
+
+theorem memLp_on_Icc_of_continuous
+    {E : Type*} [NormedAddCommGroup E] (f : ℝ → E) (hf : Continuous f) (a b : ℝ) :
+    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
+  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
+  exact (hf.norm.pow 2).integrableOn_Icc
+
+theorem integral_mul_norm_le_sqrt_mul_sqrt
+    {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
+    {μ : Measure ℝ} (f : ℝ → E) (g : ℝ → F)
+    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ) :
+    ∫ t, ‖f t‖ * ‖g t‖ ∂μ ≤
+      √(∫ t, ‖f t‖ ^ 2 ∂μ) * √(∫ t, ‖g t‖ ^ 2 ∂μ) := by
+  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
+    Real.HolderConjugate.two_two
+    (μ := μ) (f := fun t => ‖f t‖) (g := fun t => ‖g t‖)
+    (Eventually.of_forall fun _ => norm_nonneg _)
+    (Eventually.of_forall fun _ => norm_nonneg _)
+    (by simpa only [ENNReal.ofReal_ofNat] using hf.norm)
+    (by simpa only [ENNReal.ofReal_ofNat] using hg.norm)
+  rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
+  simpa only [Real.rpow_two] using hholder
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

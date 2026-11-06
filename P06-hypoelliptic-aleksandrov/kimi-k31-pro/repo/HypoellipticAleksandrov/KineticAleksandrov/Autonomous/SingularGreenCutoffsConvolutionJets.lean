@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModulusReference
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsLineWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsParametric
 import Mathlib.Analysis.Normed.Operator.Bilinear
@@ -47,7 +48,7 @@ theorem barrier_slice_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
     (by norm_num)
   have hslice := (bellman_hasDerivAt_second hd).congr_of_eventuallyEq
-    ((barrierExtension_eventuallyEq phi hq).comp_tendsto
+    ((BarrierRegularization.barrierExtension_eventuallyEq phi hq).comp_tendsto
       ((continuous_const.prodMk continuous_id).tendsto q.2))
   exact hslice.comp_hasFDerivAt q hasFDerivAt_snd
 

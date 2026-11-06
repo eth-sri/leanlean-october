@@ -237,9 +237,8 @@ theorem WeakPrincipalCoercivityCore.targets_integrableOn
 
 private theorem velocityGradient_contDiff_infty {d : ℕ}
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b) (j : Fin d) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient b z j) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hb).2.clm_apply contDiff_const
+    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient b z j) :=
+  contDiff_velocityGradient_infty (i := j) hb
 
 private theorem velocityGradient_gradient {d : ℕ}
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
@@ -261,31 +260,15 @@ private theorem velocityGradient_gradient {d : ℕ}
       exact WithTop.coe_le_coe.mpr le_top)) z
   exact hraw.trans (hsymm.apply j i)
 
-private theorem velocityGradient_compact {d : ℕ}
-    (b : TimeVelocity d → ℝ) (hb : HasCompactSupport b) (j : Fin d) :
-    HasCompactSupport (fun z => velocityGradient b z j) := by
-  unfold velocityGradient
-  simpa using hb.fderiv_apply (𝕜 := ℝ) ((0, Pi.single j 1) : TimeVelocity d)
-
 private theorem velocityHessian_continuous {d : ℕ}
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b) (j i : Fin d) :
-    Continuous (fun z => velocityHessian b z j i) := by
-  unfold velocityHessian
-  have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ b) :=
-    (contDiff_infty_iff_fderiv.mp hb).2
-  simpa using (hgrad.continuous_fderiv (by simp)).clm_apply continuous_const |>.clm_apply
-    continuous_const
+    Continuous (fun z => velocityHessian b z j i) :=
+  continuous_velocityHessian_infty (i := j) (j := i) hb
 
 private theorem velocityHessian_compact {d : ℕ}
     (b : TimeVelocity d → ℝ) (hb : HasCompactSupport b) (j i : Fin d) :
-    HasCompactSupport (fun z => velocityHessian b z j i) := by
-  unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv ℝ b) := hb.fderiv ℝ
-  have hsecond : HasCompactSupport (fderiv ℝ (fderiv ℝ b)) := hfirst.fderiv ℝ
-  simpa only [Function.comp_def] using hsecond.comp_left
-    (g := fun H : TimeVelocity d →L[ℝ] TimeVelocity d →L[ℝ] ℝ =>
-      H ((0, Pi.single j 1) : TimeVelocity d)
-        ((0, Pi.single i 1) : TimeVelocity d)) rfl
+    HasCompactSupport (fun z => velocityHessian b z j i) :=
+  velocityHessian_compact_support (i := j) (j := i) hb
 
 private theorem localized_spatial_jet_tsupport_subset {d : ℕ}
     (b q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
@@ -453,7 +436,7 @@ private theorem localized_ordered_spatial_jet_univ
   have hbiTop (i : Fin d) : ParabolicMemLpOn U ∞
       (fun z => velocityGradient b z i) :=
     ((velocityGradient_contDiff_infty b hb i).continuous.memLp_of_hasCompactSupport
-      (velocityGradient_compact b hbCompact i)).restrict U
+      (velocityGradient_compact (f := b) (i := i) hbCompact)).restrict U
   have hbijTop (j i : Fin d) : ParabolicMemLpOn U ∞
       (fun z => velocityHessian b z j i) :=
     ((velocityHessian_continuous b hb j i).memLp_of_hasCompactSupport

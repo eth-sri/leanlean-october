@@ -103,54 +103,6 @@ private theorem reverseTimeShiftedPositivePartEnergyPrimitive_sub
       (integrable_rawShiftedPositivePartEnergyRate hΩ hΩbounded T M N u g).intervalIntegrable,
     intervalIntegral.integral_of_le hst]
 
-private theorem exists_strict_test_collar
-    (T : ℝ) (hT : 0 < T) (eta : ReverseTimeScalarTest T) :
-    ∃ a b : ℝ, 0 < a ∧ a < b ∧ b < T ∧
-      tsupport (eta : ℝ → ℝ) ⊆ Ioo a b ∧ tsupport eta.deriv ⊆ Ioo a b := by
-  by_cases hsupport : (tsupport (eta : ℝ → ℝ)).Nonempty
-  · obtain ⟨lo, hlo, hloMin⟩ :=
-      eta.hasCompactSupport.exists_isMinOn hsupport continuousOn_id
-    obtain ⟨hi, hhi, hhiMax⟩ :=
-      eta.hasCompactSupport.exists_isMaxOn hsupport continuousOn_id
-    have hloIoo := eta.tsupport_subset hlo
-    have hhiIoo := eta.tsupport_subset hhi
-    obtain ⟨a, ha0, halo⟩ := exists_between hloIoo.1
-    obtain ⟨b, hhib, hbT⟩ := exists_between hhiIoo.2
-    have hlohi : lo ≤ hi := hloMin hhi
-    refine ⟨a, b, ha0, lt_of_lt_of_le halo (hlohi.trans_lt hhib).le, hbT, ?_, ?_⟩
-    · intro t ht
-      exact ⟨lt_of_lt_of_le halo (hloMin ht), lt_of_le_of_lt (hhiMax ht) hhib⟩
-    · have hd : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
-        rw [ReverseTimeScalarTest.deriv, tsupport]
-        exact closure_minimal support_deriv_subset (isClosed_tsupport _)
-      exact hd.trans (by
-        intro t ht
-        exact ⟨lt_of_lt_of_le halo (hloMin ht), lt_of_le_of_lt (hhiMax ht) hhib⟩)
-  · have heta : (eta : ℝ → ℝ) = 0 := by
-      funext t
-      apply image_eq_zero_of_notMem_tsupport
-      exact fun ht => hsupport ⟨t, ht⟩
-    have hderiv : eta.deriv = 0 := by
-      funext t
-      rw [eta.deriv_apply, heta]
-      simp
-    refine ⟨T / 3, 2 * T / 3, by linarith, by linarith, by linarith, ?_, ?_⟩
-    · rw [heta]
-      simp
-    · rw [hderiv]
-      simp
-
-private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
-    {T a b : ℝ} {F phi : ℝ → ℝ}
-    (hK : Icc a b ⊆ Ioo (0 : ℝ) T) (hphi : tsupport phi ⊆ Ioo a b) :
-    (∫ t, F t * phi t ∂reverseTimeVolume T) = ∫ t in Icc a b, F t * phi t := by
-  change (∫ t in Ioo (0 : ℝ) T, F t * phi t) = ∫ t in Icc a b, F t * phi t
-  apply setIntegral_eq_of_subset_of_forall_diff_eq_zero measurableSet_Ioo hK
-  intro t ht
-  rw [image_eq_zero_of_notMem_tsupport (fun hts => ht.2
-    ⟨le_of_lt (hphi hts).1, le_of_lt (hphi hts).2⟩)]
-  ring
-
 private theorem integral_energy_mul_deriv_eq_neg_integral_rate_of_increment
     {a b : ℝ} {E Q : ℝ → ℝ} (hab : a ≤ b)
     (hQ : Continuous Q)
@@ -297,15 +249,6 @@ private theorem integrable_reverseTimeShiftedPositivePartEnergyPrimitive
   change IntegrableOn _ (Ioo (0 : ℝ) T) volume
   exact (continuousOn_reverseTimeShiftedPositivePartEnergyPrimitive
     hΩ hΩbounded T M N u g).integrableOn_Icc.mono_set Ioo_subset_Icc_self
-
-private theorem integrable_mul_reverseTimeScalarTest_deriv
-    {T : ℝ} {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T))
-    (eta : ReverseTimeScalarTest T) :
-    Integrable (fun t => f t * eta.deriv t) (reverseTimeVolume T) := by
-  obtain ⟨C, hC⟩ := eta.exists_norm_deriv_le
-  apply hf.mul_bdd eta.contDiff_deriv.continuous.aestronglyMeasurable
-  filter_upwards with t
-  exact hC t
 
 private theorem reverseTimeShiftedPositivePartEnergyPrimitive_test_deriv
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)

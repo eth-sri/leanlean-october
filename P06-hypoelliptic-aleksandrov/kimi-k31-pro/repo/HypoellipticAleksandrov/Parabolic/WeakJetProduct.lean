@@ -24,22 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory
 open scoped ENNReal Topology
 
-private theorem integrable_restrict_mul_of_locallyIntegrableOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
-    (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
-    (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
-    Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
-  have hfK : IntegrableOn f (tsupport g) volume :=
-    hf.integrableOn_compact_subset hgSub hgCompact.isCompact
-  have hfgK : IntegrableOn (fun z => f z * g z) (tsupport g) volume := by
-    simpa only [smul_eq_mul] using
-      hfK.smul_continuousOn hg.continuousOn hgCompact.isCompact
-  have hsupport : Function.support (fun z => f z * g z) ⊆ tsupport g := by
-    intro z hz
-    exact tsupport_mul_subset_right (subset_closure hz)
-  exact (integrableOn_iff_integrable_of_support_subset hsupport).mp hfgK |>.restrict
-
-private theorem weak_product_rule
+theorem weak_product_rule
     {d : ℕ} {U : Set (TimeVelocity d)}
     {u du b : TimeVelocity d → ℝ}
     {D : (TimeVelocity d → ℝ) → TimeVelocity d → ℝ}
@@ -170,27 +155,6 @@ private theorem timeDerivative_mul
     (hg.contDiffAt.differentiableAt (by simp))]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
 
-private theorem timeDerivative_continuous {d : ℕ} {f : TimeVelocity d → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (timeDerivative f) := by
-  unfold timeDerivative
-  simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
-
-private theorem timeDerivative_compact {d : ℕ} {f : TimeVelocity d → ℝ}
-    (hf : HasCompactSupport f) : HasCompactSupport (timeDerivative f) := by
-  unfold timeDerivative
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
-
-private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
 private theorem velocityGradient_mul {d : ℕ} {i : Fin d}
     (f g : TimeVelocity d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : TimeVelocity d) :
@@ -200,27 +164,6 @@ private theorem velocityGradient_mul {d : ℕ} {i : Fin d}
   rw [fderiv_mul (hf.contDiffAt.differentiableAt (by simp))
     (hg.contDiffAt.differentiableAt (by simp))]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
-
-private theorem velocityGradient_continuous {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
-
-private theorem velocityGradient_compact {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) : HasCompactSupport (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
-
-private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocity d → ℝ) :
-    tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
 
 namespace HasWeakTimeDerivOn
 
@@ -253,31 +196,6 @@ theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     (fun f hf => velocityGradient_compact hf) velocityGradient_tsupport hb huLoc hduiLoc
 
 end HasWeakVelocityPartialDerivOn
-
-private theorem velocityGradient_contDiff {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
-
-private theorem velocityHessian_continuous {d : ℕ} {f : TimeVelocity d → ℝ}
-    {i j : Fin d} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    Continuous (fun z => velocityHessian f z i j) := by
-  unfold velocityHessian
-  have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) :=
-    (contDiff_infty_iff_fderiv.mp hf).2
-  simpa using (hgrad.continuous_fderiv (by simp)).clm_apply continuous_const |>.clm_apply
-    continuous_const
-
-private theorem velocityHessian_compact {d : ℕ} {f : TimeVelocity d → ℝ}
-    {i j : Fin d} (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z => velocityHessian f z i j) := by
-  unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv ℝ f) := hf.fderiv ℝ
-  have hsecond : HasCompactSupport (fderiv ℝ (fderiv ℝ f)) := hfirst.fderiv ℝ
-  simpa only [Function.comp_def] using hsecond.comp_left
-    (g := fun H : TimeVelocity d →L[ℝ] TimeVelocity d →L[ℝ] ℝ =>
-      H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
 
 private theorem velocityGradient_velocityGradient {d : ℕ} {b : TimeVelocity d → ℝ}
     {i j : Fin d} (hb : ContDiff ℝ (⊤ : ℕ∞) b) (z : TimeVelocity d) :
@@ -357,8 +275,8 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
         (velocityGradient_compact hbCompact)).restrict U
     have hddbijTop : ParabolicMemLpOn U ∞
         (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian b z i j) :=
-      ((velocityHessian_continuous hb).memLp_of_hasCompactSupport
-        (velocityHessian_compact hbCompact)).restrict U
+      ((continuous_velocityHessian_infty hb).memLp_of_hasCompactSupport
+        (velocityHessian_compact_support hbCompact)).restrict U
     have hfirst : ParabolicMemLpOn U p (fun z => b z * w.velocityHessian z i j) :=
       by simpa only [mul_comm] using (w.velocityHessian_memLp i j).mul' hbTop
     have hsecond : ParabolicMemLpOn U p
@@ -381,7 +299,7 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
   hasWeakVelocitySecondPartialDeriv := by
     intro i j
     let dbi : TimeVelocity d → ℝ := fun z => velocityGradient b z i
-    have hdbi : ContDiff ℝ (⊤ : ℕ∞) dbi := velocityGradient_contDiff hb
+    have hdbi : ContDiff ℝ (⊤ : ℕ∞) dbi := contDiff_velocityGradient_infty hb
     have hfirst := (w.hasWeakVelocitySecondPartialDeriv i j).mul_contDiff hb
       ((w.velocityGrad_memLp i).locallyIntegrableOn hp)
       ((w.velocityHessian_memLp i j).locallyIntegrableOn hp)
@@ -399,8 +317,8 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
         (velocityGradient_compact (i := j) hbCompact)).restrict U
     have hddTop : ParabolicMemLpOn U ∞
         (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian b z i j) :=
-      ((velocityHessian_continuous (i := i) (j := j) hb).memLp_of_hasCompactSupport
-        (velocityHessian_compact (i := i) (j := j) hbCompact)).restrict U
+      ((continuous_velocityHessian_infty (i := i) (j := j) hb).memLp_of_hasCompactSupport
+        (velocityHessian_compact_support (i := i) (j := j) hbCompact)).restrict U
     have hleftValue : ParabolicMemLpOn U p (fun z => b z * w.velocityGrad z i) :=
       by simpa only [mul_comm] using (w.velocityGrad_memLp i).mul' hbTop
     have hleftDeriv : ParabolicMemLpOn U p

@@ -17,7 +17,7 @@ open scoped Topology
 noncomputable section
 open TimeVelocityMultiIndex
 
-private theorem scalarTimeDerivative_eq_coordinate_open_local
+theorem scalarTimeDerivative_eq_coordinate_open_local
     {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
     (hu : ContDiffAt ℝ 1 u z) :
     scalarTimeDerivative u z =
@@ -39,7 +39,7 @@ private theorem scalarTimeDerivative_eq_coordinate_open_local
     all_goals simp [Function.comp_def]
   exact hs.deriv
 
-private theorem scalarSpatialGradient_eq_coordinate_open_local
+theorem scalarSpatialGradient_eq_coordinate_open_local
     {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (j : Fin d)
     (hu : ContDiffAt ℝ 1 u z) :
     scalarSpatialGradient u z j =
@@ -59,7 +59,7 @@ private theorem scalarSpatialGradient_eq_coordinate_open_local
   rw [hs.fderiv]
   simp
 
-private theorem scalarSpatialHessian_eq_coordinate_open_local
+theorem scalarSpatialHessian_eq_coordinate_open_local
     {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (i j : Fin d)
     (hu : ContDiffAt ℝ 2 u z) :
     scalarSpatialHessian u z i j =

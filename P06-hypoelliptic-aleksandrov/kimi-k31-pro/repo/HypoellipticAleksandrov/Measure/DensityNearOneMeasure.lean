@@ -25,19 +25,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem parabolicExponent_ne_zero (d : Nat) : parabolicExponent d ≠ 0 := by
-  simp [parabolicExponent]
-
-private theorem parabolicExponent_ne_top (d : Nat) : parabolicExponent d ≠ ∞ := by
-  simp [parabolicExponent]
-
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
 /-- The local open ABP cylinder is measurable. -/
 theorem measurableSet_localABPInterior {d : Nat} (v0 : PDE.Vec d) :
     MeasurableSet (localABPInterior v0) := by

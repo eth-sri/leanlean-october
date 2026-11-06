@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyWeakTest
 public import Mathlib.Analysis.Normed.Operator.Extend
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPointwise
@@ -135,66 +136,6 @@ private theorem unweightedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
   filter_upwards [unweightedSpatialDifferenceQuotientL2_apply_ae hΩ k s f,
     hambientOn, hshiftedOn] with y hq hambient hshifted
   rw [hq, hambient, hshifted]
-
-private theorem sq_tsupport_subset
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) :
-    tsupport η.sq.toFun ⊆ tsupport η.toFun := by
-  simpa only [PDE.QuantitativeSmoothCutoff.sq_toFun, pow_two] using
-    (tsupport_mul_subset_left (f := η.toFun) (g := η.toFun))
-
-private theorem energyWeakTest_partialDeriv_eq_backwardSquare
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
-    (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (j : Fin d) (y : PDE.Vec d) :
-    PDE.WeakTestFunction.partialDeriv
-      (localizedSpatialDifferenceQuotientEnergyWeakTest η k h φ φ.contDiff hηΩ hηshift) j y =
-      ((localizedSpatialDifferenceQuotientWeakTest η.sq k h φ
-          ((sq_tsupport_subset η).trans hηΩ)).partialDeriv j
-          (y + (-h) • PDE.basisVec k) -
-        (localizedSpatialDifferenceQuotientWeakTest η.sq k h φ
-          ((sq_tsupport_subset η).trans hηΩ)).partialDeriv j y) / h := by
-  let ψ := localizedSpatialDifferenceQuotientWeakTest η.sq k h φ
-    ((sq_tsupport_subset η).trans hηΩ)
-  have hψshift : DifferentiableAt ℝ
-      (fun x : PDE.Vec d => ψ (x + (-h) • PDE.basisVec k)) y :=
-    (ψ.contDiff.comp (contDiff_id.add contDiff_const)).contDiffAt.differentiableAt (by simp)
-  have hψ : DifferentiableAt ℝ (ψ : PDE.Vec d → ℝ) y :=
-    ψ.contDiff.contDiffAt.differentiableAt (by simp)
-  let q : PDE.Vec d → ℝ := fun x =>
-    ψ (x + (-h) • PDE.basisVec k) - ψ x
-  have hq : DifferentiableAt ℝ q y := hψshift.sub hψ
-  have hrewrite : localizedSpatialDifferenceQuotientEnergyTest η k h φ =
-      fun x : PDE.Vec d => (ψ (x + (-h) • PDE.basisVec k) - ψ x) / h := by
-    funext x
-    dsimp only [ψ]
-    simp only [localizedSpatialDifferenceQuotientEnergyTest_apply,
-      localizedSpatialDifferenceQuotient_apply,
-      localizedSpatialDifferenceQuotientWeakTest_apply,
-      PDE.QuantitativeSmoothCutoff.sq_toFun, pow_two]
-    rw [sub_eq_add_neg, neg_smul]
-    ring
-  unfold PDE.WeakTestFunction.partialDeriv localizedSpatialDifferenceQuotientEnergyWeakTest
-  change (fderiv ℝ (localizedSpatialDifferenceQuotientEnergyTest η k h φ) y)
-      (PDE.basisVec j) = _
-  rw [hrewrite]
-  have hquotient : (fun x : PDE.Vec d =>
-      (ψ (x + (-h) • PDE.basisVec k) - ψ x) / h) = fun x => h⁻¹ • q x := by
-    funext x
-    simp only [q, smul_eq_mul, div_eq_mul_inv]
-    ring
-  rw [hquotient, fderiv_fun_const_smul hq h⁻¹]
-  have hqderiv : (fderiv ℝ q y) (PDE.basisVec j) =
-      ψ.partialDeriv j (y + (-h) • PDE.basisVec k) - ψ.partialDeriv j y := by
-    dsimp only [q]
-    rw [fderiv_fun_sub hψshift hψ, fderiv_comp_add_right]
-    rfl
-  rw [ContinuousLinearMap.smul_apply, hqderiv]
-  simp only [PDE.WeakTestFunction.partialDeriv, smul_eq_mul, div_eq_mul_inv]
-  ring
 
 /-- The unweighted outer quotient has the totalized scalar `L²` bound. -/
 private theorem norm_unweightedSpatialDifferenceQuotientL2_apply_le
@@ -492,23 +433,7 @@ private theorem energyTestSmoothCore_gradient_eq_receiver
   simpa only [PiLp.coe_symm_continuousLinearEquiv, PiLp.coe_continuousLinearEquiv,
     WithLp.ofLp_toLp] using hcoords j
 
-private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j‖ * ‖G‖ := by
-          exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_def, PiLp.proj_apply, one_mul] using
-        PiLp.norm_apply_le x j
-    _ = ‖G‖ := one_mul _
+open PDE (norm_hilbertVectorLpCoord_le)
 
 private theorem norm_energyTestValueReceiver_apply_le
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
@@ -627,21 +552,6 @@ private theorem norm_energyTestGradientVectorReceiver_apply_le
     _ = (d : ℝ) * (4 * (2 * K + 1) / |h| ^ 2) * ‖u‖ := by
       simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
       ring
-
-private theorem norm_h10HilbertGraph_le_value_add_gradient
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : H10HilbertGraph hΩ) :
-    ‖u‖ ≤ ‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖ := by
-  apply (sq_le_sq₀ (norm_nonneg _)
-    (add_nonneg (norm_nonneg _) (norm_nonneg _))).mp
-  calc
-    ‖u‖ ^ 2 = ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 :=
-      norm_sq_h10HilbertGraph hΩ u
-    _ ≤ ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 +
-        2 * (‖valueCLM hΩ u‖ * ‖gradientCLM hΩ u‖) := by
-      apply le_add_of_nonneg_right
-      exact mul_nonneg (by norm_num) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
-    _ = (‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖) ^ 2 := by ring
 
 private theorem norm_energyTestSmoothCoreLinearMap_apply_le
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}

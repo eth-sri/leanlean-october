@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.NestedCutoffLocality
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.NestedCutoffLocality
 
@@ -34,14 +35,6 @@ theorem cutoffL2Multiplier_norm_le_one
   ae_of_all _ fun y => by
     rw [Real.norm_eq_abs, abs_of_nonneg (χ.nonneg y)]
     exact χ.le_one y
-
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
-    {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
-    PDE.classicalGradient η.toFun y i = 0 := by
-  rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
-  exact ContinuousLinearMap.zero_apply _
 
 /-- Multiplication by a quantitative spatial cutoff on restricted `L²`. -/
 noncomputable def cutoffL2Multiplier
@@ -85,7 +78,7 @@ private theorem cutoffL2Multiplier_apply_localizedSpatialDifferenceQuotientL2
   · simp [hy]
   · rw [χ.eq_one_on_inner y (hηχ (subset_tsupport η.toFun hy)), one_mul]
 
-private theorem
+theorem
     cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
     {d : ℕ}
     {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
@@ -108,7 +101,7 @@ private theorem
   · rw [cutoffGradient_eq_zero_of_not_mem_tsupport η i hy]
     ring
 
-private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
+theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)

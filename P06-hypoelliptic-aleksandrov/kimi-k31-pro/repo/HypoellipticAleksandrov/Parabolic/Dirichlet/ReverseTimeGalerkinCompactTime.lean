@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open MeasureTheory Set
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-private theorem hasDerivWithinAt_fixed_galerkin_pairing
+theorem hasDerivWithinAt_fixed_galerkin_pairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
@@ -51,7 +51,7 @@ private theorem hasDerivWithinAt_fixed_galerkin_pairing
     Submodule.subtypeL_apply, innerSL_apply_apply, Function.comp_def,
     LinearMap.coe_toContinuousLinearMap'] using hI
 
-private theorem continuousOn_fixed_galerkin_pairing
+theorem continuousOn_fixed_galerkin_pairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
@@ -77,7 +77,7 @@ private theorem continuousOn_fixed_galerkin_pairing
     LinearMap.coe_toContinuousLinearMap'] using
     I.continuous.continuousOn.comp hV fun _ _ => Set.mem_univ _
 
-private theorem continuousOn_galerkin_reconstruct
+theorem continuousOn_galerkin_reconstruct
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)

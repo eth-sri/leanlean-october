@@ -38,15 +38,8 @@ private theorem velocityGradient_mul_at
 
 private theorem velocityGradient_tsupport_subset
     {d : ℕ} (q : TimeVelocity d → ℝ) (i : Fin d) :
-    tsupport (fun z => velocityGradient q z i) ⊆ tsupport q := by
-  unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ q z (0, Pi.single i 1))) ⊆ tsupport q
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+    tsupport (fun z => velocityGradient q z i) ⊆ tsupport q :=
+  velocityGradient_tsupport (i := i) q
 
 private theorem reverseTimeCompactCylinder_mapsTo
     {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
+public import HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
 public import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
+theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
     (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
@@ -196,35 +197,7 @@ theorem ae_eq_jet_of_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
     (w.hasWeakVelocitySecondPartialDeriv i j)
     ((w'.hasWeakVelocitySecondPartialDeriv i j).congr_value_ae (hgrad i).symm)
 
-private theorem velocityGradient_contDiff_infty {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
-
-private theorem velocityGradient_hasCompactSupport {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ)
-    ((0, Pi.single i 1) : TimeVelocity d)
-
-private theorem velocityGradient_tsupport_subset {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d} :
-    tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support
-    (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem velocityGradient_velocityGradient_commute {d : ℕ}
+theorem velocityGradient_velocityGradient_commute {d : ℕ}
     {f : TimeVelocity d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i j : Fin d) (z : TimeVelocity d) :
     velocityGradient (fun y => velocityGradient f y i) z j =
@@ -273,13 +246,13 @@ theorem velocityHessian_ae_eq_swap
   intro φ hφSmooth hφCompact hφSub
   have htestSmooth (k : Fin d) :
       ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) :=
-    velocityGradient_contDiff_infty hφSmooth
+    contDiff_velocityGradient_infty hφSmooth
   have htestCompact (k : Fin d) :
       HasCompactSupport (fun z => velocityGradient φ z k) :=
-    velocityGradient_hasCompactSupport hφCompact
+    velocityGradient_compact hφCompact
   have htestSub (k : Fin d) :
       tsupport (fun z => velocityGradient φ z k) ⊆ U :=
-    velocityGradient_tsupport_subset.trans hφSub
+    (velocityGradient_tsupport _).trans hφSub
   have hijSecond := w.hasWeakVelocitySecondPartialDeriv i j
     φ hφSmooth hφCompact hφSub
   have hiFirst := w.hasWeakVelocityPartialDeriv i

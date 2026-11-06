@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2Transpose
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientTest
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
@@ -21,37 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 open scoped ENNReal Topology
-
-private theorem spatialShift_neg_comp_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k (-h) (spatialShift k h z) = z := by
-  change (spatialShift k (-h) ∘ spatialShift k h) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_comp_neg_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k h (spatialShift k (-h) z) = z := by
-  change (spatialShift k h ∘ spatialShift k (-h)) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_measurableEmbedding
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurableEmbedding (spatialShift k h) := by
-  change MeasurableEmbedding (fun z => z + (0, h • PDE.basisVec k))
-  simpa only [Homeomorph.coe_addRight] using
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
-
-/-- A native coordinate spatial shift preserves product Lebesgue volume. -/
-theorem spatialShift_measurePreserving
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurePreserving (spatialShift k h)
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) := by
-  change MeasurePreserving
-    (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
-  exact measurePreserving_add_right volume _
 
 /-- Time differentiation commutes exactly with spatial translation. -/
 @[simp] theorem timeDerivative_spatialTranslate

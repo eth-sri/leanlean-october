@@ -45,17 +45,6 @@ private theorem norm_timeVelocity_slice_le {d : ℕ} (q : TimeVelocity d → ℝ
     (hqBound : ∀ z, ‖q z‖ ≤ C) (τ : ℝ) : ∀ y : PDE.Vec d, ‖q (τ, y)‖ ≤ C :=
   fun y => hqBound (τ, y)
 
-private theorem inner_scalarLp_eq_setIntegral_of_ae_eq {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (p q : PDE.Vec d → ℝ)
-    (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
-    inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
-  rw [L2.inner_def]
-  apply integral_congr_ae
-  filter_upwards [hf, hg] with y hyf hyg
-  rw [hyf, hyg]
-  simp only [RCLike.inner_apply, conj_trivial]
-  ring
-
 private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set (PDE.Vec d)}
     (p q : PDE.Vec d → ℝ)
     (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))

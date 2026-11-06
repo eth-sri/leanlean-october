@@ -259,38 +259,8 @@ private theorem velocityHessian_cutoff_continuous {d : Nat} {eta : TimeVelocity 
     continuous_const
 
 private theorem velocityHessian_cutoff_hasCompactSupport
-    {d : Nat} {eta : TimeVelocity d → Real} {i j : Fin d}
-    (heta : HasCompactSupport eta) :
-    HasCompactSupport (fun z => velocityHessian eta z i j) := by
-  unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv Real eta) := heta.fderiv Real
-  have hsecond : HasCompactSupport (fderiv Real (fderiv Real eta)) := hfirst.fderiv Real
-  simpa only [Function.comp_def] using hsecond.comp_left
-    (g := fun H : TimeVelocity d →L[Real] TimeVelocity d →L[Real] Real =>
-      H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
-
-private theorem timeDerivative_tsupport_subset {d : Nat} (eta : TimeVelocity d → Real) :
-    tsupport (timeDerivative eta) ⊆ tsupport eta := by
-  unfold timeDerivative
-  change closure (Function.support (fun z => fderiv Real eta z (1, 0))) ⊆ tsupport eta
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset Real)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem velocityGradient_tsupport_subset {d : Nat} {i : Fin d}
-    (eta : TimeVelocity d → Real) :
-    tsupport (fun z => velocityGradient eta z i) ⊆ tsupport eta := by
-  unfold velocityGradient
-  change closure (Function.support (fun z => fderiv Real eta z (0, Pi.single i 1))) ⊆ tsupport eta
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset Real)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+    {d : Nat} {eta : TimeVelocity d → Real} {i j : Fin d} (heta : HasCompactSupport eta) :
+    HasCompactSupport (fun z => velocityHessian eta z i j) := velocityHessian_compact_support heta
 
 private theorem velocityHessian_tsupport_subset {d : Nat} {i j : Fin d}
     (eta : TimeVelocity d → Real) :
@@ -381,11 +351,6 @@ private theorem cutoff_uniform_bound {d : Nat} {a : TimeVelocity d → Real}
     ∃ B : Real, 0 ≤ B ∧ ∀ z, ‖a z‖ ≤ B := by
   obtain ⟨B, hB⟩ := ha.bounded_above_of_compact_support haCompact
   refine ⟨max 0 B, le_max_left _ _, fun z => (hB z).trans (le_max_right _ _)⟩
-
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
 
 private theorem eLpNorm_cutoff_mul_le_of_bound_le
     {d : Nat} {U : Set (TimeVelocity d)} {p : ENNReal}
@@ -487,9 +452,9 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
   have hp : (1 : ENNReal) ≤ parabolicExponent d := parabolicExponent_one_le d
   have hetaU' : tsupport eta ⊆ U := by simpa only [U] using hetaU
   have htimeU : tsupport (timeDerivative eta) ⊆ U :=
-    (timeDerivative_tsupport_subset eta).trans hetaU'
+    (timeDerivative_tsupport eta).trans hetaU'
   have hgradU (i : Fin d) : tsupport (fun z => velocityGradient eta z i) ⊆ U :=
-    (velocityGradient_tsupport_subset eta).trans hetaU'
+    (velocityGradient_tsupport eta).trans hetaU'
   have hhessU (i j : Fin d) : tsupport (fun z => velocityHessian eta z i j) ⊆ U :=
     (velocityHessian_tsupport_subset eta).trans hetaU'
   have hvalueMem : MemLp (fun z => eta z * q z) (parabolicExponent d) volume :=

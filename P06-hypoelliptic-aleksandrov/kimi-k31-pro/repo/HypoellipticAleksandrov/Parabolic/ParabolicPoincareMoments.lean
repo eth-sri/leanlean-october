@@ -21,18 +21,18 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
-private theorem int_id : ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
+theorem int_id : ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
   rw [← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
   norm_num [integral_id]
 
-private theorem int_sq : ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
+theorem int_sq : ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
   rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext; ring,
     ← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
   norm_num [integral_pow]
 
-private theorem cube_measure (d : ℕ) :
+theorem cube_measure (d : ℕ) :
     volume.restrict (velocityCube (0 : PDE.Vec d) 1) =
       Measure.pi (fun _ : Fin d => volume.restrict (Set.Ioo (-1 : ℝ) 1)) := by
   rw [velocityCube_eq_pi]
@@ -51,7 +51,7 @@ private theorem box_measure (d : ℕ) :
     (ν := (volume : Measure (PDE.Vec d))) (Set.Ioo 0 1)
     (velocityCube (0 : PDE.Vec d) 1)
 
-private theorem cube_int_eval {d : ℕ} (i : Fin d) :
+theorem cube_int_eval {d : ℕ} (i : Fin d) :
     ∫ v in velocityCube (0 : PDE.Vec d) 1, v i = 0 := by
   rw [cube_measure]
   let q : Fin d → ℝ → ℝ := fun k x => if k = i then x else 1
@@ -72,7 +72,7 @@ private theorem box_int_eval {d : ℕ} (i : Fin d) :
     (ν := volume.restrict (velocityCube (0 : PDE.Vec d) 1))
     (fun v : PDE.Vec d => v i)).trans (by rw [cube_int_eval i]; simp)
 
-private theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
+theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
     ∫ v in velocityCube (0 : PDE.Vec d) 1, v i * v j =
       if i = j then (2 : ℝ) ^ d / 3 else 0 := by
   classical

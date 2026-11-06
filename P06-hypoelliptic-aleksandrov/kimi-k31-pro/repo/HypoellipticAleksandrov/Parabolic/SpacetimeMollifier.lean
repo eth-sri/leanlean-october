@@ -43,7 +43,7 @@ def spacetimeMollification
     ContinuousLinearMap.lsmul ℝ ℝ,
     (volume : Measure (TimeVelocity d))] f
 
-private theorem bump_volume_integral_pos (d : ℕ) :
+theorem bump_volume_integral_pos (d : ℕ) :
     0 < ∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
       ∂(volume : Measure (TimeVelocity d)) := by
   refine (integral_pos_iff_support_of_nonneg ExistsContDiffBumpBase.u_nonneg ?_).mpr ?_

@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicClosedTail
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBound
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDerivativeNorm
@@ -43,34 +44,6 @@ private theorem parabolicDyadicParent_indexContaining_succ
     apply congrArg (parabolicDyadicIndexContaining d z hz (n + 1))
     exact Fin.ext (by rfl)
   exact hparent.trans hprefix
-
-private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d n)
-    (alpha : Real) :
-    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^ alpha *
-        ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (parabolicDyadicSourceBox index).radius ^ alpha := by
-  change ((2 : Real) ^ m)⁻¹ ^ alpha * ((2 : Real) ^ (-alpha)) ^ (n - m) =
-    ((2 : Real) ^ n)⁻¹ ^ alpha
-  have hbase (k : Nat) : ((2 : Real) ^ k)⁻¹ ^ alpha =
-      (2 : Real) ^ (-(k : Real) * alpha) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_neg (by norm_num : (0 : Real) <= 2),
-      ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  have hfactor : ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (2 : Real) ^ (-alpha * ((n - m : Nat) : Real)) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  rw [hbase m, hbase n, hfactor, ← Real.rpow_add (by norm_num : (0 : Real) < 2)]
-  congr 1
-  rw [Nat.cast_sub hmn]
-  ring
-
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun i _ => ?_
-  refine Finset.sum_nonneg fun j _ => ?_
-  exact ENNReal.toReal_nonneg
 
 private theorem finite_radius_weighted_slope_tail
     {d : Nat} (C alpha D q : Real) (r : Nat -> Real) (b : Nat -> Fin d -> Real)
@@ -192,13 +165,6 @@ private theorem parabolicLpNorm_le_parabolicSmoothJetLpNorm
   unfold parabolicLpNorm parabolicSmoothJetLpNorm
   exact ENNReal.toReal_mono (parabolicSmoothJetELpNorm_ne_top hu)
     (parabolicELpNorm_le_parabolicSmoothJetELpNorm d u)
-
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
 
 private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
     {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :

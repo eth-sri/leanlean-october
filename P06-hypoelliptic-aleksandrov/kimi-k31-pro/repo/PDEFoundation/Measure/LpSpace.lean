@@ -32,4 +32,18 @@ Native vector representatives are recovered through the exact bridges in
 abbrev HilbertVectorLp {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) :=
   MeasureTheory.Lp (HilbertVec d) p (volumeOn U)
 
+open MeasureTheory
+
+/-- The distance between `Lp` representatives is bounded by an `L²` error estimate. -/
+theorem dist_toLp_toLp_le
+    {α : Type*} [MeasurableSpace α] {μ : Measure α} {f g : α → ℝ} {ε : ℝ}
+    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ)
+    (hε : 0 ≤ ε) (hfg : eLpNorm (f - g) (2 : ℝ≥0∞) μ ≤ ENNReal.ofReal ε) :
+    dist (hf.toLp f) (hg.toLp g) ≤ ε := by
+  rw [Lp.dist_def, eLpNorm_congr_ae (hf.coeFn_toLp.sub hg.coeFn_toLp)]
+  calc
+    (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
+      ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
+    _ = ε := ENNReal.toReal_ofReal hε
+
 end PDE

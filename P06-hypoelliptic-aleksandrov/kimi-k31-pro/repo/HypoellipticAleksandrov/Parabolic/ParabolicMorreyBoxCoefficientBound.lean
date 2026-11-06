@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
-private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
+theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
     {d : Nat} {Q : Set (TimeVelocity d)}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
     IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
@@ -28,11 +28,6 @@ private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
   rw [parabolicNormalizedVolumeOn, Measure.smul_apply,
     Measure.restrict_apply_univ]
   exact ENNReal.inv_mul_cancel hQpos.ne' hQtop.ne
-
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
 
 private theorem parabolicMorreyUnitAverage_eq_integral_normalizedVolume
     {d : Nat} (f : TimeVelocity d -> Real) :

@@ -216,20 +216,8 @@ private theorem continuousAt_reverseTimeScalarCoefficient_multiplier
 private theorem norm_hilbertVectorLpCoord_le_local
     {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
     (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i‖ * ‖G‖ := by
-          exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_apply, PiLp.proj_apply, one_mul] using
-        PiLp.norm_apply_le x i
-    _ = ‖G‖ := one_mul _
+    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ :=
+  PDE.norm_hilbertVectorLpCoord_le i G
 
 private noncomputable def reverseTimeSpatialFormPrincipalTerm
     {d : ℕ} {Ω : Set (PDE.Vec d)}

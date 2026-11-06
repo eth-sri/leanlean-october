@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBound
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBound
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyGeometry
@@ -21,20 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
-
-private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
-    {d : Nat} {Q : Set (TimeVelocity d)}
-    (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
-    IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
-  refine ⟨?_⟩
-  rw [parabolicNormalizedVolumeOn, Measure.smul_apply,
-    Measure.restrict_apply_univ]
-  exact ENNReal.inv_mul_cancel hQpos.ne' hQtop.ne
-
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
 
 /-- The parabolic-coordinate diameter of a literal closed unit-height forward
 box is at most twice its radius. -/

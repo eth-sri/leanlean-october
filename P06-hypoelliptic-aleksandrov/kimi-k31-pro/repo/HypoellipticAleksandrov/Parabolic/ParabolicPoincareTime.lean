@@ -1,4 +1,6 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSpatial
+public import HypoellipticAleksandrov.Parabolic.ContactMap
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSlices
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareProduct
@@ -41,13 +43,6 @@ private theorem timeSlice_hasDerivAt
         (hasDerivAt_const (x := z.1) (c := z.2)))
   simpa only [timeDerivative, Function.comp_def] using
     (huDiff z).hasFDerivAt.comp_hasDerivAt z.1 hline
-
-private theorem continuous_timeDerivative
-    {d : Nat} {u : TimeVelocity d -> Real}
-    (hu : ContDiff Real 2 u) : Continuous (timeDerivative u) := by
-  change Continuous (fun z : TimeVelocity d => fderiv Real u z (1, 0))
-  exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
-    (contDiff_id.prodMk contDiff_const)).continuous
 
 private theorem hasDerivAt_integral_velocity_weighted
     {d : Nat} {u : TimeVelocity d -> Real}
@@ -336,7 +331,7 @@ private theorem continuous_parabolicMorreyUnitSpatialAffineProjection
     exact ((continuous_parabolicMorreyUnitVelocityCoeffAt hu i).comp continuous_fst).mul
       (continuous_apply i |>.comp continuous_snd)
 
-private theorem continuous_parabolicMorreyUnitAffineProjection
+theorem continuous_parabolicMorreyUnitAffineProjection
     {d : Nat} (u : TimeVelocity d -> Real) :
     Continuous (parabolicMorreyUnitAffineProjection u) := by
   unfold parabolicMorreyUnitAffineProjection
@@ -359,12 +354,6 @@ private theorem continuous_integrable_parabolicMorreyUnitBox
     rcases hz with ⟨⟨htLeft, htRight⟩, hv⟩
     exact ⟨⟨htLeft.le, htRight.le⟩, fun i => (hv i).le⟩
   exact (hf.continuousOn.integrableOn_compact hKcompact).mono_set hsubset
-
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
-    parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
-  rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
-  simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
-    (ENNReal.ofReal_natCast (d + 1)).symm
 
 private theorem parabolicMorreyUnitBox_volume_toReal_eq_velocityCube (d : Nat) :
     (volume (parabolicMorreyUnitBox d)).toReal =

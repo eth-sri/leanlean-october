@@ -16,40 +16,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
-private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
-    ParabolicDerivativeIndex.velocityTwo i j =
-      ParabolicDerivativeIndex.velocityTwo j i := by
-  apply Subtype.ext
-  funext c
-  cases c with
-  | inl q => rfl
-  | inr k =>
-      by_cases hki : k = i
-      · subst k
-        by_cases hij : i = j
-        · subst j
-          rfl
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hij]
-      · by_cases hkj : k = j
-        · subst k
-          simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki]
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
-
 private theorem representative_velocityTwo_ae_eq_velocityHessian
     {d : ℕ} {U : Set (TimeVelocity d)}
     (hU : IsOpen U) (J : ParabolicW12Function d U 2) (j i : Fin d) :
@@ -61,7 +27,7 @@ private theorem representative_velocityTwo_ae_eq_velocityHessian
   rcases le_total j i with hji | hij
   · rw [ParabolicW12Function.toWeakDerivativeFamily_representative_velocityTwo
       hU J j i hji]
-  · rw [velocityTwo_comm j i,
+  · rw [ParabolicW12Function.velocityTwo_comm j i,
       ParabolicW12Function.toWeakDerivativeFamily_representative_velocityTwo
         hU J i j hij]
     exact J.velocityHessian_ae_eq_swap hU i j

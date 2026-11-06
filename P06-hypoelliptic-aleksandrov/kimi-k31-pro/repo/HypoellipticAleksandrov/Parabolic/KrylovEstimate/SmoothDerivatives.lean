@@ -10,21 +10,6 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Filter
 open scoped Topology
 
-private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
-    (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
-    TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
-      fderiv ℝ w z (timeVelocityBasis c) := by
-  have hs := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-    (0 : TimeVelocityMultiIndex N) c w z (by
-      simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-        TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, zero_add] using
-        (hw.of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2)).contDiffAt)
-  have hzero : TimeVelocityMultiIndex.coordinateIteratedFDeriv
-      (0 : TimeVelocityMultiIndex N) w = w := by
-    funext y
-    exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero w y
-  simpa only [zero_add, hzero] using hs
-
 /-- The scalar time derivative equals the joint directional derivative. -/
 theorem scalarTimeDerivative_eq_timeDerivative
     {N : ℕ} (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :

@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientPointwiseCoercivity
 
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
 public import HypoellipticAleksandrov.LinearAlgebra.LoewnerEntryBound
@@ -28,45 +29,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 open scoped Convex ENNReal MatrixOrder
-
-private theorem fixedCore_velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
-
-private theorem fixedCore_velocityGradient_compact
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
-
-private theorem fixedCore_velocityGradient_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d} :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem fixedCore_timeDerivative_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z ↦ fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
 
 /-- A selected weak spatial derivative on an outer open carrier uniformly
 controls the corresponding quotient on any carrier whose full directed
@@ -108,8 +70,8 @@ private theorem localized_spatialDifferenceQuotient_weakJet_global
     (hw.continuous.memLp_of_hasCompactSupport hwCompact).restrict V
   have hdwTop (i : Fin d) : ParabolicMemLpOn V ∞
       (fun z ↦ velocityGradient w z i) :=
-    ((fixedCore_velocityGradient_contDiff_infty (i := i) hw).continuous.memLp_of_hasCompactSupport
-      (fixedCore_velocityGradient_compact (i := i) hwCompact)).restrict V
+    ((contDiff_velocityGradient_infty (i := i) hw).continuous.memLp_of_hasCompactSupport
+      (velocityGradient_compact (i := i) hwCompact)).restrict V
   have hpsiV : ParabolicMemLpOn V 2 psi := by
     simpa only [psi, mul_comm] using (hwTop.mul' hqh)
   have hDpsiV (i : Fin d) : ParabolicMemLpOn V 2 (Dpsi i) := by
@@ -132,7 +94,7 @@ private theorem localized_spatialDifferenceQuotient_weakJet_global
     refine (tsupport_add _ _).trans (union_subset ?_ ?_)
     · exact (tsupport_mul_subset_left
         (f := fun z ↦ velocityGradient w z i) (g := qh)).trans
-          (fixedCore_velocityGradient_tsupport_subset.trans hwSupport)
+          ((velocityGradient_tsupport _).trans hwSupport)
     · exact (tsupport_mul_subset_left (f := w) (g := H i)).trans hwSupport
   have hpsiGlobal : MemLp psi 2 volume :=
     hpsiV.memLp_of_support_subset hV.measurableSet
@@ -384,15 +346,6 @@ private theorem abs_integral_source_mul_backwardQuotient_le_localized_weighted
   exact (abs_integral_source_mul_backwardQuotient_le k h hh R psi _
     hR hpsi hD hweak).trans
       (mul_le_mul_of_nonneg_left hDnorm (norm_nonneg _))
-
-/-- A coarse scalar Young inequality with the coefficient used for absorbing
-one error term into elliptic coercivity. -/
-private theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
-    a * b ≤ (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 := by
-  rw [show (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 =
-      ((lam ^ 2 / 8) * b ^ 2 + 2 * a ^ 2) / lam by field_simp]
-  rw [le_div_iff₀ hlam]
-  nlinarith [sq_nonneg (lam * b - 4 * a)]
 
 /-- The weighted source pairing is split and absorbed into the weighted
 gradient energy and quotient norm, leaving only the undifferenced source
@@ -1144,7 +1097,7 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
       exact hzV (hwSupportV (subset_tsupport w hn))
     · intro i
       by_contra hn
-      exact hzV ((fixedCore_velocityGradient_tsupport_subset.trans hwSupportV)
+      exact hzV (((velocityGradient_tsupport _).trans hwSupportV)
         (subset_tsupport _ hn))
   have hEllShift : ∀ z ∈ V,
       lam • (1 : PDE.Mat d) ≤ A (spatialShift k h z) ∧
@@ -1171,7 +1124,7 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
     hSmeas hVmeas k h hh.ne' R (fun z ↦ w z * Q z) Q (H k) w lam Keta
     hlam hKeta hR hpsi hQ (hH k)
     hwSmooth.continuous.aestronglyMeasurable
-    (fixedCore_velocityGradient_contDiff_infty hwSmooth).continuous.aestronglyMeasurable
+    (contDiff_velocityGradient_infty hwSmooth).continuous.aestronglyMeasurable
     (fun z hz ↦ (hwBounds z).1) (fun z hz ↦ (hwBounds z).2)
     (fun z hz ↦ hwGradBound k z) (hDpsiSupport k) (hpsiWeak k)
     (integral_nonneg_of_ae (ae_of_all _ fun z ↦
@@ -1192,7 +1145,7 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
       · by_cases hzS : z ∈ S
         · have hzero : timeDerivative w z = 0 := by
             by_contra hn
-            exact hzV ((fixedCore_timeDerivative_tsupport_subset.trans hwSupportV)
+            exact hzV (((timeDerivative_tsupport _).trans hwSupportV)
               (subset_tsupport _ hn))
           simp [hzV, hzS, hzero]
         · simp [hzV, hzS]

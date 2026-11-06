@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem parabolicMorreyDerivativeLpNorm_le_parabolicSmoothJetLpNorm
+theorem parabolicMorreyDerivativeLpNorm_le_parabolicSmoothJetLpNorm
     {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
     parabolicMorreyDerivativeLpNorm d u <= parabolicSmoothJetLpNorm d u := by
   let E : ENNReal := parabolicELpNorm d (timeDerivative u) +

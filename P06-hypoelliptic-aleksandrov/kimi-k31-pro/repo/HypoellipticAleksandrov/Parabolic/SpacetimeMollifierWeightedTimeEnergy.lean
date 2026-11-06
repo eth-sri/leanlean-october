@@ -97,16 +97,6 @@ private theorem integrable_timeDerivative_spacetimeMollifier
       (spacetimeMollifier_hasCompactSupport hε) (1, 0)
   exact hsmooth.continuous.integrable_of_hasCompactSupport hsupp
 
-private theorem bump_volume_integral_pos (d : ℕ) :
-    0 < ∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-      ∂(volume : Measure (TimeVelocity d)) := by
-  refine (integral_pos_iff_support_of_nonneg ExistsContDiffBumpBase.u_nonneg ?_).mpr ?_
-  · exact (ExistsContDiffBumpBase.u_smooth (TimeVelocity d)).continuous
-      |>.integrable_of_hasCompactSupport
-        (ExistsContDiffBumpBase.u_compact_support (TimeVelocity d))
-  · rw [ExistsContDiffBumpBase.u_support]
-    exact Metric.measure_ball_pos (volume : Measure (TimeVelocity d)) 0 zero_lt_one
-
 private theorem integral_norm_mul_abs_timeDerivative_spacetimeMollifier
     {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
     (∫ z : TimeVelocity d,

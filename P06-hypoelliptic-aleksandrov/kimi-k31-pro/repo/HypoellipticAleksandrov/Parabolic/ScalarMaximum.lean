@@ -29,30 +29,30 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Set Matrix
 open scoped MatrixOrder Topology
 
-private def insetCylinder {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
+def insetCylinder {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
     Set (TimeVelocity n) :=
   Set.Icc α r₁ ×ˢ closure Ω
 
-private def insetActive {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
+def insetActive {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
     Set (TimeVelocity n) :=
   Set.Ico α r₁ ×ˢ Ω
 
-private def terminalTilt {n : ℕ} (u : TimeVelocity n → ℝ) (ε r₁ : ℝ) :
+def terminalTilt {n : ℕ} (u : TimeVelocity n → ℝ) (ε r₁ : ℝ) :
     TimeVelocity n → ℝ :=
   fun z => u z - ε * (r₁ - z.1)
 
-private theorem isCompact_insetCylinder {n : ℕ} {α r₁ : ℝ}
+theorem isCompact_insetCylinder {n : ℕ} {α r₁ : ℝ}
     {Ω : Set (PDE.Vec n)} (hΩbounded : Bornology.IsBounded Ω) :
     IsCompact (insetCylinder α r₁ Ω) :=
   isCompact_Icc.prod hΩbounded.isCompact_closure
 
-private theorem insetActive_subset_original_open {n : ℕ} {r₀ α r₁ : ℝ}
+theorem insetActive_subset_original_open {n : ℕ} {r₀ α r₁ : ℝ}
     {Ω : Set (PDE.Vec n)} (hr₀α : r₀ < α) :
     insetActive α r₁ Ω ⊆ scalarParabolicOpenCylinder r₀ r₁ Ω := by
   rintro z ⟨⟨hzα, hzr₁⟩, hzΩ⟩
   exact ⟨⟨lt_of_lt_of_le hr₀α hzα, hzr₁⟩, hzΩ⟩
 
-private theorem insetCylinder_diff_insetActive_eq {n : ℕ} {α r₁ : ℝ}
+theorem insetCylinder_diff_insetActive_eq {n : ℕ} {α r₁ : ℝ}
     {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω) (hαr₁ : α < r₁) :
     insetCylinder α r₁ Ω \ insetActive α r₁ Ω =
       scalarParabolicTerminalFace r₁ Ω ∪
@@ -79,14 +79,14 @@ private theorem insetCylinder_diff_insetActive_eq {n : ℕ} {α r₁ : ℝ}
       intro hactive
       exact hynot hactive.2
 
-private theorem hasDerivAt_affine_line
+theorem hasDerivAt_affine_line
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (x q : E) (s : ℝ) :
     HasDerivAt (fun r : ℝ => x + r • q) q s := by
   simpa only [one_smul] using
     ((hasDerivAt_id' (𝕜 := ℝ) s).smul_const q).const_add x
 
-private theorem deriv_deriv_nonpos_of_isLocalMax
+theorem deriv_deriv_nonpos_of_isLocalMax
     {f : ℝ → ℝ} {a c : ℝ}
     (hmax : IsLocalMax f a)
     (hsecond : HasDerivAt (deriv f) c a)
@@ -112,7 +112,7 @@ private theorem deriv_deriv_nonpos_of_isLocalMax
       _ = 0 := deriv_const _ _
   exact hcpos.ne' this
 
-private theorem hasDerivAt_fderiv_restrict_affine_line
+theorem hasDerivAt_fderiv_restrict_affine_line
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : E → ℝ} {x q : E}
     {H : E →L[ℝ] E →L[ℝ] ℝ}
@@ -129,7 +129,7 @@ private theorem hasDerivAt_fderiv_restrict_affine_line
   simpa only [zero_smul, add_zero, map_zero] using
     hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
 
-private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
+theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : E → ℝ} {x q : E}
     (hg : ContDiffAt ℝ 2 g x) :
@@ -153,7 +153,7 @@ private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
   exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
     r (hasDerivAt_affine_line x q r) |>.deriv
 
-private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
+theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : E → ℝ} {x q : E}
     (hg : ContDiffAt ℝ 2 g x)
@@ -168,7 +168,7 @@ private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
   exact deriv_deriv_nonpos_of_isLocalMax hmax
     (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
+theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (i j : Fin n) :
@@ -190,7 +190,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
   simpa [ContinuousLinearMap.flip_apply] using hjapply
 
-private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
+theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (q : PDE.Vec n) :
@@ -223,7 +223,7 @@ private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
       simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
     _ = H q q := by rw [PDE.sum_smul_basisVec]
 
-private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
+theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2) :
     (scalarSpatialHessian u z).IsSymm := by
@@ -234,7 +234,7 @@ private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
   exact
     (hu.isSymmSndFDerivAt (by norm_num)).eq (PDE.basisVec j) (PDE.basisVec i)
 
-private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
+theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
     {n : ℕ} {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (hmax : IsLocalMax (fun y : PDE.Vec n => u (z.1, y)) z.2) :
@@ -261,7 +261,7 @@ private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
     exact neg_nonneg.mpr
       (fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine hu hlineMax)
 
-private theorem scalarSpatialGradient_eq_zero_of_spatial_localMax
+theorem scalarSpatialGradient_eq_zero_of_spatial_localMax
     {n : ℕ} {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (hmax : IsLocalMax (fun y : PDE.Vec n => u (z.1, y)) z.2) :
@@ -272,7 +272,7 @@ private theorem scalarSpatialGradient_eq_zero_of_spatial_localMax
     ((hu.differentiableAt (by norm_num)).hasFDerivAt)
   simpa using congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hzero
 
-private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
+theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
     (hA : A.PosSemidef) (hH : H.PosSemidef) :
     0 ≤ (A * H).trace := by
   classical
@@ -290,7 +290,7 @@ private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
       dsimp [S]
       exact CFC.sqrt_mul_sqrt_self H hH.nonneg]
 
-private theorem matrixContraction_nonpos_of_psd_neg {n : ℕ} {A H : PDE.Mat n}
+theorem matrixContraction_nonpos_of_psd_neg {n : ℕ} {A H : PDE.Mat n}
     (hA : A.PosSemidef) (hH : (-H).PosSemidef) (hHsymm : H.IsSymm) :
     matrixContraction A H ≤ 0 := by
   have htrace : 0 ≤ (A * (-H)).trace := trace_mul_nonneg_of_posSemidef hA hH
@@ -299,14 +299,14 @@ private theorem matrixContraction_nonpos_of_psd_neg {n : ℕ} {A H : PDE.Mat n}
     (A * H).trace = -((A * (-H)).trace) := by simp
     _ ≤ 0 := neg_nonpos.mpr htrace
 
-private theorem terminalTilt_spatialGradient_eq {n : ℕ} (u : TimeVelocity n → ℝ)
+theorem terminalTilt_spatialGradient_eq {n : ℕ} (u : TimeVelocity n → ℝ)
     (ε r₁ : ℝ) (z : TimeVelocity n) :
     scalarSpatialGradient (terminalTilt u ε r₁) z = scalarSpatialGradient u z := by
   ext i
   simp [terminalTilt, scalarSpatialGradient, PDE.classicalGradient,
     fderiv_sub_const]
 
-private theorem terminalTilt_spatialHessian_eq {n : ℕ} (u : TimeVelocity n → ℝ)
+theorem terminalTilt_spatialHessian_eq {n : ℕ} (u : TimeVelocity n → ℝ)
     (ε r₁ : ℝ) (z : TimeVelocity n) :
     scalarSpatialHessian (terminalTilt u ε r₁) z = scalarSpatialHessian u z := by
   have hgradient :
@@ -325,7 +325,7 @@ private theorem terminalTilt_spatialHessian_eq {n : ℕ} (u : TimeVelocity n →
   simp only [hgradient]
   rfl
 
-private theorem terminalTilt_timeDerivative_eq {n : ℕ} {u : TimeVelocity n → ℝ}
+theorem terminalTilt_timeDerivative_eq {n : ℕ} {u : TimeVelocity n → ℝ}
     {D : Set (TimeVelocity n)} {z : TimeVelocity n} (hu : IsScalarC12On u D)
     (hz : z ∈ D) (ε r₁ : ℝ) :
     scalarTimeDerivative (terminalTilt u ε r₁) z = scalarTimeDerivative u z + ε := by
@@ -340,13 +340,13 @@ private theorem terminalTilt_timeDerivative_eq {n : ℕ} {u : TimeVelocity n →
       terminalTilt] <;> ring
   exact hderiv.deriv
 
-private theorem terminalTilt_continuousOn {n : ℕ} {u : TimeVelocity n → ℝ}
+theorem terminalTilt_continuousOn {n : ℕ} {u : TimeVelocity n → ℝ}
     {K : Set (TimeVelocity n)} (hu : ContinuousOn u K) (ε r₁ : ℝ) :
     ContinuousOn (terminalTilt u ε r₁) K := by
   apply hu.sub
   fun_prop
 
-private theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
+theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
     {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω) {w : TimeVelocity n → ℝ}
     {z : TimeVelocity n} (hz : z ∈ insetActive α r₁ Ω)
     (hmax : IsLocalMaxOn w (insetCylinder α r₁ Ω) z) :
@@ -358,13 +358,13 @@ private theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
       (continuous_const.prodMk continuous_id).continuousOn hz.2
   exact hslice.isLocalMax (hΩopen.mem_nhds hz.2)
 
-private theorem terminalTilt_spatialContDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
+theorem terminalTilt_spatialContDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
     {D : Set (TimeVelocity n)} {z : TimeVelocity n} (hu : IsScalarC12On u D)
     (hz : z ∈ D) (ε r₁ : ℝ) :
     ContDiffAt ℝ 2 (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 := by
   simpa [terminalTilt] using (hu.spatialSlice_contDiffAt hz).sub contDiffAt_const
 
-private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
+theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
     {n : ℕ} {α r₁ : ℝ} {Ω : Set (PDE.Vec n)} {w : TimeVelocity n → ℝ}
     {z : TimeVelocity n} (hz : z ∈ insetActive α r₁ Ω)
     (hmax : IsLocalMaxOn w (insetCylinder α r₁ Ω) z)
@@ -387,7 +387,7 @@ private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
     simpa [smul_eq_mul] using hnonpos
   exact nonpos_of_mul_nonpos_right hproduct hpos
 
-private theorem scalarOperator_nonpos_at_inset_tilt_max
+theorem scalarOperator_nonpos_at_inset_tilt_max
     {n : ℕ} {r₀ α r₁ : ℝ} {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω)
     (hr₀α : r₀ < α) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (u : TimeVelocity n → ℝ)
@@ -433,7 +433,7 @@ private theorem scalarOperator_nonpos_at_inset_tilt_max
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero]
   linarith
 
-private theorem le_on_insetCylinder_of_terminal_lateral_le
+theorem le_on_insetCylinder_of_terminal_lateral_le
     {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ α r₁ : ℝ}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀α : r₀ < α) (hαr₁ : α < r₁) (a : CoefficientField n)
@@ -491,7 +491,7 @@ calculus lemmas so the initial-face continuity argument never enters the
 active-set branch.
 -/
 
-private theorem le_at_strictly_later_time
+theorem le_at_strictly_later_time
     {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r r₁ : ℝ}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀r : r₀ < r) (hrr₁ : r < r₁) (a : CoefficientField n)

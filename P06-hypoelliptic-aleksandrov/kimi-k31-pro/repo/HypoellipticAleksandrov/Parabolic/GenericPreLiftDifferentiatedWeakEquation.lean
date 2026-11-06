@@ -18,19 +18,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal Topology
 
-private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) gamma.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
-
-private theorem setIntegral_mul_eq_of_tsupport_subset
+theorem setIntegral_mul_eq_of_tsupport_subset
     {d : ℕ} {V U : Set (TimeVelocity d)} (hU : MeasurableSet U)
     (hVU : V ⊆ U) (f g : TimeVelocity d → ℝ) (hgV : tsupport g ⊆ V) :
     (∫ z in U, f z * g z ∂(volume : Measure (TimeVelocity d))) =
@@ -42,54 +30,7 @@ private theorem setIntegral_mul_eq_of_tsupport_subset
     exact hz.2 (hgV (subset_closure hn))
   simp [hgz]
 
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  have heq : timeDerivative f =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (timeCoord d) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (timeCoord d) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, Pi.zero_apply] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_time] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    exact h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
-
-private theorem velocityGradient_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (i : Fin d) :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  have heq : (fun z ↦ velocityGradient f z i) =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (velocityCoord i) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (velocityCoord i) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, Pi.zero_apply] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_velocity] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    simpa [velocityGradient, PDE.basisVec] using h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
-
-private theorem bounded_mul_memLp
+theorem bounded_mul_memLp
     {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
     (q f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (hq : ContinuousOn q V) (hqBound : ∀ z ∈ V, |q z| ≤ C)
@@ -107,19 +48,6 @@ private theorem bounded_mul_memLp
   simpa only [Real.norm_eq_abs, abs_mul] using
     mul_le_mul hz le_rfl (abs_nonneg (f z)) hC
 
-private theorem coordinateIteratedFDeriv_contDiff
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
-  rw [contDiff_infty]
-  intro m
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (contDiff_infty.mp hf (m + gamma.order)).iteratedFDeriv_right
-    (m := m) (i := gamma.coordinateList.length) (by simp)
-  exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
-
 private theorem coordinateIteratedFDeriv_continuousOn
     {d N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ N q V)
@@ -132,17 +60,6 @@ private theorem coordinateIteratedFDeriv_continuousOn
     (m := 0) (i := alpha.coordinateList.length) (by simpa using halpha)
   exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
     (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
-
-private theorem splitLeft_order_le
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
-    gamma.left.order ≤ M := by
-  have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
-    simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-      TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-      TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-    omega
-  exact gamma.order_left_le.trans (horder_weight.trans beta.2)
 
 private theorem properAtom_memLp
     {d M N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
@@ -1127,7 +1044,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
       simpa only [DV, ParabolicWeakDerivativeFamily.restrict_representative] using hz)
     beta φ hφSmooth hφCompact hφV
   have htimeSupport : tsupport (timeDerivative φ) ⊆ V :=
-    (timeDerivative_tsupport_subset φ hφSmooth).trans hφV
+    (timeDerivative_tsupport φ).trans hφV
   have htime :
       (∫ z in U, D.representative
           (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
@@ -1148,7 +1065,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
             (by change beta.1.parabolicWeight + 1 ≤ M + 1; omega)) z) *
           velocityGradient φ z i ∂(volume : Measure (TimeVelocity d)) :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _
-      ((velocityGradient_tsupport_subset φ hφSmooth i).trans hφV)
+      ((velocityGradient_tsupport (i := i) φ).trans hφV)
   have hphiMul (f : TimeVelocity d → ℝ) :
       (∫ z in U, f z * φ z ∂(volume : Measure (TimeVelocity d))) =
         ∫ z in V, f z * φ z ∂(volume : Measure (TimeVelocity d)) :=

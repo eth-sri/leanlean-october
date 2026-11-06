@@ -18,36 +18,6 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProductSpace
 
-private theorem map_galerkinReconstruct_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ) {Z : Type} [NormedAddCommGroup Z] [NormedSpace ℝ Z]
-    (Q : H10HilbertGraph hΩ →L[ℝ] Z)
-    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    Q (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
-      ∑ i, x i • Q (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
-  calc
-    Q (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
-        Q (↑(∑ i, x i • galerkinSpaceBasis hΩ N i) : H10HilbertGraph hΩ) := by
-      exact congrArg Q (congrArg (fun w : galerkinSpace hΩ N =>
-        (w : H10HilbertGraph hΩ)) (galerkinReconstruct_apply hΩ N x))
-    _ = Q (∑ i, x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) := by
-      have hcoe : (↑(∑ i, x i • galerkinSpaceBasis hΩ N i) : H10HilbertGraph hΩ) =
-          ∑ i, x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
-        simpa only [Submodule.coe_smul] using
-          (Submodule.coe_sum (p := galerkinSpace hΩ N)
-            (fun i => x i • galerkinSpaceBasis hΩ N i) Finset.univ)
-      exact congrArg Q hcoe
-    _ = ∑ i, x i • Q (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
-      calc
-        Q (∑ i, x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) =
-            ∑ i, Q (x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) :=
-          map_sum Q (fun i => x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ))
-            Finset.univ
-        _ = _ := by
-          apply Finset.sum_congr rfl
-          intro i _
-          exact Q.map_smul (x i) (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)
-
 /-- Exact finite Galerkin basis rows hold against every finite Galerkin test. -/
 theorem reverseTimeGalerkin_basisRows_forall
     {d : ℕ} {Ω : Set (PDE.Vec d)}

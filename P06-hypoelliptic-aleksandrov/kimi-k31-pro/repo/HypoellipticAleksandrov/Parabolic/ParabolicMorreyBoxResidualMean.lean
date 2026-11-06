@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNestedProjectionClosed
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincarePhysical
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNormTransport
@@ -21,17 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem continuous_parabolicMorreyBoxAffineProjection
-    {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real) (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyBoxAffineProjection t v r u) := by
-  unfold parabolicMorreyBoxAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul ((continuous_apply i).comp continuous_snd |>.sub
-    continuous_const)
-
-private theorem parabolicMorreyBoxAffineResidual_memLp
+theorem parabolicMorreyBoxAffineResidual_memLp
     {d : Nat} (t : Real) (v : PDE.Vec d) {r : Real} (hr : 0 < r)
     (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
     MemLp (fun z => u z - parabolicMorreyBoxAffineProjection t v r u z)
@@ -50,7 +41,7 @@ private theorem parabolicMorreyBoxAffineResidual_memLp
       (ENNReal.toReal_pos_iff.mp (volume_parabolicMorreyUnitBox_toReal_pos d)).1 hunitRaw
   exact (memLp_parabolicNormalizedVolumeOn_parabolicBox_iff t v hr f).mpr hunitMean
 
-private theorem parabolicMorreyBox_normalization_factor
+theorem parabolicMorreyBox_normalization_factor
     {d : Nat} {r : Real} (hr : 0 < r) :
     ((2 : Real) ^ d * r ^ (d + 2))⁻¹ ^ (1 / ((d : Real) + 1)) * r ^ 2 =
       (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *

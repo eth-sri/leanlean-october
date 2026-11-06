@@ -20,24 +20,8 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
-private theorem continuous_timeDerivative_local
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ContDiff Real 2 u) :
-    Continuous (timeDerivative u) := by
-  change Continuous (fun z : TimeVelocity d => fderiv Real u z (1, 0))
-  exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
-    (contDiff_id.prodMk contDiff_const)).continuous
-
-private theorem continuous_velocityHessian_local
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ContDiff Real 2 u) :
-    Continuous (velocityHessian u) := by
-  apply continuous_matrix
-  intro i j
-  change Continuous (fun z : TimeVelocity d =>
-    fderiv Real (fderiv Real u) z (0, Pi.single i 1) (0, Pi.single j 1))
-  have hdu : ContDiff Real 1 (fderiv Real u) :=
-    hu.fderiv_right (m := 1) (by norm_num)
-  exact (((hdu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
-    (contDiff_id.prodMk contDiff_const)).clm_apply contDiff_const).continuous
+alias continuous_timeDerivative_local := continuous_timeDerivative
+alias continuous_velocityHessian_local := continuous_velocityHessian
 
 private theorem stronglyMeasurable_parabolicMorreyUnitSpatialAffineProjection
     {d : Nat} {u : TimeVelocity d -> Real} (hu : Continuous u) :
@@ -69,14 +53,8 @@ private theorem stronglyMeasurable_parabolicMorreyUnitSpatialAffineProjection
   exact ((hCoeff i).comp_measurable measurable_fst).mul
     (((continuous_apply i).comp continuous_snd).stronglyMeasurable)
 
-private theorem continuous_parabolicMorreyUnitAffineProjection_local
-    {d : Nat} (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyUnitAffineProjection u) := by
-  unfold parabolicMorreyUnitAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
+alias continuous_parabolicMorreyUnitAffineProjection_local :=
+  continuous_parabolicMorreyUnitAffineProjection
 
 /-- Smooth normalized second-order parabolic Poincare inequality modulo the
 canonical time-independent velocity-affine moment projection. -/

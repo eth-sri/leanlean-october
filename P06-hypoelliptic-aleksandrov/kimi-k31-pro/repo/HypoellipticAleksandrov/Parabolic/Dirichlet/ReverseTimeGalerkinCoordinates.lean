@@ -41,15 +41,6 @@ private theorem bilinear_mulVec_eq_coe_submodule_sum
     _ = L (∑ j, x j • (e j : E)) (e i : E) := by rw [← map_sum]
     _ = _ := congrArg (fun u => L u (e i : E)) hcoe.symm
 
-private theorem coe_galerkinReconstruct_eq_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
-      (↑(∑ j, x j • galerkinSpaceBasis hΩ N j) : H10HilbertGraph hΩ) := by
-  exact congrArg (fun u : galerkinSpace hΩ N => (u : H10HilbertGraph hΩ))
-    (galerkinReconstruct_apply hΩ N x)
-
 private theorem stiffness_mulVec_eq_operator_sum
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)

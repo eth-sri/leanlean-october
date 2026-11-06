@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.NestedCutoffLocality
 
 public import HypoellipticAleksandrov.Measure.HilbertVectorLpAssembly
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10PlateauLocality
@@ -19,36 +20,6 @@ open Filter MeasureTheory
 open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
-
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
-    {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
-    PDE.classicalGradient η.toFun y i = 0 := by
-  rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
-  exact ContinuousLinearMap.zero_apply _
-
-private theorem cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
-    {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
-    {Kη Kχ : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
-    (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)
-    (hηχ : tsupport η.toFun ⊆ innerχ)
-    (hΩ : MeasurableSet Ω) (i k : Fin d) (h : ℝ)
-    (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    cutoffL2Multiplier (Ω := Ω) χ
-        (cutoffGradientSpatialDifferenceQuotientL2 hΩ η i k h f) =
-      cutoffGradientSpatialDifferenceQuotientL2 hΩ η i k h f := by
-  apply MeasureTheory.Lp.ext
-  filter_upwards [cutoffL2Multiplier_apply_ae χ
-    (cutoffGradientSpatialDifferenceQuotientL2 hΩ η i k h f),
-    cutoffGradientSpatialDifferenceQuotientL2_apply_ae hΩ η i k h f] with y hχ hη
-  rw [hχ, hη]
-  by_cases hy : y ∈ tsupport η.toFun
-  · rw [χ.eq_one_on_inner y (hηχ hy), one_mul]
-  · rw [cutoffGradient_eq_zero_of_not_mem_tsupport η i hy]
-    ring
 
 /-- Assemble the cutoff-gradient quotient coordinates as a
 Hilbert-vector-valued restricted-`L²` field on `H¹₀`. -/

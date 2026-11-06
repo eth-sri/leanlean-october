@@ -15,14 +15,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem sq_tsupport_subset
+theorem sq_tsupport_subset
     {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) :
     tsupport η.sq.toFun ⊆ tsupport η.toFun := by
   simpa only [PDE.QuantitativeSmoothCutoff.sq_toFun, pow_two] using
     (tsupport_mul_subset_left (f := η.toFun) (g := η.toFun))
 
-private theorem energyWeakTest_partialDeriv_eq_backwardSquare
+theorem energyWeakTest_partialDeriv_eq_backwardSquare
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
     (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)

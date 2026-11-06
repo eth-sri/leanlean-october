@@ -180,14 +180,6 @@ theorem parabolicELpNormOn_pullback_raw {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d
     Measure.restrict_smul, eLpNorm_smul_measure_of_ne_zero hc]
   simp only [a, smul_eq_mul, mul_assoc]
 
-private theorem parabolicExponent_toReal (d : ℕ) :
-    (parabolicExponent d).toReal = (d : ℝ) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ℝ≥0∞) + 1 = ((d + 1 : ℕ) : ℝ≥0∞) := by
-    norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
 private theorem parabolic_norm_scaling_factor (d : ℕ) {r : ℝ} (hr : 0 < r) :
     r ^ 2 * ((r ^ (d + 2))⁻¹) ^ (1 / ((d : ℝ) + 1)) =
       r ^ ((d : ℝ) / ((d : ℝ) + 1)) := by

@@ -40,7 +40,7 @@ def positivePartHalfEnergy
     (v : H10HilbertGraph hΩ) : ℝ :=
   (1 / 2 : ℝ) * ‖valueCLM hΩ (h10PositivePart hΩ v)‖ ^ 2
 
-private theorem scalarLp_norm_sq_eq_integral_sq
+theorem scalarLp_norm_sq_eq_integral_sq
     {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖f‖ ^ 2 = ∫ a, (f a) ^ 2 ∂(PDE.volumeOn Ω) := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
@@ -48,7 +48,7 @@ private theorem scalarLp_norm_sq_eq_integral_sq
   funext a
   simp only [RCLike.inner_apply, conj_trivial, pow_two]
 
-private theorem scalarLp_integrable_sq
+theorem scalarLp_integrable_sq
     {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     Integrable (fun a => (f a) ^ 2) (PDE.volumeOn Ω) := by
   exact (MeasureTheory.Lp.memLp f).integrable_sq
@@ -121,7 +121,7 @@ private theorem positivePart_support_upper
   rw [← inner_sub_right]
   exact scalarLp_positivePart_support_upper (valueCLM hΩ x) (valueCLM hΩ z)
 
-private theorem tendsto_clm_apply
+theorem tendsto_clm_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
     {a : V →L[ℝ] ℝ} {b : V}
@@ -130,7 +130,7 @@ private theorem tendsto_clm_apply
   simpa only [Function.comp_def] using
     (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
 
-private theorem slope_energy_error_le
+theorem slope_energy_error_le
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (E : ℝ → ℝ) (U : ℝ → V →L[ℝ] ℝ) (p : ℝ → V) {s t : ℝ}
     (hst : s ≠ t)

@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTranslation
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDualPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklov
@@ -31,25 +32,6 @@ private theorem memLp_on_Icc_of_reverseTimeLp
   simpa only [reverseTimeVolume, reverseTimeOpenInterval,
     Measure.restrict_restrict_of_subset hK] using (Lp.memLp f).restrict (Icc a b)
 
-private theorem memLp_on_Icc_of_continuous
-    {E : Type*} [NormedAddCommGroup E]
-    (f : ℝ → E) (hf : Continuous f) (a b : ℝ) :
-    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
-  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
-  exact (hf.norm.pow 2).integrableOn_Icc
-
-private theorem sqNorm_integral_eq_norm_sq_toLp
-    {E : Type*} [NormedAddCommGroup E]
-    {μ : Measure ℝ} (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
-    ∫ t, ‖F t‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by
-  rw [Lp.norm_def, eLpNorm_congr_ae hF.coeFn_toLp,
-    hF.eLpNorm_eq_integral_rpow_norm]
-  · simp
-    rw [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun _ => sq_nonneg _) _)]
-    exact (Real.rpow_inv_natCast_pow
-      (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
-  · norm_num
-  · simp
 
 private theorem sqrt_sqNorm_integral_triangle
     {E : Type*} [NormedAddCommGroup E]
@@ -71,22 +53,6 @@ private theorem sqrt_sqNorm_integral_triangle
     sqNorm_integral_eq_norm_sq_toLp y hy, hEq]
   simpa only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] using
     norm_add_le (hxy.toLp (x - y)) (hy.toLp y)
-
-private theorem integral_mul_norm_le_sqrt_mul_sqrt
-    {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
-    {μ : Measure ℝ} (f : ℝ → E) (g : ℝ → F)
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ) :
-    ∫ t, ‖f t‖ * ‖g t‖ ∂μ ≤
-      √(∫ t, ‖f t‖ ^ 2 ∂μ) * √(∫ t, ‖g t‖ ^ 2 ∂μ) := by
-  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    Real.HolderConjugate.two_two
-    (μ := μ) (f := fun t => ‖f t‖) (g := fun t => ‖g t‖)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (by simpa only [ENNReal.ofReal_ofNat] using hf.norm)
-    (by simpa only [ENNReal.ofReal_ofNat] using hg.norm)
-  rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-  simpa only [Real.rpow_two] using hholder
 
 private theorem tendsto_integral_abs_bilin_of_sqNorm
     {E F : Type*}

@@ -30,7 +30,7 @@ private theorem value_eq_zero_of_not_mem_tsupport
   by_contra hzero
   exact hx (subset_closure (Function.mem_support.mpr hzero))
 
-private theorem weakFDerivApply_univ_of_tsupport_subset
+theorem weakFDerivApply_univ_of_tsupport_subset
     {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
     {u du : TimeVelocity d → ℝ} (q : TimeVelocity d)
     (h : ∀ φ : TimeVelocity d → ℝ,

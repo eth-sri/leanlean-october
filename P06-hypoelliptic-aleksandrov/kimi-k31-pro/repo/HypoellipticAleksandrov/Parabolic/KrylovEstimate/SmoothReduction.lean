@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorReduction
 
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothApproximation
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.CoefficientExtension
@@ -11,14 +12,6 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter MeasureTheory
 open scoped Topology MatrixOrder Matrix.Norms.Elementwise
-
-private theorem small_tolerance {η c k : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (hk : 0 ≤ k) :
-    ∃ δ : ℝ, 0 < δ ∧ δ ≤ η ∧ δ * c * k ≤ η := by
-  let δ := η / (c * k + 1)
-  have hd : 0 < c * k + 1 := by positivity
-  have he : δ * (c * k + 1) = η := div_mul_cancel₀ η (ne_of_gt hd)
-  have hp : 0 < δ := div_pos hη hd
-  refine ⟨δ, hp, ?_, ?_⟩ <;> nlinarith [mul_nonneg hc hk]
 
 /-- Interior smoothing controls the residual norm and corrects the boundary. -/
 theorem exists_smooth_subsolution_close
@@ -94,7 +87,8 @@ theorem exists_smooth_subsolution_close
     (le_abs_self _).trans ((hM₀ z hz).trans (le_max_left _ _))
   let k := parabolicLpNormOn N (fun _ : TimeVelocity N => (1 : ℝ)) S
   have hk : 0 ≤ k := ENNReal.toReal_nonneg
-  obtain ⟨δ, hδ, hδη, hδnorm⟩ := small_tolerance hη (add_nonneg zero_le_one hM) hk
+  obtain ⟨δ, hδ, hδη, hδnorm⟩ :=
+    KineticAleksandrov.LsuFree.small_tolerance hη (add_nonneg zero_le_one hM) hk
   obtain ⟨w₀, hw₀, hwjet⟩ := exists_smooth_scalar_jet_close hV hL hLV q hq hδ
   let w : TimeVelocity N → ℝ := fun z => w₀ z + (-2 * η)
   let F := residual ae w₀

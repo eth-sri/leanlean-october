@@ -15,77 +15,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal MatrixOrder
 
-private theorem setIntegral_mul_eq_of_tsupport_subset
-    {d : ℕ} {V U : Set (TimeVelocity d)} (hU : MeasurableSet U)
-    (hVU : V ⊆ U) (f g : TimeVelocity d → ℝ) (hgV : tsupport g ⊆ V) :
-    (∫ z in U, f z * g z ∂(volume : Measure (TimeVelocity d))) =
-      ∫ z in V, f z * g z ∂(volume : Measure (TimeVelocity d)) := by
-  apply setIntegral_eq_of_subset_of_forall_diff_eq_zero hU hVU
-  intro z hz
-  have hgz : g z = 0 := by
-    by_contra hn
-    exact hz.2 (hgV (subset_closure hn))
-  simp [hgz]
-
-private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) gamma.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
-
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  have heq : timeDerivative f =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (timeCoord d) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (timeCoord d) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_time] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    exact h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
-
-private theorem velocityGradient_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (i : Fin d) :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  have heq : (fun z ↦ velocityGradient f z i) =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (velocityCoord i) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (velocityCoord i) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_velocity] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    simpa [velocityGradient, PDE.basisVec] using h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
-
 private def singletonCoefficientIndex {d M : ℕ} (hM : 1 ≤ M) (i : Fin d) :
     ParabolicDerivativeIndex d (M + 1) :=
   ParabolicDerivativeIndex.castLE (by omega)
@@ -297,24 +226,6 @@ private def timeSuccessorGradientIndex {d M : ℕ}
   ParabolicDerivativeIndex.velocitySucc (timeSuccessorValueIndex beta) j (by
     change beta.1.parabolicWeight + 1 ≤ M + 1
     omega)
-
-private theorem bounded_mul_memLp
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
-    (hq : ContinuousOn q V) (hqBound : ∀ z ∈ V, |q z| ≤ C)
-    (hf : ParabolicMemLpOn V 2 f) :
-    ParabolicMemLpOn V 2 (fun z ↦ q z * f z) := by
-  have hqMeas : AEStronglyMeasurable q (timeVelocityVolumeOn V) :=
-    hq.aestronglyMeasurable hV.measurableSet
-  have hqBoundAE : ∀ᵐ z ∂timeVelocityVolumeOn V, |q z| ≤ C := by
-    filter_upwards [ae_restrict_mem hV.measurableSet] with z hz
-    exact hqBound z hz
-  have hprodMeas : AEStronglyMeasurable (fun z ↦ q z * f z)
-      (timeVelocityVolumeOn V) := hqMeas.mul hf.aestronglyMeasurable
-  apply MemLp.of_le_mul hf hprodMeas
-  filter_upwards [hqBoundAE] with z hz
-  simpa only [Real.norm_eq_abs, abs_mul] using
-    mul_le_mul hz le_rfl (abs_nonneg (f z)) hC
 
 private theorem velocityGradient_coefficient_eq_singletonDerivative
     {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
@@ -775,7 +686,7 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
         (isOpen_Ioo.prod hO₀).measurableSet hVU
         (D.representative
           (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta)) (timeDerivative φ)
-        ((timeDerivative_tsupport_subset φ hφ).trans hφV)
+        ((timeDerivative_tsupport φ).trans hφV)
       have hv (i j : Fin d) := setIntegral_mul_eq_of_tsupport_subset
         (isOpen_Ioo.prod hO₀).measurableSet hVU
         (fun z => a z.1 z.2 i j *
@@ -785,7 +696,7 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
                 change beta.1.parabolicWeight + 1 ≤ M + 1
                 omega)) z)
         (fun z => velocityGradient φ z i)
-        ((velocityGradient_tsupport_subset φ hφ i).trans hφV)
+        ((velocityGradient_tsupport (i := i) φ).trans hφV)
       have hzero (f : TimeVelocity d → ℝ) := setIntegral_mul_eq_of_tsupport_subset
         (isOpen_Ioo.prod hO₀).measurableSet hVU f φ hφV
       dsimp only [U] at hout

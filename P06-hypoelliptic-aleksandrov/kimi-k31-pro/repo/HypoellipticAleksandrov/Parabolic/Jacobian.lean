@@ -15,7 +15,7 @@ public import Mathlib.Tactic.Ring
 
 This module differentiates the parabolic normal map in the product carrier
 `TimeVelocity d`.  The `timeVelocityCoordinates` orders time last,
-whereas the block calculation here uses a private time-first coordinate display.
+whereas the block calculation here uses a time-first coordinate display.
 Their determinant relation is proved through conjugation, not asserted by
 definitional equality.  The raw velocity Jacobian keeps the mixed derivatives
 in their genuine order until an explicit `C²` Schwarz bridge replaces it with
@@ -97,7 +97,7 @@ theorem parabolicNormalMap_fderiv {d : ℕ} {u : TimeVelocity d → ℝ}
 /-! ## Private time-first coordinate calculation -/
 
 /-- Product coordinates before the final `finAddFlip`: time is first. -/
-private noncomputable def timeFirstCoordinates (d : ℕ) :
+noncomputable def timeFirstCoordinates (d : ℕ) :
     TimeVelocity d ≃L[ℝ] ((Fin 1 ⊕ Fin d) → ℝ) :=
   ((ContinuousLinearEquiv.piUnique ℝ (fun _ : Fin 1 ↦ ℝ)).prodCongr
       (ContinuousLinearEquiv.refl ℝ (PDE.Vec d))).symm.trans
@@ -105,17 +105,17 @@ private noncomputable def timeFirstCoordinates (d : ℕ) :
       (fun _ ↦ ℝ)).symm
 
 /-- The time-first conjugate of a time--velocity endomorphism. -/
-private def timeFirstCoordinateConjugate {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
+def timeFirstCoordinateConjugate {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     ((Fin 1 ⊕ Fin d) → ℝ) →L[ℝ] ((Fin 1 ⊕ Fin d) → ℝ) :=
   (timeFirstCoordinates d).toContinuousLinearMap.comp
     (L.comp (timeFirstCoordinates d).symm.toContinuousLinearMap)
 
-/-- The Pi-basis matrix of the private time-first conjugate. -/
-private def timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
+/-- The Pi-basis matrix of the time-first conjugate. -/
+def timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ :=
   LinearMap.toMatrix' (timeFirstCoordinateConjugate L).toLinearMap
 
-private theorem det_timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
+theorem det_timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     (timeFirstCoordinateMatrix L).det = L.det := by
   calc
     (timeFirstCoordinateMatrix L).det = (timeFirstCoordinateConjugate L).det := by
@@ -125,43 +125,43 @@ private theorem det_timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L
 
 /-- The time-first and time-last matrices have equal determinants.
 This determinant bridge is deliberately not a definitional equality of matrices. -/
-private theorem det_timeFirstCoordinateMatrix_eq_det_coordinateMatrix {d : ℕ}
+theorem det_timeFirstCoordinateMatrix_eq_det_coordinateMatrix {d : ℕ}
     (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     (timeFirstCoordinateMatrix L).det = (coordinateMatrix L).det := by
   rw [det_timeFirstCoordinateMatrix, det_coordinateMatrix]
 
 /-! ## Private determinant-one row operation -/
 
-private def scalarBlock (a : ℝ) : Matrix (Fin 1) (Fin 1) ℝ := fun _ _ ↦ a
+def scalarBlock (a : ℝ) : Matrix (Fin 1) (Fin 1) ℝ := fun _ _ ↦ a
 
-private def rowBlock {d : ℕ} (r : PDE.Vec d) :
+def rowBlock {d : ℕ} (r : PDE.Vec d) :
     Matrix (Fin 1) (Fin d) ℝ := fun _ i ↦ r i
 
-private def colBlock {d : ℕ} (q : PDE.Vec d) :
+def colBlock {d : ℕ} (q : PDE.Vec d) :
     Matrix (Fin d) (Fin 1) ℝ := fun i _ ↦ q i
 
 /-- The raw velocity Jacobian keeps input and output derivative coordinates in
 their genuine order until the explicit Schwarz step below. -/
-private def rawVelocityJacobian {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+def rawVelocityJacobian {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     PDE.Mat d :=
   fun i j ↦
     fderiv ℝ (velocityGradient u) z (0, Pi.single j 1) i
 
-private def rowMulMatrix {d : ℕ} (r : PDE.Vec d) (H : PDE.Mat d) :
+def rowMulMatrix {d : ℕ} (r : PDE.Vec d) (H : PDE.Mat d) :
     Matrix (Fin 1) (Fin d) ℝ :=
   fun _ j ↦ ∑ i, r i * H i j
 
-private def normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
+def normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
     Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ :=
   Matrix.fromBlocks (scalarBlock (a - PDE.vecDot r q)) (-(rowMulMatrix r H))
     (colBlock q) H
 
 /-- Add `rᵀ` times the lower block row to the top block row. -/
-private def normalRowOperation {d : ℕ} (r : PDE.Vec d) :
+def normalRowOperation {d : ℕ} (r : PDE.Vec d) :
     Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ :=
   Matrix.fromBlocks 1 (rowBlock r) 0 1
 
-private theorem normalRowOperation_mul_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d)
+theorem normalRowOperation_mul_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d)
     (H : PDE.Mat d) :
     normalRowOperation r * normalBlock a q r H =
       Matrix.fromBlocks (scalarBlock a) 0 (colBlock q) H := by
@@ -173,11 +173,11 @@ private theorem normalRowOperation_mul_normalBlock {d : ℕ} (a : ℝ) (q r : PD
   · ext ⟨⟩ j
     simp [rowBlock, rowMulMatrix, Matrix.mul_apply]
 
-private theorem det_normalRowOperation {d : ℕ} (r : PDE.Vec d) :
+theorem det_normalRowOperation {d : ℕ} (r : PDE.Vec d) :
     (normalRowOperation r).det = 1 := by
   simp [normalRowOperation]
 
-private theorem det_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
+theorem det_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
     (normalBlock a q r H).det = a * H.det := by
   calc
     (normalBlock a q r H).det =
@@ -189,7 +189,7 @@ private theorem det_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.M
     _ = a * H.det := by
       simp [scalarBlock, Matrix.det_fromBlocks_zero₁₂]
 
-private theorem abs_det_normalBlock_eq {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d)
+theorem abs_det_normalBlock_eq {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d)
     (ha : 0 ≤ a) (hH : (-H).PosSemidef) :
     |(normalBlock a q r H).det| = a * (-H).det := by
   have hdet : 0 ≤ (-H).det := Matrix.PosSemidef.det_nonneg hH
@@ -201,17 +201,17 @@ private theorem abs_det_normalBlock_eq {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H 
 
 /-! ## Private coordinate bridge for the actual derivative -/
 
-private theorem timeFirstCoordinates_apply_time {d : ℕ} (x : TimeVelocity d) :
+theorem timeFirstCoordinates_apply_time {d : ℕ} (x : TimeVelocity d) :
     timeFirstCoordinates d x (Sum.inl 0) = x.1 := by
   change (fun _ : Fin 1 ↦ x.1) 0 = x.1
   rfl
 
-private theorem timeFirstCoordinates_apply_velocity {d : ℕ} (x : TimeVelocity d) (i : Fin d) :
+theorem timeFirstCoordinates_apply_velocity {d : ℕ} (x : TimeVelocity d) (i : Fin d) :
     timeFirstCoordinates d x (Sum.inr i) = x.2 i := by
   change x.2 i = x.2 i
   rfl
 
-private theorem timeFirstCoordinates_symm_time {d : ℕ} :
+theorem timeFirstCoordinates_symm_time {d : ℕ} :
     (timeFirstCoordinates d).symm (Pi.single (Sum.inl 0) (1 : ℝ)) = ((1 : ℝ), 0) := by
   apply (timeFirstCoordinates d).injective
   rw [(timeFirstCoordinates d).apply_symm_apply]
@@ -221,7 +221,7 @@ private theorem timeFirstCoordinates_symm_time {d : ℕ} :
     simp [timeFirstCoordinates_apply_time]
   · simp [timeFirstCoordinates_apply_velocity]
 
-private theorem timeFirstCoordinates_symm_velocity {d : ℕ} (j : Fin d) :
+theorem timeFirstCoordinates_symm_velocity {d : ℕ} (j : Fin d) :
     (timeFirstCoordinates d).symm (Pi.single (Sum.inr j) (1 : ℝ)) =
       ((0 : ℝ), Pi.single j 1) := by
   apply (timeFirstCoordinates d).injective
@@ -232,14 +232,14 @@ private theorem timeFirstCoordinates_symm_velocity {d : ℕ} (j : Fin d) :
     simp [timeFirstCoordinates_apply_time]
   · simp [timeFirstCoordinates_apply_velocity, Pi.single_apply]
 
-private theorem timeFirstCoordinateMatrix_apply {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d)
+theorem timeFirstCoordinateMatrix_apply {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d)
     (i j : Fin 1 ⊕ Fin d) :
     timeFirstCoordinateMatrix L i j =
       timeFirstCoordinates d (L ((timeFirstCoordinates d).symm (Pi.single j 1))) i := by
   simp [timeFirstCoordinateMatrix, timeFirstCoordinateConjugate,
     LinearMap.toMatrix'_apply, eq_comm]
 
-private theorem rawVelocityJacobian_apply_eq {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem rawVelocityJacobian_apply_eq {d : ℕ} {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) (z : TimeVelocity d) (i j : Fin d) :
     rawVelocityJacobian u z i j =
       fderiv ℝ (fderiv ℝ u) z (0, Pi.single j 1) (0, Pi.single i 1) := by
@@ -269,7 +269,7 @@ private theorem rawVelocityJacobian_apply_eq {d : ℕ} {u : TimeVelocity d → �
       H.flip (0, Pi.single i 1) by simpa [ei] using hcomponent]
   rfl
 
-private theorem rawVelocityJacobian_eq_velocityHessian {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem rawVelocityJacobian_eq_velocityHessian {d : ℕ} {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) (z : TimeVelocity d) :
     rawVelocityJacobian u z = velocityHessian u z := by
   ext i j
@@ -282,7 +282,7 @@ private theorem rawVelocityJacobian_eq_velocityHessian {d : ℕ} {u : TimeVeloci
         ((0 : ℝ), Pi.single j 1) ((0 : ℝ), Pi.single i 1)
     _ = velocityHessian u z i j := rfl
 
-private theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative_raw {d : ℕ}
+theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative_raw {d : ℕ}
     {u : TimeVelocity d → ℝ} (y₀ : PDE.Vec d) (z : TimeVelocity d) :
     timeFirstCoordinateMatrix (parabolicNormalMapDerivative u y₀ z) =
       normalBlock (timeDerivative u z)
@@ -315,7 +315,7 @@ private theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative_raw {d : 
       timeFirstCoordinates_apply_velocity, parabolicNormalMapDerivative,
       normalBlock, rawVelocityJacobian]
 
-private theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative {d : ℕ}
+theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative {d : ℕ}
     {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u) (y₀ : PDE.Vec d) (z : TimeVelocity d) :
     timeFirstCoordinateMatrix (parabolicNormalMapDerivative u y₀ z) =
       normalBlock (timeDerivative u z)
@@ -344,7 +344,7 @@ theorem abs_det_fderiv_parabolicNormalMap_eq {d : ℕ} {u : TimeVelocity d → �
 
 /-- A positive-definite matrix paired with a positive-semidefinite matrix has
 nonnegative product trace, without assuming the two matrices commute. -/
-private theorem trace_mul_nonneg_of_posDef_posSemidef
+theorem trace_mul_nonneg_of_posDef_posSemidef
     {d : ℕ} (A H : PDE.Mat d) (hA : A.PosDef) (hH : H.PosSemidef) :
     0 ≤ (A * H).trace := by
   let B : PDE.Mat d := CFC.sqrt A * H * CFC.sqrt A
@@ -367,7 +367,7 @@ private theorem trace_mul_nonneg_of_posDef_posSemidef
 
 /-- The forward operator at a `C²` point is the time derivative plus the
 trace contribution of the negative velocity Hessian. -/
-private theorem parabolicOperator_eq_timeDerivative_add_trace_neg_velocityHessian
+theorem parabolicOperator_eq_timeDerivative_add_trace_neg_velocityHessian
     {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
     (A : CoefficientField d) (z : TimeVelocity d) :
     parabolicOperator A u z =

@@ -19,77 +19,10 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open MeasureTheory Set
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-private theorem hasDerivWithinAt_boundary_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
-    (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
-    (v : galerkinSpace hΩ N) {s : Set ℝ} {τ : ℝ}
-    (hx : HasDerivWithinAt x xdot s τ) :
-    HasDerivWithinAt
-      (fun t =>
-        inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-          (valueCLM hΩ
-            (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)))
-      (inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-        (valueCLM hΩ
-          (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))) s τ := by
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      H10HilbertGraph hΩ :=
-    (galerkinSpace hΩ N).subtypeL.comp
-      (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
-  let V : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    (valueCLM hΩ).comp R
-  let I : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] ℝ :=
-    innerSL ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-  have hV := (V.hasFDerivAt).comp_hasDerivWithinAt τ hx
-  have hI := (I.hasFDerivAt).comp_hasDerivWithinAt τ hV
-  simpa only [I, V, R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, innerSL_apply_apply, Function.comp_def,
-    LinearMap.coe_toContinuousLinearMap'] using hI
+alias hasDerivWithinAt_boundary_pairing := hasDerivWithinAt_fixed_galerkin_pairing
 
-private theorem continuousOn_boundary_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
-    (v : galerkinSpace hΩ N) (s : Set ℝ) (hx : ContinuousOn x s) :
-    ContinuousOn
-      (fun t =>
-        inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-          (valueCLM hΩ
-            (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ))) s := by
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      H10HilbertGraph hΩ :=
-    (galerkinSpace hΩ N).subtypeL.comp
-      (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
-  let V : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    (valueCLM hΩ).comp R
-  let I : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] ℝ :=
-    innerSL ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-  have hV : ContinuousOn (fun t => V (x t)) s :=
-    V.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _
-  simpa only [I, V, R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, innerSL_apply_apply, Function.comp_def,
-    LinearMap.coe_toContinuousLinearMap'] using
-    I.continuous.continuousOn.comp hV fun _ _ => Set.mem_univ _
-
-private theorem continuousOn_boundary_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
-    (s : Set ℝ) (hx : ContinuousOn x s) :
-    ContinuousOn
-      (fun t => (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)) s := by
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      H10HilbertGraph hΩ :=
-    (galerkinSpace hΩ N).subtypeL.comp
-      (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
-  have hR : ContinuousOn (fun t => R (x t)) s :=
-    R.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _
-  simpa only [R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, LinearMap.coe_toContinuousLinearMap'] using hR
+alias continuousOn_boundary_pairing := continuousOn_fixed_galerkin_pairing
+alias continuousOn_boundary_reconstruct := continuousOn_galerkin_reconstruct
 
 private theorem boundaryTime_scalar_identity
     (T : ℝ) (hT : 0 < T) (pairing residual eta etaDeriv : ℝ → ℝ)

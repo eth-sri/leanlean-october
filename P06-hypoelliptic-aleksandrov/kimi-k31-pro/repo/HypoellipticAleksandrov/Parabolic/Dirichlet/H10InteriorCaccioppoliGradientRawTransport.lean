@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10InteriorCaccioppoli
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGradientProductRepresentative
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10PlateauLocality
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimePlateauCutoffDerivativeBound
 
 /-! Transport of raw gradient representatives into interior Caccioppoli estimates. -/
@@ -14,29 +15,8 @@ open scoped ENNReal RealInnerProductSpace MatrixOrder Matrix.Norms.Elementwise
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
-private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq_local
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω)
-    (i : Fin d) (u : H10HilbertGraph hΩ) :
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-        (gradientCLM hΩ
-          (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift u)) =
-      cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-          (valueCLM hΩ u) +
-        localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ u)) := by
-  have hgradient := congrArg (fun T : H10HilbertGraph hΩ →L[ℝ]
-      PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (T u))
-    (gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-      hΩ η k h hηΩ hηshift)
-  simpa only [ContinuousLinearMap.comp_apply,
-    localizedSpatialDifferenceQuotientSmoothGradientCLM,
-    ContinuousLinearMap.add_apply,
-    PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble] using hgradient
+alias gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq_local :=
+  gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
 
 private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_ae_eq_raw_on
     {d : ℕ} {Ω inner outer O : Set (PDE.Vec d)} {K : ℝ}
@@ -130,23 +110,7 @@ private theorem exists_parabolicMemLpOn_of_product_ae_eq_restrict
   refine ENNReal.toReal_mono hf.eLpNorm_ne_top ?_
   exact eLpNorm_mono_measure f (Measure.restrict_mono_set volume hsub)
 
-private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j‖ * ‖G‖ := by
-      exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_apply, one_mul] using!
-        PiLp.norm_apply_le x j
-    _ = ‖G‖ := one_mul _
+open PDE (norm_hilbertVectorLpCoord_le)
 
 private theorem norm_timeCoordinate_le
     {d : ℕ} {Ω : Set (PDE.Vec d)} {μ : Measure ℝ}

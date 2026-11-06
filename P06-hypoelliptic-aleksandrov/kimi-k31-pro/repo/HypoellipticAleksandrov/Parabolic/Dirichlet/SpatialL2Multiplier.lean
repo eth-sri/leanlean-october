@@ -1,6 +1,7 @@
 module
 
 public import PDEFoundation.Measure.LpSpace
+public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.Tactic.Ring
 
 /-!
@@ -146,5 +147,29 @@ theorem norm_scalarL2Multiplier_apply_le
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖scalarL2Multiplier q hq C hC hqBound f‖ ≤ C * ‖f‖ := by
   exact norm_scalarL2MultiplierLinearMap_apply_le q hq C hqBound f
+
+theorem abs_inner_scalarL2Multiplier_le
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ)
+    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω)) (C : ℝ) (hC : 0 ≤ C)
+    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
+    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    |inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g| ≤ C * ‖f‖ * ‖g‖ := by
+  calc
+    |inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g| ≤
+        ‖scalarL2Multiplier q hq C hC hqBound f‖ * ‖g‖ := abs_real_inner_le_norm _ _
+    _ ≤ (C * ‖f‖) * ‖g‖ := mul_le_mul_of_nonneg_right
+      (norm_scalarL2Multiplier_apply_le q hq C hC hqBound f) (norm_nonneg _)
+
+theorem inner_scalarLp_eq_setIntegral_of_ae_eq
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (p q : PDE.Vec d → ℝ)
+    (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
+    inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
+  rw [L2.inner_def]
+  apply integral_congr_ae
+  filter_upwards [hf, hg] with y hyf hyg
+  rw [hyf, hyg]
+  simp only [RCLike.inner_apply, conj_trivial]
+  ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

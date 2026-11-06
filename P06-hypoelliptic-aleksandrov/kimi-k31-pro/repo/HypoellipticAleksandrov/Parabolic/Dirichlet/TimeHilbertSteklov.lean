@@ -69,70 +69,6 @@ noncomputable def reverseTimeBackwardSteklovHilbertOnIcc
         (continuous_reverseTimeBackwardSteklov T (reverseTimeSteklovStep T n)
           (reverseTimeSteklovStep_pos T hT n) u)).continuousOn.restrict⟩
 
-private theorem normSq_sub_eq_inner_add_sub_inner
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H] (r s : H) :
-    ‖r‖ ^ 2 - ‖s‖ ^ 2 = inner ℝ (r + s) r - inner ℝ (r + s) s := by
-  rw [inner_add_left, inner_add_left, ← real_inner_self_eq_norm_sq,
-    ← real_inner_self_eq_norm_sq, real_inner_comm s r]
-  ring
-
-private theorem pivot_normSq_sub_eq_dualSub_apply_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r s : H10HilbertGraph hΩ) :
-    ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
-      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ r) -
-        scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ s)) (r + s) := by
-  let vr : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ r
-  let vs : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ s
-  have hvalue : valueCLM hΩ (r + s) = vr + vs :=
-    (valueCLM hΩ).map_add r s
-  change ‖vr‖ ^ 2 - ‖vs‖ ^ 2 = _
-  rw [ContinuousLinearMap.sub_apply,
-    scalarLpToH10HilbertGraphDual_apply,
-    scalarLpToH10HilbertGraphDual_apply, hvalue]
-  exact normSq_sub_eq_inner_add_sub_inner vr vs
-
-private theorem tendsto_clm_apply
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
-    {a : V →L[ℝ] ℝ} {b : V}
-    (hf : Filter.Tendsto f L (𝓝 a)) (hg : Filter.Tendsto g L (𝓝 b)) :
-    Filter.Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
-  simpa only [Function.comp_def] using
-    (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
-
-private theorem hasDerivAt_of_pivoted_curve
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {x : ℝ → V} {U : ℝ → V →L[ℝ] ℝ} {E : ℝ → ℝ}
-    {y : ℝ → V →L[ℝ] ℝ} (hx : Continuous x) {t : ℝ}
-    (hpivot : ∀ r s : ℝ, E r - E s = (U r - U s) (x r + x s))
-    (hderiv : HasDerivAt U (y t) t) :
-    HasDerivAt E (2 * y t (x t)) t := by
-  have hSlopeU : Filter.Tendsto (slope U t) (𝓝[≠] t) (𝓝 (y t)) := by
-    exact hderiv.tendsto_slope
-  have hxWithin : Filter.Tendsto x (𝓝[≠] t) (𝓝 (x t)) :=
-    (hx.continuousAt.tendsto).mono_left nhdsWithin_le_nhds
-  have hsum : Filter.Tendsto (fun s => x s + x t) (𝓝[≠] t) (𝓝 (x t + x t)) :=
-    hxWithin.add tendsto_const_nhds
-  have hEval : Filter.Tendsto
-      (fun s => slope U t s (x s + x t)) (𝓝[≠] t) (𝓝 (y t (x t + x t))) :=
-    tendsto_clm_apply hSlopeU hsum
-  have hSlopeEq : slope E t =ᶠ[𝓝[≠] t]
-      fun s => slope U t s (x s + x t) := by
-    filter_upwards [self_mem_nhdsWithin] with s hs
-    have hst : s ≠ t := hs
-    rw [slope_def_field, slope_def_module, hpivot s t,
-      ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply]
-    rw [smul_eq_mul, sub_apply]
-    field_simp [sub_ne_zero.mpr hst]
-  have hSlopeE : Filter.Tendsto (slope E t) (𝓝[≠] t) (𝓝 (2 * y t (x t))) := by
-    have htwice : y t (x t + x t) = 2 * y t (x t) := by
-      rw [ContinuousLinearMap.map_add]
-      ring
-    rw [← htwice]
-    exact hEval.congr' hSlopeEq.symm
-  exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
-
 private theorem mixed_energy_identity_of_pivot
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
@@ -241,28 +177,7 @@ private theorem backward_mixed_pivot
       (reverseTimeBackwardSteklov T h u r - reverseTimeBackwardSteklov T k u r)
       (reverseTimeBackwardSteklov T h u s - reverseTimeBackwardSteklov T k u s)
 
-private theorem memLp_two_on_Icc_of_continuous
-    {E : Type*} [NormedAddCommGroup E] (f : ℝ → E) (hf : Continuous f)
-    (a b : ℝ) :
-    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
-  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
-  exact (hf.norm.pow 2).integrableOn_Icc
-
-private theorem integral_mul_norm_le_sqrt_mul_sqrt
-    {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
-    {μ : Measure ℝ} (f : ℝ → E) (g : ℝ → F)
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ) :
-    ∫ t, ‖f t‖ * ‖g t‖ ∂μ ≤
-      √(∫ t, ‖f t‖ ^ 2 ∂μ) * √(∫ t, ‖g t‖ ^ 2 ∂μ) := by
-  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    Real.HolderConjugate.two_two
-    (μ := μ) (f := fun t => ‖f t‖) (g := fun t => ‖g t‖)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (by simpa only [ENNReal.ofReal_ofNat] using hf.norm)
-    (by simpa only [ENNReal.ofReal_ofNat] using hg.norm)
-  rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-  simpa only [Real.rpow_two] using hholder
+alias memLp_two_on_Icc_of_continuous := memLp_on_Icc_of_continuous
 
 private theorem exists_sqNorm_le_average_on_Icc
     {E : Type*} [NormedAddCommGroup E] (f : ℝ → E) (hf : Continuous f)
@@ -291,13 +206,6 @@ private theorem exists_sqNorm_le_average_on_Icc
   obtain ⟨r, hr, hrq⟩ := MeasureTheory.exists_notMem_null_le_average hμ hq hN
   refine ⟨r, ?_, hrq⟩
   simpa only [mem_compl_iff, not_not] using hr
-
-private theorem memLp_two_on_full_Icc
-    {E : Type*} [NormedAddCommGroup E] (T : ℝ)
-    (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) :
-    MemLp (f : ℝ → E) (2 : ℝ≥0∞) (volume.restrict (Icc 0 T)) := by
-  simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-    restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
 
 private theorem forward_mixed_energy_identity
     {d : ℕ} {Ω : Set (PDE.Vec d)}

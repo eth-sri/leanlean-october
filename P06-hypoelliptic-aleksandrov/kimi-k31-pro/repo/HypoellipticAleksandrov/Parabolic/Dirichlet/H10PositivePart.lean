@@ -24,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
-private def h1FunctionOfH10
+def h1FunctionOfH10
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
   toFun := valueCLM hΩ u
   grad := fun x => (gradientCLM hΩ u x).ofLp
@@ -43,7 +43,7 @@ private def h1FunctionOfH10
         (PDE.H1HilbertGraph.toH1Graph
           (u : PDE.H1HilbertGraph Ω)) i φ
 
-private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
+theorem h1FunctionOfH10_hasSupportedSmoothApproximation
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
   let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
@@ -129,7 +129,7 @@ private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
     rw [← hlim]
     simpa only [Function.comp_def, hseq] using heval
 
-private theorem exists_positivePart_data
+theorem exists_positivePart_data
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ∃ v : H10HilbertGraph hΩ,
       valueCLM hΩ v = MeasureTheory.Lp.posPart (valueCLM hΩ u) ∧

@@ -58,7 +58,7 @@ private theorem fderiv_translatedKernel_apply
   rw [ha.fderiv]
   simp
 
-private theorem fderiv_spacetimeMollification_apply
+theorem fderiv_spacetimeMollification_apply
     {d : ℕ} {ε : ℝ} (hε : 0 < ε)
     (u du : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
@@ -192,6 +192,23 @@ private theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
       change spacetimeMollifier ε x * f (z - x) =
         spacetimeMollifier ε x * g (z - x)
       rw [hfg hread]
+
+/-- Ambient raw weak differentiation in any fixed direction commutes with the
+fixed positive-radius spacetime mollifier. -/
+theorem fderiv_spacetimeMollification
+    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+    (u du : TimeVelocity d → ℝ)
+    (huLoc : LocallyIntegrable u (volume : Measure (TimeVelocity d)))
+    (hduLoc : LocallyIntegrable du (volume : Measure (TimeVelocity d)))
+    (q : TimeVelocity d)
+    (hu : ∀ φ : TimeVelocity d → ℝ,
+      ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ Set.univ →
+      (∫ y in Set.univ, u y * fderiv ℝ φ y q ∂(volume : Measure (TimeVelocity d))) =
+        -∫ y in Set.univ, du y * φ y ∂(volume : Measure (TimeVelocity d))) :
+    (fun z => fderiv ℝ (spacetimeMollification ε u) z q) =
+      spacetimeMollification ε du := by
+  funext z
+  exact fderiv_spacetimeMollification_apply hε u du huLoc hduLoc q hu z
 
 /-- Ambient raw weak time differentiation commutes with the fixed positive-
 radius spacetime mollifier. -/

@@ -19,6 +19,16 @@ noncomputable section
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+
+theorem reverseTimeMap_image_closedCylinder_subset
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
+    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
+      scalarParabolicClosedCylinder r₀ r₁ Ω := by
+  rintro w ⟨z, hz, rfl⟩
+  rw [mem_scalarParabolicClosedCylinder_iff]
+  exact ⟨by simp only [reverseTimeMap_apply]; linarith [hz.1.2],
+    by simp only [reverseTimeMap_apply]; linarith [hz.1.1], hz.2⟩
+
 private theorem inner_scalarL2Multiplier_eq_setIntegral
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
@@ -33,7 +43,7 @@ private theorem inner_scalarL2Multiplier_eq_setIntegral
   rw [hy]
   simp only [RCLike.inner_apply, conj_trivial]
   ring
-private theorem continuous_cutoff_spatialDifferenceQuotient_slice
+theorem continuous_cutoff_spatialDifferenceQuotient_slice
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
     (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
@@ -66,7 +76,7 @@ private theorem continuous_cutoff_spatialDifferenceQuotient_slice
       spatialShift_apply, Pi.sub_def] using (hf₁.sub hf₀).div_const h
   exact HypoellipticAleksandrov.continuous_mul_of_tsupport_subset hU
     β.smooth.continuous.continuousOn hβU hdq
-private theorem continuous_cutoff_spatialTranslate_slice
+theorem continuous_cutoff_spatialTranslate_slice
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
     (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
@@ -90,18 +100,6 @@ private theorem continuous_cutoff_spatialTranslate_slice
     exact hV.continuousOn.comp hg.continuousOn (show MapsTo g U V from fun _ hy => hy)
   exact HypoellipticAleksandrov.continuous_mul_of_tsupport_subset hU
     β.smooth.continuous.continuousOn hβU htranslate
-private theorem reverseTimeMap_image_closedCylinder_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
-    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
-      scalarParabolicClosedCylinder r₀ r₁ Ω := by
-  rintro w ⟨z, hz, rfl⟩
-  rcases hz with ⟨hτ, hy⟩
-  rw [mem_scalarParabolicClosedCylinder_iff]
-  refine ⟨?_, ?_, hy⟩
-  · simp only [reverseTimeMap_apply]
-    linarith [hτ.2]
-  · simp only [reverseTimeMap_apply]
-    linarith [hτ.1]
 private theorem reverseTime_source_smoothOn_closedCylinder
     {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -115,7 +113,7 @@ private theorem reverseTime_source_smoothOn_closedCylinder
     ((fun z : TimeVelocity d => F z.1 z.2) ∘ reverseTimeMap r₁) _
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁) hF
-private theorem reverseTime_coefficient_smoothOn_closedCylinder
+theorem reverseTime_coefficient_smoothOn_closedCylinder
     {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
     (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood
@@ -130,7 +128,7 @@ private theorem reverseTime_coefficient_smoothOn_closedCylinder
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
-private theorem reverseTime_drift_smoothOn_closedCylinder
+theorem reverseTime_drift_smoothOn_closedCylinder
     {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood
@@ -149,7 +147,7 @@ private theorem reverseTime_drift_smoothOn_closedCylinder
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb j)
-private theorem reverseTime_scalar_smoothOn_closedCylinder
+theorem reverseTime_scalar_smoothOn_closedCylinder
     {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
@@ -198,23 +196,7 @@ private theorem sq_norm_compactlySupportedContinuousToScalarLp_le
     (compactlySupportedContinuousToScalarLp (Ω := Ω) q hq hqcompact) q hqae
   rw [← henergy]
   exact integral_sq_le_mul_volumeOn_of_tsupport_subset q hq hK hqK C hqC
-private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i‖ * ‖G‖ := by
-          exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_apply, PiLp.proj_apply, one_mul] using
-        PiLp.norm_apply_le x i
-    _ = ‖G‖ := one_mul _
+open PDE (norm_hilbertVectorLpCoord_le)
 private theorem norm_valueCLM_le_graph
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
@@ -229,21 +211,6 @@ private theorem norm_gradientCLM_le_graph
   let z : PDE.H1HilbertAmbient Ω := (u : PDE.H1HilbertGraph Ω).1
   change ‖z.snd‖ ≤ ‖z‖
   exact WithLp.norm_snd_le _ z
-private theorem abs_inner_scalarL2Multiplier_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (C : ℝ) (hC : 0 ≤ C)
-    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    |inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g| ≤
-      C * ‖f‖ * ‖g‖ := by
-  calc
-    |inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g| ≤
-        ‖scalarL2Multiplier q hq C hC hqBound f‖ * ‖g‖ :=
-      abs_real_inner_le_norm _ _
-    _ ≤ (C * ‖f‖) * ‖g‖ := by
-      exact mul_le_mul_of_nonneg_right
-        (norm_scalarL2Multiplier_apply_le q hq C hC hqBound f) (norm_nonneg _)
 private theorem abs_setIntegral_mul_mul_le
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
@@ -260,17 +227,6 @@ private theorem abs_setIntegral_mul_mul_le
     rw [hyf, hyg]
   rw [heq]
   exact abs_inner_scalarL2Multiplier_le q hq C hC hqBound f g
-private theorem inner_scalarLp_eq_setIntegral_of_ae_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (p q : PDE.Vec d → ℝ)
-    (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
-    inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
-  rw [L2.inner_def]
-  apply integral_congr_ae
-  filter_upwards [hf, hg] with y hyf hyg
-  rw [hyf, hyg]
-  simp only [RCLike.inner_apply, conj_trivial]
-  ring
 private theorem abs_inner_scalarLp_le
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :

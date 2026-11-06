@@ -21,14 +21,6 @@ open MeasureTheory
 open Filter
 open scoped BigOperators ENNReal Topology
 
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) <= parabolicExponent d := by
-  simp [parabolicExponent]
-
-private theorem parabolicExponent_ne_top (d : Nat) :
-    parabolicExponent d ≠ ⊤ := by
-  simp [parabolicExponent]
-
 private theorem toFun_memLp_global {d : Nat} {p : ENNReal}
     (w : ParabolicW12Function d Set.univ p) :
     MemLp w.toFun p volume := by

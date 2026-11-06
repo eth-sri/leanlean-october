@@ -18,13 +18,13 @@ open Function MeasureTheory Set Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
+theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (i : Fin d) {f : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ (n + 1) f O) :
     ContDiffOn ℝ n (spatialPartial i f) O := by
   exact (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
 
-private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (i : Fin d) {f g : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
@@ -36,7 +36,7 @@ private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
   simp [spatialPartial]
   ring
 
-private theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (i : Fin d) {f g : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
@@ -47,7 +47,7 @@ private theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOp
     spatialPartial_mul hO i hf hf hy]
   ring
 
-private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
     (i j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial k (spatialSecond q j i) y =
@@ -84,7 +84,7 @@ private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O
     heval i k, heval k i]
   exact hs.eq (PDE.basisVec k) (PDE.basisVec i)
 
-private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 2 q O)
     (j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
     spatialSecond q j k y = spatialSecond q k j y := by
@@ -107,7 +107,7 @@ private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
     heval j k, heval k j]
   exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
 
-private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfsupport : tsupport f ⊆ O) : Continuous f := by
   rw [continuous_iff_continuousAt]
@@ -118,7 +118,7 @@ private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     exact continuousAt_const.congr_of_eventuallyEq
       (notMem_tsupport_iff_eventuallyEq.mp hnot)
 
-private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfcompact : HasCompactSupport f) (hfsupport : tsupport f ⊆ O) :
     IntegrableOn f O :=

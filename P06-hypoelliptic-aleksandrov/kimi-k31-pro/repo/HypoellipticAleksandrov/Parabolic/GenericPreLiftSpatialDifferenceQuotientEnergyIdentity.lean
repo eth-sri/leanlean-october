@@ -32,46 +32,6 @@ open scoped Convolution ENNReal Pointwise Topology
 open HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
 open SpacetimeMollifierWeightedTimeEnergy
 
-private theorem velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
-
-private theorem velocityGradient_compact
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
-
-private theorem velocityGradient_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d} :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
 /-- Time differentiation commutes exactly with a spatial difference quotient. -/
 private theorem timeDerivative_spatialDifferenceQuotient
     {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
@@ -136,11 +96,11 @@ private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg
       -∫ z in V, spatialDifferenceQuotient k h H z * velocityGradient f z i := by
   let g : TimeVelocity d → ℝ := fun z ↦ velocityGradient f z i
   have hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g :=
-    velocityGradient_contDiff_infty hfSmooth
+    contDiff_velocityGradient_infty hfSmooth
   have hgCompact : HasCompactSupport g :=
     velocityGradient_compact hfCompact
   have hgSupport : tsupport g ⊆ V :=
-    velocityGradient_tsupport_subset.trans hfSupport
+    (velocityGradient_tsupport _).trans hfSupport
   have hquotSupport : tsupport (spatialDifferenceQuotient k (-h) g) ⊆ C :=
     tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
       k (-h) g hgSupport hVC (by simpa using hfShift)
@@ -196,7 +156,7 @@ private theorem setIntegral_mul_timeDerivative_spatialDifferenceQuotient_neg
     unfold timeDerivative
     simpa using hfCompact.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
   have hdtSupport : tsupport (timeDerivative f) ⊆ V :=
-    timeDerivative_tsupport_subset.trans hfSupport
+    (timeDerivative_tsupport _).trans hfSupport
   have htranspose :=
     setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
       S k h q (timeDerivative f) hq hdtSmooth.continuous hdtCompact
@@ -279,7 +239,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
     · simp [Q, hχOneK hz]
     · have hwtz : timeDerivative w z = 0 :=
         image_eq_zero_of_notMem_tsupport
-          (fun hzt ↦ hz (timeDerivative_tsupport_subset hzt))
+          (fun hzt ↦ hz (timeDerivative_tsupport _ hzt))
       simp [hwtz]
   have hglobal :=
     tendsto_integral_mul_timeDerivative_spacetimeMollification_mul
@@ -296,7 +256,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
     let D : TimeVelocity d → ℝ := fun z ↦ timeDerivative
       (spacetimeMollification ε (fun y ↦ w y * qh y)) z
     have hχ_at_D (z : TimeVelocity d) (hzD : D z ≠ 0) : χ z = 1 := by
-      have hzmoll := timeDerivative_tsupport_subset (subset_tsupport D hzD)
+      have hzmoll := timeDerivative_tsupport _ (subset_tsupport D hzD)
       have hzthick := tsupport_spacetimeMollification_subset_cthickening hεpos hzmoll
       have hthickSub : Metric.cthickening ε
           (tsupport (fun y ↦ w y * qh y)) ⊆
@@ -332,7 +292,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
       (subset_univ V) (f := fun z ↦ timeDerivative w z * qh z ^ 2) (fun z hz ↦ by
         have hwtz : timeDerivative w z = 0 :=
           image_eq_zero_of_notMem_tsupport
-            (fun hzt ↦ hz.2 (hwSupport (timeDerivative_tsupport_subset hzt)))
+            (fun hzt ↦ hz.2 (hwSupport (timeDerivative_tsupport _ hzt)))
         rw [hwtz]
         simp)
     simpa only [Measure.restrict_univ] using ht
@@ -431,7 +391,7 @@ private theorem exists_global_localizedQuotient_weakGradient
     (hwSmooth.continuous.memLp_of_hasCompactSupport hwCompact).restrict V
   have hdwTop (i : Fin d) : ParabolicMemLpOn V ∞
       (fun z ↦ velocityGradient w z i) :=
-    ((velocityGradient_contDiff_infty (i := i) hwSmooth).continuous.memLp_of_hasCompactSupport
+    ((contDiff_velocityGradient_infty (i := i) hwSmooth).continuous.memLp_of_hasCompactSupport
       (velocityGradient_compact (i := i) hwCompact)).restrict V
   have hψV : ParabolicMemLpOn V 2 ψ := by
     simpa only [ψ, mul_comm] using hqh.fun_mul hwTop
@@ -454,7 +414,7 @@ private theorem exists_global_localizedQuotient_weakGradient
   have hDψSupport (i : Fin d) : tsupport (Dψ i) ⊆ V := by
     refine (tsupport_add _ _).trans (union_subset ?_ ?_)
     · exact (tsupport_mul_subset_left (f := fun z ↦ velocityGradient w z i)
-        (g := qh)).trans (velocityGradient_tsupport_subset.trans hKV)
+        (g := qh)).trans ((velocityGradient_tsupport _).trans hKV)
     · exact (tsupport_mul_subset_left (f := w) (g := Gh i)).trans hKV
   have hψGlobal : MemLp ψ 2 volume :=
     hψV.memLp_of_support_subset hVopen.measurableSet
@@ -712,7 +672,7 @@ private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq
     have hdtz : timeDerivative w z ≠ 0 := by
       intro hzero
       exact hz (by simp [hzero])
-    exact hwSupport (timeDerivative_tsupport_subset (subset_tsupport _ hdtz))
+    exact hwSupport (timeDerivative_tsupport _ (subset_tsupport _ hdtz))
   have hglobal := (integrableOn_iff_integrable_of_support_subset hsupp).mp hV
   exact (integrableOn_iff_integrable_of_support_subset (hsupp.trans hVS)).mpr hglobal
 
@@ -954,7 +914,7 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
           (fun z hz ↦ by
             have hzero : timeDerivative w z = 0 :=
               image_eq_zero_of_notMem_tsupport
-                (fun hzt ↦ hz.2 (hwV (timeDerivative_tsupport_subset hzt)))
+                (fun hzt ↦ hz.2 (hwV (timeDerivative_tsupport _ hzt)))
             simp [hzero])).symm
     ] at hlimEq
   have hfluxEq (i : Fin d) :

@@ -20,14 +20,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem normSq_sub_eq_inner_add_sub_inner
+theorem normSq_sub_eq_inner_add_sub_inner
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H] (r s : H) :
     ‖r‖ ^ 2 - ‖s‖ ^ 2 = inner ℝ (r + s) r - inner ℝ (r + s) s := by
   rw [inner_add_left, inner_add_left, ← real_inner_self_eq_norm_sq,
     ← real_inner_self_eq_norm_sq, real_inner_comm s r]
   ring
 
-private theorem pivot_normSq_sub_eq_dualSub_apply_add
+theorem pivot_normSq_sub_eq_dualSub_apply_add
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (r s : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
@@ -43,7 +43,7 @@ private theorem pivot_normSq_sub_eq_dualSub_apply_add
     scalarLpToH10HilbertGraphDual_apply, hvalue]
   exact normSq_sub_eq_inner_add_sub_inner vr vs
 
-private theorem tendsto_clm_apply
+theorem tendsto_clm_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
     {a : V →L[ℝ] ℝ} {b : V}
@@ -52,7 +52,7 @@ private theorem tendsto_clm_apply
   simpa only [Function.comp_def] using
     (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
 
-private theorem hasDerivAt_of_pivoted_curve
+theorem hasDerivAt_of_pivoted_curve
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {x : ℝ → V} {U : ℝ → V →L[ℝ] ℝ} {E : ℝ → ℝ}
     {y : ℝ → V →L[ℝ] ℝ} (hx : Continuous x) {t : ℝ}
@@ -84,7 +84,7 @@ private theorem hasDerivAt_of_pivoted_curve
     exact hEval.congr' hSlopeEq.symm
   exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
 
-private theorem reverseTimeForwardSteklov_energy_identity_raw
+theorem reverseTimeForwardSteklov_energy_identity_raw
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)

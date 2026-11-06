@@ -16,26 +16,6 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 namespace IsReverseTimeVariationalEnergySolution
 
-private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
-    Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
-  let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
-    ContinuousLinearMap.coeFn_compLpL L u
-  refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
-  filter_upwards [hLu] with τ hτ
-  rw [hτ]
-
-private theorem integrable_weighted
-    {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
-    Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
-  exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
-    (Filter.Eventually.of_forall hζunit)
-
 private theorem integral_norm_sq_toLp
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :

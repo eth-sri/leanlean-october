@@ -23,12 +23,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-private theorem parabolicExponent_ne_zero (d : Nat) : parabolicExponent d ≠ 0 := by
-  simp [parabolicExponent]
-
-private theorem parabolicExponent_ne_top (d : Nat) : parabolicExponent d ≠ ∞ := by
-  simp [parabolicExponent]
-
 /-- Restricted time--velocity volume on the literal unit box is the time-outer
 product of the literal unit interval and velocity cube. -/
 theorem parabolicMorreyUnitBox_restrict_volume_eq_prod (d : Nat) :

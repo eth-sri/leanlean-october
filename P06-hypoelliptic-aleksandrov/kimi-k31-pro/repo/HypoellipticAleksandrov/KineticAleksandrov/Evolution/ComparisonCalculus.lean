@@ -7,6 +7,7 @@ import Mathlib.Analysis.Matrix.Order
 import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
+public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
 import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
 
 /-!
@@ -89,95 +90,6 @@ theorem kineticVelocityHessian_eq_sliceHessian {n : ℕ} (u : KineticPoint n →
     kineticVelocityHessian u p =
       sliceHessian (fun z => u ⟨p.time, p.position, z⟩) p.velocity :=
   rfl
-
-private theorem hasDerivAt_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (x q : E) (s : ℝ) :
-    HasDerivAt (fun r : ℝ => x + r • q) q s := by
-  simpa only [one_smul] using
-    ((hasDerivAt_id' (𝕜 := ℝ) s).smul_const q).const_add x
-
-private theorem deriv_deriv_nonpos_of_isLocalMax
-    {f : ℝ → ℝ} {a c : ℝ}
-    (hmax : IsLocalMax f a)
-    (hsecond : HasDerivAt (deriv f) c a)
-    (hcont : ContinuousAt f a) :
-    c ≤ 0 := by
-  by_contra hc
-  have hcpos : 0 < c := lt_of_not_ge hc
-  have hmin : IsLocalMin f a :=
-    isLocalMin_of_deriv_deriv_pos
-      (by simpa only [hsecond.deriv] using hcpos)
-      hmax.deriv_eq_zero hcont
-  have heq : f =ᶠ[𝓝 a] fun _ => f a := by
-    filter_upwards [hmax, hmin] with y hymax hymin
-    exact le_antisymm hymax hymin
-  have hderivEq : deriv f =ᶠ[𝓝 a] fun _ => 0 := by
-    filter_upwards [heq.deriv] with y hy
-    rw [hy]
-    exact deriv_const y (f a)
-  have : c = 0 := by
-    calc
-      c = deriv (deriv f) a := hsecond.deriv.symm
-      _ = deriv (fun _ => 0) a := hderivEq.deriv_eq
-      _ = 0 := deriv_const _ _
-  exact hcpos.ne' this
-
-private theorem hasDerivAt_fderiv_restrict_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
-    {H : E →L[ℝ] E →L[ℝ] ℝ}
-    (hsecond : HasFDerivAt (fderiv ℝ g) H x) :
-    HasDerivAt
-      (fun r : ℝ => fderiv ℝ g (x + r • q) q)
-      (H q q) 0 := by
-  have hline : HasDerivAt (fun r : ℝ => x + r • q) q 0 :=
-    hasDerivAt_affine_line x q 0
-  have hsecond' : HasFDerivAt (fderiv ℝ g) H (x + (0 : ℝ) • q) := by
-    simpa only [zero_smul, add_zero] using hsecond
-  have hgrad : HasDerivAt (fun r : ℝ => fderiv ℝ g (x + r • q)) (H q) 0 :=
-    hsecond'.comp_hasDerivAt 0 hline
-  simpa only [zero_smul, add_zero, map_zero] using
-    hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
-
-private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
-    (hg : ContDiffAt ℝ 2 g x) :
-    HasDerivAt (deriv (fun r : ℝ => g (x + r • q)))
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
-  have hgGradDiffAt : DifferentiableAt ℝ (fderiv ℝ g) x :=
-    (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hEvalLine : HasDerivAt
-      (fun r : ℝ => fderiv ℝ g (x + r • q) q)
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
-    hasDerivAt_fderiv_restrict_affine_line hgGradDiffAt.hasFDerivAt
-  have hgEventually : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 g y :=
-    hg.eventually (by norm_num)
-  have hgEventuallyAtLineZero :
-      ∀ᶠ y in 𝓝 (x + (0 : ℝ) • q), ContDiffAt ℝ 2 g y := by
-    simpa only [zero_smul, add_zero] using hgEventually
-  apply hEvalLine.congr_of_eventuallyEq
-  filter_upwards [
-    (hasDerivAt_affine_line x q 0).continuousAt hgEventuallyAtLineZero] with r hr
-  change ContDiffAt ℝ 2 g (x + r • q) at hr
-  exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
-    r (hasDerivAt_affine_line x q r) |>.deriv
-
-private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
-    (hg : ContDiffAt ℝ 2 g x)
-    (hmax : IsLocalMax (fun r : ℝ => g (x + r • q)) 0) :
-    fderiv ℝ (fderiv ℝ g) x q q ≤ 0 := by
-  have hlineCont : ContinuousAt (fun r : ℝ => x + r • q) 0 :=
-    (hasDerivAt_affine_line x q 0).continuousAt
-  have hgAtLineZero : ContinuousAt g (x + (0 : ℝ) • q) := by
-    simpa only [zero_smul, add_zero] using hg.continuousAt
-  have hcompCont : ContinuousAt (fun r : ℝ => g (x + r • q)) 0 :=
-    hgAtLineZero.comp' (f := fun r : ℝ => x + r • q) hlineCont
-  exact deriv_deriv_nonpos_of_isLocalMax hmax
-    (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
 
 /-- Entries of `sliceHessian` are second Fréchet derivatives. -/
 theorem sliceHessian_apply_eq_sndFDeriv {n : ℕ}

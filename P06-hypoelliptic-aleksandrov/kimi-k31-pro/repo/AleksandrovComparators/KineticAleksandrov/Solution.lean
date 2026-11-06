@@ -414,33 +414,41 @@ theorem lib_backwardCylinder {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
     HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (toLib P₀) R =
       ofLib ⁻¹' backwardCylinder P₀ R := rfl
 
+theorem eLpNorm_comp_ofLib_backwardCylinder {d : ℕ} (g : KineticPoint d → ℝ) (p : ENNReal)
+    (P₀ : KineticPoint d) (R : ℝ) :
+    eLpNorm (fun P => g (ofLib P)) p (volume.restrict
+      (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (toLib P₀) R)) =
+      eLpNorm g p (volume.restrict (backwardCylinder P₀ R)) := by
+  rw [lib_backwardCylinder]
+  exact eLpNorm_comp_ofLib g p _
+
+theorem eLpNorm_indicator_comp_ofLib {d : ℕ} (u f : KineticPoint d → ℝ) (p : ENNReal)
+    (P₀ : KineticPoint d) (R : ℝ) :
+    eLpNorm ({P | 0 < u (ofLib P)}.indicator (fun P => max (f (ofLib P)) 0)) p
+      (volume.restrict (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder
+        (toLib P₀) R)) =
+      eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) p
+        (volume.restrict (backwardCylinder P₀ R)) := by
+  have e : ({P | 0 < u (ofLib P)}.indicator (fun P => max (f (ofLib P)) 0)) =
+      fun P' => ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ofLib P') :=
+    funext fun P' => rfl
+  rw [e, lib_backwardCylinder]
+  exact eLpNorm_comp_ofLib ({P | 0 < u P}.indicator (fun P => max (f P) 0)) p _
+
 theorem lib_kineticBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
     HypoellipticAleksandrov.KineticAleksandrov.kineticBoundary (toLib P₀) R =
       ofLib ⁻¹' kineticBoundary P₀ R := by
-  have hc : closure (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (toLib P₀) R) =
-      ofLib ⁻¹' closure (backwardCylinder P₀ R) := by
-    rw [lib_backwardCylinder, closure_preimage_ofLib]
-  ext P
-  constructor
-  · rintro ⟨h1, h2⟩
-    rw [hc] at h1
-    exact ⟨h1, h2⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨by rw [hc]; exact h1, h2⟩
+  unfold HypoellipticAleksandrov.KineticAleksandrov.kineticBoundary kineticBoundary
+  rw [lib_backwardCylinder, closure_preimage_ofLib]
+  rfl
 
 theorem lib_initialFullLateralBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
     HypoellipticAleksandrov.KineticAleksandrov.initialFullLateralBoundary (toLib P₀) R =
       ofLib ⁻¹' initialFullLateralBoundary P₀ R := by
-  have hc : closure (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (toLib P₀) R) =
-      ofLib ⁻¹' closure (backwardCylinder P₀ R) := by
-    rw [lib_backwardCylinder, closure_preimage_ofLib]
-  ext P
-  constructor
-  · rintro ⟨h1, h2⟩
-    rw [hc] at h1
-    exact ⟨h1, h2⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨by rw [hc]; exact h1, h2⟩
+  unfold HypoellipticAleksandrov.KineticAleksandrov.initialFullLateralBoundary
+    initialFullLateralBoundary
+  rw [lib_backwardCylinder, closure_preimage_ofLib]
+  rfl
 
 theorem lib_holderNeighbourhood {d : ℕ} (R₀ : ℝ) (K : Set (KineticPoint d)) :
     HypoellipticAleksandrov.KineticAleksandrov.Holder.holderNeighbourhood R₀ (ofLib ⁻¹' K) =
@@ -462,31 +470,19 @@ theorem lib_oscillationOn {d : ℕ} (u : KineticPoint d → ℝ) (E : Set (Kinet
 
 theorem ktd_comp {d : ℕ} (u : KineticPoint d → ℝ) :
     HypoellipticAleksandrov.Parabolic.kineticTimeDerivative (fun P => u (ofLib P)) =
-      fun z => kineticTimeDerivative u (ofLib z) := by
-  funext z
-  unfold HypoellipticAleksandrov.Parabolic.kineticTimeDerivative kineticTimeDerivative
-  rfl
+      fun z => kineticTimeDerivative u (ofLib z) := rfl
 
 theorem kpg_comp {d : ℕ} (u : KineticPoint d → ℝ) :
     HypoellipticAleksandrov.Parabolic.kineticPositionGradient (fun P => u (ofLib P)) =
-      fun z => kineticPositionGradient u (ofLib z) := by
-  funext z
-  unfold HypoellipticAleksandrov.Parabolic.kineticPositionGradient kineticPositionGradient
-  rfl
+      fun z => kineticPositionGradient u (ofLib z) := rfl
 
 theorem kvg_comp {d : ℕ} (u : KineticPoint d → ℝ) :
     HypoellipticAleksandrov.Parabolic.kineticVelocityGradient (fun P => u (ofLib P)) =
-      fun z => kineticVelocityGradient u (ofLib z) := by
-  funext z
-  unfold HypoellipticAleksandrov.Parabolic.kineticVelocityGradient kineticVelocityGradient
-  rfl
+      fun z => kineticVelocityGradient u (ofLib z) := rfl
 
 theorem kvh_comp {d : ℕ} (u : KineticPoint d → ℝ) :
     HypoellipticAleksandrov.Parabolic.kineticVelocityHessian (fun P => u (ofLib P)) =
-      fun z => kineticVelocityHessian u (ofLib z) := by
-  funext z
-  unfold HypoellipticAleksandrov.Parabolic.kineticVelocityHessian kineticVelocityHessian
-  rfl
+      fun z => kineticVelocityHessian u (ofLib z) := rfl
 
 theorem isKineticC112On_comp {d : ℕ} {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
     (h : IsKineticC112On u D) :
@@ -566,13 +562,8 @@ theorem kinetic_aleksandrov_timeVelocity
     (Bridge.isKineticC112On_comp hC112) (Bridge.ae_comp_ofLib hop)
     (Bridge.memLp_comp_ofLib hmem) (Bridge.toLib P)
     (by rw [Bridge.closure_lib_backwardCylinder]; exact hP)
-  have hnorm : eLpNorm (fun P' => max (f (Bridge.ofLib P')) 0) (ENNReal.ofReal p)
-      (volume.restrict (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (Bridge.toLib P₀) R)) =
-      eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) :=
-    by
-      rw [Bridge.lib_backwardCylinder]
-      exact Bridge.eLpNorm_comp_ofLib (fun P => max (f P) 0) _ _
-  rw [Bridge.sSup_boundary_eq, hnorm] at key
+  rw [Bridge.sSup_boundary_eq, Bridge.eLpNorm_comp_ofLib_backwardCylinder
+    (fun P => max (f P) 0) (ENNReal.ofReal p) P₀ R] at key
   exact key
 
 /-- Localised Theorem A: the norm of `f⁺` is taken over the positivity set `{u > 0}`. -/
@@ -605,14 +596,8 @@ theorem kinetic_aleksandrov_timeVelocity_localised
     (Bridge.isKineticC112On_comp hC112) (Bridge.ae_comp_ofLib hop)
     (Bridge.memLp_comp_ofLib hmem) (Bridge.toLib P)
     (by rw [Bridge.closure_lib_backwardCylinder]; exact hP)
-  have hnorm : eLpNorm ({P' | 0 < u (Bridge.ofLib P')}.indicator (fun P' => max (f (Bridge.ofLib P')) 0)) (ENNReal.ofReal p)
-      (volume.restrict (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (Bridge.toLib P₀) R)) =
-      eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) :=
-    by
-      have e : ({P' | 0 < u (Bridge.ofLib P')}.indicator (fun P' => max (f (Bridge.ofLib P')) 0)) = fun P' => ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (Bridge.ofLib P') := funext fun P' => rfl
-      rw [e, Bridge.lib_backwardCylinder]
-      exact Bridge.eLpNorm_comp_ofLib ({P | 0 < u P}.indicator (fun P => max (f P) 0)) _ _
-  rw [Bridge.sSup_boundary_eq, hnorm] at key
+  rw [Bridge.sSup_boundary_eq,
+    Bridge.eLpNorm_indicator_comp_ofLib u f (ENNReal.ofReal p) P₀ R] at key
   exact key
 
 /-- Corollary c:holder-A: Hölder continuity of bounded solutions, time–velocity coefficients. -/
@@ -689,13 +674,8 @@ theorem kinetic_aleksandrov_autonomous
     (Bridge.isKineticC112On_comp hC112) (Bridge.ae_comp_ofLib hop)
     (Bridge.memLp_comp_ofLib hmem) (Bridge.toLib P)
     (by rw [Bridge.closure_lib_backwardCylinder]; exact hP)
-  have hnorm : eLpNorm (fun P' => max (f (Bridge.ofLib P')) 0) (ENNReal.ofReal p)
-      (volume.restrict (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (Bridge.toLib P₀) R)) =
-      eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) :=
-    by
-      rw [Bridge.lib_backwardCylinder]
-      exact Bridge.eLpNorm_comp_ofLib (fun P => max (f P) 0) _ _
-  rw [Bridge.sSup_boundary_eq, hnorm] at key
+  rw [Bridge.sSup_boundary_eq, Bridge.eLpNorm_comp_ofLib_backwardCylinder
+    (fun P => max (f P) 0) (ENNReal.ofReal p) P₀ R] at key
   exact key
 
 /-- Localised Theorem a: the norm of `f⁺` is taken over the positivity set `{u > 0}`. -/
@@ -732,14 +712,8 @@ theorem kinetic_aleksandrov_autonomous_localised
     (Bridge.isKineticC112On_comp hC112) (Bridge.ae_comp_ofLib hop)
     (Bridge.memLp_comp_ofLib hmem) (Bridge.toLib P)
     (by rw [Bridge.closure_lib_backwardCylinder]; exact hP)
-  have hnorm : eLpNorm ({P' | 0 < u (Bridge.ofLib P')}.indicator (fun P' => max (f (Bridge.ofLib P')) 0)) (ENNReal.ofReal p)
-      (volume.restrict (HypoellipticAleksandrov.KineticAleksandrov.backwardCylinder (Bridge.toLib P₀) R)) =
-      eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) :=
-    by
-      have e : ({P' | 0 < u (Bridge.ofLib P')}.indicator (fun P' => max (f (Bridge.ofLib P')) 0)) = fun P' => ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (Bridge.ofLib P') := funext fun P' => rfl
-      rw [e, Bridge.lib_backwardCylinder]
-      exact Bridge.eLpNorm_comp_ofLib ({P | 0 < u P}.indicator (fun P => max (f P) 0)) _ _
-  rw [Bridge.sSup_boundary_eq, hnorm] at key
+  rw [Bridge.sSup_boundary_eq,
+    Bridge.eLpNorm_indicator_comp_ofLib u f (ENNReal.ofReal p) P₀ R] at key
   exact key
 
 /-- Corollary c:holder-a: Hölder continuity of bounded solutions, autonomous coefficients. -/

@@ -23,7 +23,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem sqNorm_integral_eq_norm_sq_toLp
+theorem sqNorm_integral_eq_norm_sq_toLp
     {E : Type*} [NormedAddCommGroup E]
     {μ : Measure ℝ} (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
     ∫ t, ‖F t‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by

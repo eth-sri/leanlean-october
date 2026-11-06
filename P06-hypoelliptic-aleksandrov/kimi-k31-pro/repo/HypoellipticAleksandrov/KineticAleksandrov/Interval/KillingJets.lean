@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingCalculus
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import PDEFoundation.Sobolev.OneDimensional.SmoothTransport
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ScalarAdaptersCalculus
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 /-! # Scalar jets of the affine endpoint heat barrier -/
@@ -15,19 +16,8 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 /-- The unique native coordinate direction agrees with scalar differentiation,
 including Mathlib's total derivative convention at nonsmooth points. -/
 theorem scalar_deriv_eq_native (f : PDE.Vec 1 → ℝ) (v : PDE.Vec 1) :
-    deriv (fun t => f (fun _ => t)) (v 0) = (fderiv ℝ f v) (PDE.basisVec 0) := by
-  have h := PDE.scalarToVecOneContinuousLinearEquiv.comp_right_fderiv
-    (f := f) (x := v 0)
-  have he := congrArg (fun L : ℝ →L[ℝ] ℝ => L 1) h
-  have h1 : (PDE.scalarToVecOneContinuousLinearEquiv : ℝ →L[ℝ] PDE.Vec 1) 1 =
-      PDE.basisVec 0 := PDE.scalarToVecOneContinuousLinearEquiv_one
-  have hv : PDE.scalarToVecOneContinuousLinearEquiv (v 0) = v := by
-    ext i
-    have hi := Fin.eq_zero i
-    subst i
-    rfl
-  rw [ContinuousLinearMap.comp_apply, h1, hv] at he
-  exact he
+    deriv (fun t => f (fun _ => t)) (v 0) = (fderiv ℝ f v) (PDE.basisVec 0) :=
+  Autonomous.scalar_deriv_eq_native f v
 
 
 /-- The one-dimensional native Hessian is the iterated scalar derivative. -/

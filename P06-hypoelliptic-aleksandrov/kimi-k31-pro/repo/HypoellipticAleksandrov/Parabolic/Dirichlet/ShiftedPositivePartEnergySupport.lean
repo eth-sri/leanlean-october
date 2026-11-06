@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandPositivePartSteklov
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandSteklov
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Mass
 public import Mathlib.Analysis.Calculus.Deriv.Slope
@@ -64,19 +65,6 @@ def shiftedPositivePartEnergyRate
     (N : ℝ) * spatialMassCLM hΩbounded
       (valueCLM hΩ (h10ShiftedPositivePart hΩ (x t)
         (reverseTimeAffineThreshold M N t)))
-
-private theorem scalarLp_norm_sq_eq_integral_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ‖f‖ ^ 2 = ∫ a, (f a) ^ 2 ∂(PDE.volumeOn Ω) := by
-  rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-  congr 1
-  funext a
-  simp only [RCLike.inner_apply, conj_trivial, pow_two]
-
-private theorem scalarLp_integrable_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    Integrable (fun a => (f a) ^ 2) (PDE.volumeOn Ω) := by
-  exact (Lp.memLp f).integrable_sq
 
 private theorem correctedDual_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -345,39 +333,6 @@ private theorem shiftedPositivePart_curve_support_upper
         (scalarLpDual_value_sub hΩ x z)
   rw [hmap]
   exact shiftedPositivePart_support_upper hΩ hΩbounded x z k l
-
-private theorem tendsto_clm_apply
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
-    {a : V →L[ℝ] ℝ} {b : V}
-    (hf : Tendsto f L (𝓝 a)) (hg : Tendsto g L (𝓝 b)) :
-    Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
-  simpa only [Function.comp_def] using
-    (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
-
-private theorem slope_energy_error_le
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    (E : ℝ → ℝ) (U : ℝ → V →L[ℝ] ℝ) (p : ℝ → V) {s t : ℝ}
-    (hst : s ≠ t)
-    (h0 : 0 ≤ (E s - E t) - (U s - U t) (p t))
-    (h1 : (E s - E t) - (U s - U t) (p t) ≤
-      (U s - U t) (p s - p t)) :
-    |slope E t s - slope U t s (p t)| ≤
-      |slope U t s (p s - p t)| := by
-  have habs : |(E s - E t) - (U s - U t) (p t)| ≤
-      |(U s - U t) (p s - p t)| := by
-    rw [abs_of_nonneg h0]
-    exact h1.trans (le_abs_self _)
-  have hleft : slope E t s - slope U t s (p t) =
-      (s - t)⁻¹ * ((E s - E t) - (U s - U t) (p t)) := by
-    rw [slope_def_field, slope_def_module, ContinuousLinearMap.smul_apply,
-      smul_eq_mul]
-    field_simp [sub_ne_zero.mpr hst]
-  have hright : slope U t s (p s - p t) =
-      (s - t)⁻¹ * (U s - U t) (p s - p t) := by
-    rw [slope_def_module, ContinuousLinearMap.smul_apply, smul_eq_mul]
-  rw [hleft, hright, abs_mul, abs_mul]
-  exact mul_le_mul_of_nonneg_left habs (abs_nonneg _)
 
 private theorem hasDerivAt_of_support_inequalities
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]

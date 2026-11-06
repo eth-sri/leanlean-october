@@ -20,29 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Function MeasureTheory Set
 open scoped ContDiff ENNReal Topology
 
-private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d}
-    (f : TimeVelocity d → ℝ) :
-    tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
 private theorem velocityHessian_tsupport {d : ℕ} {i j : Fin d}
     (f : TimeVelocity d → ℝ) :
     tsupport (fun z => velocityHessian f z i j) ⊆ tsupport f := by

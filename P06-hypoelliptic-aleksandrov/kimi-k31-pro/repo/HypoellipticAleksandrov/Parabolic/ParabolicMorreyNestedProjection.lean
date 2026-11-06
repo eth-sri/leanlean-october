@@ -21,11 +21,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
-
 private theorem physicalProjection_recenter
     {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
     (t_s : Real) (v_s : PDE.Vec d) (u : TimeVelocity d -> Real)

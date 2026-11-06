@@ -51,6 +51,14 @@ def HasWeakVelocityPartialDerivOn {d : Nat} (U : Set (TimeVelocity d))
       ∂(volume : Measure (TimeVelocity d))) =
       -∫ z in U, dui z * φ z ∂(volume : Measure (TimeVelocity d))
 
+/-- Weak differentiation in a fixed Fréchet direction. -/
+def HasWeakDirectionalDerivOn {d : ℕ} (U : Set (TimeVelocity d))
+    (v : TimeVelocity d) (u du : TimeVelocity d → ℝ) : Prop :=
+  ∀ φ : TimeVelocity d → ℝ,
+    ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
+    (∫ z in U, u z * fderiv ℝ φ z v ∂(volume : Measure (TimeVelocity d))) =
+      -∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d))
+
 /-- A representative-level anisotropic weak `W^{1,2,p}` jet on a raw
 time--velocity set. -/
 structure ParabolicW12Function (d : Nat) (U : Set (TimeVelocity d)) (p : ℝ≥0∞) where

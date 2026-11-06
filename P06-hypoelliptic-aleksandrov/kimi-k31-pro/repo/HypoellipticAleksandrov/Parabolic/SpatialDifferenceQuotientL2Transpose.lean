@@ -23,28 +23,28 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-private theorem spatialShift_neg_comp_apply
+theorem spatialShift_neg_comp_apply
     {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
     spatialShift k (-h) (spatialShift k h z) = z := by
   change (spatialShift k (-h) ∘ spatialShift k h) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_comp_neg_apply
+theorem spatialShift_comp_neg_apply
     {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
     spatialShift k h (spatialShift k (-h) z) = z := by
   change (spatialShift k h ∘ spatialShift k (-h)) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_measurableEmbedding
+theorem spatialShift_measurableEmbedding
     {d : ℕ} (k : Fin d) (h : ℝ) :
     MeasurableEmbedding (spatialShift k h) := by
   change MeasurableEmbedding (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
   simpa only [Homeomorph.coe_addRight] using
     (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
 
-private theorem spatialShift_measurePreserving
+theorem spatialShift_measurePreserving
     {d : ℕ} (k : Fin d) (h : ℝ) :
     MeasurePreserving (spatialShift k h)
       (volume : Measure (TimeVelocity d))

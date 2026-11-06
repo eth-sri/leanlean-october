@@ -228,18 +228,7 @@ private theorem compactCore_cutoff_eLpNorm_sub_lt
       cutoff_error_lt_of_core g χ hC0 hCpos hr hε hKmeasure herror hindicator rfl
   exact cutoff_bundle g χ hgSmooth.continuous hχcompact hχsupport hcutoff
 
-private theorem lp_dist_toLp_toLp_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {f g : α → ℝ} {ε : ℝ}
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ)
-    (hε : 0 ≤ ε)
-    (hfg : eLpNorm (f - g) (2 : ℝ≥0∞) μ ≤ ENNReal.ofReal ε) :
-    dist (hf.toLp f) (hg.toLp g) ≤ ε := by
-  rw [Lp.dist_def, eLpNorm_congr_ae (hf.coeFn_toLp.sub hg.coeFn_toLp)]
-  calc
-    (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
-      ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
-    _ = ε := ENNReal.toReal_ofReal hε
+alias lp_dist_toLp_toLp_le := PDE.dist_toLp_toLp_le
 
 private theorem exists_weakTestFunction_toScalarLp_dist_lt
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)

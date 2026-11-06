@@ -21,7 +21,7 @@ open scoped Convex ENNReal MatrixOrder
 
 /-- A coarse scalar Young inequality with the coefficient used for absorbing
 one error term into elliptic coercivity. -/
-private theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
+theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
     a * b ≤ (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 := by
   rw [show (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 =
       ((lam ^ 2 / 8) * b ^ 2 + 2 * a ^ 2) / lam by field_simp]

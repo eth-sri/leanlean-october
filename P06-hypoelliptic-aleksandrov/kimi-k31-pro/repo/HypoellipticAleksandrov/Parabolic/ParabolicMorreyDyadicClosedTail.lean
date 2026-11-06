@@ -20,16 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators
 
-private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d (n + 1)) :
-    parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
-      parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by
-  funext j
-  simp only [parabolicDyadicTruncate, parabolicDyadicParent]
-  apply congrArg index
-  exact Fin.ext (by rfl)
-
-private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
+theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
     {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d n)
     (alpha : Real) :
     (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^ alpha *
@@ -49,7 +40,7 @@ private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
   rw [Nat.cast_sub hmn]
   ring
 
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
+theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
     (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
   unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
   refine add_nonneg ENNReal.toReal_nonneg ?_

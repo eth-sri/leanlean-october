@@ -20,7 +20,7 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
+theorem cutoffGradient_eq_zero_of_not_mem_tsupport
     {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :

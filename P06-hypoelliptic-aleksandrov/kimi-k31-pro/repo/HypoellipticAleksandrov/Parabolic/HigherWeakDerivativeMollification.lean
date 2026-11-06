@@ -22,7 +22,7 @@ open scoped ENNReal Topology
 
 namespace ParabolicWeakDerivativeFamily
 
-private theorem ordinaryRepresentative_memLp_volume
+theorem ordinaryRepresentative_memLp_volume
     {d m : ℕ} {root : TimeVelocity d → ℝ}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :

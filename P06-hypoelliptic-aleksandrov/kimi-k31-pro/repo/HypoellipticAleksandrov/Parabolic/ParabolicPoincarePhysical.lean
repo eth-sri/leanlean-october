@@ -20,33 +20,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem continuous_timeDerivative_physical
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ContDiff Real 2 u) :
-    Continuous (timeDerivative u) := by
-  change Continuous (fun z : TimeVelocity d => fderiv Real u z (1, 0))
-  exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
-    (contDiff_id.prodMk contDiff_const)).continuous
-
-private theorem continuous_velocityHessian_physical
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ContDiff Real 2 u) :
-    Continuous (velocityHessian u) := by
-  apply continuous_matrix
-  intro i j
-  change Continuous (fun z : TimeVelocity d =>
-    fderiv Real (fderiv Real u) z (0, Pi.single i 1) (0, Pi.single j 1))
-  have hdu : ContDiff Real 1 (fderiv Real u) :=
-    hu.fderiv_right (m := 1) (by norm_num)
-  exact (((hdu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
-    (contDiff_id.prodMk contDiff_const)).clm_apply contDiff_const).continuous
-
-private theorem continuous_parabolicMorreyUnitAffineProjection_physical
-    {d : Nat} (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyUnitAffineProjection u) := by
-  unfold parabolicMorreyUnitAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
+alias continuous_timeDerivative_physical := continuous_timeDerivative
+alias continuous_velocityHessian_physical := continuous_velocityHessian
+alias continuous_parabolicMorreyUnitAffineProjection_physical :=
+  continuous_parabolicMorreyUnitAffineProjection
 
 private theorem parabolicELpNormPullbackMeasureFactor_pos
     (d : Nat) {r : Real} (hr : 0 < r) :

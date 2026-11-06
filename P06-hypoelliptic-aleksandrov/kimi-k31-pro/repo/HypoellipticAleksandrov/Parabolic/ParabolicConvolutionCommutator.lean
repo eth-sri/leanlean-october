@@ -1,4 +1,5 @@
 module
+public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierConvergence
 
 public import HypoellipticAleksandrov.Ambient.MatrixContraction
 public import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
@@ -180,19 +181,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
   have heLp (n : Nat) : eLpNorm (cn n - fun x => an n x * hn n x) p μ =
       eLpNorm (r n) p μ := eLpNorm_congr_ae (heq n)
   simpa only [heLp] using hr
-
-private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
-    (f rho : TimeVelocity d → Real) :
-    parabolicConvolution f rho =
-      rho ⋆[ContinuousLinearMap.lsmul Real Real,
-        (volume : Measure (TimeVelocity d))] f := by
-  rw [← convolution_flip]
-  ext z
-  simp only [parabolicConvolution, convolution_def]
-  apply integral_congr_ae
-  filter_upwards with y
-  change f y * rho (z - y) = rho (z - y) * f y
-  exact mul_comm _ _
 
 private theorem abs_parabolicConvolution_le_of_abs_le
     {d : Nat} {f : TimeVelocity d → Real} {M : Real}

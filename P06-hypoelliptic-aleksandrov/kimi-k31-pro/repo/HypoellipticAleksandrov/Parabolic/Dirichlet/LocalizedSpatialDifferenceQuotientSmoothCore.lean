@@ -42,38 +42,7 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTestLinearMap
       PDE.WeakTestFunction.smul_toFun, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
     ring
 
-private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j‖ * ‖G‖ := by
-          exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_def, one_mul, PiLp.proj_apply] using
-        PiLp.norm_apply_le x j
-    _ = ‖G‖ := one_mul _
-
-private theorem norm_h10HilbertGraph_le_value_add_gradient
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : H10HilbertGraph hΩ) :
-    ‖u‖ ≤ ‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖ := by
-  apply (sq_le_sq₀ (norm_nonneg _)
-    (add_nonneg (norm_nonneg _) (norm_nonneg _))).mp
-  calc
-    ‖u‖ ^ 2 = ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 :=
-      norm_sq_h10HilbertGraph hΩ u
-    _ ≤ ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 +
-        2 * (‖valueCLM hΩ u‖ * ‖gradientCLM hΩ u‖) := by
-      apply le_add_of_nonneg_right
-      exact mul_nonneg (by norm_num) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
-    _ = (‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖) ^ 2 := by ring
+open PDE (norm_hilbertVectorLpCoord_le)
 
 /-- The cutoff-localized forward spatial quotient as a linear map from
 actual bundled smooth tests into the zero-boundary Sobolev graph. -/

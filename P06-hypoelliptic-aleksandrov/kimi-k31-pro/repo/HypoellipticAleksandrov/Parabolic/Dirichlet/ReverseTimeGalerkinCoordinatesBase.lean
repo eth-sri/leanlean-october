@@ -39,6 +39,30 @@ theorem galerkinReconstruct_apply
     ((galerkinSpaceBasis hΩ N).sum_equivFun
       ((galerkinSpaceBasis hΩ N).equivFun.symm x)).symm
 
+theorem coe_galerkinReconstruct_eq_sum
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (N : ℕ)
+    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
+    (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
+      (↑(∑ i, x i • galerkinSpaceBasis hΩ N i) : H10HilbertGraph hΩ) :=
+  congrArg (fun u : galerkinSpace hΩ N => (u : H10HilbertGraph hΩ))
+    (galerkinReconstruct_apply hΩ N x)
+
+theorem map_galerkinReconstruct_sum
+    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (N : ℕ)
+    {Z : Type} [NormedAddCommGroup Z] [NormedSpace ℝ Z]
+    (Q : H10HilbertGraph hΩ →L[ℝ] Z)
+    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
+    Q (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
+      ∑ i, x i • Q (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
+  rw [coe_galerkinReconstruct_eq_sum]
+  have hcoe : (↑(∑ i, x i • galerkinSpaceBasis hΩ N i) : H10HilbertGraph hΩ) =
+      ∑ i, x i • (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
+    simpa only [Submodule.coe_smul] using
+      (Submodule.coe_sum (p := galerkinSpace hΩ N)
+        (fun i => x i • galerkinSpaceBasis hΩ N i) Finset.univ)
+  rw [hcoe, map_sum]
+  exact Finset.sum_congr rfl fun i _ => Q.map_smul _ _
+
 /-- Reconstruction inverts the finite coordinate equivalence. -/
 @[simp] theorem galerkinReconstruct_equivFun
     {d : ℕ} {Ω : Set (PDE.Vec d)}
