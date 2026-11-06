@@ -1,0 +1,72 @@
+{
+  "problem_idx": 19,
+  "id": "PALOMAR-2026-10-11-000007-v1",
+  "title": "Matrix multiplication: omega at most 9/4 over every ring",
+  "abstract": "An integral extension of OpenAI's matrix multiplication exponent bound and its previous all-fields extension. The formalization proves that the exact integer coefficient tensor-rank exponent is at most 9/4, yielding division-free arithmetic programs over every associative unital ring, including noncommutative rings. For every positive epsilon, one constant bounds the operation count at all positive matrix sizes by C*n^(9/4+epsilon). The arithmetic model is preserved apart from Field-to-Ring assumptions. The extension uses a primitive tensor spectrum, coefficient extraction, fixed finite-free descent, and coprime patching of Fourier and interpolation constructions. It does not improve the numerical exponent or assert an endpoint O(n^(9/4)) algorithm, efficient uniform generation, or bit complexity.",
+  "authors": [
+    "Sela Navot"
+  ],
+  "repository": "selanavot/omega_le_nine_quarters_all_rings",
+  "repository_url": "https://github.com/selanavot/omega_le_nine_quarters_all_rings",
+  "commit": "9d10116c89f9bdcdaccd58aacea353d4b7ae6e90",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "M",
+  "baseline_tokens": 145127,
+  "lean_files": 147,
+  "protected_theorem_names": [
+    "ComparatorChecks.omega_bound",
+    "ComparatorChecks.admissible_bddBelow",
+    "ComparatorChecks.admissible_nonempty",
+    "ComparatorChecks.omega_lower",
+    "ComparatorChecks.epsilon_cost",
+    "ComparatorChecks.exact_coefficients"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "challenge_module": "ComparatorAudit.Challenge",
+  "challenge_path": "lean/ComparatorAudit/Challenge.lean",
+  "solution_module": "ComparatorAudit.Solution",
+  "solution_path": "lean/ComparatorAudit/Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "cs.CC",
+    "cs.DS"
+  ],
+  "msc2020": [
+    "68Q25",
+    "15A69",
+    "68W30"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "An Upper Bound of 9/4 for the Matrix Multiplication Exponent",
+      "authors": [
+        "OpenAI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/Matrix-Multiplication-Nine-Fourths-October-2-2026/paper.pdf",
+      "location": null,
+      "relationship": "adapts"
+    },
+    {
+      "title": "Matrix multiplication exponent at most 9/4 over arbitrary fields",
+      "authors": [],
+      "type": "other",
+      "identifier": "https://github.com/selanavot/matrix-multiplication-all-fields/tree/08481ef22bca7dc9ffba091083b7c1e81e537220",
+      "location": null,
+      "relationship": "adapts"
+    }
+  ],
+  "dependency_graph_nodes": 1465,
+  "dependency_graph_edges": 8545,
+  "project_path": "repos/PALOMAR-2026-10-11-000007-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-11-000007-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-11-000007-v1/LICENSE"
+}

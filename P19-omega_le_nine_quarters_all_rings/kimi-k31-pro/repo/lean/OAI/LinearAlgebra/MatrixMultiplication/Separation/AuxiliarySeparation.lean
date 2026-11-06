@@ -1,0 +1,3 @@
+module
+public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexAuxiliarySeparation
+public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexStageHierarchyResources
