@@ -201,16 +201,6 @@ theorem peeling_history_probability_eq_prefix (p : R → I)
   · intro r _
     exact hbound r
 
-theorem history_clamp_antitone_of_match {R : Type*}
-    (A H : ℕ → Finset R) (hA : Antitone A) (T : ℕ)
-    (hmatch : ∀ t ≤ T, A t = H t) :
-    Antitone (fun t => H (min t T)) := by
-  intro a b hab
-  change H (min b T) ⊆ H (min a T)
-  rw [← hmatch (min b T) (min_le_right _ _),
-    ← hmatch (min a T) (min_le_right _ _)]
-  exact hA (min_le_min_right T hab)
-
 /-- Equality for arbitrary prescribed histories. Nondecreasing histories on
 the finite horizon have probability zero for both processes. -/
 theorem peeling_history_probability_eq_prefix_any (p : R → I)

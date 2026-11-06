@@ -32,10 +32,7 @@ theorem split_uniform_approximation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
   have hS : staticSurvival a ≠ ⊤ := by unfold staticSurvival; exact measure_ne_top _ _
   have ht := real_error_of_bound _ _ hS m L r (by omega) a
     (explicit_split_truncation q hq hq1 m hm a ha r)
-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
-    push_cast at hcast
-    exact hcast
+  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
   have hr := uniform_record_budget q hq hq1 L ε hε a ha
   change (splitEscapeProbability a (recordCap L r)).toReal ≤ _
   linarith
@@ -45,18 +42,15 @@ theorem quotient_uniform_approximation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
     (quotientEscapeProbability a (quotientEvaluationCap q hq hq1 ε hε)).toReal ≤
       (quotientSurvival a).toReal + (ε : ℝ)/2 := by
   let m := precisionIndex ε
-  have hh : 0 < q/2 := by positivity
-  have hh1 : q/2 ≤ 1 := by linarith
+  have hh : 0 < q/2 := rationalHalf_pos q hq
+  have hh1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
   let L := 10*seedIndex (q/2) hh hh1 m
   let r := recordIndex q hq hq1 L ε hε
   have hm : 2 ≤ m := precisionIndex_ge_two ε
   have hS : quotientSurvival a ≠ ⊤ := by unfold quotientSurvival; exact measure_ne_top _ _
   have ht := real_error_of_bound _ _ hS m L r (by omega) a
     (explicit_quotient_truncation q hq hq1 m hm a ha r)
-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
-    push_cast at hcast
-    exact hcast
+  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
   have hr := uniform_record_budget q hq hq1 L ε hε a ha
   change (quotientEscapeProbability a (recordCap L r)).toReal ≤ _
   linarith

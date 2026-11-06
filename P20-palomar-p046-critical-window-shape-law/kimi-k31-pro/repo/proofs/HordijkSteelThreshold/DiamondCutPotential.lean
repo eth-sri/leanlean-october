@@ -7,8 +7,7 @@ public import Mathlib.Tactic
 namespace HordijkSteelThreshold
 
 private theorem xor_pair_cancel (a b c : Bool) :
-    ((a ^^ b) ^^ ((b ^^ c) ^^ c)) = a := by
-  cases a <;> cases b <;> cases c <;> decide
+    ((a ^^ b) ^^ ((b ^^ c) ^^ c)) = a := by simp_all                                    
 
 private theorem xor_diamond_left (a b c d e f : Bool)
     (hcd : (c ^^ d) = e) (hdiamond : (((f ^^ a) ^^ e) ^^ b) = false) :

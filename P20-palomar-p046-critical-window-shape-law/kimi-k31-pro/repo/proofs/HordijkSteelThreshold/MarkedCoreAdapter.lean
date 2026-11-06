@@ -9,23 +9,9 @@ namespace HordijkSteelThreshold
 
 open RAF RAF.Polymer RAF.Concrete
 
-/-- All internally supported split reactions carried by `C`. -/
-noncomputable def markedCoreReactions {n : Nat}
-    (Cat : Catalysis (Molecule n) (Reaction n)) (C : Finset (Molecule n)) :
-    Finset (Reaction n) := by
-  classical
-  exact Finset.univ.filter fun r =>
-    reactionProduct r ∈ C ∧ reactionLeft r ∈ C ∧ reactionRight r ∈ C ∧
-      ∃ y ∈ C, Cat y r
 
-@[simp] theorem mem_markedCoreReactions {n : Nat}
-    {Cat : Catalysis (Molecule n) (Reaction n)} {C : Finset (Molecule n)}
-    {r : Reaction n} :
-    r ∈ markedCoreReactions Cat C ↔
-      reactionProduct r ∈ C ∧ reactionLeft r ∈ C ∧ reactionRight r ∈ C ∧
-        ∃ y ∈ C, Cat y r := by
-  classical
-  simp [markedCoreReactions]
+
+
 
 theorem revClosureAt_subset_succ {M R : Type*} [DecidableEq M]
     (Q : ReversibleCRS M R) (S : Finset R) (k : Nat) :

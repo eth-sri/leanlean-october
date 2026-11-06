@@ -16,14 +16,8 @@ def catalystPoolOpen {n : Nat} (ω : AmbientCoord n → Prop)
     (C : Finset (Molecule n)) (r : Reaction n) : Prop :=
   ∃ x ∈ C, ω (x, r)
 
-/-- Coordinate block queried by one reaction against a fixed catalyst pool. -/
-def catalystPoolBlock {n : Nat} (C : Finset (Molecule n)) (r : Reaction n) :
-    Finset (AmbientCoord n) :=
-  C.product {r}
 
-@[simp] theorem card_catalystPoolBlock {n : Nat}
-    (C : Finset (Molecule n)) (r : Reaction n) :
-    (catalystPoolBlock C r).card = C.card := by
-  simp [catalystPoolBlock]
+
+
 
 end HordijkSteelThreshold

@@ -1,0 +1,2290 @@
+diff --git a/proofs/HordijkSteelThreshold/BinaryReactionSplit.lean b/proofs/HordijkSteelThreshold/BinaryReactionSplit.lean
+index 8db1872e2..48f2a80a4 100644
+--- a/proofs/HordijkSteelThreshold/BinaryReactionSplit.lean
++++ b/proofs/HordijkSteelThreshold/BinaryReactionSplit.lean
+@@ -17,8 +17,8 @@ theorem moleculeWord_length {n : ℕ} (x : Molecule n) :
+   ((binaryListWordEquiv (molLength x)).symm x.2).property
+ 
+ theorem binaryWordCode_moleculeWord {n : ℕ} (x : Molecule n) :
+-    binaryWordCode (moleculeWord x) = x.2.val := by
+-  exact congrArg Fin.val ((binaryListWordEquiv (molLength x)).apply_symm_apply x.2)
++    binaryWordCode (moleculeWord x) = x.2.val :=
++  congrArg Fin.val ((binaryListWordEquiv (molLength x)).apply_symm_apply x.2)
+ 
+ theorem reactionLeft_code_div {n : ℕ} (r : Reaction n) :
+     (reactionLeft r).2.val = r.2.1.val / 2 ^ reactionRightLength r := by
+diff --git a/proofs/HordijkSteelThreshold/CatalystPoolBlocks.lean b/proofs/HordijkSteelThreshold/CatalystPoolBlocks.lean
+index 7f877f1c5..63b7db081 100644
+--- a/proofs/HordijkSteelThreshold/CatalystPoolBlocks.lean
++++ b/proofs/HordijkSteelThreshold/CatalystPoolBlocks.lean
+@@ -16,14 +16,8 @@ def catalystPoolOpen {n : Nat} (ω : AmbientCoord n → Prop)
+     (C : Finset (Molecule n)) (r : Reaction n) : Prop :=
+   ∃ x ∈ C, ω (x, r)
+ 
+-/-- Coordinate block queried by one reaction against a fixed catalyst pool. -/
+-def catalystPoolBlock {n : Nat} (C : Finset (Molecule n)) (r : Reaction n) :
+-    Finset (AmbientCoord n) :=
+-  C.product {r}
+-
+-@[simp] theorem card_catalystPoolBlock {n : Nat}
+-    (C : Finset (Molecule n)) (r : Reaction n) :
+-    (catalystPoolBlock C r).card = C.card := by
+-  simp [catalystPoolBlock]
++
++
++
+ 
+ end HordijkSteelThreshold
+diff --git a/proofs/HordijkSteelThreshold/DiamondCutPotential.lean b/proofs/HordijkSteelThreshold/DiamondCutPotential.lean
+index b2c7c7de8..9bf2b941a 100644
+--- a/proofs/HordijkSteelThreshold/DiamondCutPotential.lean
++++ b/proofs/HordijkSteelThreshold/DiamondCutPotential.lean
+@@ -7,8 +7,7 @@ public import Mathlib.Tactic
+ namespace HordijkSteelThreshold
+ 
+ private theorem xor_pair_cancel (a b c : Bool) :
+-    ((a ^^ b) ^^ ((b ^^ c) ^^ c)) = a := by
+-  cases a <;> cases b <;> cases c <;> decide
++    ((a ^^ b) ^^ ((b ^^ c) ^^ c)) = a := by simp_all                                    
+ 
+ private theorem xor_diamond_left (a b c d e f : Bool)
+     (hcd : (c ^^ d) = e) (hdiamond : (((f ^^ a) ^^ e) ^^ b) = false) :
+diff --git a/proofs/HordijkSteelThreshold/FamilyOpenProbability.lean b/proofs/HordijkSteelThreshold/FamilyOpenProbability.lean
+index ff437015a..e493e544d 100644
+--- a/proofs/HordijkSteelThreshold/FamilyOpenProbability.lean
++++ b/proofs/HordijkSteelThreshold/FamilyOpenProbability.lean
+@@ -126,8 +126,7 @@ theorem measure_catalystPoolFamiliesClosed {n : Nat} {ι : Type*}
+           have hz : (x, r) ∈ C.product (T.biUnion R) := by
+             exact Finset.mem_product.mpr
+               ⟨hx, Finset.mem_biUnion.mpr ⟨i, hi, hr⟩⟩
+-          have hfalse := hclosed (x, r) hz
+-          exact hfalse ▸ hω]
++          exact hclosed (x, r) hz ▸ hω]
+   rw [measure_catalystBlockClosed_card]
+   simp
+ 
+diff --git a/proofs/HordijkSteelThreshold/GatewayCavity.lean b/proofs/HordijkSteelThreshold/GatewayCavity.lean
+index aa4dc6380..6ee88c929 100644
+--- a/proofs/HordijkSteelThreshold/GatewayCavity.lean
++++ b/proofs/HordijkSteelThreshold/GatewayCavity.lean
+@@ -9,50 +9,19 @@ namespace HordijkSteelThreshold
+ open MeasureTheory ProbabilityTheory
+ open RAF RAF.Polymer RAF.Concrete
+ 
+-/-- The catalysis relation obtained from bulk coordinates alone.  Every edge
+-whose target is a gateway reaction is deleted. -/
+-def bulkCatalysis {n : Nat} (bulk : Set (NonseedCoord n)) :
+-    Catalysis (Molecule n) (Reaction n) := fun x r =>
+-  if h : RevSeedReaction (binaryPolymerCRS n 2) r then False
+-  else (x, ⟨r, h⟩) ∈ bulk
+-
+-def GatewayForced {n : Nat} (J : Finset (PolymerSeedReaction n 2))
+-    (r : Reaction n) : Prop :=
+-  ∃ h : RevSeedReaction (binaryPolymerCRS n 2) r, (⟨r, h⟩ : PolymerSeedReaction n 2) ∈ J
+-
+-/-- A `J`-seeded RAF uses a private external catalyst exactly for reactions
+-in `J`; every other catalytic witness must come from the internally generated
+-closure and a nongateway coordinate.  Encoding the external catalyst as the
+-`GatewayForced` disjunct avoids changing the molecule universe. -/
+-def IsGatewaySeededRAF {n : Nat} (bulk : Set (NonseedCoord n))
+-    (J : Finset (PolymerSeedReaction n 2)) (S : Finset (Reaction n)) : Prop :=
+-  S.Nonempty ∧
+-    RevFoodGenerated (binaryPolymerCRS n 2) S ∧
+-    ∀ r ∈ S, GatewayForced J r ∨
+-      ∃ x k, x ∈ revClosureAt (binaryPolymerCRS n 2) S k ∧ bulkCatalysis bulk x r
+-
+-noncomputable def gatewaySeededRAFFamily {n : Nat} (bulk : Set (NonseedCoord n))
+-    (J : Finset (PolymerSeedReaction n 2)) : Finset (Finset (Reaction n)) := by
+-  classical
+-  exact Finset.univ.filter (IsGatewaySeededRAF bulk J)
+-
+-@[simp] theorem mem_gatewaySeededRAFFamily {n : Nat} (bulk : Set (NonseedCoord n))
+-    (J : Finset (PolymerSeedReaction n 2)) (S : Finset (Reaction n)) :
+-    S ∈ gatewaySeededRAFFamily bulk J ↔ IsGatewaySeededRAF bulk J S := by
+-  classical
+-  simp [gatewaySeededRAFFamily]
+-
+-/-- Gateway reactions used by a concrete reaction set, retaining their proof
+-that they lie on the food boundary. -/
+-noncomputable def gatewayPart {n : Nat} (S : Finset (Reaction n)) :
+-    Finset (PolymerSeedReaction n 2) := by
+-  classical
+-  exact Finset.univ.filter fun r => r.1 ∈ S
+-
+-@[simp] theorem mem_gatewayPart {n : Nat} (S : Finset (Reaction n))
+-    (r : PolymerSeedReaction n 2) : r ∈ gatewayPart S ↔ r.1 ∈ S := by
+-  classical
+-  simp [gatewayPart]
++
++
++
++
++
++
++
++
++
++
++
++
++
+ 
+ theorem revClosureStep_mono {M R : Type*} [DecidableEq M]
+     (Q : ReversibleCRS M R) {S T : Finset R} {A B : Finset M}
+@@ -85,10 +54,6 @@ theorem revClosureAt_mono_reactions {M R : Type*} [DecidableEq M]
+   | succ k ih =>
+       exact revClosureStep_mono Q hST ih
+ 
+-theorem GatewayForced.mono {n : Nat}
+-    {J K : Finset (PolymerSeedReaction n 2)} (hJK : J ⊆ K)
+-    {r : Reaction n} (hr : GatewayForced J r) : GatewayForced K r := by
+-  obtain ⟨hseed, hrJ⟩ := hr
+-  exact ⟨hseed, hJK hrJ⟩
++
+ 
+ end HordijkSteelThreshold
+diff --git a/proofs/HordijkSteelThreshold/HalfPoolAsymptotics.lean b/proofs/HordijkSteelThreshold/HalfPoolAsymptotics.lean
+index c6fd0230e..5f85380f7 100644
+--- a/proofs/HordijkSteelThreshold/HalfPoolAsymptotics.lean
++++ b/proofs/HordijkSteelThreshold/HalfPoolAsymptotics.lean
+@@ -1,18 +1,2 @@
+ module
+-
+ public import proofs.HordijkSteelThreshold.FixedPoolReactionLaw
+-
+-@[expose] public section
+-
+-namespace HordijkSteelThreshold
+-open Classical Filter MeasureTheory RAF.Polymer RAF.Concrete unitInterval
+-open scoped Topology
+-
+-noncomputable def halfCatalystPool (n : ℕ) : Finset (Molecule n) :=
+-  finiteInitialSegment (Molecule n) (Fintype.card (Molecule n)/2)
+-
+-@[simp] theorem halfCatalystPool_card (n : ℕ) :
+-    (halfCatalystPool n).card = Fintype.card (Molecule n)/2 :=
+-  card_finiteInitialSegment _ _ (Nat.div_le_self _ _)
+-
+-end HordijkSteelThreshold
+diff --git a/proofs/HordijkSteelThreshold/InfiniteStaticLaw.lean b/proofs/HordijkSteelThreshold/InfiniteStaticLaw.lean
+index 1e23c5b13..7b57fa3fd 100644
+--- a/proofs/HordijkSteelThreshold/InfiniteStaticLaw.lean
++++ b/proofs/HordijkSteelThreshold/InfiniteStaticLaw.lean
+@@ -32,11 +32,8 @@ def currySplitField (ω : (List Bool × ℕ) → Prop) : InfiniteSplitEnvironmen
+   fun w k => ω (w,k)
+ 
+ theorem measurable_currySplitField : Measurable currySplitField := by
+-  apply Measurable.of_eval
+-  intro w
+-  apply Measurable.of_eval
+-  intro k
+-  exact measurable_pi_apply (w,k)
++  unfold currySplitField
++  fun_prop
+ 
+ noncomputable def infiniteSplitPi (a : I) : Measure ((List Bool × ℕ) → Prop) :=
+   Measure.infinitePi (fun _ => ambientCoordLaw a)
+diff --git a/proofs/HordijkSteelThreshold/MarkedCoreAdapter.lean b/proofs/HordijkSteelThreshold/MarkedCoreAdapter.lean
+index 6512c7d8b..2a31d5889 100644
+--- a/proofs/HordijkSteelThreshold/MarkedCoreAdapter.lean
++++ b/proofs/HordijkSteelThreshold/MarkedCoreAdapter.lean
+@@ -9,23 +9,9 @@ namespace HordijkSteelThreshold
+ 
+ open RAF RAF.Polymer RAF.Concrete
+ 
+-/-- All internally supported split reactions carried by `C`. -/
+-noncomputable def markedCoreReactions {n : Nat}
+-    (Cat : Catalysis (Molecule n) (Reaction n)) (C : Finset (Molecule n)) :
+-    Finset (Reaction n) := by
+-  classical
+-  exact Finset.univ.filter fun r =>
+-    reactionProduct r ∈ C ∧ reactionLeft r ∈ C ∧ reactionRight r ∈ C ∧
+-      ∃ y ∈ C, Cat y r
+-
+-@[simp] theorem mem_markedCoreReactions {n : Nat}
+-    {Cat : Catalysis (Molecule n) (Reaction n)} {C : Finset (Molecule n)}
+-    {r : Reaction n} :
+-    r ∈ markedCoreReactions Cat C ↔
+-      reactionProduct r ∈ C ∧ reactionLeft r ∈ C ∧ reactionRight r ∈ C ∧
+-        ∃ y ∈ C, Cat y r := by
+-  classical
+-  simp [markedCoreReactions]
++
++
++
+ 
+ theorem revClosureAt_subset_succ {M R : Type*} [DecidableEq M]
+     (Q : ReversibleCRS M R) (S : Finset R) (k : Nat) :
+diff --git a/proofs/HordijkSteelThreshold/NearFullPoolAsymptotics.lean b/proofs/HordijkSteelThreshold/NearFullPoolAsymptotics.lean
+index d243a186d..2c9564521 100644
+--- a/proofs/HordijkSteelThreshold/NearFullPoolAsymptotics.lean
++++ b/proofs/HordijkSteelThreshold/NearFullPoolAsymptotics.lean
+@@ -16,11 +16,8 @@ theorem nearFullPoolSize_le (n m : ℕ) : nearFullPoolSize n m ≤ Fintype.card
+   dsimp [nearFullPoolSize]
+   nlinarith
+ 
+-noncomputable def nearFullCatalystPool (n m : ℕ) : Finset (Molecule n) :=
+-  finiteInitialSegment (Molecule n) (nearFullPoolSize n m)
+ 
+-@[simp] theorem nearFullCatalystPool_card (n m : ℕ) :
+-    (nearFullCatalystPool n m).card = nearFullPoolSize n m :=
+-  card_finiteInitialSegment _ _ (nearFullPoolSize_le n m)
++
++
+ 
+ end HordijkSteelThreshold
+diff --git a/proofs/HordijkSteelThreshold/WordContourProbability.lean b/proofs/HordijkSteelThreshold/WordContourProbability.lean
+index d3427bc84..4775d963b 100644
+--- a/proofs/HordijkSteelThreshold/WordContourProbability.lean
++++ b/proofs/HordijkSteelThreshold/WordContourProbability.lean
+@@ -47,8 +47,8 @@ noncomputable instance staticReactionMeasure_probability (N : ℕ) (a : I) :
+   infer_instance
+ 
+ theorem staticReactionMeasure_indep (N : ℕ) (a : I) :
+-    iIndepFun (fun r (ω : Reaction N → Prop) => ω r) (staticReactionMeasure N a) := by
+-  exact iIndepFun_infinitePi (fun _ => measurable_id)
++    iIndepFun (fun r (ω : Reaction N → Prop) => ω r) (staticReactionMeasure N a) :=
++  iIndepFun_infinitePi (fun _ => measurable_id)
+ 
+ theorem staticReactionMeasure_open {N : ℕ} (a : I) (r : Reaction N) :
+     staticReactionMeasure N a {ω | ω r} = (toNNReal a : ENNReal) := by
+diff --git a/proofs/HordijkSteelThreshold/WordDiamondDegree.lean b/proofs/HordijkSteelThreshold/WordDiamondDegree.lean
+index 048b6df07..f4510c649 100644
+--- a/proofs/HordijkSteelThreshold/WordDiamondDegree.lean
++++ b/proofs/HordijkSteelThreshold/WordDiamondDegree.lean
+@@ -37,16 +37,14 @@ theorem wordDiamond_incidence_card {L N : ℕ} (e : WordBasicEdge L N)
+   · have hs : wordDiamondIncidence (u, false) ⊆
+         insert u (Finset.univ.filter (fun v => boundedFoodRight v = u)) := by
+       intro v hv
+-      have h := (wordDiamond_incidence_false u v).mp (Finset.mem_filter.mp hv).2
+-      simpa using h
++      simpa using (wordDiamond_incidence_false u v).mp (Finset.mem_filter.mp hv).2
+     have hc := (Finset.card_le_card hs).trans (Finset.card_insert_le _ _)
+     have hf := boundedFoodRight_fiber_card u hn
+     omega
+   · have hs : wordDiamondIncidence (u, true) ⊆
+         insert u (Finset.univ.filter (fun v => boundedFoodLeft v = u)) := by
+       intro v hv
+-      have h := (wordDiamond_incidence_true u v).mp (Finset.mem_filter.mp hv).2
+-      simpa using h
++      simpa using (wordDiamond_incidence_true u v).mp (Finset.mem_filter.mp hv).2
+     have hc := (Finset.card_le_card hs).trans (Finset.card_insert_le _ _)
+     have hf := boundedFoodLeft_fiber_card u hn
+     omega
+diff --git a/proofs/HordijkSteelThreshold/WordEffectiveClosure.lean b/proofs/HordijkSteelThreshold/WordEffectiveClosure.lean
+index d0ad0265c..93296e8fe 100644
+--- a/proofs/HordijkSteelThreshold/WordEffectiveClosure.lean
++++ b/proofs/HordijkSteelThreshold/WordEffectiveClosure.lean
+@@ -90,8 +90,7 @@ noncomputable def actualWordSource {N : ℕ} (s : ActualBinaryWord N) : Molecule
+ theorem actualWordSource_injective {N : ℕ} : Function.Injective (@actualWordSource N) := by
+   intro s t h
+   apply Subtype.ext
+-  have hw := congrArg moleculeWord h
+-  simpa only [actualWordSource_word] using hw
++  simpa only [actualWordSource_word] using congrArg moleculeWord h
+ 
+ /-- The rooted effective component really is contained in ordinary reversible
+ closure from temporary food, using only reactions open in this same field. -/
+diff --git a/proofs/HordijkSteelThreshold/WordMolecularCounts.lean b/proofs/HordijkSteelThreshold/WordMolecularCounts.lean
+index 676ee4c21..8c02b95b2 100644
+--- a/proofs/HordijkSteelThreshold/WordMolecularCounts.lean
++++ b/proofs/HordijkSteelThreshold/WordMolecularCounts.lean
+@@ -71,8 +71,8 @@ theorem molecular_minor_side_below_band (N M : ℕ) (hMN : M < N)
+     simp only [hc, Finset.card_empty] at hminor
+     omega
+   have hc : (actualBinaryWords N \ S).card < 2 ^ M := by
+-    have hx := (Finset.card_le_card hcomp).trans_lt (shortBinaryWords_card_lt (M - 1))
+-    simpa only [Nat.sub_add_cancel hM] using hx
++    simpa only [Nat.sub_add_cancel hM] using
++      (Finset.card_le_card hcomp).trans_lt (shortBinaryWords_card_lt (M - 1))
+   have hp : (2 : ℕ) ^ M < 2 ^ N := (pow_lt_pow_iff_right₀ (by decide : (1 : ℕ) < 2)).mpr hMN
+   have hpartition := Finset.card_sdiff_add_card_eq_card hsub
+   rw [actualBinaryWords_card, pow_succ] at hpartition
+diff --git a/proofs/HordijkSteelThreshold/WordMoleculeContourCount.lean b/proofs/HordijkSteelThreshold/WordMoleculeContourCount.lean
+index c5d78a2ca..cdbbb9077 100644
+--- a/proofs/HordijkSteelThreshold/WordMoleculeContourCount.lean
++++ b/proofs/HordijkSteelThreshold/WordMoleculeContourCount.lean
+@@ -46,8 +46,7 @@ def molecularContourConstant : ℕ := 2 * 7 ^ 64 * 81
+ theorem wordMoleculeContourEnvelope_card (L N : ℕ) (s : List Bool) (b : ℕ) (hb : 0 < b) :
+     (wordMoleculeContourEnvelope L N s b).card ≤ molecularContourConstant ^ b := by
+   have h2 : (2 : ℕ) ≤ 2 ^ b := by
+-    have h := pow_le_pow_right₀ (by decide : (1 : ℕ) ≤ 2) (show 1 ≤ b by omega)
+-    simpa using h
++    simpa using pow_le_pow_right₀ (by decide : (1 : ℕ) ≤ 2) (show 1 ≤ b by omega)
+   have h81 : (81 : ℕ) ^ (b - 1) ≤ 81 ^ b :=
+     pow_le_pow_right₀ (by decide) (Nat.sub_le b 1)
+   calc
+diff --git a/proofs/RAF/Concrete/Events.lean b/proofs/RAF/Concrete/Events.lean
+index 8fd7a063a..ee61a1c11 100644
+--- a/proofs/RAF/Concrete/Events.lean
++++ b/proofs/RAF/Concrete/Events.lean
+@@ -13,7 +13,7 @@ def HasRAFEvent (n : Nat) : Set (CatalysisSample n) :=
+   {ω | ∃ S : Finset (Reaction n),
+     IsRevRAF (binaryPolymerCRS n 2) (catalysisOf ω) S}
+ 
+-theorem measurableSet_hasRAFEvent (n : Nat) : MeasurableSet (HasRAFEvent n) := by
+-  exact Set.toFinite (HasRAFEvent n) |>.measurableSet
++theorem measurableSet_hasRAFEvent (n : Nat) : MeasurableSet (HasRAFEvent n) :=
++  Set.toFinite (HasRAFEvent n) |>.measurableSet
+ 
+ end RAF.Concrete
+diff --git a/proofs/RAF/Concrete/PolymerCRS.lean b/proofs/RAF/Concrete/PolymerCRS.lean
+index 5c4fbd28d..eccbf0ee0 100644
+--- a/proofs/RAF/Concrete/PolymerCRS.lean
++++ b/proofs/RAF/Concrete/PolymerCRS.lean
+@@ -1,151 +1,144 @@
+-module
+-
+-public import proofs.RAF.Polymer.Reactions
+-
+-@[expose] public section
+-
+-namespace RAF.Concrete
+-
+-open RAF.Polymer
+-
+-/-- Length of an ambient binary polymer. -/
+-def molLength {n : Nat} (x : Molecule n) : Nat := x.1.val + 1
+-
+-theorem moleculeOfCode_index_lt {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n) :
+-    L - 1 < n :=
+-  Nat.lt_of_lt_of_le (Nat.sub_lt hL (Nat.zero_lt_succ 0)) hLn
+-
+-theorem moleculeOfCode_pow_eq {L : Nat} (hL : 1 ≤ L) :
+-    2 ^ L = 2 ^ (L - 1 + 1) :=
+-  congrArg (fun k : Nat => 2 ^ k) (Nat.sub_add_cancel hL).symm
+-
+-/-- A length-indexed word viewed as an ambient molecule. -/
+-def moleculeOfCode {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n)
+-    (x : Word L) : Molecule n :=
+-  ⟨⟨L - 1, moleculeOfCode_index_lt hL hLn⟩,
+-    Fin.cast (moleculeOfCode_pow_eq hL) x⟩
+-
+-/-- Concatenate the bit patterns of two molecules.  `finProdFinEquiv` is the
+-standard mixed-radix bijection, here with radices `2^|u|` and `2^|v|`. -/
+-def concatCode {n : Nat} (u v : Molecule n) : Word (molLength u + molLength v) :=
+-  Fin.cast ((pow_add 2 (molLength u) (molLength v)).symm)
+-    (finProdFinEquiv (u.2, v.2))
+-
+-def concatMolecule {n : Nat} (u v : Molecule n)
+-    (h : molLength u + molLength v ≤ n) : Molecule n :=
+-  moleculeOfCode (Nat.le_trans (Nat.succ_le_succ (Nat.zero_le u.1.val))
+-    (Nat.le_add_right (molLength u) (molLength v))) h (concatCode u v)
+-
+-@[simp] theorem molLength_moleculeOfCode {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n)
+-    (x : Word L) : molLength (moleculeOfCode hL hLn x) = L := by
+-  simp [molLength, moleculeOfCode]
+-  omega
+-
+-def reactionProductLength {n : Nat} (r : Reaction n) : Nat := r.1.val + 1
+-def reactionLeftLength {n : Nat} (r : Reaction n) : Nat := r.2.2.val + 1
+-def reactionRightLength {n : Nat} (r : Reaction n) : Nat :=
+-  r.1.val - r.2.2.val
+-
+-theorem reaction_length_add {n : Nat} (r : Reaction n) :
+-    reactionLeftLength r + reactionRightLength r = reactionProductLength r := by
+-  exact Eq.trans
+-    (Nat.add_right_comm r.2.2.val 1 (r.1.val - r.2.2.val))
+-    (congrArg (fun k : Nat => k + 1)
+-      (Eq.trans (Nat.add_comm r.2.2.val (r.1.val - r.2.2.val))
+-        (Nat.sub_add_cancel (Nat.le_of_lt r.2.2.isLt))))
+-
+-theorem reaction_left_pos {n : Nat} (r : Reaction n) :
+-    1 ≤ reactionLeftLength r := by
+-  exact Nat.succ_pos r.2.2.val
+-
+-theorem reaction_right_pos {n : Nat} (r : Reaction n) :
+-    1 ≤ reactionRightLength r := by
+-  exact Nat.sub_pos_of_lt r.2.2.isLt
+-
+-theorem reaction_product_le {n : Nat} (r : Reaction n) :
+-    reactionProductLength r ≤ n := by
+-  exact r.1.isLt
+-
+-theorem reaction_pow_split {n : Nat} (r : Reaction n) :
+-    2 ^ (r.1.val + 1) =
+-      2 ^ reactionLeftLength r * 2 ^ reactionRightLength r := by
+-  rw [← pow_add, reaction_length_add]
+-  rfl
+-
+-/-- Split the encoded product at its recorded split position. -/
+-def splitCodes {n : Nat} (r : Reaction n) :
+-    Word (reactionLeftLength r) × Word (reactionRightLength r) :=
+-  (finProdFinEquiv).symm
+-    (Fin.cast (reaction_pow_split r) r.2.1)
+-
+-def reactionLeft {n : Nat} (r : Reaction n) : Molecule n :=
+-  moleculeOfCode (reaction_left_pos r)
+-    (by linarith [reaction_product_le r, reaction_length_add r]) (splitCodes r).1
+-
+-def reactionRight {n : Nat} (r : Reaction n) : Molecule n :=
+-  moleculeOfCode (reaction_right_pos r)
+-    (by linarith [reaction_product_le r, reaction_length_add r]) (splitCodes r).2
+-
+-def reactionProduct {n : Nat} (r : Reaction n) : Molecule n :=
+-  ⟨r.1, r.2.1⟩
+-
+-@[simp] theorem molLength_reactionLeft {n : Nat} (r : Reaction n) :
+-    molLength (reactionLeft r) = reactionLeftLength r := by
+-  simp [reactionLeft]
+-
+-@[simp] theorem molLength_reactionRight {n : Nat} (r : Reaction n) :
+-    molLength (reactionRight r) = reactionRightLength r := by
+-  simp [reactionRight]
+-
+-@[simp] theorem molLength_reactionProduct {n : Nat} (r : Reaction n) :
+-    molLength (reactionProduct r) = reactionProductLength r := rfl
+-
+-/-- A reversible CRS records the two sides of each base reaction. Catalysis is
+-indexed by the base reaction, so one sampled coordinate catalyzes both
+-directions, exactly as in the paper's reaction convention. -/
+-structure ReversibleCRS (M R : Type*) [DecidableEq M] where
+-  lhs : R → Finset M
+-  rhs : R → Finset M
+-  food : Finset M
+-
+-def RevEnabledLhs {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (available : Finset M) (r : R) : Prop :=
+-  Q.lhs r ⊆ available
+-
+-def RevEnabledRhs {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (available : Finset M) (r : R) : Prop :=
+-  Q.rhs r ⊆ available
+-
+-instance revEnabledLhsDecidable {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (available : Finset M) (r : R) :
+-    Decidable (RevEnabledLhs Q available r) := by
+-  unfold RevEnabledLhs
+-  infer_instance
+-
+-instance revEnabledRhsDecidable {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (available : Finset M) (r : R) :
+-    Decidable (RevEnabledRhs Q available r) := by
+-  unfold RevEnabledRhs
+-  infer_instance
+-
+-def revClosureStep {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (S : Finset R) (available : Finset M) : Finset M :=
+-  available ∪ S.biUnion (fun r =>
+-    (if RevEnabledLhs Q available r then Q.rhs r else ∅) ∪
+-    (if RevEnabledRhs Q available r then Q.lhs r else ∅))
+-
+-def revClosureAt {M R : Type*} [DecidableEq M]
+-    (Q : ReversibleCRS M R) (S : Finset R) : Nat → Finset M
+-  | 0 => Q.food
+-  | k + 1 => revClosureStep Q S (revClosureAt Q S k)
+-
+-def binaryFood (n t : Nat) : Finset (Molecule n) :=
+-  Finset.univ.filter (fun x => molLength x ≤ t)
+-
+-/-- The concrete split-position, bidirectional binary-polymer CRS. -/
+-def binaryPolymerCRS (n t : Nat) : ReversibleCRS (Molecule n) (Reaction n) where
+-  lhs := fun r => {reactionLeft r, reactionRight r}
+-  rhs := fun r => {reactionProduct r}
+-  food := binaryFood n t
+-
+-end RAF.Concrete
++module
++
++public import proofs.RAF.Polymer.Reactions
++
++@[expose] public section
++
++namespace RAF.Concrete
++
++open RAF.Polymer
++
++/-- Length of an ambient binary polymer. -/
++def molLength {n : Nat} (x : Molecule n) : Nat := x.1.val + 1
++
++theorem moleculeOfCode_index_lt {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n) :
++    L - 1 < n :=
++  Nat.lt_of_lt_of_le (Nat.sub_lt hL (Nat.zero_lt_succ 0)) hLn
++
++theorem moleculeOfCode_pow_eq {L : Nat} (hL : 1 ≤ L) :
++    2 ^ L = 2 ^ (L - 1 + 1) :=
++  congrArg (fun k : Nat => 2 ^ k) (Nat.sub_add_cancel hL).symm
++
++/-- A length-indexed word viewed as an ambient molecule. -/
++def moleculeOfCode {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n)
++    (x : Word L) : Molecule n :=
++  ⟨⟨L - 1, moleculeOfCode_index_lt hL hLn⟩,
++    Fin.cast (moleculeOfCode_pow_eq hL) x⟩
++
++/-- Concatenate the bit patterns of two molecules.  `finProdFinEquiv` is the
++standard mixed-radix bijection, here with radices `2^|u|` and `2^|v|`. -/
++def concatCode {n : Nat} (u v : Molecule n) : Word (molLength u + molLength v) :=
++  Fin.cast ((pow_add 2 (molLength u) (molLength v)).symm)
++    (finProdFinEquiv (u.2, v.2))
++
++def concatMolecule {n : Nat} (u v : Molecule n)
++    (h : molLength u + molLength v ≤ n) : Molecule n :=
++  moleculeOfCode (Nat.le_trans (Nat.succ_le_succ (Nat.zero_le u.1.val))
++    (Nat.le_add_right (molLength u) (molLength v))) h (concatCode u v)
++
++@[simp] theorem molLength_moleculeOfCode {n L : Nat} (hL : 1 ≤ L) (hLn : L ≤ n)
++    (x : Word L) : molLength (moleculeOfCode hL hLn x) = L := by
++  simp [molLength, moleculeOfCode, Nat.sub_add_cancel hL]
++
++def reactionProductLength {n : Nat} (r : Reaction n) : Nat := r.1.val + 1
++def reactionLeftLength {n : Nat} (r : Reaction n) : Nat := r.2.2.val + 1
++def reactionRightLength {n : Nat} (r : Reaction n) : Nat :=
++  r.1.val - r.2.2.val
++
++theorem reaction_length_add {n : Nat} (r : Reaction n) :
++    reactionLeftLength r + reactionRightLength r = reactionProductLength r := by
++  simp only [reactionLeftLength, reactionRightLength, reactionProductLength]
++  omega
++
++theorem reaction_left_pos {n : Nat} (r : Reaction n) :
++    1 ≤ reactionLeftLength r := Nat.succ_pos _
++
++theorem reaction_right_pos {n : Nat} (r : Reaction n) :
++    1 ≤ reactionRightLength r := Nat.sub_pos_of_lt r.2.2.isLt
++
++theorem reaction_product_le {n : Nat} (r : Reaction n) :
++    reactionProductLength r ≤ n := r.1.isLt
++
++theorem reaction_pow_split {n : Nat} (r : Reaction n) :
++    2 ^ (r.1.val + 1) =
++      2 ^ reactionLeftLength r * 2 ^ reactionRightLength r := by
++  rw [← pow_add, reaction_length_add]
++  rfl
++
++/-- Split the encoded product at its recorded split position. -/
++def splitCodes {n : Nat} (r : Reaction n) :
++    Word (reactionLeftLength r) × Word (reactionRightLength r) :=
++  (finProdFinEquiv).symm
++    (Fin.cast (reaction_pow_split r) r.2.1)
++
++def reactionLeft {n : Nat} (r : Reaction n) : Molecule n :=
++  moleculeOfCode (reaction_left_pos r)
++    (by linarith [reaction_product_le r, reaction_length_add r]) (splitCodes r).1
++
++def reactionRight {n : Nat} (r : Reaction n) : Molecule n :=
++  moleculeOfCode (reaction_right_pos r)
++    (by linarith [reaction_product_le r, reaction_length_add r]) (splitCodes r).2
++
++def reactionProduct {n : Nat} (r : Reaction n) : Molecule n :=
++  ⟨r.1, r.2.1⟩
++
++@[simp] theorem molLength_reactionLeft {n : Nat} (r : Reaction n) :
++    molLength (reactionLeft r) = reactionLeftLength r := by
++  simp [reactionLeft]
++
++@[simp] theorem molLength_reactionRight {n : Nat} (r : Reaction n) :
++    molLength (reactionRight r) = reactionRightLength r := by
++  simp [reactionRight]
++
++@[simp] theorem molLength_reactionProduct {n : Nat} (r : Reaction n) :
++    molLength (reactionProduct r) = reactionProductLength r := rfl
++
++/-- A reversible CRS records the two sides of each base reaction. Catalysis is
++indexed by the base reaction, so one sampled coordinate catalyzes both
++directions, exactly as in the paper's reaction convention. -/
++structure ReversibleCRS (M R : Type*) [DecidableEq M] where
++  lhs : R → Finset M
++  rhs : R → Finset M
++  food : Finset M
++
++def RevEnabledLhs {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (available : Finset M) (r : R) : Prop :=
++  Q.lhs r ⊆ available
++
++def RevEnabledRhs {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (available : Finset M) (r : R) : Prop :=
++  Q.rhs r ⊆ available
++
++instance revEnabledLhsDecidable {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (available : Finset M) (r : R) :
++    Decidable (RevEnabledLhs Q available r) := by
++  unfold RevEnabledLhs
++  infer_instance
++
++instance revEnabledRhsDecidable {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (available : Finset M) (r : R) :
++    Decidable (RevEnabledRhs Q available r) := by
++  unfold RevEnabledRhs
++  infer_instance
++
++def revClosureStep {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (S : Finset R) (available : Finset M) : Finset M :=
++  available ∪ S.biUnion (fun r =>
++    (if RevEnabledLhs Q available r then Q.rhs r else ∅) ∪
++    (if RevEnabledRhs Q available r then Q.lhs r else ∅))
++
++def revClosureAt {M R : Type*} [DecidableEq M]
++    (Q : ReversibleCRS M R) (S : Finset R) : Nat → Finset M
++  | 0 => Q.food
++  | k + 1 => revClosureStep Q S (revClosureAt Q S k)
++
++def binaryFood (n t : Nat) : Finset (Molecule n) :=
++  Finset.univ.filter (fun x => molLength x ≤ t)
++
++/-- The concrete split-position, bidirectional binary-polymer CRS. -/
++def binaryPolymerCRS (n t : Nat) : ReversibleCRS (Molecule n) (Reaction n) where
++  lhs := fun r => {reactionLeft r, reactionRight r}
++  rhs := fun r => {reactionProduct r}
++  food := binaryFood n t
++
++end RAF.Concrete
+diff --git a/proofs/RAF/Core/CRS.lean b/proofs/RAF/Core/CRS.lean
+index 742013e34..1442523dc 100644
+--- a/proofs/RAF/Core/CRS.lean
++++ b/proofs/RAF/Core/CRS.lean
+@@ -6,10 +6,7 @@ public import Mathlib
+ 
+ namespace RAF
+ 
+-structure CRS (M R : Type*) [DecidableEq M] where
+-  inputs : R → Finset M
+-  outputs : R → Finset M
+-  food : Finset M
++
+ 
+ def Catalysis (M R : Type*) := M → R → Prop
+ 
+diff --git a/proofs/RAF/Core/Closure.lean b/proofs/RAF/Core/Closure.lean
+index 3ddca8679..2becbfc3c 100644
+--- a/proofs/RAF/Core/Closure.lean
++++ b/proofs/RAF/Core/Closure.lean
+@@ -1,26 +1,2 @@
+ module
+-
+ public import proofs.RAF.Core.CRS
+-
+-@[expose] public section
+-
+-namespace RAF
+-
+-variable {M R : Type*} [DecidableEq M]
+-
+-def Enabled (Q : CRS M R) (available : Finset M) (r : R) : Prop :=
+-  Q.inputs r ⊆ available
+-
+-instance enabledDecidable (Q : CRS M R) (available : Finset M) (r : R) :
+-    Decidable (Enabled Q available r) := by
+-  unfold Enabled
+-  infer_instance
+-
+-def closureStep (Q : CRS M R) (S : Finset R) (available : Finset M) : Finset M :=
+-  available ∪ S.biUnion (fun r => if Enabled Q available r then Q.outputs r else ∅)
+-
+-def closureAt (Q : CRS M R) (S : Finset R) : Nat → Finset M
+-  | 0 => Q.food
+-  | k + 1 => closureStep Q S (closureAt Q S k)
+-
+-end RAF
+diff --git a/proofs/RAF/Core/RAF.lean b/proofs/RAF/Core/RAF.lean
+index 881171411..2f51706b4 100644
+--- a/proofs/RAF/Core/RAF.lean
++++ b/proofs/RAF/Core/RAF.lean
+@@ -1,25 +1,2 @@
+ module
+-
+ public import proofs.RAF.Core.Closure
+-
+-@[expose] public section
+-
+-namespace RAF
+-
+-variable {M R : Type*} [DecidableEq M] [DecidableEq R]
+-
+-def FoodGenerated (Q : CRS M R) (S : Finset R) : Prop :=
+-  ∀ r ∈ S, ∃ k, Q.inputs r ⊆ closureAt Q S k
+-
+-def CatalyzedFromClosure (Q : CRS M R) (C : Catalysis M R)
+-    (S : Finset R) (r : R) : Prop :=
+-  ∃ x k, x ∈ closureAt Q S k ∧ C x r
+-
+-def ReflexivelyAutocatalytic (Q : CRS M R) (C : Catalysis M R)
+-    (S : Finset R) : Prop :=
+-  ∀ r ∈ S, CatalyzedFromClosure Q C S r
+-
+-def IsRAF (Q : CRS M R) (C : Catalysis M R) (S : Finset R) : Prop :=
+-  S.Nonempty ∧ FoodGenerated Q S ∧ ReflexivelyAutocatalytic Q C S
+-
+-end RAF
+diff --git a/proofs/RAF/Frankl/Antimatroid.lean b/proofs/RAF/Frankl/Antimatroid.lean
+index cb63eece5..1be82cfdc 100644
+--- a/proofs/RAF/Frankl/Antimatroid.lean
++++ b/proofs/RAF/Frankl/Antimatroid.lean
+@@ -1,18 +1,2 @@
+ module
+-
+ public import proofs.RAF.Frankl.Semantics
+-
+-@[expose] public section
+-
+-namespace RAF.Frankl
+-
+-open RAF
+-
+-variable {M R : Type*} [DecidableEq M]
+-
+-@[simp] theorem foodGenerated_empty (Q : CRS M R) :
+-    FoodGenerated Q (∅ : Finset R) := by
+-  intro r hr
+-  simp at hr
+-
+-end RAF.Frankl
+diff --git a/proofs/RAF/Frankl/Semantics.lean b/proofs/RAF/Frankl/Semantics.lean
+index b3cf44a37..a21ffb8e5 100644
+--- a/proofs/RAF/Frankl/Semantics.lean
++++ b/proofs/RAF/Frankl/Semantics.lean
+@@ -1,54 +1,2 @@
+ module
+-
+ public import proofs.RAF.Core.RAF
+-
+-@[expose] public section
+-
+-namespace RAF.Frankl
+-
+-open RAF
+-
+-variable {M R : Type*} [DecidableEq M]
+-
+-/-- A reaction is retained by one RAF-pruning step when its reactants and at
+-least one catalyst occur at some finite stage of the molecular closure. -/
+-def Supported (Q : CRS M R) (C : Catalysis M R) (S : Finset R) (r : R) : Prop :=
+-  (∃ k, Q.inputs r ⊆ closureAt Q S k) ∧ CatalyzedFromClosure Q C S r
+-
+-/-- The source-faithful one-step RAF pruning operator. -/
+-noncomputable def prune (Q : CRS M R) (C : Catalysis M R)
+-    (S : Finset R) : Finset R := by
+-  classical
+-  exact S.filter (Supported Q C S)
+-
+-@[simp] theorem mem_prune (Q : CRS M R) (C : Catalysis M R)
+-    (S : Finset R) (r : R) :
+-    r ∈ prune Q C S ↔ r ∈ S ∧ Supported Q C S r := by
+-  classical
+-  simp [prune]
+-
+-/-- Exact finite family of all nonempty RAFs. Classical decidability is used
+-only to enumerate a finite powerset; the mathematical predicate is `IsRAF`. -/
+-noncomputable def rafFamily (Q : CRS M R) (C : Catalysis M R) [Fintype R] :
+-    Finset (Finset R) := by
+-  classical
+-  exact Finset.univ.powerset.filter (IsRAF Q C)
+-
+-@[simp] theorem mem_rafFamily (Q : CRS M R) (C : Catalysis M R) [Fintype R]
+-    (S : Finset R) : S ∈ rafFamily Q C ↔ IsRAF Q C S := by
+-  classical
+-  simp [rafFamily]
+-
+-/-- The full pruning fixed family: the empty fixed point together with all
+-nonempty RAFs. -/
+-noncomputable def fixedFamily (Q : CRS M R) (C : Catalysis M R) [Fintype R] :
+-    Finset (Finset R) := by
+-  classical
+-  exact insert ∅ (rafFamily Q C)
+-
+-@[simp] theorem mem_fixedFamily (Q : CRS M R) (C : Catalysis M R) [Fintype R]
+-    (S : Finset R) : S ∈ fixedFamily Q C ↔ S = ∅ ∨ IsRAF Q C S := by
+-  classical
+-  simp [fixedFamily]
+-
+-end RAF.Frankl
+diff --git a/proofs/RAF/Polymer/Reactions.lean b/proofs/RAF/Polymer/Reactions.lean
+index fbcacf65d..3a9e90e9c 100644
+--- a/proofs/RAF/Polymer/Reactions.lean
++++ b/proofs/RAF/Polymer/Reactions.lean
+@@ -11,7 +11,6 @@ product of length `k+1`; `split : Fin k` records one of its `k` splits. -/
+ abbrev Reaction (n : Nat) := Σ k : Fin n, Word (k.val + 1) × Fin k.val
+ 
+ theorem card_reaction_sigma (n : Nat) :
+-    Fintype.card (Reaction n) = ∑ k : Fin n, 2 ^ (k.val + 1) * k.val := by
+-  simp [Reaction, Word]
++    Fintype.card (Reaction n) = ∑ k : Fin n, 2 ^ (k.val + 1) * k.val := by simp_all               
+ 
+ end RAF.Polymer
+diff --git a/proofs/RAF/Polymer/Words.lean b/proofs/RAF/Polymer/Words.lean
+index bcfc32e58..641b8a56d 100644
+--- a/proofs/RAF/Polymer/Words.lean
++++ b/proofs/RAF/Polymer/Words.lean
+@@ -14,7 +14,6 @@ represents length `k+1`. -/
+ abbrev Molecule (n : Nat) := Σ k : Fin n, Word (k.val + 1)
+ 
+ theorem card_molecule_sigma (n : Nat) :
+-    Fintype.card (Molecule n) = ∑ k : Fin n, 2 ^ (k.val + 1) := by
+-  simp [Molecule, Word]
++    Fintype.card (Molecule n) = ∑ k : Fin n, 2 ^ (k.val + 1) := by simp_all               
+ 
+ end RAF.Polymer
+diff --git a/proofs/RAFCriticalWindowQuantitative/ApproximationParameters.lean b/proofs/RAFCriticalWindowQuantitative/ApproximationParameters.lean
+index 505a19ec7..6d47134f5 100644
+--- a/proofs/RAFCriticalWindowQuantitative/ApproximationParameters.lean
++++ b/proofs/RAFCriticalWindowQuantitative/ApproximationParameters.lean
+@@ -1,43 +1,49 @@
+-module
+-
+-public import proofs.RAFCriticalWindowQuantitative.GeometricCutoff
+-
+-@[expose] public section
+-
+-namespace RAFCriticalWindowQuantitative
+-
+-theorem rationalHalf_pos (q : ℚ) (hq : 0 < q) : 0 < q/2 :=
+-  div_pos hq zero_lt_two
+-
+-theorem rationalHalf_le_one (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : q/2 ≤ 1 :=
+-  (div_le_self hq.le one_le_two).trans hq1
+-
+-def precisionIndex (ε : ℚ) : ℕ := ⌈4/ε⌉₊+2
+-
+-theorem precisionIndex_ge_two (ε : ℚ) : 2 ≤ precisionIndex ε := by
+-  unfold precisionIndex
+-  omega
+-
+-theorem precisionIndex_error (ε : ℚ) (hε : 0 < ε) :
+-    1/(precisionIndex ε : ℚ) ≤ ε/4 := by
+-  have hc := Nat.le_ceil (4/ε : ℚ)
+-  have hm : (0 : ℚ) < precisionIndex ε := by
+-    exact_mod_cast (show 0 < precisionIndex ε from lt_of_lt_of_le (by omega) (precisionIndex_ge_two ε))
+-  have hbig : (4 : ℚ)/ε ≤ precisionIndex ε := by
+-    exact hc.trans (by simp [precisionIndex])
+-  have hx := (div_le_iff₀ hε).mp hbig
+-  apply (div_le_iff₀ hm).mpr
+-  nlinarith
+-
+-def recordIndex (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (L : ℕ)
+-    (ε : ℚ) (hε : 0 < ε) : ℕ :=
+-  geometricIndex (1-q^(L+1)) (2^(L+1)) (ε/4)
+-    (repair_ratio q hq hq1 L).1 (repair_ratio q hq hq1 L).2 (by positivity)
+-
+-theorem recordIndex_error (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (L : ℕ)
+-    (ε : ℚ) (hε : 0 < ε) :
+-    0 < recordIndex q hq hq1 L ε hε ∧
+-      (2 : ℚ)^(L+1)*(1-q^(L+1))^(recordIndex q hq hq1 L ε hε) ≤ ε/4 :=
+-  geometricIndex_spec _ _ _ _ _ _
+-
+-end RAFCriticalWindowQuantitative
++module
++
++public import proofs.RAFCriticalWindowQuantitative.GeometricCutoff
++
++@[expose] public section
++
++namespace RAFCriticalWindowQuantitative
++
++theorem rationalHalf_pos (q : ℚ) (hq : 0 < q) : 0 < q/2 :=
++  div_pos hq zero_lt_two
++
++theorem rationalHalf_le_one (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : q/2 ≤ 1 :=
++  (div_le_self hq.le one_le_two).trans hq1
++
++def precisionIndex (ε : ℚ) : ℕ := ⌈4/ε⌉₊+2
++
++theorem precisionIndex_ge_two (ε : ℚ) : 2 ≤ precisionIndex ε := by
++  unfold precisionIndex
++  omega
++
++theorem precisionIndex_error (ε : ℚ) (hε : 0 < ε) :
++    1/(precisionIndex ε : ℚ) ≤ ε/4 := by
++  have hc := Nat.le_ceil (4/ε : ℚ)
++  have hm : (0 : ℚ) < precisionIndex ε := by
++    exact_mod_cast (show 0 < precisionIndex ε from lt_of_lt_of_le (by omega) (precisionIndex_ge_two ε))
++  have hbig : (4 : ℚ)/ε ≤ precisionIndex ε := by
++    exact hc.trans (by simp [precisionIndex])
++  have hx := (div_le_iff₀ hε).mp hbig
++  apply (div_le_iff₀ hm).mpr
++  nlinarith
++
++theorem real_precisionIndex_error (ε : ℚ) (hε : 0 < ε) :
++    1/(precisionIndex ε : ℝ) ≤ (ε : ℝ)/4 := by
++  have h := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
++  push_cast at h
++  exact h
++
++def recordIndex (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (L : ℕ)
++    (ε : ℚ) (hε : 0 < ε) : ℕ :=
++  geometricIndex (1-q^(L+1)) (2^(L+1)) (ε/4)
++    (repair_ratio q hq hq1 L).1 (repair_ratio q hq hq1 L).2 (by positivity)
++
++theorem recordIndex_error (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (L : ℕ)
++    (ε : ℚ) (hε : 0 < ε) :
++    0 < recordIndex q hq hq1 L ε hε ∧
++      (2 : ℚ)^(L+1)*(1-q^(L+1))^(recordIndex q hq hq1 L ε hε) ≤ ε/4 :=
++  geometricIndex_spec _ _ _ _ _ _
++
++end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/CertifiedEvaluator.lean b/proofs/RAFCriticalWindowQuantitative/CertifiedEvaluator.lean
+index 72d21061a..d3e826bc7 100644
+--- a/proofs/RAFCriticalWindowQuantitative/CertifiedEvaluator.lean
++++ b/proofs/RAFCriticalWindowQuantitative/CertifiedEvaluator.lean
+@@ -31,18 +31,13 @@ theorem splitCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+   let e := splitEscapeEval q (K-2)
+   have hm : 2 ≤ m := precisionIndex_ge_two ε
+   have hK : 2 ≤ K := recordCap_ge_two L r
+-  have hS : staticSurvival a ≠ ⊤ := by
+-    unfold staticSurvival
+-    exact measure_ne_top _ _
++  have hS : staticSurvival a ≠ ⊤ := measure_ne_top _ _
+   have ht := real_error_of_bound (splitEscapeProbability a K) (staticSurvival a) hS m L r
+     (by omega) a (explicit_split_truncation q hq hq1 m hm a le_rfl r)
+   have he : (e : ℝ) = (splitEscapeProbability a K).toReal :=
+     (splitEscapeEval_correct q hq.le hq1 (K-2)).trans
+       (congrArg ENNReal.toReal (split_escape_finite a K hK).symm)
+-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
+-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
+-    push_cast at hcast
+-    exact hcast
++  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
+   have hr := real_record_budget q hq hq1 L ε hε
+   change (splitEscapeProbability a K).toReal ≤ (staticSurvival a).toReal+1/(m : ℝ)+
+     ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
+@@ -51,14 +46,9 @@ theorem splitCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+     linarith
+   have hl : (staticSurvival a).toReal ≤ (e : ℝ) := by
+     rw [he]
+-    apply ENNReal.toReal_mono _ (split_survival_le_escape a K)
+-    unfold splitEscapeProbability
+-    exact measure_ne_top _ _
++    exact ENNReal.toReal_mono (measure_ne_top _ _) (split_survival_le_escape a K)
+   change ((e-ε/2 : ℚ) : ℝ) ≤ (staticSurvival a).toReal ∧
+     (staticSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
+-  refine ⟨?_,hl,?_⟩
+-  · push_cast
+-    linarith
+-  · linarith
++  refine ⟨by push_cast; linarith, hl, by linarith⟩
+ 
+ end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/EffectiveSeed.lean b/proofs/RAFCriticalWindowQuantitative/EffectiveSeed.lean
+index 7461a8035..3c26cd120 100644
+--- a/proofs/RAFCriticalWindowQuantitative/EffectiveSeed.lean
++++ b/proofs/RAFCriticalWindowQuantitative/EffectiveSeed.lean
+@@ -19,18 +19,14 @@ instance (b : ℚ) (m k : ℕ) : Decidable (seedTest b m k) :=
+ 
+ theorem seedTest_exists (b : ℚ) (hb : 0 < b) (hb1 : b ≤ 1) (m : ℕ) :
+     ∃ k, seedTest b m k := by
+-  have hbR : (0 : ℝ) < b := by exact_mod_cast hb
+-  have hbR1 : (b : ℝ) ≤ 1 := by exact_mod_cast hb1
+-  have hq0 : (0 : ℝ) ≤ 1 - (b : ℝ)^2 := by nlinarith
+-  have hq1 : 1 - (b : ℝ)^2 < 1 := by nlinarith
+-  have ht := tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1
+-  have hs := (ht.const_mul (molecularContourConstant : ℝ)).mul_const
+-    ((m : ℝ) * (m+1) + 1)
++  have ht := tendsto_pow_atTop_nhds_zero_of_lt_one
++    (show (0 : ℚ) ≤ 1 - b^2 by nlinarith) (show 1 - b^2 < 1 by nlinarith)
++  have hs := (ht.const_mul (molecularContourConstant : ℚ)).mul_const
++    ((m : ℚ) * (m+1) + 1)
+   simp only [mul_zero, zero_mul] at hs
+   obtain ⟨k, hk, hv⟩ := ((eventually_ge_atTop 1).and
+-    (hs.eventually_lt_const (show (0 : ℝ) < 1 by norm_num))).exists
+-  refine ⟨k, by omega, ?_⟩
+-  exact_mod_cast hv.le
++    (hs.eventually_lt_const (show (0 : ℚ) < 1 by norm_num))).exists
++  exact ⟨k, by omega, hv.le⟩
+ 
+ /-- Executable unbounded search; termination is proved from geometric decay. -/
+ def seedIndex (b : ℚ) (hb : 0 < b) (hb1 : b ≤ 1) (m : ℕ) : ℕ :=
+diff --git a/proofs/RAFCriticalWindowQuantitative/EffectiveSeedSurvival.lean b/proofs/RAFCriticalWindowQuantitative/EffectiveSeedSurvival.lean
+index d88095bac..8ee60fd44 100644
+--- a/proofs/RAFCriticalWindowQuantitative/EffectiveSeedSurvival.lean
++++ b/proofs/RAFCriticalWindowQuantitative/EffectiveSeedSurvival.lean
+@@ -53,8 +53,7 @@ theorem effective_seed_probability_le_survival (q : ℚ) (hq : 0 < q) (hq1 : q 
+       have hc := (Finset.card_le_card hs).trans (binaryFood_card_le_cutoff N (K+2))
+       change (m-1)*Fintype.card (Molecule N) ≤ m*(temporaryReactionClosure 2 (staticOpenReactions ω)).card at hω
+       have hmult : Fintype.card (Molecule N) ≤ (m-1)*Fintype.card (Molecule N) := by
+-        have hh := Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
+-        simpa using hh
++        simpa using Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
+       nlinarith
+     exact (same_field_seed_mass_bound N L m b).trans
+       (add_le_add hmass (hbad N (by omega)))
+diff --git a/proofs/RAFCriticalWindowQuantitative/ExplicitTruncation.lean b/proofs/RAFCriticalWindowQuantitative/ExplicitTruncation.lean
+index 97a68c442..872a9df9c 100644
+--- a/proofs/RAFCriticalWindowQuantitative/ExplicitTruncation.lean
++++ b/proofs/RAFCriticalWindowQuantitative/ExplicitTruncation.lean
+@@ -9,42 +9,93 @@ namespace RAFCriticalWindowQuantitative
+ open Classical HordijkSteelThreshold MeasureTheory unitInterval RAF.Polymer
+ open scoped ENNReal
+ 
++noncomputable def escapeProbabilityWith (field : SplitField → InfiniteSplitEnvironment)
++    (a : I) (K : ℕ) : ENNReal :=
++  infiniteSplitPi a {ω | ∃ w, K < w.length ∧ InfiniteReversibleGenerated 2 (field ω) w}
++
+ /-- Literal infinite escape probability; first escape gives its finite cap 2K. -/
+ noncomputable def splitEscapeProbability (a : I) (K : ℕ) : ENNReal :=
+   infiniteSplitPi a {ω | ∃ w, K < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w}
+ 
+-theorem explicit_split_truncation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+-    (m : ℕ) (hm : 2 ≤ m) (a : I) (ha : rationalParameter q hq.le hq1 ≤ a) (r : ℕ) :
+-    let L := 10*seedIndex q hq hq1 m
+-    splitEscapeProbability a (recordCap L r) ≤ staticSurvival a + (m : ENNReal)⁻¹ +
++theorem explicit_truncation_with (field : SplitField → InfiniteSplitEnvironment)
++    (hf : Measurable field) (survival : I → ENNReal) (L m : ℕ) (a : I) (r : ℕ)
++    (hgood₀ : (infiniteSplitPi a).map field {f | ∀ v ∈ actualBinaryWords L,
++      InfiniteReversibleGenerated 2 f v} ≤ survival a + (m : ENNReal)⁻¹)
++    (hcontract : ∀ v, 0 < v.length → ∀ B, 2 ≤ B →
++      infiniteSplitPi a (escapedMissingWith field (2*B+v.length) v) ≤
++        infiniteSplitPi a (escapedMissingWith field B v) *
++          (1-(toNNReal a : ENNReal)^(v.length+1))) :
++    escapeProbabilityWith field a (recordCap L r) ≤ survival a + (m : ENNReal)⁻¹ +
+       ((actualBinaryWords L).card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-  let L := 10*seedIndex q hq hq1 m
+   let K := recordCap L r
+-  let E : Set SplitField := {ω | ∃ w, K < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w}
+-  let H : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, FiniteReversibleGenerated K 2 (currySplitField ω) v}
+-  let G : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 (currySplitField ω) v}
++  let E : Set SplitField := {ω | ∃ w, K < w.length ∧ InfiniteReversibleGenerated 2 (field ω) w}
++  let H : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, FiniteReversibleGenerated K 2 (field ω) v}
++  let G : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 (field ω) v}
+   have hseed : ∀ v ∈ actualBinaryWords L, 0 < v.length ∧ v.length ≤ L := by
+     intro v hv
+     have hh := (mem_actualBinaryWords v L).mp hv
+     exact ⟨List.length_pos_iff.mpr hh.1,hh.2⟩
+   have hbad : infiniteSplitPi a (E ∩ Hᶜ) ≤
+-      ((actualBinaryWords L).card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r :=
+-    finite_seed_failure a (actualBinaryWords L) L hseed r
+-  have hgood : infiniteSplitPi a H ≤ staticSurvival a + (m : ENNReal)⁻¹ := by
+-    have hi := effective_seed_probability_le_survival q hq hq1 m hm a ha
+-    have hmeas : MeasurableSet {field : InfiniteSplitEnvironment |
+-        ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 field v} := by
+-      have he : {field : InfiniteSplitEnvironment |
+-          ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 field v} =
+-          ⋂ v ∈ actualBinaryWords L, {field | InfiniteReversibleGenerated 2 field v} := by
+-        ext field
++      ((actualBinaryWords L).card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r := by
++    have anti (v : List Bool) : Antitone (fun B => escapedMissingWith field B v) := by
++      intro B N hBN ω hω
++      obtain ⟨w,hw,hg⟩ := hω.1
++      exact ⟨⟨w,by omega,hg⟩, fun hv => hω.2 (finiteReversibleGenerated_mono_cap hBN hv)⟩
++    have repeated (v : List Bool) (hv : 0 < v.length) (r : ℕ) :
++        infiniteSplitPi a (escapedMissingWith field (recordCap v.length r) v) ≤
++          (1-(toNNReal a : ENNReal)^(v.length+1))^r := by
++      induction r with
++      | zero => simpa only [pow_zero] using
++        (prob_le_one : infiniteSplitPi a (escapedMissingWith field (recordCap v.length 0) v) ≤ 1)
++      | succ r ih =>
++        calc
++          _ ≤ infiniteSplitPi a (escapedMissingWith field (recordCap v.length r) v) *
++              (1-(toNNReal a : ENNReal)^(v.length+1)) :=
++            hcontract v hv _ (recordCap_ge_two _ _)
++          _ ≤ (1-(toNNReal a : ENNReal)^(v.length+1))^r *
++              (1-(toNNReal a : ENNReal)^(v.length+1)) := mul_le_mul' ih le_rfl
++          _ = _ := (pow_succ _ _).symm
++    have common (v : List Bool) (hv : 0 < v.length) (hvL : v.length ≤ L) :
++        infiniteSplitPi a (escapedMissingWith field (recordCap L r) v) ≤
++          (1-(toNNReal a : ENNReal)^(L+1))^r := by
++      have hp : (toNNReal a : ENNReal)^(L+1) ≤ (toNNReal a : ENNReal)^(v.length+1) := by
++        apply pow_le_pow_of_le_one (zero_le : 0 ≤ (toNNReal a : ENNReal))
++        · exact_mod_cast a.property.2
++        · omega
++      exact ((measure_mono (anti v (recordCap_mono_length hvL r))).trans (repeated v hv r)).trans
++        (pow_le_pow_left' (tsub_le_tsub_left hp 1) r)
++    have hsub : {ω : SplitField |
++        (∃ w, recordCap L r < w.length ∧ InfiniteReversibleGenerated 2 (field ω) w) ∧
++        ¬ ∀ v ∈ actualBinaryWords L,
++          FiniteReversibleGenerated (recordCap L r) 2 (field ω) v} ⊆
++        ⋃ v ∈ actualBinaryWords L, escapedMissingWith field (recordCap L r) v := by
++      intro ω hω
++      push Not at hω
++      obtain ⟨v,hv,hmissing⟩ := hω.2
++      exact Set.mem_iUnion.mpr ⟨v,Set.mem_iUnion.mpr ⟨hv,hω.1,hmissing⟩⟩
++    calc
++      _ ≤ infiniteSplitPi a (⋃ v ∈ actualBinaryWords L,
++          escapedMissingWith field (recordCap L r) v) := measure_mono hsub
++      _ ≤ ∑ v ∈ actualBinaryWords L, infiniteSplitPi a
++          (escapedMissingWith field (recordCap L r) v) := measure_biUnion_finset_le _ _
++      _ ≤ ∑ _v ∈ actualBinaryWords L, (1-(toNNReal a : ENNReal)^(L+1))^r := by
++        apply Finset.sum_le_sum
++        intro v hv
++        exact common v (hseed v hv).1 (hseed v hv).2
++      _ = _ := by simp
++  have hgood : infiniteSplitPi a H ≤ survival a + (m : ENNReal)⁻¹ := by
++    have hmeas : MeasurableSet {f : InfiniteSplitEnvironment |
++        ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 f v} := by
++      have he : {f : InfiniteSplitEnvironment |
++          ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 f v} =
++          ⋂ v ∈ actualBinaryWords L, {f | InfiniteReversibleGenerated 2 f v} := by
++        ext f
+         simp
+       rw [he]
+       exact MeasurableSet.biInter (Finset.countable_toSet _) (fun v _ =>
+         measurableSet_infiniteReversibleGenerated 2 v)
+-    rw [infiniteStaticMeasure, Measure.map_apply measurable_currySplitField
+-      hmeas] at hi
+-    apply (measure_mono (show H ⊆ G from ?_)).trans hi
++    rw [Measure.map_apply hf hmeas] at hgood₀
++    apply (measure_mono (show H ⊆ G from ?_)).trans hgood₀
+     intro ω hω v hv
+     exact finiteReversibleGenerated_to_infinite (hω v hv)
+   have hs : E ⊆ (E ∩ Hᶜ) ∪ H := by
+@@ -53,8 +104,18 @@ theorem explicit_split_truncation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+     · exact Or.inr hh
+     · exact Or.inl ⟨hω,hh⟩
+   calc
+-    splitEscapeProbability a K ≤ infiniteSplitPi a ((E ∩ Hᶜ) ∪ H) := measure_mono hs
++    escapeProbabilityWith field a K ≤ infiniteSplitPi a ((E ∩ Hᶜ) ∪ H) := measure_mono hs
+     _ ≤ infiniteSplitPi a (E ∩ Hᶜ) + infiniteSplitPi a H := measure_union_le _ _
+     _ ≤ _ := by simpa only [add_comm] using add_le_add hbad hgood
+ 
++theorem explicit_split_truncation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
++    (m : ℕ) (hm : 2 ≤ m) (a : I) (ha : rationalParameter q hq.le hq1 ≤ a) (r : ℕ) :
++    let L := 10*seedIndex q hq hq1 m
++    splitEscapeProbability a (recordCap L r) ≤ staticSurvival a + (m : ENNReal)⁻¹ +
++      ((actualBinaryWords L).card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r := by
++  let L := 10*seedIndex q hq hq1 m
++  exact explicit_truncation_with currySplitField measurable_currySplitField staticSurvival L m a r
++    (effective_seed_probability_le_survival q hq hq1 m hm a ha)
++    (fun v hv B hB => escaped_missing_contraction a v hv B hB)
++
+ end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/FiniteOpenCount.lean b/proofs/RAFCriticalWindowQuantitative/FiniteOpenCount.lean
+index 5e7c69634..74ad663bc 100644
+--- a/proofs/RAFCriticalWindowQuantitative/FiniteOpenCount.lean
++++ b/proofs/RAFCriticalWindowQuantitative/FiniteOpenCount.lean
+@@ -5,8 +5,6 @@ public import proofs.RAFCriticalWindowQuantitative.SparseClosure
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+-set_option maxHeartbeats 100000
+ 
+ namespace RAFCriticalWindowQuantitative
+ open Classical HordijkSteelThreshold MeasureTheory ProbabilityTheory unitInterval
+diff --git a/proofs/RAFCriticalWindowQuantitative/GeometricCutoff.lean b/proofs/RAFCriticalWindowQuantitative/GeometricCutoff.lean
+index 56e9efc13..5c9f3de34 100644
+--- a/proofs/RAFCriticalWindowQuantitative/GeometricCutoff.lean
++++ b/proofs/RAFCriticalWindowQuantitative/GeometricCutoff.lean
+@@ -15,13 +15,11 @@ instance (t c ε : ℚ) (r : ℕ) : Decidable (geometricTest t c ε r) :=
+ 
+ theorem geometricTest_exists (t c ε : ℚ) (ht0 : 0 ≤ t) (ht1 : t < 1) (hε : 0 < ε) :
+     ∃ r, geometricTest t c ε r := by
+-  have ht0R : (0 : ℝ) ≤ t := by exact_mod_cast ht0
+-  have ht1R : (t : ℝ) < 1 := by exact_mod_cast ht1
+-  have hεR : (0 : ℝ) < ε := by exact_mod_cast hε
+-  have hs := (tendsto_pow_atTop_nhds_zero_of_lt_one ht0R ht1R).const_mul (c : ℝ)
++  have hs := (tendsto_pow_atTop_nhds_zero_of_lt_one ht0 ht1).const_mul c
+   simp only [mul_zero] at hs
+-  obtain ⟨r,hr,hv⟩ := ((eventually_ge_atTop 1).and (hs.eventually_lt_const hεR)).exists
+-  exact ⟨r,by omega,by exact_mod_cast hv.le⟩
++  obtain ⟨r, hr, hv⟩ := ((eventually_ge_atTop 1).and
++    (hs.eventually_lt_const hε)).exists
++  exact ⟨r, by omega, hv.le⟩
+ 
+ def geometricIndex (t c ε : ℚ) (ht0 : 0 ≤ t) (ht1 : t < 1) (hε : 0 < ε) : ℕ :=
+   Nat.find (geometricTest_exists t c ε ht0 ht1 hε)
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientCertifiedEvaluator.lean b/proofs/RAFCriticalWindowQuantitative/QuotientCertifiedEvaluator.lean
+index 40f97b352..b14b9221b 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientCertifiedEvaluator.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientCertifiedEvaluator.lean
+@@ -1,68 +1,58 @@
+-module
+-
+-public import proofs.RAFCriticalWindowQuantitative.EscapeEvaluation
+-public import proofs.RAFCriticalWindowQuantitative.RealErrorBudget
+-
+-@[expose] public section
+-
+-namespace RAFCriticalWindowQuantitative
+-open HordijkSteelThreshold RAFReactionQuotient MeasureTheory
+-
+-def quotientEvaluationCap (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℕ :=
+-  let hhalf : 0 < q/2 := rationalHalf_pos q hq
+-  let hhalf1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
+-  let L := 10*seedIndex (q/2) hhalf hhalf1 (precisionIndex ε)
+-  recordCap L (recordIndex q hq hq1 L ε hε)
+-
+-def quotientCertifiedInterval (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℚ × ℚ :=
+-  let e := quotientEscapeEval q (quotientEvaluationCap q hq hq1 ε hε-2)
+-  (e-ε/2,e)
+-
+-/-- An executable terminating rational enclosure for the actual quotient survival profile. -/
+-theorem quotientCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+-    (ε : ℚ) (hε : 0 < ε) :
+-    let interval := quotientCertifiedInterval q hq hq1 ε hε
+-    (interval.1 : ℝ) ≤ (quotientSurvival (rationalParameter q hq.le hq1)).toReal ∧
+-      (quotientSurvival (rationalParameter q hq.le hq1)).toReal ≤ (interval.2 : ℝ) ∧
+-      interval.2-interval.1 < ε := by
+-  let m := precisionIndex ε
+-  have hhalf : 0 < q/2 := by positivity
+-  have hhalf1 : q/2 ≤ 1 := by linarith
+-  let L := 10*seedIndex (q/2) hhalf hhalf1 m
+-  let r := recordIndex q hq hq1 L ε hε
+-  let K := recordCap L r
+-  let a := rationalParameter q hq.le hq1
+-  let e := quotientEscapeEval q (K-2)
+-  have hm : 2 ≤ m := precisionIndex_ge_two ε
+-  have hK : 2 ≤ K := recordCap_ge_two L r
+-  have hS : quotientSurvival a ≠ ⊤ := by
+-    unfold quotientSurvival
+-    exact measure_ne_top _ _
+-  have ht := real_error_of_bound (quotientEscapeProbability a K) (quotientSurvival a) hS m L r
+-    (by omega) a (explicit_quotient_truncation q hq hq1 m hm a le_rfl r)
+-  have he : (e : ℝ) = (quotientEscapeProbability a K).toReal :=
+-    (quotientEscapeEval_correct q hq.le hq1 (K-2)).trans
+-      (congrArg ENNReal.toReal (quotient_escape_finite a K hK).symm)
+-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
+-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
+-    push_cast at hcast
+-    exact hcast
+-  have hr := real_record_budget q hq hq1 L ε hε
+-  change (quotientEscapeProbability a K).toReal ≤ (quotientSurvival a).toReal+1/(m : ℝ)+
+-    ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
+-  have hu : (e : ℝ) ≤ (quotientSurvival a).toReal+(ε : ℝ)/2 := by
+-    rw [he]
+-    linarith
+-  have hl : (quotientSurvival a).toReal ≤ (e : ℝ) := by
+-    rw [he]
+-    apply ENNReal.toReal_mono _ (quotient_survival_le_escape a K)
+-    unfold quotientEscapeProbability
+-    exact measure_ne_top _ _
+-  change ((e-ε/2 : ℚ) : ℝ) ≤ (quotientSurvival a).toReal ∧
+-    (quotientSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
+-  refine ⟨?_,hl,?_⟩
+-  · push_cast
+-    linarith
+-  · linarith
+-
+-end RAFCriticalWindowQuantitative
++module
++
++public import proofs.RAFCriticalWindowQuantitative.EscapeEvaluation
++public import proofs.RAFCriticalWindowQuantitative.RealErrorBudget
++
++@[expose] public section
++
++namespace RAFCriticalWindowQuantitative
++open HordijkSteelThreshold RAFReactionQuotient MeasureTheory
++
++def quotientEvaluationCap (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℕ :=
++  let hhalf : 0 < q/2 := rationalHalf_pos q hq
++  let hhalf1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
++  let L := 10*seedIndex (q/2) hhalf hhalf1 (precisionIndex ε)
++  recordCap L (recordIndex q hq hq1 L ε hε)
++
++def quotientCertifiedInterval (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℚ × ℚ :=
++  let e := quotientEscapeEval q (quotientEvaluationCap q hq hq1 ε hε-2)
++  (e-ε/2,e)
++
++/-- An executable terminating rational enclosure for the actual quotient survival profile. -/
++theorem quotientCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
++    (ε : ℚ) (hε : 0 < ε) :
++    let interval := quotientCertifiedInterval q hq hq1 ε hε
++    (interval.1 : ℝ) ≤ (quotientSurvival (rationalParameter q hq.le hq1)).toReal ∧
++      (quotientSurvival (rationalParameter q hq.le hq1)).toReal ≤ (interval.2 : ℝ) ∧
++      interval.2-interval.1 < ε := by
++  let m := precisionIndex ε
++  have hhalf : 0 < q/2 := by positivity
++  have hhalf1 : q/2 ≤ 1 := by linarith
++  let L := 10*seedIndex (q/2) hhalf hhalf1 m
++  let r := recordIndex q hq hq1 L ε hε
++  let K := recordCap L r
++  let a := rationalParameter q hq.le hq1
++  let e := quotientEscapeEval q (K-2)
++  have hm : 2 ≤ m := precisionIndex_ge_two ε
++  have hK : 2 ≤ K := recordCap_ge_two L r
++  have hS : quotientSurvival a ≠ ⊤ := measure_ne_top _ _
++  have ht := real_error_of_bound (quotientEscapeProbability a K) (quotientSurvival a) hS m L r
++    (by omega) a (explicit_quotient_truncation q hq hq1 m hm a le_rfl r)
++  have he : (e : ℝ) = (quotientEscapeProbability a K).toReal :=
++    (quotientEscapeEval_correct q hq.le hq1 (K-2)).trans
++      (congrArg ENNReal.toReal (quotient_escape_finite a K hK).symm)
++  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
++  have hr := real_record_budget q hq hq1 L ε hε
++  change (quotientEscapeProbability a K).toReal ≤ (quotientSurvival a).toReal+1/(m : ℝ)+
++    ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
++  have hu : (e : ℝ) ≤ (quotientSurvival a).toReal+(ε : ℝ)/2 := by
++    rw [he]
++    linarith
++  have hl : (quotientSurvival a).toReal ≤ (e : ℝ) := by
++    rw [he]
++    exact ENNReal.toReal_mono (measure_ne_top _ _) (quotient_survival_le_escape a K)
++  change ((e-ε/2 : ℚ) : ℝ) ≤ (quotientSurvival a).toReal ∧
++    (quotientSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
++  refine ⟨by push_cast; linarith, hl, by linarith⟩
++
++end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientEffectiveSeedSurvival.lean b/proofs/RAFCriticalWindowQuantitative/QuotientEffectiveSeedSurvival.lean
+index 2def471eb..00da75c75 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientEffectiveSeedSurvival.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientEffectiveSeedSurvival.lean
+@@ -47,8 +47,7 @@ theorem effective_quotient_seed_survival (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+       have hc := (Finset.card_le_card hs).trans (binaryFood_card_le_cutoff N (K+2))
+       change (m-1)*Fintype.card (Molecule N) ≤ m*(quotientClosure N 2 (quotientOpen q)).card at hq
+       have hmult : Fintype.card (Molecule N) ≤ (m-1)*Fintype.card (Molecule N) := by
+-        have hh := Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
+-        simpa using hh
++        simpa using Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
+       nlinarith
+     exact (quotient_same_field_seed_mass N L m b).trans
+       (add_le_add hmass (hbulk b hb N (by omega)))
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientExplicitTruncation.lean b/proofs/RAFCriticalWindowQuantitative/QuotientExplicitTruncation.lean
+index 0f6305863..da0512ded 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientExplicitTruncation.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientExplicitTruncation.lean
+@@ -1,5 +1,6 @@
+ module
+ 
++public import proofs.RAFCriticalWindowQuantitative.ExplicitTruncation
+ public import proofs.RAFCriticalWindowQuantitative.QuotientRecordIteration
+ public import proofs.RAFCriticalWindowQuantitative.QuotientEffectiveSeedSurvival
+ 
+@@ -24,42 +25,8 @@ theorem explicit_quotient_truncation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+   have hhalf : 0 < q/2 := by positivity
+   have hhalf1 : q/2 ≤ 1 := by linarith
+   let L := 10*seedIndex (q/2) hhalf hhalf1 m
+-  let K := recordCap L r
+-  let E : Set SplitField := {ω | ∃ w, K < w.length ∧ InfiniteReversibleGenerated 2 (quotientField ω) w}
+-  let H : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, FiniteReversibleGenerated K 2 (quotientField ω) v}
+-  let G : Set SplitField := {ω | ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 (quotientField ω) v}
+-  have hseed : ∀ v ∈ actualBinaryWords L, 0 < v.length ∧ v.length ≤ L := by
+-    intro v hv
+-    have hh := (mem_actualBinaryWords v L).mp hv
+-    exact ⟨List.length_pos_iff.mpr hh.1,hh.2⟩
+-  have hbad : infiniteSplitPi a (E ∩ Hᶜ) ≤
+-      ((actualBinaryWords L).card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r :=
+-    quotient_finite_seed_failure a (actualBinaryWords L) L hseed r
+-  have hgood : infiniteSplitPi a H ≤ quotientSurvival a + (m : ENNReal)⁻¹ := by
+-    have hi := effective_quotient_seed_survival q hq hq1 m hm a ha
+-    have hmeas : MeasurableSet {field : InfiniteSplitEnvironment |
+-        ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 field v} := by
+-      have he : {field : InfiniteSplitEnvironment |
+-          ∀ v ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 field v} =
+-          ⋂ v ∈ actualBinaryWords L, {field | InfiniteReversibleGenerated 2 field v} := by
+-        ext field
+-        simp
+-      rw [he]
+-      exact MeasurableSet.biInter (Finset.countable_toSet _) (fun v _ =>
+-        measurableSet_infiniteReversibleGenerated 2 v)
+-    rw [quotientInfiniteMeasure, Measure.map_apply quotientField_measurable
+-      hmeas] at hi
+-    apply (measure_mono (show H ⊆ G from ?_)).trans hi
+-    intro ω hω v hv
+-    exact finiteReversibleGenerated_to_infinite (hω v hv)
+-  have hs : E ⊆ (E ∩ Hᶜ) ∪ H := by
+-    intro ω hω
+-    by_cases hh : ω ∈ H
+-    · exact Or.inr hh
+-    · exact Or.inl ⟨hω,hh⟩
+-  calc
+-    quotientEscapeProbability a K ≤ infiniteSplitPi a ((E ∩ Hᶜ) ∪ H) := measure_mono hs
+-    _ ≤ infiniteSplitPi a (E ∩ Hᶜ) + infiniteSplitPi a H := measure_union_le _ _
+-    _ ≤ _ := by simpa only [add_comm] using add_le_add hbad hgood
++  exact explicit_truncation_with quotientField quotientField_measurable quotientSurvival L m a r
++    (effective_quotient_seed_survival q hq hq1 m hm a ha)
++    (fun v hv B hB => quotient_escaped_missing_contraction a v hv B hB)
+ 
+ end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientRecordContraction.lean b/proofs/RAFCriticalWindowQuantitative/QuotientRecordContraction.lean
+index d173542e7..ece25cdca 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientRecordContraction.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientRecordContraction.lean
+@@ -10,8 +10,7 @@ open Classical HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInter
+ open scoped ENNReal
+ 
+ def quotientEscapedMissing (B : ℕ) (v : List Bool) : Set SplitField :=
+-  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (quotientField ω) w) ∧
+-    ¬ FiniteReversibleGenerated B 2 (quotientField ω) v}
++  escapedMissingWith quotientField B v
+ 
+ theorem quotient_finite_missing_determined (B : ℕ) (v : List Bool) :
+     SplitPrefixDetermined (splitPrefixCoordinates B)
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientRecordIteration.lean b/proofs/RAFCriticalWindowQuantitative/QuotientRecordIteration.lean
+index e542f3215..bffa45b1a 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientRecordIteration.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientRecordIteration.lean
+@@ -1,68 +1,3 @@
+ module
+-
+ public import proofs.RAFCriticalWindowQuantitative.RecordIteration
+ public import proofs.RAFCriticalWindowQuantitative.QuotientRecordContraction
+-
+-@[expose] public section
+-
+-namespace RAFCriticalWindowQuantitative
+-open Classical HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInterval
+-open scoped ENNReal
+-
+-theorem quotientEscapedMissing_antitone (v : List Bool) : Antitone (fun B => quotientEscapedMissing B v) := by
+-  intro B N hBN ω hω
+-  obtain ⟨w,hw,hg⟩ := hω.1
+-  exact ⟨⟨w,by omega,hg⟩,
+-    fun hv => hω.2 (finiteReversibleGenerated_mono_cap hBN hv)⟩
+-
+-theorem quotient_repeated_record_failure (a : I) (v : List Bool) (hv : 0 < v.length) (r : ℕ) :
+-    infiniteSplitPi a (quotientEscapedMissing (recordCap v.length r) v) ≤
+-      (1-(toNNReal a : ENNReal)^(v.length+1))^r := by
+-  induction r with
+-  | zero => simpa only [pow_zero] using (prob_le_one : infiniteSplitPi a (quotientEscapedMissing (recordCap v.length 0) v) ≤ 1)
+-  | succ r ih =>
+-    calc
+-      _ ≤ infiniteSplitPi a (quotientEscapedMissing (recordCap v.length r) v) *
+-          (1-(toNNReal a : ENNReal)^(v.length+1)) :=
+-        quotient_escaped_missing_contraction a v hv _ (recordCap_ge_two _ _)
+-      _ ≤ (1-(toNNReal a : ENNReal)^(v.length+1))^r *
+-          (1-(toNNReal a : ENNReal)^(v.length+1)) := mul_le_mul' ih le_rfl
+-      _ = _ := (pow_succ _ _).symm
+-
+-theorem quotient_common_cap_target_failure (a : I) (v : List Bool) (hv : 0 < v.length)
+-    (L : ℕ) (hvL : v.length ≤ L) (r : ℕ) :
+-    infiniteSplitPi a (quotientEscapedMissing (recordCap L r) v) ≤
+-      (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-  have hp : (toNNReal a : ENNReal)^(L+1) ≤ (toNNReal a : ENNReal)^(v.length+1) := by
+-    apply pow_le_pow_of_le_one (zero_le : 0 ≤ (toNNReal a : ENNReal))
+-    · exact_mod_cast a.property.2
+-    · omega
+-  exact ((measure_mono (quotientEscapedMissing_antitone v (recordCap_mono_length hvL r))).trans
+-    (quotient_repeated_record_failure a v hv r)).trans
+-      (pow_le_pow_left' (tsub_le_tsub_left hp 1) r)
+-
+-/-- A finite target family, with no independence asserted between targets. -/
+-theorem quotient_finite_seed_failure (a : I) (seed : Finset (List Bool)) (L : ℕ)
+-    (hseed : ∀ v ∈ seed, 0 < v.length ∧ v.length ≤ L) (r : ℕ) :
+-    infiniteSplitPi a {ω |
+-      (∃ w, recordCap L r < w.length ∧ InfiniteReversibleGenerated 2 (quotientField ω) w) ∧
+-      ¬ ∀ v ∈ seed, FiniteReversibleGenerated (recordCap L r) 2 (quotientField ω) v} ≤
+-      (seed.card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-  have hsub : {ω : SplitField |
+-      (∃ w, recordCap L r < w.length ∧ InfiniteReversibleGenerated 2 (quotientField ω) w) ∧
+-      ¬ ∀ v ∈ seed, FiniteReversibleGenerated (recordCap L r) 2 (quotientField ω) v} ⊆
+-      ⋃ v ∈ seed, quotientEscapedMissing (recordCap L r) v := by
+-    intro ω hω
+-    push Not at hω
+-    obtain ⟨v,hv,hmissing⟩ := hω.2
+-    exact Set.mem_iUnion.mpr ⟨v,Set.mem_iUnion.mpr ⟨hv,hω.1,hmissing⟩⟩
+-  calc
+-    _ ≤ infiniteSplitPi a (⋃ v ∈ seed, quotientEscapedMissing (recordCap L r) v) := measure_mono hsub
+-    _ ≤ ∑ v ∈ seed, infiniteSplitPi a (quotientEscapedMissing (recordCap L r) v) := measure_biUnion_finset_le _ _
+-    _ ≤ ∑ _v ∈ seed, (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-      apply Finset.sum_le_sum
+-      intro v hv
+-      exact quotient_common_cap_target_failure a v (hseed v hv).1 L (hseed v hv).2 r
+-    _ = _ := by simp
+-
+-end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/QuotientSparseClosure.lean b/proofs/RAFCriticalWindowQuantitative/QuotientSparseClosure.lean
+index 67b31eaa0..9e2ed186e 100644
+--- a/proofs/RAFCriticalWindowQuantitative/QuotientSparseClosure.lean
++++ b/proofs/RAFCriticalWindowQuantitative/QuotientSparseClosure.lean
+@@ -5,8 +5,6 @@ public import proofs.RAFReactionQuotient.History
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+-set_option maxHeartbeats 100000
+ 
+ namespace RAFCriticalWindowQuantitative
+ open HordijkSteelThreshold RAFReactionQuotient RAF.Concrete RAF.Polymer OverlapCorrectedRAF.Source
+diff --git a/proofs/RAFCriticalWindowQuantitative/RationalPool.lean b/proofs/RAFCriticalWindowQuantitative/RationalPool.lean
+index d5a91f512..7cd67b3f1 100644
+--- a/proofs/RAFCriticalWindowQuantitative/RationalPool.lean
++++ b/proofs/RAFCriticalWindowQuantitative/RationalPool.lean
+@@ -12,8 +12,8 @@ open HordijkSteelThreshold RAFReactionQuotient unitInterval
+ def rationalPool (p : ℚ) (k : ℕ) : ℚ := 1-(1-p)^k
+ 
+ theorem rationalPool_nonneg (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (k : ℕ) :
+-    0 ≤ rationalPool p k := by
+-  exact sub_nonneg.mpr (pow_le_one₀ (sub_nonneg.mpr hp1) (by linarith))
++    0 ≤ rationalPool p k :=
++  sub_nonneg.mpr (pow_le_one₀ (sub_nonneg.mpr hp1) (by linarith))
+ 
+ theorem rationalPool_le_one (p : ℚ) (hp1 : p ≤ 1) (k : ℕ) : rationalPool p k ≤ 1 := by
+   dsimp [rationalPool]
+@@ -21,8 +21,7 @@ theorem rationalPool_le_one (p : ℚ) (hp1 : p ≤ 1) (k : ℕ) : rationalPool p
+ 
+ theorem rationalPool_correct (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (k : ℕ) :
+     rationalParameter (rationalPool p k) (rationalPool_nonneg p hp hp1 k) (rationalPool_le_one p hp1 k) =
+-      fixedPoolParameter (rationalParameter p hp hp1) k := by
+-  apply Subtype.ext
+-  simp [rationalParameter,rationalPool]
++      fixedPoolParameter (rationalParameter p hp hp1) k :=
++  Subtype.ext (by simp [rationalParameter,rationalPool])
+ 
+ end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/RecordContraction.lean b/proofs/RAFCriticalWindowQuantitative/RecordContraction.lean
+index 8fb4fce4d..ffa5c3b55 100644
+--- a/proofs/RAFCriticalWindowQuantitative/RecordContraction.lean
++++ b/proofs/RAFCriticalWindowQuantitative/RecordContraction.lean
+@@ -9,9 +9,13 @@ namespace RAFCriticalWindowQuantitative
+ open Classical HordijkSteelThreshold MeasureTheory unitInterval
+ open scoped ENNReal
+ 
++def escapedMissingWith (field : SplitField → InfiniteSplitEnvironment) (B : ℕ) (v : List Bool) :
++    Set SplitField :=
++  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (field ω) w) ∧
++    ¬ FiniteReversibleGenerated B 2 (field ω) v}
++
+ def escapedMissing (B : ℕ) (v : List Bool) : Set SplitField :=
+-  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) ∧
+-    ¬ FiniteReversibleGenerated B 2 (currySplitField ω) v}
++  escapedMissingWith currySplitField B v
+ 
+ theorem finite_missing_determined (B : ℕ) (v : List Bool) :
+     SplitPrefixDetermined (splitPrefixCoordinates B)
+diff --git a/proofs/RAFCriticalWindowQuantitative/RecordIteration.lean b/proofs/RAFCriticalWindowQuantitative/RecordIteration.lean
+index b3ccd6f2b..3e3ba9276 100644
+--- a/proofs/RAFCriticalWindowQuantitative/RecordIteration.lean
++++ b/proofs/RAFCriticalWindowQuantitative/RecordIteration.lean
+@@ -1,81 +1,25 @@
+-module
+-
+-public import proofs.RAFCriticalWindowQuantitative.RecordContraction
+-
+-@[expose] public section
+-
+-namespace RAFCriticalWindowQuantitative
+-open Classical HordijkSteelThreshold MeasureTheory unitInterval
+-open scoped ENNReal
+-
+-def recordCap (ell : ℕ) : ℕ → ℕ :=
+-  Nat.rec 2 (fun _ cap => 2*cap+ell)
+-
+-theorem recordCap_ge_two (ell j : ℕ) : 2 ≤ recordCap ell j := by
+-  induction j with
+-  | zero => rfl
+-  | succ j ih => simp only [recordCap] at *; omega
+-
+-theorem recordCap_mono_length {ell L : ℕ} (h : ell ≤ L) (j : ℕ) :
+-    recordCap ell j ≤ recordCap L j := by
+-  induction j with
+-  | zero => rfl
+-  | succ j ih => simp only [recordCap] at *; omega
+-
+-theorem escapedMissing_antitone (v : List Bool) : Antitone (fun B => escapedMissing B v) := by
+-  intro B N hBN ω hω
+-  obtain ⟨w,hw,hg⟩ := hω.1
+-  exact ⟨⟨w,by omega,hg⟩,
+-    fun hv => hω.2 (finiteReversibleGenerated_mono_cap hBN hv)⟩
+-
+-theorem repeated_record_failure (a : I) (v : List Bool) (hv : 0 < v.length) (r : ℕ) :
+-    infiniteSplitPi a (escapedMissing (recordCap v.length r) v) ≤
+-      (1-(toNNReal a : ENNReal)^(v.length+1))^r := by
+-  induction r with
+-  | zero => simpa only [pow_zero] using (prob_le_one : infiniteSplitPi a (escapedMissing (recordCap v.length 0) v) ≤ 1)
+-  | succ r ih =>
+-    calc
+-      _ ≤ infiniteSplitPi a (escapedMissing (recordCap v.length r) v) *
+-          (1-(toNNReal a : ENNReal)^(v.length+1)) :=
+-        escaped_missing_contraction a v hv _ (recordCap_ge_two _ _)
+-      _ ≤ (1-(toNNReal a : ENNReal)^(v.length+1))^r *
+-          (1-(toNNReal a : ENNReal)^(v.length+1)) := mul_le_mul' ih le_rfl
+-      _ = _ := (pow_succ _ _).symm
+-
+-theorem common_cap_target_failure (a : I) (v : List Bool) (hv : 0 < v.length)
+-    (L : ℕ) (hvL : v.length ≤ L) (r : ℕ) :
+-    infiniteSplitPi a (escapedMissing (recordCap L r) v) ≤
+-      (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-  have hp : (toNNReal a : ENNReal)^(L+1) ≤ (toNNReal a : ENNReal)^(v.length+1) := by
+-    apply pow_le_pow_of_le_one (zero_le : 0 ≤ (toNNReal a : ENNReal))
+-    · exact_mod_cast a.property.2
+-    · omega
+-  exact ((measure_mono (escapedMissing_antitone v (recordCap_mono_length hvL r))).trans
+-    (repeated_record_failure a v hv r)).trans
+-      (pow_le_pow_left' (tsub_le_tsub_left hp 1) r)
+-
+-/-- A finite target family, with no independence asserted between targets. -/
+-theorem finite_seed_failure (a : I) (seed : Finset (List Bool)) (L : ℕ)
+-    (hseed : ∀ v ∈ seed, 0 < v.length ∧ v.length ≤ L) (r : ℕ) :
+-    infiniteSplitPi a {ω |
+-      (∃ w, recordCap L r < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) ∧
+-      ¬ ∀ v ∈ seed, FiniteReversibleGenerated (recordCap L r) 2 (currySplitField ω) v} ≤
+-      (seed.card : ENNReal) * (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-  have hsub : {ω : SplitField |
+-      (∃ w, recordCap L r < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) ∧
+-      ¬ ∀ v ∈ seed, FiniteReversibleGenerated (recordCap L r) 2 (currySplitField ω) v} ⊆
+-      ⋃ v ∈ seed, escapedMissing (recordCap L r) v := by
+-    intro ω hω
+-    push Not at hω
+-    obtain ⟨v,hv,hmissing⟩ := hω.2
+-    exact Set.mem_iUnion.mpr ⟨v,Set.mem_iUnion.mpr ⟨hv,hω.1,hmissing⟩⟩
+-  calc
+-    _ ≤ infiniteSplitPi a (⋃ v ∈ seed, escapedMissing (recordCap L r) v) := measure_mono hsub
+-    _ ≤ ∑ v ∈ seed, infiniteSplitPi a (escapedMissing (recordCap L r) v) := measure_biUnion_finset_le _ _
+-    _ ≤ ∑ _v ∈ seed, (1-(toNNReal a : ENNReal)^(L+1))^r := by
+-      apply Finset.sum_le_sum
+-      intro v hv
+-      exact common_cap_target_failure a v (hseed v hv).1 L (hseed v hv).2 r
+-    _ = _ := by simp
+-
+-end RAFCriticalWindowQuantitative
++module
++
++public import proofs.RAFCriticalWindowQuantitative.RecordContraction
++
++@[expose] public section
++
++namespace RAFCriticalWindowQuantitative
++open Classical HordijkSteelThreshold MeasureTheory unitInterval
++open scoped ENNReal
++
++def recordCap (ell : ℕ) : ℕ → ℕ :=
++  Nat.rec 2 (fun _ cap => 2*cap+ell)
++
++theorem recordCap_ge_two (ell j : ℕ) : 2 ≤ recordCap ell j := by
++  induction j with
++  | zero => rfl
++  | succ j ih => simp only [recordCap] at *; omega
++
++theorem recordCap_mono_length {ell L : ℕ} (h : ell ≤ L) (j : ℕ) :
++    recordCap ell j ≤ recordCap L j := by
++  induction j with
++  | zero => rfl
++  | succ j ih => simp only [recordCap] at *; omega
++
++end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/SmallOpenness.lean b/proofs/RAFCriticalWindowQuantitative/SmallOpenness.lean
+index 243e56d9c..576e199b7 100644
+--- a/proofs/RAFCriticalWindowQuantitative/SmallOpenness.lean
++++ b/proofs/RAFCriticalWindowQuantitative/SmallOpenness.lean
+@@ -63,13 +63,11 @@ theorem quotient_sparse_probability (a : I) (r : ℕ) :
+ 
+ theorem split_sparse_real (a : I) (r : ℕ) :
+     (staticSurvival a).toReal ≤ (splitSparseCoefficient r : ℝ)*(a : ℝ)^r := by
+-  have h := ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
+-  simpa using h
++  simpa using ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
+ 
+ theorem quotient_sparse_real (a : I) (r : ℕ) :
+     (quotientSurvival a).toReal ≤ (quotientSparseCoefficient r : ℝ)*(a : ℝ)^r := by
+-  have h := ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
+-  simpa using h
++  simpa using ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
+ 
+ /-- Epsilon-delta flatness: smaller than every fixed power at zero. -/
+ theorem power_bound_implies_flatness (S : I → ℝ) (C : ℕ → ℕ)
+diff --git a/proofs/RAFCriticalWindowQuantitative/SourceCalibration.lean b/proofs/RAFCriticalWindowQuantitative/SourceCalibration.lean
+index a36ec2b41..53c63cdf5 100644
+--- a/proofs/RAFCriticalWindowQuantitative/SourceCalibration.lean
++++ b/proofs/RAFCriticalWindowQuantitative/SourceCalibration.lean
+@@ -22,8 +22,7 @@ theorem split_source_profile_error (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
+         (splitTotalInterval s hs hs1 ε hε) : ℝ) := by
+   have hP := splitSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool
+   have hS := splitTotalInterval_correct s hs hs1 ε hε
+-  have h := interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
+-  simpa [rationalIntervalError] using h
++  simpa [rationalIntervalError] using interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
+ 
+ theorem quotient_source_profile_error (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
+     (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+@@ -35,7 +34,6 @@ theorem quotient_source_profile_error (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
+         (quotientTotalInterval s hs hs1 ε hε) : ℝ) := by
+   have hP := quotientSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool
+   have hS := quotientTotalInterval_correct s hs hs1 ε hε
+-  have h := interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
+-  simpa [rationalIntervalError] using h
++  simpa [rationalIntervalError] using interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
+ 
+ end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/SourceContract.lean b/proofs/RAFCriticalWindowQuantitative/SourceContract.lean
+index 9f08fc9cf..625ef444f 100644
+--- a/proofs/RAFCriticalWindowQuantitative/SourceContract.lean
++++ b/proofs/RAFCriticalWindowQuantitative/SourceContract.lean
+@@ -1,105 +1,103 @@
+-module
+-
+-public import proofs.RAFCriticalWindowQuantitative.RationalPool
+-public import proofs.RAFCriticalWindowQuantitative.Endpoints
+-
+-@[expose] public section
+-
+-namespace RAFCriticalWindowQuantitative
+-open HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInterval RAF.Polymer RAF.Concrete
+-open scoped ENNReal
+-
+-noncomputable def splitCatalyticProbability (n : ℕ) (p : I) : ENNReal :=
+-  uniformCatalysisMeasure n ((p : ℝ)*Fintype.card (Reaction n)/n) (HasRAFEvent n)
+-
+-def splitSourceInterval (n m K : ℕ) (p q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : ℚ × ℚ :=
+-  (splitSeedEval n (10*seedIndex q hq hq1 m) q - 1/m,
+-    splitEscapeEval (rationalPool p (Fintype.card (Molecule n))) K +
+-      (Fintype.card (Molecule (K+2)) : ℚ)*36*p)
+-
+-def quotientSourceInterval (n m K : ℕ) (p q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : ℚ × ℚ :=
+-  let hh : 0 < q/2 := rationalHalf_pos q hq
+-  let hh1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
+-  (quotientSeedEval n (10*seedIndex (q/2) hh hh1 m) q - 1/m,
+-    quotientEscapeEval (rationalPool p (Fintype.card (Molecule n))) K +
+-      (Fintype.card (Molecule (K+2)) : ℚ)*34*p)
+-
+-theorem splitSourceInterval_correct (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
+-    (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+-    (hk : 6 < nearFullPoolSize n m) (hpool : q ≤ rationalPool p (nearFullPoolSize n m)) :
+-    let v := splitSourceInterval n m K p q hq hq1
+-    (v.1 : ℝ) ≤ (splitCatalyticProbability n (rationalParameter p hp hp1)).toReal ∧
+-      (splitCatalyticProbability n (rationalParameter p hp hp1)).toReal ≤ (v.2 : ℝ) := by
+-  let a := rationalParameter p hp hp1
+-  let lam : ℝ := (a : ℝ)*Fintype.card (Reaction n)/n
+-  have he : catalysisP n lam = a := RAFEmergenceApprox.catalysisP_covers_probability n (by omega) a
+-  have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
+-    rw [← rationalPool_correct p hp hp1]
+-    exact (Rat.cast_le (K := ℝ)).mpr hpool
+-  have hl := split_finite_source_lower q hq hq1 m n hm (by omega) lam hk (by rwa [he])
+-  have hu := canonical_raf_le_finite_escape_36 n K hn lam
+-  rw [he] at hu
+-  have hP : uniformCatalysisMeasure n lam (HasRAFEvent n) ≠ ⊤ := measure_ne_top _ _
+-  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
+-  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
+-  rw [ENNReal.toReal_add hP hi, ← splitSeedEval_correct n _ q hq.le hq1] at hlow
+-  have hE : staticReactionMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
+-      (staticEscapeEvent 2 K) ≠ ⊤ := measure_ne_top _ _
+-  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*36*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
+-  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
+-  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
+-    ← splitEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
+-  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
+-  simp only [← one_div] at hlow
+-  dsimp only [a] at hlow hupp
+-  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
+-  dsimp only [splitSourceInterval,splitCatalyticProbability,Prod.fst,Prod.snd]
+-  push_cast
+-  constructor
+-  · change _ ≤ (uniformCatalysisMeasure n lam (HasRAFEvent n)).toReal
+-    linarith
+-  · exact hupp
+-
+-theorem quotientSourceInterval_correct (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
+-    (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+-    (hk : 6 < nearFullPoolSize n m) (hpool : q ≤ rationalPool p (nearFullPoolSize n m)) :
+-    let v := quotientSourceInterval n m K p q hq hq1
+-    (v.1 : ℝ) ≤ (quotientRAFProbability n (rationalParameter p hp hp1)).toReal ∧
+-      (quotientRAFProbability n (rationalParameter p hp hp1)).toReal ≤ (v.2 : ℝ) := by
+-  let a := rationalParameter p hp hp1
+-  have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
+-    rw [← rationalPool_correct p hp hp1]
+-    exact (Rat.cast_le (K := ℝ)).mpr hpool
+-  have hl := quotient_finite_source_lower q hq hq1 m n hm hn a hk hqpool
+-  have hu := quotient_raf_upper n K a
+-  have hP : quotientRAFProbability n a ≠ ⊤ := by unfold quotientRAFProbability quotientCatalyticLaw; exact measure_ne_top _ _
+-  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
+-  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
+-  rw [ENNReal.toReal_add hP hi, ← quotientSeedEval_correct n _ q hq.le hq1] at hlow
+-  have hE : quotientStaticMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
+-      (quotientEscapeEvent 2 K) ≠ ⊤ := by unfold quotientStaticMeasure; exact measure_ne_top _ _
+-  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*34*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
+-  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
+-  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
+-    ← quotientEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
+-  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
+-  simp only [← one_div] at hlow
+-  dsimp only [a] at hlow hupp
+-  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
+-  dsimp only [quotientSourceInterval,Prod.fst,Prod.snd]
+-  push_cast
+-  constructor
+-  · linarith
+-  · exact hupp
+-
+-theorem interval_comparison_error (P S lP uP lS uS : ℝ)
+-    (hP : lP ≤ P ∧ P ≤ uP) (hS : lS ≤ S ∧ S ≤ uS) :
+-    |P-S| ≤ max (uP-lS) (uS-lP) := by
+-  apply abs_le.mpr
+-  constructor
+-  · have h := le_max_right (uP-lS) (uS-lP)
+-    linarith [hP.1,hS.2]
+-  · have h := le_max_left (uP-lS) (uS-lP)
+-    linarith [hP.2,hS.1]
+-
+-end RAFCriticalWindowQuantitative
++module
++
++public import proofs.RAFCriticalWindowQuantitative.RationalPool
++public import proofs.RAFCriticalWindowQuantitative.Endpoints
++
++@[expose] public section
++
++namespace RAFCriticalWindowQuantitative
++open HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInterval RAF.Polymer RAF.Concrete
++open scoped ENNReal
++
++noncomputable def splitCatalyticProbability (n : ℕ) (p : I) : ENNReal :=
++  uniformCatalysisMeasure n ((p : ℝ)*Fintype.card (Reaction n)/n) (HasRAFEvent n)
++
++def splitSourceInterval (n m K : ℕ) (p q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : ℚ × ℚ :=
++  (splitSeedEval n (10*seedIndex q hq hq1 m) q - 1/m,
++    splitEscapeEval (rationalPool p (Fintype.card (Molecule n))) K +
++      (Fintype.card (Molecule (K+2)) : ℚ)*36*p)
++
++def quotientSourceInterval (n m K : ℕ) (p q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) : ℚ × ℚ :=
++  let hh : 0 < q/2 := rationalHalf_pos q hq
++  let hh1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
++  (quotientSeedEval n (10*seedIndex (q/2) hh hh1 m) q - 1/m,
++    quotientEscapeEval (rationalPool p (Fintype.card (Molecule n))) K +
++      (Fintype.card (Molecule (K+2)) : ℚ)*34*p)
++
++theorem splitSourceInterval_correct (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
++    (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
++    (hk : 6 < nearFullPoolSize n m) (hpool : q ≤ rationalPool p (nearFullPoolSize n m)) :
++    let v := splitSourceInterval n m K p q hq hq1
++    (v.1 : ℝ) ≤ (splitCatalyticProbability n (rationalParameter p hp hp1)).toReal ∧
++      (splitCatalyticProbability n (rationalParameter p hp hp1)).toReal ≤ (v.2 : ℝ) := by
++  let a := rationalParameter p hp hp1
++  let lam : ℝ := (a : ℝ)*Fintype.card (Reaction n)/n
++  have he : catalysisP n lam = a := RAFEmergenceApprox.catalysisP_covers_probability n (by omega) a
++  have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
++    rw [← rationalPool_correct p hp hp1]
++    exact (Rat.cast_le (K := ℝ)).mpr hpool
++  have hl := split_finite_source_lower q hq hq1 m n hm (by omega) lam hk (by rwa [he])
++  have hu := canonical_raf_le_finite_escape_36 n K hn lam
++  rw [he] at hu
++  have hP : uniformCatalysisMeasure n lam (HasRAFEvent n) ≠ ⊤ := measure_ne_top _ _
++  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
++  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
++  rw [ENNReal.toReal_add hP hi, ← splitSeedEval_correct n _ q hq.le hq1] at hlow
++  have hE : staticReactionMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
++      (staticEscapeEvent 2 K) ≠ ⊤ := measure_ne_top _ _
++  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*36*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
++  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
++  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
++    ← splitEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
++  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
++  simp only [← one_div] at hlow
++  dsimp only [a] at hlow hupp
++  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
++  dsimp only [splitSourceInterval,splitCatalyticProbability,Prod.fst,Prod.snd]
++  push_cast
++  constructor
++  · change _ ≤ (uniformCatalysisMeasure n lam (HasRAFEvent n)).toReal
++    linarith
++  · exact hupp
++
++theorem quotientSourceInterval_correct (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
++    (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
++    (hk : 6 < nearFullPoolSize n m) (hpool : q ≤ rationalPool p (nearFullPoolSize n m)) :
++    let v := quotientSourceInterval n m K p q hq hq1
++    (v.1 : ℝ) ≤ (quotientRAFProbability n (rationalParameter p hp hp1)).toReal ∧
++      (quotientRAFProbability n (rationalParameter p hp hp1)).toReal ≤ (v.2 : ℝ) := by
++  let a := rationalParameter p hp hp1
++  have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
++    rw [← rationalPool_correct p hp hp1]
++    exact (Rat.cast_le (K := ℝ)).mpr hpool
++  have hl := quotient_finite_source_lower q hq hq1 m n hm hn a hk hqpool
++  have hu := quotient_raf_upper n K a
++  have hP : quotientRAFProbability n a ≠ ⊤ := by unfold quotientRAFProbability quotientCatalyticLaw; exact measure_ne_top _ _
++  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
++  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
++  rw [ENNReal.toReal_add hP hi, ← quotientSeedEval_correct n _ q hq.le hq1] at hlow
++  have hE : quotientStaticMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
++      (quotientEscapeEvent 2 K) ≠ ⊤ := by unfold quotientStaticMeasure; exact measure_ne_top _ _
++  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*34*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
++  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
++  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
++    ← quotientEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
++  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
++  simp only [← one_div] at hlow
++  dsimp only [a] at hlow hupp
++  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
++  dsimp only [quotientSourceInterval,Prod.fst,Prod.snd]
++  push_cast
++  constructor
++  · linarith
++  · exact hupp
++
++theorem interval_comparison_error (P S lP uP lS uS : ℝ)
++    (hP : lP ≤ P ∧ P ≤ uP) (hS : lS ≤ S ∧ S ≤ uS) :
++    |P-S| ≤ max (uP-lS) (uS-lP) := by
++  apply abs_le.mpr
++  constructor
++  · linarith [le_max_right (uP-lS) (uS-lP), hP.1,hS.2]
++  · linarith [le_max_left (uP-lS) (uS-lP), hP.2,hS.1]
++
++end RAFCriticalWindowQuantitative
+diff --git a/proofs/RAFCriticalWindowQuantitative/UniformApproximation.lean b/proofs/RAFCriticalWindowQuantitative/UniformApproximation.lean
+index fe9ec6df8..55fe47b49 100644
+--- a/proofs/RAFCriticalWindowQuantitative/UniformApproximation.lean
++++ b/proofs/RAFCriticalWindowQuantitative/UniformApproximation.lean
+@@ -32,10 +32,7 @@ theorem split_uniform_approximation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+   have hS : staticSurvival a ≠ ⊤ := by unfold staticSurvival; exact measure_ne_top _ _
+   have ht := real_error_of_bound _ _ hS m L r (by omega) a
+     (explicit_split_truncation q hq hq1 m hm a ha r)
+-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
+-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
+-    push_cast at hcast
+-    exact hcast
++  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
+   have hr := uniform_record_budget q hq hq1 L ε hε a ha
+   change (splitEscapeProbability a (recordCap L r)).toReal ≤ _
+   linarith
+@@ -45,18 +42,15 @@ theorem quotient_uniform_approximation (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
+     (quotientEscapeProbability a (quotientEvaluationCap q hq hq1 ε hε)).toReal ≤
+       (quotientSurvival a).toReal + (ε : ℝ)/2 := by
+   let m := precisionIndex ε
+-  have hh : 0 < q/2 := by positivity
+-  have hh1 : q/2 ≤ 1 := by linarith
++  have hh : 0 < q/2 := rationalHalf_pos q hq
++  have hh1 : q/2 ≤ 1 := rationalHalf_le_one q hq hq1
+   let L := 10*seedIndex (q/2) hh hh1 m
+   let r := recordIndex q hq hq1 L ε hε
+   have hm : 2 ≤ m := precisionIndex_ge_two ε
+   have hS : quotientSurvival a ≠ ⊤ := by unfold quotientSurvival; exact measure_ne_top _ _
+   have ht := real_error_of_bound _ _ hS m L r (by omega) a
+     (explicit_quotient_truncation q hq hq1 m hm a ha r)
+-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
+-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
+-    push_cast at hcast
+-    exact hcast
++  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
+   have hr := uniform_record_budget q hq hq1 L ε hε a ha
+   change (quotientEscapeProbability a (recordCap L r)).toReal ≤ _
+   linarith
+diff --git a/proofs/RAFEmergenceApprox/GenericHistory.lean b/proofs/RAFEmergenceApprox/GenericHistory.lean
+index cf4b13e1f..5271fa5bc 100644
+--- a/proofs/RAFEmergenceApprox/GenericHistory.lean
++++ b/proofs/RAFEmergenceApprox/GenericHistory.lean
+@@ -201,16 +201,6 @@ theorem peeling_history_probability_eq_prefix (p : R → I)
+   · intro r _
+     exact hbound r
+ 
+-theorem history_clamp_antitone_of_match {R : Type*}
+-    (A H : ℕ → Finset R) (hA : Antitone A) (T : ℕ)
+-    (hmatch : ∀ t ≤ T, A t = H t) :
+-    Antitone (fun t => H (min t T)) := by
+-  intro a b hab
+-  change H (min b T) ⊆ H (min a T)
+-  rw [← hmatch (min b T) (min_le_right _ _),
+-    ← hmatch (min a T) (min_le_right _ _)]
+-  exact hA (min_le_min_right T hab)
+-
+ /-- Equality for arbitrary prescribed histories. Nondecreasing histories on
+ the finite horizon have probability zero for both processes. -/
+ theorem peeling_history_probability_eq_prefix_any (p : R → I)
+diff --git a/proofs/RAFReactionQuotient/CapCompatibility.lean b/proofs/RAFReactionQuotient/CapCompatibility.lean
+index fb0987a60..0cedd81ea 100644
+--- a/proofs/RAFReactionQuotient/CapCompatibility.lean
++++ b/proofs/RAFReactionQuotient/CapCompatibility.lean
+@@ -1,16 +1,2 @@
+ module
+-
+ public import proofs.RAFReactionQuotient.QuotientMap
+-
+-@[expose] public section
+-
+-namespace RAFReactionQuotient
+-open Classical RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
+-
+-def liftMolecule {n N : ℕ} (h : n ≤ N) (x : Molecule n) : Molecule N :=
+-  ⟨⟨x.1.val, lt_of_lt_of_le x.1.isLt h⟩, x.2⟩
+-
+-@[simp] theorem liftMolecule_length {n N : ℕ} (h : n ≤ N) (x : Molecule n) :
+-    molLength (liftMolecule h x) = molLength x := rfl
+-
+-end RAFReactionQuotient
+diff --git a/proofs/RAFReactionQuotient/CatalogueBridge.lean b/proofs/RAFReactionQuotient/CatalogueBridge.lean
+index f87faed44..7d623f191 100644
+--- a/proofs/RAFReactionQuotient/CatalogueBridge.lean
++++ b/proofs/RAFReactionQuotient/CatalogueBridge.lean
+@@ -1,19 +1,3 @@
+ module
+-
+ public import proofs.RAFReactionQuotient.SourceBounds
+ public import proofs.HordijkSteelThreshold.StaticEventContinuity
+-
+-@[expose] public section
+-
+-set_option Elab.async false
+-
+-namespace RAFReactionQuotient
+-open Classical MeasureTheory unitInterval HordijkSteelThreshold RAF.Polymer
+-open OverlapCorrectedRAF.Source
+-
+-instance quotientCatalytic_probability (n : ℕ) (p : I) :
+-    IsProbabilityMeasure (quotientCatalyticLaw n p) := by
+-  unfold quotientCatalyticLaw
+-  infer_instance
+-
+-end RAFReactionQuotient
+diff --git a/proofs/RAFReactionQuotient/CommutingUniqueness.lean b/proofs/RAFReactionQuotient/CommutingUniqueness.lean
+index 2c7571f7b..f6da3e8a7 100644
+--- a/proofs/RAFReactionQuotient/CommutingUniqueness.lean
++++ b/proofs/RAFReactionQuotient/CommutingUniqueness.lean
+@@ -25,8 +25,8 @@ theorem commuting_factor_unique {n : ℕ} (u v w : Molecule n)
+ 
+ theorem commuting_equal_length {n : ℕ} (u v : Molecule n)
+     (hlen : molLength u = molLength v)
+-    (hv : displayedConcat u v = displayedConcat v u) : u = v := by
+-  exact (commuting_factor_unique u v u hlen.symm hv rfl).symm
++    (hv : displayedConcat u v = displayedConcat v u) : u = v :=
++  (commuting_factor_unique u v u hlen.symm hv rfl).symm
+ 
+ theorem noncanonical_strict_lengths {n : ℕ} (r : OrderedChannel n)
+     (h : ¬ (displayedConcat r.val.1 r.val.2 ≠ displayedConcat r.val.2 r.val.1 ∨
+diff --git a/proofs/RAFReactionQuotient/InfiniteSource.lean b/proofs/RAFReactionQuotient/InfiniteSource.lean
+index 0f71f5741..7e73f2f08 100644
+--- a/proofs/RAFReactionQuotient/InfiniteSource.lean
++++ b/proofs/RAFReactionQuotient/InfiniteSource.lean
+@@ -35,11 +35,8 @@ def quotientField (ω : SplitField) : InfiniteSplitEnvironment :=
+   fun w k => ω (canonicalIndex (w,k))
+ 
+ theorem quotientField_measurable : Measurable quotientField := by
+-  apply Measurable.of_eval
+-  intro w
+-  apply Measurable.of_eval
+-  intro k
+-  exact measurable_pi_apply _
++  unfold quotientField
++  fun_prop
+ 
+ /-- Infinite reversible quotient survival, realized by iid marks on canonical
+ coordinates. Noncanonical and invalid latent coordinates do not affect it. -/
+diff --git a/proofs/RAFReactionQuotient/PoolLaw.lean b/proofs/RAFReactionQuotient/PoolLaw.lean
+index 175f83ff8..c7936bcf0 100644
+--- a/proofs/RAFReactionQuotient/PoolLaw.lean
++++ b/proofs/RAFReactionQuotient/PoolLaw.lean
+@@ -5,7 +5,6 @@ public import proofs.HordijkSteelThreshold.FixedPoolReactionLaw
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+ 
+ namespace RAFReactionQuotient
+ open Classical MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold
+diff --git a/proofs/RAFReactionQuotient/QuotientMap.lean b/proofs/RAFReactionQuotient/QuotientMap.lean
+index f6bb11c32..7711b632f 100644
+--- a/proofs/RAFReactionQuotient/QuotientMap.lean
++++ b/proofs/RAFReactionQuotient/QuotientMap.lean
+@@ -1,107 +1,107 @@
+-module
+-
+-public import proofs.OverlapCorrectedRAF.Source.KauffmanRepositoryCRS
+-public import proofs.RAFReactionQuotient.ClosureProjection
+-
+-@[expose] public section
+-
+-namespace RAFReactionQuotient
+-open Classical RAF RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
+-
+-abbrev OrderedChannel (n : ℕ) :=
+-  {uv : Molecule n × Molecule n // molLength uv.1 + molLength uv.2 ≤ n}
+-
+-def orderedCRS (n t : ℕ) : ReversibleCRS (Molecule n) (OrderedChannel n) where
+-  lhs r := {r.val.1, r.val.2}
+-  rhs r := {concatMolecule r.val.1 r.val.2 r.property}
+-  food := binaryFood n t
+-
+-theorem precedes_total {n : ℕ} (u v : Molecule n) :
+-    moleculePrecedes u v ∨ moleculePrecedes v u := by
+-  unfold moleculePrecedes
+-  omega
+-
+-def canonical {n : ℕ} (r : OrderedChannel n) : RepositoryChannel n :=
+-  if h : displayedConcat r.val.1 r.val.2 ≠ displayedConcat r.val.2 r.val.1 ∨
+-      moleculePrecedes r.val.1 r.val.2 then
+-    ⟨r.val, r.property, h⟩
+-  else
+-    ⟨(r.val.2, r.val.1), (Nat.add_comm (molLength r.val.2) (molLength r.val.1)).le.trans r.property,
+-      Or.inr ((precedes_total r.val.1 r.val.2).resolve_left (fun hp => h (Or.inr hp)))⟩
+-
+-theorem molecule_ext {n : ℕ} {x y : Molecule n}
+-    (hl : molLength x = molLength y) (hc : x.2.val = y.2.val) : x = y := by
+-  rcases x with ⟨i, x⟩
+-  rcases y with ⟨j, y⟩
+-  have hij : i = j := by apply Fin.ext; dsimp [molLength] at hl; omega
+-  subst j
+-  exact congrArg (Sigma.mk i) (Fin.ext hc)
+-
+-theorem concat_code {n : ℕ} (u v : Molecule n)
+-    (h : molLength u + molLength v ≤ n) :
+-    (concatMolecule u v h).2.val = displayedConcat u v := by
+-  simp [concatMolecule, moleculeOfCode, concatCode, displayedConcat,
+-    finProdFinEquiv, Nat.add_comm, Nat.mul_comm]
+-
+-theorem concat_comm_of_code {n : ℕ} (u v : Molecule n)
+-    (h : molLength u + molLength v ≤ n)
+-    (hc : displayedConcat u v = displayedConcat v u) :
+-    concatMolecule u v h = concatMolecule v u (by omega) := by
+-  apply molecule_ext
+-  · simp [concatMolecule, Nat.add_comm]
+-  · simpa only [concat_code] using hc
+-
+-theorem canonical_lhs {n t : ℕ} (r : OrderedChannel n) :
+-    (repositoryCRS n t).lhs (canonical r) = (orderedCRS n t).lhs r := by
+-  unfold canonical
+-  split
+-  · rfl
+-  · simp [repositoryCRS, orderedCRS, Finset.pair_comm]
+-
+-theorem canonical_rhs {n t : ℕ} (r : OrderedChannel n) :
+-    (repositoryCRS n t).rhs (canonical r) = (orderedCRS n t).rhs r := by
+-  unfold canonical
+-  split
+-  · rfl
+-  · rename_i h
+-    have hc : displayedConcat r.val.1 r.val.2 = displayedConcat r.val.2 r.val.1 := by
+-      by_contra hn
+-      exact h (Or.inl hn)
+-    simp only [repositoryCRS, orderedCRS]
+-    rw [concat_comm_of_code r.val.1 r.val.2 r.property hc]
+-
+-theorem canonical_val_cases {n : ℕ} (r : OrderedChannel n) :
+-    (canonical r).val = r.val ∨ (canonical r).val = r.val.swap := by
+-  unfold canonical
+-  split
+-  · exact Or.inl rfl
+-  · exact Or.inr rfl
+-
+-theorem canonical_surjective (n : ℕ) : Function.Surjective (@canonical n) := by
+-  intro j
+-  refine ⟨⟨j.val,j.property.1⟩, ?_⟩
+-  simp only [canonical, dite_eq_left j.property.2]
+-
+-theorem canonical_fibre_le_two {n : ℕ} (j : RepositoryChannel n) :
+-    (Finset.univ.filter (fun r : OrderedChannel n => canonical r = j)).card ≤ 2 := by
+-  let a : OrderedChannel n := ⟨j.val,j.property.1⟩
+-  let b : OrderedChannel n := ⟨j.val.swap, by have := j.property.1; dsimp; omega⟩
+-  have hs : Finset.univ.filter (fun r : OrderedChannel n => canonical r = j) ⊆ {a,b} := by
+-    intro r hr
+-    have he := (Finset.mem_filter.mp hr).2
+-    have hv := canonical_val_cases r
+-    rw [he] at hv
+-    rcases hv with hv | hv
+-    · have : r = a := Subtype.ext hv.symm
+-      simp [this]
+-    · have : r = b := by
+-        apply Subtype.ext
+-        exact (congrArg Prod.swap hv).symm
+-      simp [this]
+-  exact (Finset.card_le_card hs).trans (by
+-    calc
+-      ({a,b} : Finset (OrderedChannel n)).card ≤ ({b} : Finset (OrderedChannel n)).card + 1 :=
+-        Finset.card_insert_le _ _
+-      _ = 2 := by simp)
+-
+-end RAFReactionQuotient
++module
++
++public import proofs.OverlapCorrectedRAF.Source.KauffmanRepositoryCRS
++public import proofs.RAFReactionQuotient.ClosureProjection
++
++@[expose] public section
++
++namespace RAFReactionQuotient
++open Classical RAF RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
++
++abbrev OrderedChannel (n : ℕ) :=
++  {uv : Molecule n × Molecule n // molLength uv.1 + molLength uv.2 ≤ n}
++
++def orderedCRS (n t : ℕ) : ReversibleCRS (Molecule n) (OrderedChannel n) where
++  lhs r := {r.val.1, r.val.2}
++  rhs r := {concatMolecule r.val.1 r.val.2 r.property}
++  food := binaryFood n t
++
++theorem precedes_total {n : ℕ} (u v : Molecule n) :
++    moleculePrecedes u v ∨ moleculePrecedes v u := by
++  unfold moleculePrecedes
++  omega
++
++def canonical {n : ℕ} (r : OrderedChannel n) : RepositoryChannel n :=
++  if h : displayedConcat r.val.1 r.val.2 ≠ displayedConcat r.val.2 r.val.1 ∨
++      moleculePrecedes r.val.1 r.val.2 then
++    ⟨r.val, r.property, h⟩
++  else
++    ⟨(r.val.2, r.val.1), (Nat.add_comm (molLength r.val.2) (molLength r.val.1)).le.trans r.property,
++      Or.inr ((precedes_total r.val.1 r.val.2).resolve_left (fun hp => h (Or.inr hp)))⟩
++
++theorem molecule_ext {n : ℕ} {x y : Molecule n}
++    (hl : molLength x = molLength y) (hc : x.2.val = y.2.val) : x = y := by
++  rcases x with ⟨i, x⟩
++  rcases y with ⟨j, y⟩
++  have hij : i = j := by apply Fin.ext; dsimp [molLength] at hl; omega
++  subst j
++  exact congrArg (Sigma.mk i) (Fin.ext hc)
++
++theorem concat_code {n : ℕ} (u v : Molecule n)
++    (h : molLength u + molLength v ≤ n) :
++    (concatMolecule u v h).2.val = displayedConcat u v := by
++  simp [concatMolecule, moleculeOfCode, concatCode, displayedConcat,
++    finProdFinEquiv, Nat.add_comm, Nat.mul_comm]
++
++theorem concat_comm_of_code {n : ℕ} (u v : Molecule n)
++    (h : molLength u + molLength v ≤ n)
++    (hc : displayedConcat u v = displayedConcat v u) :
++    concatMolecule u v h = concatMolecule v u (by omega) := by
++  apply molecule_ext
++  · simp [concatMolecule, Nat.add_comm]
++  · simpa only [concat_code] using hc
++
++theorem canonical_lhs {n t : ℕ} (r : OrderedChannel n) :
++    (repositoryCRS n t).lhs (canonical r) = (orderedCRS n t).lhs r := by
++  unfold canonical
++  split
++  · rfl
++  · simp [repositoryCRS, orderedCRS, Finset.pair_comm]
++
++theorem canonical_rhs {n t : ℕ} (r : OrderedChannel n) :
++    (repositoryCRS n t).rhs (canonical r) = (orderedCRS n t).rhs r := by
++  unfold canonical
++  split
++  · rfl
++  · rename_i h
++    have hc : displayedConcat r.val.1 r.val.2 = displayedConcat r.val.2 r.val.1 := by
++      by_contra hn
++      exact h (Or.inl hn)
++    simp only [repositoryCRS, orderedCRS]
++    rw [concat_comm_of_code r.val.1 r.val.2 r.property hc]
++
++theorem canonical_val_cases {n : ℕ} (r : OrderedChannel n) :
++    (canonical r).val = r.val ∨ (canonical r).val = r.val.swap := by
++  unfold canonical
++  split
++  · exact Or.inl rfl
++  · exact Or.inr rfl
++
++theorem canonical_surjective (n : ℕ) : Function.Surjective (@canonical n) := by
++  intro j
++  refine ⟨⟨j.val,j.property.1⟩, ?_⟩
++  simp only [canonical, dite_eq_left j.property.2]
++
++theorem canonical_fibre_le_two {n : ℕ} (j : RepositoryChannel n) :
++    (Finset.univ.filter (fun r : OrderedChannel n => canonical r = j)).card ≤ 2 := by
++  let a : OrderedChannel n := ⟨j.val,j.property.1⟩
++  let b : OrderedChannel n := ⟨j.val.swap, by have := j.property.1; dsimp; omega⟩
++  have hs : Finset.univ.filter (fun r : OrderedChannel n => canonical r = j) ⊆ {a,b} := by
++    intro r hr
++    have he := (Finset.mem_filter.mp hr).2
++    have hv := canonical_val_cases r
++    rw [he] at hv
++    rcases hv with hv | hv
++    · have : r = a := Subtype.ext hv.symm
++      simp [this]
++    · have : r = b := by
++        apply Subtype.ext
++        exact (congrArg Prod.swap hv).symm
++      simp [this]
++  exact (Finset.card_le_card hs).trans (by
++    calc
++      ({a,b} : Finset (OrderedChannel n)).card ≤ ({b} : Finset (OrderedChannel n)).card + 1 :=
++        Finset.card_insert_le _ _
++      _ = 2 := by simp)
++
++end RAFReactionQuotient
+diff --git a/proofs/RAFReactionQuotient/Resolution.lean b/proofs/RAFReactionQuotient/Resolution.lean
+index 47800f51d..54558cb1f 100644
+--- a/proofs/RAFReactionQuotient/Resolution.lean
++++ b/proofs/RAFReactionQuotient/Resolution.lean
+@@ -8,7 +8,6 @@ public import proofs.OverlapCorrectedRAF.Asymptotic.GatewayConditionedBulk
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+ 
+ namespace RAFReactionQuotient
+ open Classical Filter MeasureTheory unitInterval HordijkSteelThreshold RAF.Polymer
+diff --git a/proofs/RAFReactionQuotient/SourceBounds.lean b/proofs/RAFReactionQuotient/SourceBounds.lean
+index 3ea7feeac..03d9900a5 100644
+--- a/proofs/RAFReactionQuotient/SourceBounds.lean
++++ b/proofs/RAFReactionQuotient/SourceBounds.lean
+@@ -7,7 +7,6 @@ public import proofs.OverlapCorrectedRAF.Source.ActualGatewayDock
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+ 
+ namespace RAFReactionQuotient
+ open Classical Filter MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold
+diff --git a/proofs/RAFReactionQuotient/Terminal.lean b/proofs/RAFReactionQuotient/Terminal.lean
+index b14550262..0523e0cf9 100644
+--- a/proofs/RAFReactionQuotient/Terminal.lean
++++ b/proofs/RAFReactionQuotient/Terminal.lean
+@@ -7,7 +7,6 @@ public import proofs.HordijkSteelThreshold.SourceTerminalRAF
+ 
+ @[expose] public section
+ 
+-set_option Elab.async false
+ 
+ namespace RAFReactionQuotient
+ open Classical RAF RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source HordijkSteelThreshold

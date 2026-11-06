@@ -126,8 +126,7 @@ theorem measure_catalystPoolFamiliesClosed {n : Nat} {ι : Type*}
           have hz : (x, r) ∈ C.product (T.biUnion R) := by
             exact Finset.mem_product.mpr
               ⟨hx, Finset.mem_biUnion.mpr ⟨i, hi, hr⟩⟩
-          have hfalse := hclosed (x, r) hz
-          exact hfalse ▸ hω]
+          exact hclosed (x, r) hz ▸ hω]
   rw [measure_catalystBlockClosed_card]
   simp
 

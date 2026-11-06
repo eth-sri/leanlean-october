@@ -7,7 +7,6 @@ public import proofs.HordijkSteelThreshold.SourceTerminalRAF
 
 @[expose] public section
 
-set_option Elab.async false
 
 namespace RAFReactionQuotient
 open Classical RAF RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source HordijkSteelThreshold

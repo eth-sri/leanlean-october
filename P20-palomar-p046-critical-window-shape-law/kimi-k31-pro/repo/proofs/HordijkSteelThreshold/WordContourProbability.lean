@@ -47,8 +47,8 @@ noncomputable instance staticReactionMeasure_probability (N : ℕ) (a : I) :
   infer_instance
 
 theorem staticReactionMeasure_indep (N : ℕ) (a : I) :
-    iIndepFun (fun r (ω : Reaction N → Prop) => ω r) (staticReactionMeasure N a) := by
-  exact iIndepFun_infinitePi (fun _ => measurable_id)
+    iIndepFun (fun r (ω : Reaction N → Prop) => ω r) (staticReactionMeasure N a) :=
+  iIndepFun_infinitePi (fun _ => measurable_id)
 
 theorem staticReactionMeasure_open {N : ℕ} (a : I) (r : Reaction N) :
     staticReactionMeasure N a {ω | ω r} = (toNNReal a : ENNReal) := by

@@ -16,11 +16,8 @@ theorem nearFullPoolSize_le (n m : ℕ) : nearFullPoolSize n m ≤ Fintype.card 
   dsimp [nearFullPoolSize]
   nlinarith
 
-noncomputable def nearFullCatalystPool (n m : ℕ) : Finset (Molecule n) :=
-  finiteInitialSegment (Molecule n) (nearFullPoolSize n m)
 
-@[simp] theorem nearFullCatalystPool_card (n m : ℕ) :
-    (nearFullCatalystPool n m).card = nearFullPoolSize n m :=
-  card_finiteInitialSegment _ _ (nearFullPoolSize_le n m)
+
+
 
 end HordijkSteelThreshold

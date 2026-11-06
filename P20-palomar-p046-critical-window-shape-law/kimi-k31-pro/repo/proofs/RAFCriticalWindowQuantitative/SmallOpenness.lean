@@ -63,13 +63,11 @@ theorem quotient_sparse_probability (a : I) (r : ℕ) :
 
 theorem split_sparse_real (a : I) (r : ℕ) :
     (staticSurvival a).toReal ≤ (splitSparseCoefficient r : ℝ)*(a : ℝ)^r := by
-  have h := ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
-  simpa using h
+  simpa using ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
 
 theorem quotient_sparse_real (a : I) (r : ℕ) :
     (quotientSurvival a).toReal ≤ (quotientSparseCoefficient r : ℝ)*(a : ℝ)^r := by
-  have h := ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
-  simpa using h
+  simpa using ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
 
 /-- Epsilon-delta flatness: smaller than every fixed power at zero. -/
 theorem power_bound_implies_flatness (S : I → ℝ) (C : ℕ → ℕ)

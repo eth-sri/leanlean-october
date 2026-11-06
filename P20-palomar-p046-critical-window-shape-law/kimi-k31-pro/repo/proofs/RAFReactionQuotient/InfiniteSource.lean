@@ -35,11 +35,8 @@ def quotientField (ω : SplitField) : InfiniteSplitEnvironment :=
   fun w k => ω (canonicalIndex (w,k))
 
 theorem quotientField_measurable : Measurable quotientField := by
-  apply Measurable.of_eval
-  intro w
-  apply Measurable.of_eval
-  intro k
-  exact measurable_pi_apply _
+  unfold quotientField
+  fun_prop
 
 /-- Infinite reversible quotient survival, realized by iid marks on canonical
 coordinates. Noncanonical and invalid latent coordinates do not affect it. -/

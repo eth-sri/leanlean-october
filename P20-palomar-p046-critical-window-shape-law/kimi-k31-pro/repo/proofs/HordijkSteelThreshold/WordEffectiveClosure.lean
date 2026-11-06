@@ -90,8 +90,7 @@ noncomputable def actualWordSource {N : ℕ} (s : ActualBinaryWord N) : Molecule
 theorem actualWordSource_injective {N : ℕ} : Function.Injective (@actualWordSource N) := by
   intro s t h
   apply Subtype.ext
-  have hw := congrArg moleculeWord h
-  simpa only [actualWordSource_word] using hw
+  simpa only [actualWordSource_word] using congrArg moleculeWord h
 
 /-- The rooted effective component really is contained in ordinary reversible
 closure from temporary food, using only reactions open in this same field. -/

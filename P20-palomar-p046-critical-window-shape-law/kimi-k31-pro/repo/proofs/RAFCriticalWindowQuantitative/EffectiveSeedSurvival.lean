@@ -53,8 +53,7 @@ theorem effective_seed_probability_le_survival (q : ℚ) (hq : 0 < q) (hq1 : q �
       have hc := (Finset.card_le_card hs).trans (binaryFood_card_le_cutoff N (K+2))
       change (m-1)*Fintype.card (Molecule N) ≤ m*(temporaryReactionClosure 2 (staticOpenReactions ω)).card at hω
       have hmult : Fintype.card (Molecule N) ≤ (m-1)*Fintype.card (Molecule N) := by
-        have hh := Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
-        simpa using hh
+        simpa using Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
       nlinarith
     exact (same_field_seed_mass_bound N L m b).trans
       (add_le_add hmass (hbad N (by omega)))

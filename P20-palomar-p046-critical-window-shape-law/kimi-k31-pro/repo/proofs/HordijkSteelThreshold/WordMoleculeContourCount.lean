@@ -46,8 +46,7 @@ def molecularContourConstant : ℕ := 2 * 7 ^ 64 * 81
 theorem wordMoleculeContourEnvelope_card (L N : ℕ) (s : List Bool) (b : ℕ) (hb : 0 < b) :
     (wordMoleculeContourEnvelope L N s b).card ≤ molecularContourConstant ^ b := by
   have h2 : (2 : ℕ) ≤ 2 ^ b := by
-    have h := pow_le_pow_right₀ (by decide : (1 : ℕ) ≤ 2) (show 1 ≤ b by omega)
-    simpa using h
+    simpa using pow_le_pow_right₀ (by decide : (1 : ℕ) ≤ 2) (show 1 ≤ b by omega)
   have h81 : (81 : ℕ) ^ (b - 1) ≤ 81 ^ b :=
     pow_le_pow_right₀ (by decide) (Nat.sub_le b 1)
   calc

@@ -35,18 +35,13 @@ theorem quotientCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
   let e := quotientEscapeEval q (K-2)
   have hm : 2 ≤ m := precisionIndex_ge_two ε
   have hK : 2 ≤ K := recordCap_ge_two L r
-  have hS : quotientSurvival a ≠ ⊤ := by
-    unfold quotientSurvival
-    exact measure_ne_top _ _
+  have hS : quotientSurvival a ≠ ⊤ := measure_ne_top _ _
   have ht := real_error_of_bound (quotientEscapeProbability a K) (quotientSurvival a) hS m L r
     (by omega) a (explicit_quotient_truncation q hq hq1 m hm a le_rfl r)
   have he : (e : ℝ) = (quotientEscapeProbability a K).toReal :=
     (quotientEscapeEval_correct q hq.le hq1 (K-2)).trans
       (congrArg ENNReal.toReal (quotient_escape_finite a K hK).symm)
-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
-    push_cast at hcast
-    exact hcast
+  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
   have hr := real_record_budget q hq hq1 L ε hε
   change (quotientEscapeProbability a K).toReal ≤ (quotientSurvival a).toReal+1/(m : ℝ)+
     ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
@@ -55,14 +50,9 @@ theorem quotientCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
     linarith
   have hl : (quotientSurvival a).toReal ≤ (e : ℝ) := by
     rw [he]
-    apply ENNReal.toReal_mono _ (quotient_survival_le_escape a K)
-    unfold quotientEscapeProbability
-    exact measure_ne_top _ _
+    exact ENNReal.toReal_mono (measure_ne_top _ _) (quotient_survival_le_escape a K)
   change ((e-ε/2 : ℚ) : ℝ) ≤ (quotientSurvival a).toReal ∧
     (quotientSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
-  refine ⟨?_,hl,?_⟩
-  · push_cast
-    linarith
-  · linarith
+  refine ⟨by push_cast; linarith, hl, by linarith⟩
 
 end RAFCriticalWindowQuantitative

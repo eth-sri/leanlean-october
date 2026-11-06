@@ -71,8 +71,8 @@ theorem molecular_minor_side_below_band (N M : ℕ) (hMN : M < N)
     simp only [hc, Finset.card_empty] at hminor
     omega
   have hc : (actualBinaryWords N \ S).card < 2 ^ M := by
-    have hx := (Finset.card_le_card hcomp).trans_lt (shortBinaryWords_card_lt (M - 1))
-    simpa only [Nat.sub_add_cancel hM] using hx
+    simpa only [Nat.sub_add_cancel hM] using
+      (Finset.card_le_card hcomp).trans_lt (shortBinaryWords_card_lt (M - 1))
   have hp : (2 : ℕ) ^ M < 2 ^ N := (pow_lt_pow_iff_right₀ (by decide : (1 : ℕ) < 2)).mpr hMN
   have hpartition := Finset.card_sdiff_add_card_eq_card hsub
   rw [actualBinaryWords_card, pow_succ] at hpartition

@@ -5,8 +5,6 @@ public import proofs.RAFReactionQuotient.History
 
 @[expose] public section
 
-set_option Elab.async false
-set_option maxHeartbeats 100000
 
 namespace RAFCriticalWindowQuantitative
 open HordijkSteelThreshold RAFReactionQuotient RAF.Concrete RAF.Polymer OverlapCorrectedRAF.Source

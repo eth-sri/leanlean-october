@@ -19,18 +19,14 @@ instance (b : ℚ) (m k : ℕ) : Decidable (seedTest b m k) :=
 
 theorem seedTest_exists (b : ℚ) (hb : 0 < b) (hb1 : b ≤ 1) (m : ℕ) :
     ∃ k, seedTest b m k := by
-  have hbR : (0 : ℝ) < b := by exact_mod_cast hb
-  have hbR1 : (b : ℝ) ≤ 1 := by exact_mod_cast hb1
-  have hq0 : (0 : ℝ) ≤ 1 - (b : ℝ)^2 := by nlinarith
-  have hq1 : 1 - (b : ℝ)^2 < 1 := by nlinarith
-  have ht := tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1
-  have hs := (ht.const_mul (molecularContourConstant : ℝ)).mul_const
-    ((m : ℝ) * (m+1) + 1)
+  have ht := tendsto_pow_atTop_nhds_zero_of_lt_one
+    (show (0 : ℚ) ≤ 1 - b^2 by nlinarith) (show 1 - b^2 < 1 by nlinarith)
+  have hs := (ht.const_mul (molecularContourConstant : ℚ)).mul_const
+    ((m : ℚ) * (m+1) + 1)
   simp only [mul_zero, zero_mul] at hs
   obtain ⟨k, hk, hv⟩ := ((eventually_ge_atTop 1).and
-    (hs.eventually_lt_const (show (0 : ℝ) < 1 by norm_num))).exists
-  refine ⟨k, by omega, ?_⟩
-  exact_mod_cast hv.le
+    (hs.eventually_lt_const (show (0 : ℚ) < 1 by norm_num))).exists
+  exact ⟨k, by omega, hv.le⟩
 
 /-- Executable unbounded search; termination is proved from geometric decay. -/
 def seedIndex (b : ℚ) (hb : 0 < b) (hb1 : b ≤ 1) (m : ℕ) : ℕ :=

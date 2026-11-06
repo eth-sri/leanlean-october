@@ -29,6 +29,12 @@ theorem precisionIndex_error (ε : ℚ) (hε : 0 < ε) :
   apply (div_le_iff₀ hm).mpr
   nlinarith
 
+theorem real_precisionIndex_error (ε : ℚ) (hε : 0 < ε) :
+    1/(precisionIndex ε : ℝ) ≤ (ε : ℝ)/4 := by
+  have h := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
+  push_cast at h
+  exact h
+
 def recordIndex (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (L : ℕ)
     (ε : ℚ) (hε : 0 < ε) : ℕ :=
   geometricIndex (1-q^(L+1)) (2^(L+1)) (ε/4)

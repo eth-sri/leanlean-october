@@ -10,8 +10,7 @@ open Classical HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInter
 open scoped ENNReal
 
 def quotientEscapedMissing (B : ℕ) (v : List Bool) : Set SplitField :=
-  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (quotientField ω) w) ∧
-    ¬ FiniteReversibleGenerated B 2 (quotientField ω) v}
+  escapedMissingWith quotientField B v
 
 theorem quotient_finite_missing_determined (B : ℕ) (v : List Bool) :
     SplitPrefixDetermined (splitPrefixCoordinates B)

@@ -17,8 +17,8 @@ theorem moleculeWord_length {n : ℕ} (x : Molecule n) :
   ((binaryListWordEquiv (molLength x)).symm x.2).property
 
 theorem binaryWordCode_moleculeWord {n : ℕ} (x : Molecule n) :
-    binaryWordCode (moleculeWord x) = x.2.val := by
-  exact congrArg Fin.val ((binaryListWordEquiv (molLength x)).apply_symm_apply x.2)
+    binaryWordCode (moleculeWord x) = x.2.val :=
+  congrArg Fin.val ((binaryListWordEquiv (molLength x)).apply_symm_apply x.2)
 
 theorem reactionLeft_code_div {n : ℕ} (r : Reaction n) :
     (reactionLeft r).2.val = r.2.1.val / 2 ^ reactionRightLength r := by

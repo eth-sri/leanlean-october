@@ -31,18 +31,13 @@ theorem splitCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
   let e := splitEscapeEval q (K-2)
   have hm : 2 ≤ m := precisionIndex_ge_two ε
   have hK : 2 ≤ K := recordCap_ge_two L r
-  have hS : staticSurvival a ≠ ⊤ := by
-    unfold staticSurvival
-    exact measure_ne_top _ _
+  have hS : staticSurvival a ≠ ⊤ := measure_ne_top _ _
   have ht := real_error_of_bound (splitEscapeProbability a K) (staticSurvival a) hS m L r
     (by omega) a (explicit_split_truncation q hq hq1 m hm a le_rfl r)
   have he : (e : ℝ) = (splitEscapeProbability a K).toReal :=
     (splitEscapeEval_correct q hq.le hq1 (K-2)).trans
       (congrArg ENNReal.toReal (split_escape_finite a K hK).symm)
-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
-    push_cast at hcast
-    exact hcast
+  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := real_precisionIndex_error ε hε
   have hr := real_record_budget q hq hq1 L ε hε
   change (splitEscapeProbability a K).toReal ≤ (staticSurvival a).toReal+1/(m : ℝ)+
     ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
@@ -51,14 +46,9 @@ theorem splitCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
     linarith
   have hl : (staticSurvival a).toReal ≤ (e : ℝ) := by
     rw [he]
-    apply ENNReal.toReal_mono _ (split_survival_le_escape a K)
-    unfold splitEscapeProbability
-    exact measure_ne_top _ _
+    exact ENNReal.toReal_mono (measure_ne_top _ _) (split_survival_le_escape a K)
   change ((e-ε/2 : ℚ) : ℝ) ≤ (staticSurvival a).toReal ∧
     (staticSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
-  refine ⟨?_,hl,?_⟩
-  · push_cast
-    linarith
-  · linarith
+  refine ⟨by push_cast; linarith, hl, by linarith⟩
 
 end RAFCriticalWindowQuantitative

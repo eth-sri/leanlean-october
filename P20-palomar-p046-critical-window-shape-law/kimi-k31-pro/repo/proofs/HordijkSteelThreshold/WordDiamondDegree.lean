@@ -37,16 +37,14 @@ theorem wordDiamond_incidence_card {L N : ℕ} (e : WordBasicEdge L N)
   · have hs : wordDiamondIncidence (u, false) ⊆
         insert u (Finset.univ.filter (fun v => boundedFoodRight v = u)) := by
       intro v hv
-      have h := (wordDiamond_incidence_false u v).mp (Finset.mem_filter.mp hv).2
-      simpa using h
+      simpa using (wordDiamond_incidence_false u v).mp (Finset.mem_filter.mp hv).2
     have hc := (Finset.card_le_card hs).trans (Finset.card_insert_le _ _)
     have hf := boundedFoodRight_fiber_card u hn
     omega
   · have hs : wordDiamondIncidence (u, true) ⊆
         insert u (Finset.univ.filter (fun v => boundedFoodLeft v = u)) := by
       intro v hv
-      have h := (wordDiamond_incidence_true u v).mp (Finset.mem_filter.mp hv).2
-      simpa using h
+      simpa using (wordDiamond_incidence_true u v).mp (Finset.mem_filter.mp hv).2
     have hc := (Finset.card_le_card hs).trans (Finset.card_insert_le _ _)
     have hf := boundedFoodLeft_fiber_card u hn
     omega

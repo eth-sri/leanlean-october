@@ -25,8 +25,8 @@ theorem commuting_factor_unique {n : ℕ} (u v w : Molecule n)
 
 theorem commuting_equal_length {n : ℕ} (u v : Molecule n)
     (hlen : molLength u = molLength v)
-    (hv : displayedConcat u v = displayedConcat v u) : u = v := by
-  exact (commuting_factor_unique u v u hlen.symm hv rfl).symm
+    (hv : displayedConcat u v = displayedConcat v u) : u = v :=
+  (commuting_factor_unique u v u hlen.symm hv rfl).symm
 
 theorem noncanonical_strict_lengths {n : ℕ} (r : OrderedChannel n)
     (h : ¬ (displayedConcat r.val.1 r.val.2 ≠ displayedConcat r.val.2 r.val.1 ∨

@@ -9,9 +9,13 @@ namespace RAFCriticalWindowQuantitative
 open Classical HordijkSteelThreshold MeasureTheory unitInterval
 open scoped ENNReal
 
+def escapedMissingWith (field : SplitField → InfiniteSplitEnvironment) (B : ℕ) (v : List Bool) :
+    Set SplitField :=
+  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (field ω) w) ∧
+    ¬ FiniteReversibleGenerated B 2 (field ω) v}
+
 def escapedMissing (B : ℕ) (v : List Bool) : Set SplitField :=
-  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) ∧
-    ¬ FiniteReversibleGenerated B 2 (currySplitField ω) v}
+  escapedMissingWith currySplitField B v
 
 theorem finite_missing_determined (B : ℕ) (v : List Bool) :
     SplitPrefixDetermined (splitPrefixCoordinates B)

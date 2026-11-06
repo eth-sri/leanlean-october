@@ -22,8 +22,7 @@ theorem split_source_profile_error (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
         (splitTotalInterval s hs hs1 ε hε) : ℝ) := by
   have hP := splitSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool
   have hS := splitTotalInterval_correct s hs hs1 ε hε
-  have h := interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
-  simpa [rationalIntervalError] using h
+  simpa [rationalIntervalError] using interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
 
 theorem quotient_source_profile_error (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
     (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
@@ -35,7 +34,6 @@ theorem quotient_source_profile_error (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
         (quotientTotalInterval s hs hs1 ε hε) : ℝ) := by
   have hP := quotientSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool
   have hS := quotientTotalInterval_correct s hs hs1 ε hε
-  have h := interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
-  simpa [rationalIntervalError] using h
+  simpa [rationalIntervalError] using interval_comparison_error _ _ _ _ _ _ hP ⟨hS.1,hS.2.1⟩
 
 end RAFCriticalWindowQuantitative

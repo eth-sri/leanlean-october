@@ -47,8 +47,7 @@ theorem effective_quotient_seed_survival (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
       have hc := (Finset.card_le_card hs).trans (binaryFood_card_le_cutoff N (K+2))
       change (m-1)*Fintype.card (Molecule N) ≤ m*(quotientClosure N 2 (quotientOpen q)).card at hq
       have hmult : Fintype.card (Molecule N) ≤ (m-1)*Fintype.card (Molecule N) := by
-        have hh := Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
-        simpa using hh
+        simpa using Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
       nlinarith
     exact (quotient_same_field_seed_mass N L m b).trans
       (add_le_add hmass (hbulk b hb N (by omega)))

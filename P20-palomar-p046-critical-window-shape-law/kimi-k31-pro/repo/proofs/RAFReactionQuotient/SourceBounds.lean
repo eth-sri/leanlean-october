@@ -7,7 +7,6 @@ public import proofs.OverlapCorrectedRAF.Source.ActualGatewayDock
 
 @[expose] public section
 
-set_option Elab.async false
 
 namespace RAFReactionQuotient
 open Classical Filter MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold

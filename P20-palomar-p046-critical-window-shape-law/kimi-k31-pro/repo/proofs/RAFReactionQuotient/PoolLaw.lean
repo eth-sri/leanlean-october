@@ -5,7 +5,6 @@ public import proofs.HordijkSteelThreshold.FixedPoolReactionLaw
 
 @[expose] public section
 
-set_option Elab.async false
 
 namespace RAFReactionQuotient
 open Classical MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold

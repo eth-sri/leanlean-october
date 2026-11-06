@@ -8,7 +8,6 @@ public import proofs.OverlapCorrectedRAF.Asymptotic.GatewayConditionedBulk
 
 @[expose] public section
 
-set_option Elab.async false
 
 namespace RAFReactionQuotient
 open Classical Filter MeasureTheory unitInterval HordijkSteelThreshold RAF.Polymer

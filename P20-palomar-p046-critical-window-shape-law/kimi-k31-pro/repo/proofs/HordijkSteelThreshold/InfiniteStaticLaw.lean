@@ -32,11 +32,8 @@ def currySplitField (ω : (List Bool × ℕ) → Prop) : InfiniteSplitEnvironmen
   fun w k => ω (w,k)
 
 theorem measurable_currySplitField : Measurable currySplitField := by
-  apply Measurable.of_eval
-  intro w
-  apply Measurable.of_eval
-  intro k
-  exact measurable_pi_apply (w,k)
+  unfold currySplitField
+  fun_prop
 
 noncomputable def infiniteSplitPi (a : I) : Measure ((List Bool × ℕ) → Prop) :=
   Measure.infinitePi (fun _ => ambientCoordLaw a)

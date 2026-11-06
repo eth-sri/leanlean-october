@@ -5,8 +5,6 @@ public import proofs.RAFCriticalWindowQuantitative.SparseClosure
 
 @[expose] public section
 
-set_option Elab.async false
-set_option maxHeartbeats 100000
 
 namespace RAFCriticalWindowQuantitative
 open Classical HordijkSteelThreshold MeasureTheory ProbabilityTheory unitInterval

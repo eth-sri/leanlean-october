@@ -97,9 +97,7 @@ theorem interval_comparison_error (P S lP uP lS uS : ℝ)
     |P-S| ≤ max (uP-lS) (uS-lP) := by
   apply abs_le.mpr
   constructor
-  · have h := le_max_right (uP-lS) (uS-lP)
-    linarith [hP.1,hS.2]
-  · have h := le_max_left (uP-lS) (uS-lP)
-    linarith [hP.2,hS.1]
+  · linarith [le_max_right (uP-lS) (uS-lP), hP.1,hS.2]
+  · linarith [le_max_left (uP-lS) (uS-lP), hP.2,hS.1]
 
 end RAFCriticalWindowQuantitative
