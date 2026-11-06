@@ -61,8 +61,6 @@ lemma sieve_term {n : ℕ} (hn : 1 ≤ n) (hq : 2 ≤ q) (E : Entries q ι) (a :
     rw [one_div, ← Real.exp_log hnpos, ← Real.exp_neg, Real.exp_log hnpos, ← Real.exp_add]
     congr 1; unfold tn; field_simp; ring
   rw [hexp]
-  have e1 : cexp (-(((E.γ j - E.γ j') * Real.log n : ℝ) : ℂ) * I) =
-      cexp (-((((E.γ j - E.γ j' : ℝ)) * Real.log n : ℝ) : ℂ) * I) := rfl
   rw [Complex.re_ofReal_mul]
   have : (E.χ j * (E.χ j')⁻¹) n * (Real.log n : ℂ) *
       (((1 / n * Real.exp (-(E.δ j + E.δ j') * tn q n) : ℝ) : ℂ) *
@@ -115,7 +113,6 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
   classical
   have hY : ∀ n, ‖Yn E a n‖ ^ 2 ≤ (∑ j, a j) ^ 2 := fun n =>
     pow_le_pow_left₀ (norm_nonneg _) (norm_Yn_le E a ha hδ hq) 2
-  have hsumA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
   -- majorant
   have step1 : ∑ n ∈ C, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
       ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 +
@@ -140,22 +137,21 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
       _ = (∑ n ∈ C, pp n / n) * (∑ j, a j) ^ 2 := by rw [Finset.sum_mul]
       _ ≤ Pk * (∑ j, a j) ^ 2 := mul_le_mul_of_nonneg_right hppsum (sq_nonneg _)
   -- expand the Selberg part
+  set Z : ι → ι → ℕ → ℝ := fun j j' n => sieveNu V n *
+    (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) with hZ
   have hexpand : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 =
-      ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
-        (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) := by
-    simp_rw [norm_Yn_sq, Finset.mul_sum]
+      ∑ j, ∑ j', ∑ n ∈ C, Z j j' n := by
+    simp_rw [hZ, norm_Yn_sq, Finset.mul_sum]
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun j' _ => Finset.sum_congr rfl fun n _ => ?_
     ring
   have hν : ∀ n, 0 ≤ sieveNu V n := sieveNu_nonneg V
-  have hdiagj : ∀ j, ∑ n ∈ C, sieveNu V n *
-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re) ≤
+  have hdiagj : ∀ j, ∑ n ∈ C, Z j j n ≤
       Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 := by
     intro j
-    calc ∑ n ∈ C, sieveNu V n *
-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re)
+    calc ∑ n ∈ C, Z j j n
         ≤ ∑ n ∈ C, (Real.log n / n * sieveNu V n) * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) := by
           refine Finset.sum_le_sum fun n hn => ?_
           have hlog : 0 ≤ Real.log n / n :=
@@ -174,8 +170,7 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
       _ ≤ Dk * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) :=
           mul_le_mul_of_nonneg_right hdiag (mul_nonneg (sq_nonneg _) (Real.exp_pos _).le)
       _ = _ := by ring
-  have hoffj : ∀ j j', j ≠ j' → ∑ n ∈ C, sieveNu V n *
-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) ≤
+  have hoffj : ∀ j j', j ≠ j' → ∑ n ∈ C, Z j j' n ≤
       a j * a j' * Ok := by
     intro j j' hjj'
     have hrw : ∀ n ∈ C, sieveNu V n *
@@ -192,8 +187,7 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
   have step3 : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 ≤
       ∑ j, Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 + Ok * (∑ j, a j) ^ 2 := by
     rw [hexpand]
-    calc ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re)
+    calc ∑ j, ∑ j', ∑ n ∈ C, Z j j' n
         ≤ ∑ j, ∑ j', (if j' = j then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2
             else a j * a j' * Ok) := by
           refine Finset.sum_le_sum fun j _ => Finset.sum_le_sum fun j' _ => ?_
@@ -219,6 +213,6 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
             rw [Finset.mul_sum]
             refine Finset.sum_congr rfl fun j' _ => ?_
             ring
-  linarith [step1, step2, step3]
+  linarith
 
 end GradedNear

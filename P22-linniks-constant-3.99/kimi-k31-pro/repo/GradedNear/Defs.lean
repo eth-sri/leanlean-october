@@ -46,6 +46,10 @@ this repository); that application is not formalized here.
 open Complex MeasureTheory
 open scoped ArithmeticFunction.vonMangoldt ArithmeticFunction.Moebius
 
+notation "⅔" => (2 : ℝ) / 3
+notation "⅓" => (1 : ℝ) / 3
+notation "⅑" => (1 : ℝ) / 9
+
 noncomputable section
 
 namespace GradedNear
@@ -138,7 +142,7 @@ def BurgessBound : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q, χ ≠ 1 →
     ∀ N H : ℕ, 1 ≤ H → H ≤ q →
       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+        C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔
 
 /-- [HB, Lemma 2.1, p. 7], the case `k = 3`, as printed: "Let `q ≥ 1` and let `χ` be a primitive
 character modulo `q`. Let `N ≥ 1` and `1 ≤ H ≤ q`. Then for any `ε > 0` we have
@@ -155,7 +159,7 @@ def BurgessPrimitive : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
     ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+        C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔
 
 /-- The Selberg weights `ψ_d = μ(d) log(V/d) / log V` for `d ≤ V`, and `0` otherwise
 ([HB, (11.6)] with `U = 1`). -/
@@ -366,6 +370,13 @@ structure Leaf where
   first : ℤ
   final : ℤ
 deriving Repr
+
+namespace Leaf
+abbrev row (L : Leaf) (k : ℕ) : RowHead := L.rows.getD k ⟨1, []⟩
+abbrev col (L : Leaf) (j : Fin L.cols.length) : Col := L.cols.get j
+abbrev v (L : Leaf) (j : Fin L.cols.length) (k : ℕ) : ℤ := (L.col j).v.getD k 0
+abbrev D (L : Leaf) (j : Fin L.cols.length) (k : ℕ) : ℤ := (L.col j).D.getD k 1
+end Leaf
 
 /-! ## The checker -/
 

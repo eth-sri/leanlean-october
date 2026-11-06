@@ -27,20 +27,6 @@ noncomputable section
 
 namespace GradedNear
 
-lemma response_arg {q : ℕ} (σ γ : ℝ) (ρ : ℂ) (hℓ : Real.log q ≠ 0) :
-    ((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I - ρ) * (Real.log q : ℂ) =
-      ((((1 - ρ.re) * Real.log q - σ : ℝ)) : ℂ) + (((γ - ρ.im) * Real.log q : ℝ) : ℂ) * I := by
-  apply Complex.ext
-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im,
-      Complex.add_im]
-    field_simp
-    ring
-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im,
-      Complex.add_im]
-    ring
-
 /-- **The response lemma** (paper Lemma 8.7; [X, Lemma 3.2]). Fix a test `f` satisfying Conditions 1
 and 2, a bound `σmax` for the anchors, a count `K₀` and `η > 0`. There are a separation `M > 0`, a
 disc radius `δ < 1` and a `q₀` such that the following holds for `q ≥ q₀`, a non-principal `χ`,
@@ -69,8 +55,8 @@ theorem response_lemma (hX32 : XylourisLemma32) {f : ℝ → ℝ} {x₀ B : ℝ}
   obtain ⟨M, hM, hdecay⟩ := laplace_decay hf1 σmax hε'pos
   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge σmax
   refine ⟨M, hM, δ, hδ0, hδ1, max q₁ q₂, fun q _ hq χ hχ σ γ hσ hγ Sz hSz hsep hK => ?_⟩
-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
-  obtain ⟨hsq, -, hq2⟩ := hq₂ q (le_trans (le_max_right _ _) hq)
+  have hq1 : q₁ ≤ q := by omega
+  obtain ⟨hsq, -, hq2⟩ := hq₂ q (by omega)
   have hℓ := log_q_pos hq2
   set s : ℂ := (((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I with hs
   have hsre : s.re = 1 - σ / Real.log q := by

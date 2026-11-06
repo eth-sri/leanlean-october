@@ -1,6 +1,7 @@
 module
 
 public import GradedNear.Defs
+public import GradedNear.CharacterSums
 
 /-!
 # Burgess's bound: from the printed primitive statement to all non-principal characters
@@ -116,71 +117,28 @@ theorem card_divisors_le_rpow {ε : ℝ} (hε : 0 < ε) :
 
 /-! ## Complete periods -/
 
-/-- Summing over `ZMod q` is summing over the residues `0, …, q - 1`. -/
-private lemma sum_zmod_eq_sum_range {q : ℕ} [NeZero q] (f : ZMod q → ℂ) :
-    ∑ x : ZMod q, f x = ∑ i ∈ range q, f i := by
-  refine Finset.sum_nbij' (fun x => x.val) (fun i => (i : ZMod q)) ?_ ?_ ?_ ?_ ?_
-  · intro x _
-    simpa using ZMod.val_lt x
-  · intro i _
-    simp
-  · intro x _
-    simp
-  · intro i hi
-    exact ZMod.val_cast_of_lt (Finset.mem_range.mp hi)
-  · intro x _
-    simp
-
-/-- For a function of period `q` on `ℕ`, the sums over `q` consecutive integers agree. -/
-private lemma sum_range_add_of_periodic {q : ℕ} (f : ℕ → ℂ) (hf : ∀ n, f (n + q) = f n)
-    (a : ℕ) : ∑ i ∈ range q, f (a + i) = ∑ i ∈ range q, f i := by
-  induction a with
-  | zero => simp
-  | succ a ih =>
-    rw [← ih]
-    have h1 : ∑ i ∈ range (q + 1), f (a + i) = ∑ i ∈ range q, f (a + (i + 1)) + f (a + 0) :=
-      Finset.sum_range_succ' (fun i => f (a + i)) q
-    have h2 : ∑ i ∈ range (q + 1), f (a + i) = ∑ i ∈ range q, f (a + i) + f (a + q) :=
-      Finset.sum_range_succ (fun i => f (a + i)) q
-    have h3 : f (a + q) = f (a + 0) := by rw [hf, add_zero]
-    have h4 : ∑ i ∈ range q, f (a + 1 + i) = ∑ i ∈ range q, f (a + (i + 1)) :=
-      Finset.sum_congr rfl fun i _ => by rw [add_assoc, add_comm 1 i]
-    rw [h4]
-    rw [h3] at h2
-    exact add_right_cancel (h1.symm.trans h2)
-
-/-- A non-principal character sums to zero over any `q` consecutive integers. -/
-private lemma sum_Ioc_period_eq_zero {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q)
-    (hψ : ψ ≠ 1) (a : ℕ) : ∑ n ∈ Ioc a (a + q), ψ n = 0 := by
-  have hper : ∀ n : ℕ, (fun n : ℕ => ψ n) (n + q) = (fun n : ℕ => ψ n) n := by
-    intro n
-    simp [Nat.cast_add]
-  rw [← Finset.Ico_add_one_add_one_eq_Ioc, Finset.sum_Ico_eq_sum_range,
-    show a + q + 1 - (a + 1) = q by omega]
-  have h := sum_range_add_of_periodic (fun n : ℕ => ψ n) hper (a + 1)
-  rw [h, ← sum_zmod_eq_sum_range (fun x => ψ x)]
-  exact MulChar.sum_eq_zero_of_ne_one hψ
-
 /-- A non-principal character sums to zero over any `q k` consecutive integers. -/
 private lemma sum_Ioc_mul_period_eq_zero {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q)
     (hψ : ψ ≠ 1) (a k : ℕ) : ∑ n ∈ Ioc a (a + q * k), ψ n = 0 := by
+  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
   induction k with
   | zero => simp
   | succ k ih =>
     have e : a + q * (k + 1) = a + q * k + q := by ring
     rw [e, ← Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a (q * k))
       (Nat.le_add_right (a + q * k) q), ih, zero_add]
-    exact sum_Ioc_period_eq_zero ψ hψ _
+    exact sum_Ioc_period_eq_zero hq ψ hψ _
 
 /-- Shifting an interval by the period does not change the sum of a non-principal character. -/
 private lemma sum_Ioc_add_period {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
     (a h : ℕ) : ∑ n ∈ Ioc (a + q) (a + q + h), ψ n = ∑ n ∈ Ioc a (a + h), ψ n := by
+  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
   have e1 := Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a q)
     (Nat.le_add_right (a + q) h)
   have e2 := Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a h)
     (Nat.le_add_right (a + h) q)
-  rw [sum_Ioc_period_eq_zero ψ hψ a, zero_add] at e1
-  rw [sum_Ioc_period_eq_zero ψ hψ (a + h), add_zero] at e2
+  rw [sum_Ioc_period_eq_zero hq ψ hψ a, zero_add] at e1
+  rw [sum_Ioc_period_eq_zero hq ψ hψ (a + h), add_zero] at e2
   rw [e1, e2, show a + q + h = a + h + q by ring]
 
 /-- The primitive bound on every interval `(N, N + H]`: complete periods are removed and the
@@ -189,11 +147,11 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
     (hB : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-          C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3))
+          C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔)
     {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q) (hprim : ψ.IsPrimitive) (hψ : ψ ≠ 1)
     (N H : ℕ) :
     ‖∑ n ∈ Finset.Ioc N (N + H), ψ n‖ ≤
-      C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
   have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
   have hH : H % q + q * (H / q) = H := Nat.mod_add_div H q
   have hsplit : ∑ n ∈ Ioc N (N + H), ψ n = ∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n := by
@@ -201,14 +159,14 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
       (show N + H % q ≤ N + H by omega), show N + H = N + H % q + q * (H / q) by omega,
       sum_Ioc_mul_period_eq_zero ψ hψ, add_zero, sum_Ioc_add_period ψ hψ]
   rw [hsplit]
-  have hRHS : 0 ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by positivity
+  have hRHS : 0 ≤ C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by positivity
   rcases Nat.eq_zero_or_pos (H % q) with hr | hr
   · rw [hr, add_zero, Finset.Ioc_self, Finset.sum_empty, norm_zero]
     exact hRHS
   · calc ‖∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n‖
-        ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * ((H % q : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
+        ≤ C * (q : ℝ) ^ (⅑ + ε) * ((H % q : ℕ) : ℝ) ^ ⅔ :=
           hB q hq ψ hprim (N + q) (H % q) (by omega) hr (Nat.mod_lt H hq).le
-      _ ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      _ ≤ C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
           gcongr
           exact_mod_cast Nat.mod_le H q
 
@@ -258,35 +216,13 @@ private lemma sum_eq_sum_divisors {q : ℕ} (hq : q ≠ 0) (χ : DirichletCharac
   rw [Finset.sum_filter, Finset.mul_sum]
   simp only [mul_ite, mul_zero]
 
-/-- The multiples of `d` in `(N, N + H]` are the `d m` with `⌊N/d⌋ < m ≤ ⌊(N + H)/d⌋`. -/
-private lemma filter_dvd_Ioc {d : ℕ} (hd : 0 < d) (N H : ℕ) :
-    (Ioc N (N + H)).filter (d ∣ ·) = (Ioc (N / d) ((N + H) / d)).image (d * ·) := by
-  ext n
-  simp only [mem_filter, mem_Ioc, mem_image]
-  constructor
-  · rintro ⟨⟨h1, h2⟩, ⟨m, rfl⟩⟩
-    refine ⟨m, ⟨?_, ?_⟩, rfl⟩
-    · rw [Nat.div_lt_iff_lt_mul hd]
-      linarith [mul_comm d m]
-    · rw [Nat.le_div_iff_mul_le hd]
-      linarith [mul_comm d m]
-  · rintro ⟨m, ⟨h1, h2⟩, rfl⟩
-    refine ⟨⟨?_, ?_⟩, dvd_mul_right d m⟩
-    · rw [Nat.div_lt_iff_lt_mul hd] at h1
-      linarith [mul_comm d m]
-    · rw [Nat.le_div_iff_mul_le hd] at h2
-      linarith [mul_comm d m]
-
 /-- `Σ_{N < n ≤ N + H, d ∣ n} ψ(n) = ψ(d) Σ_{⌊N/d⌋ < m ≤ ⌊(N + H)/d⌋} ψ(m)`. -/
 private lemma sum_filter_dvd_Ioc {q : ℕ} (ψ : DirichletCharacter ℂ q) {d : ℕ} (hd : 0 < d)
     (N H : ℕ) :
     ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), ψ n =
       ψ d * ∑ m ∈ Ioc (N / d) ((N + H) / d), ψ m := by
-  rw [filter_dvd_Ioc hd, Finset.sum_image (fun a _ b _ h => Nat.eq_of_mul_eq_mul_left hd h),
-    Finset.mul_sum]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  push_cast
-  exact map_mul ψ _ _
+  rw [Finset.sum_filter, sum_Ioc_ite_dvd (fun n => ψ n) hd]
+  simp only [Nat.cast_mul, map_mul, ← Finset.mul_sum]
 
 /-- The number of multiples of `d ≥ 1` in `(N, N + H]` is at most `H`. -/
 private lemma div_sub_div_le {d : ℕ} (hd : 0 < d) (N H : ℕ) : (N + H) / d - N / d ≤ H := by
@@ -306,7 +242,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
   have hC₁' : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-          C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+          C₁' * (q : ℝ) ^ (⅑ + ε / 2) * (H : ℝ) ^ ⅔ := by
     intro q hq χ hχ N H hN hH hHq
     refine (hC₁ q hq χ hχ N H hN hH hHq).trans ?_
     gcongr
@@ -324,7 +260,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
   have hψprim : χ.primitiveCharacter.IsPrimitive := χ.primitiveCharacter_isPrimitive
   have hcond : (χ.conductor : ℝ) ≤ q := by
     exact_mod_cast Nat.le_of_dvd (by omega) χ.conductor_dvd_level
-  set B : ℝ := C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) with hBdef
+  set B : ℝ := C₁' * (q : ℝ) ^ (⅑ + ε / 2) * (H : ℝ) ^ ⅔ with hBdef
   have hB0 : 0 ≤ B := by positivity
   have hinner : ∀ d ∈ q.divisors,
       ‖(μ d : ℂ) * ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), χ.primitiveCharacter n‖ ≤ B := by
@@ -344,8 +280,8 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
         = ‖(μ d : ℂ)‖ * (‖χ.primitiveCharacter d‖ * ‖S‖) := by rw [norm_mul, norm_mul]
       _ ≤ 1 * (1 * ‖S‖) := by gcongr
       _ = ‖S‖ := by ring
-      _ ≤ C₁' * (χ.conductor : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) *
-            (((N + H) / d - N / d : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
+      _ ≤ C₁' * (χ.conductor : ℝ) ^ (⅑ + ε / 2) *
+            (((N + H) / d - N / d : ℕ) : ℝ) ^ ⅔ :=
           primitive_bound_all hC₁'0 hC₁' _ hψprim hψ1 _ _
       _ ≤ B := by
           rw [hBdef]
@@ -363,9 +299,9 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
     _ ≤ (C₂ * (q : ℝ) ^ (ε / 2)) * B := by
         gcongr
         exact hτ q hq0
-    _ = C₁' * C₂ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
-        rw [hBdef, show (1 : ℝ) / 9 + ε = ε / 2 + ((1 : ℝ) / 9 + ε / 2) by ring,
-          Real.rpow_add hqpos (ε / 2) ((1 : ℝ) / 9 + ε / 2)]
+    _ = C₁' * C₂ * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
+        rw [hBdef, show ⅑ + ε = ε / 2 + (⅑ + ε / 2) by ring,
+          Real.rpow_add hqpos (ε / 2) (⅑ + ε / 2)]
         ring
 
 end GradedNear

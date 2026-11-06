@@ -1,6 +1,6 @@
 module
 
-public import GradedNear.Statement
+public import GradedNear.Main
 public import GradedNear.Response
 public import GradedNear.Threshold
 
@@ -67,9 +67,8 @@ theorem graded_near_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
     response_lemma hX32 hD.f_cond hf2 (|D.s| + ∑ δ ∈ D.Δ, |δ|) K₀ hη
   refine ⟨M, hM, δ, hδ0, hδ1, max q₁ q₂, ?_⟩
   intro q _ hq T hT0 hTl hsafe ι _ E hχ hγ hΔ hinj Sz hSz hsep hK Dn hDn hDj
-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
-  have hq2 : q₂ ≤ q := le_trans (le_max_right _ _) hq
-  have hℓ0 : 0 ≤ Real.log q := Real.log_natCast_nonneg q
+  have hq1 : q₁ ≤ q := by omega
+  have hq2 : q₂ ≤ q := by omega
   -- the kept zeros bound each response from below
   have hresp : ∀ j, keptBound D E Sz η j ≤ response D E j := by
     intro j

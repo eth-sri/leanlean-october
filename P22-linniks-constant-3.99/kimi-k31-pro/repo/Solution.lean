@@ -1,19 +1,9 @@
 module
 import GradedNear.Builder
 import GradedNear.BurgessReduction
-import GradedNear.Cert.Bins
 import GradedNear.Cert.Sound
 import GradedNear.Conj
-import GradedNear.Entry
-import GradedNear.Interval.Sound
-import GradedNear.Parabolic
-import GradedNear.Response
-import GradedNear.Row
-import GradedNear.Row.CheckSound
-import GradedNear.Statement
-import GradedNear.ZeroForm
-import IntervalCore
-import LeafNumCore
+import GradedNear.Main
 
 
 /-!

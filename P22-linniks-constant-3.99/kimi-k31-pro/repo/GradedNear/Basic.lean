@@ -90,4 +90,13 @@ lemma weighted_cs {β : Type*} (N : Finset β) (c w y : β → ℝ) (hw : ∀ n 
   · refine Finset.sum_congr rfl fun n hn => ?_
     rw [mul_pow, Real.sq_sqrt (hw n hn)]
 
+lemma response_arg {q : ℕ} (σ γ : ℝ) (ρ : ℂ) (hℓ : Real.log q ≠ 0) :
+    ((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I - ρ) * (Real.log q : ℂ) =
+      ((((1 - ρ.re) * Real.log q - σ : ℝ)) : ℂ) + (((γ - ρ.im) * Real.log q : ℝ) : ℂ) * I := by
+  apply Complex.ext <;>
+    simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
+      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im, Complex.add_im]
+  · field_simp; ring
+  · ring
+
 end GradedNear

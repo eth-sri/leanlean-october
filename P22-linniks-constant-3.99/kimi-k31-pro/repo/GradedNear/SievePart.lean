@@ -57,10 +57,7 @@ lemma rpow_le_natCast_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ)
 
 lemma natCast_lt_rpow_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ) :
     (n : ℝ) < (q : ℝ) ^ t ↔ tn q n < t := by
-  have := rpow_le_natCast_iff_tn hq hn t
-  constructor
-  · intro h; by_contra h'; linarith [this.2 (not_lt.1 h')]
-  · intro h; by_contra h'; linarith [this.1 (not_lt.1 h')]
+  simpa only [not_le] using not_congr (rpow_le_natCast_iff_tn hq hn t)
 
 /-- The integers of a cell lie in `[⌈q^t⌉, ⌈q^{t'}⌉)`. -/
 lemma cell_filter_subset {q : ℕ} (hq : 2 ≤ q) (N : ℕ) (t t' : ℝ) :
@@ -128,7 +125,7 @@ lemma cell_k_bound {V₀ CB CC κ : ℝ}
     unfold NearData.level; linarith [hD.ε'_pos]
   have hVA : V ≤ A := Real.rpow_le_rpow_of_exponent_le hq1 hlev_lt.le
   have hAB : A ≤ B := Real.rpow_le_rpow_of_exponent_le hq1 htk_lt.le
-  have hA1 : 1 ≤ A := Real.one_le_rpow hq1 (by linarith [hlev_lt])
+  have hA1 : 1 ≤ A := Real.one_le_rpow hq1 (by linarith)
   have hlogV : Real.log V = D.level k * Real.log q := Real.log_rpow hq0 _
   have hlogA : Real.log A = D.t k * Real.log q := Real.log_rpow hq0 _
   have hlogB : Real.log B = D.t (k + 1) * Real.log q := Real.log_rpow hq0 _
@@ -252,7 +249,7 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
     congr 1
     refine Finset.sum_congr rfl fun k _ => ?_
     ring
-  linarith [herr_le, hlast]
+  linarith
 
 lemma t_mono_le (D : NearData) (hD : D.Valid) {k l : ℕ} (hkl : k ≤ l) (hl : l ≤ D.m) :
     D.t k ≤ D.t l := by
@@ -297,19 +294,14 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
     (tendsto_log_nat_atTop.eventually_ge_atTop (2 * ∑ δ ∈ D.Δ, δ))
   refine ⟨max (max (max qC qE) (max qV qβ)) 2,
     fun q hq T hT hTq ι _ E hγ hΔ hinj a ha N => ?_⟩
-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
-  have hqC : qC ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_left _ _)
-    (le_max_left _ _))) hq
-  have hqE' : qE ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_left _ _)
-    (le_max_left _ _))) hq
-  have hqV' : qV ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _)
-    (le_max_left _ _))) hq
-  have hqβ' : qβ ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _)
-    (le_max_left _ _))) hq
+  have hq2 : 2 ≤ q := by omega
+  have hqC : qC ≤ q := by omega
+  have hqE' : qE ≤ q := by omega
+  have hqV' : qV ≤ q := by omega
+  have hqβ' : qβ ≤ q := by omega
   have hℓ := log_q_pos hq2
   have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
   have hδ : ∀ j, 0 ≤ E.δ j := fun j => hD.Δ_nonneg _ (hΔ j)
-  have hA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
   by_cases hH : ∃ k < D.m, D.h k ≠ 0
   swap
   · -- the sieve weight vanishes

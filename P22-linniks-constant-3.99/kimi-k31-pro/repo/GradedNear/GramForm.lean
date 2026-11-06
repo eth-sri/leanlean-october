@@ -81,17 +81,8 @@ omit [Fintype ι] in
 lemma sjk_arg (D : NearData) (E : Entries q ι) (j k : ι) (hℓ : Real.log q ≠ 0) :
     (sjk D E j k - 1) * (Real.log q : ℂ) =
       (((-(D.s₁ - E.δ j - E.δ k)) : ℝ) : ℂ) + (((E.γ j - E.γ k) * Real.log q : ℝ) : ℂ) * I := by
-  unfold sjk
-  apply Complex.ext
-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.one_re,
-      Complex.sub_im, Complex.add_im, Complex.one_im]
-    field_simp
-    ring
-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.one_re,
-      Complex.sub_im, Complex.add_im, Complex.one_im]
-    ring
+  simpa only [sjk, Complex.one_re, Complex.one_im, sub_self, zero_mul, zero_sub, sub_zero] using
+    response_arg (q := q) (D.s₁ - E.δ j - E.δ k) (E.γ j - E.γ k) 1 hℓ
 
 omit [Fintype ι] in
 lemma sjk_re (D : NearData) (E : Entries q ι) (j k : ι) :
@@ -134,9 +125,9 @@ theorem gram_form_bound (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (D : N
   obtain ⟨q₁, hq₁⟩ := principal_entry hX31 hD.g_cond1 K hε
   obtain ⟨δ, hδ0, hδ1, q₂, hq₂⟩ := nonprincipal_entry hX32 hD.g_cond1 hD.g_cond2 K hε
   refine ⟨max (max q₁ q₂) 2, fun q _ hq T hT hTq hsafe ι _ E hγ hΔ a ha => ?_⟩
-  have hq1 : q₁ ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
-  have hq2' : q₂ ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
+  have hq1 : q₁ ≤ q := by omega
+  have hq2' : q₂ ≤ q := by omega
+  have hq2 : 2 ≤ q := by omega
   have hℓ := log_q_pos hq2
   classical
   -- bounds on the Gram point

@@ -63,9 +63,7 @@ lemma mertens_nat_lower (N : ℕ) (hN : 1 ≤ N) :
     intro n _
     ring
   rw [h3] at h2
-  have h4 : (N : ℝ) * (Real.log N - 1) ≤ N * ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
-    linarith
-  exact le_of_mul_le_mul_left h4 hNR
+  exact le_of_mul_le_mul_left (by linarith) hNR
 
 /-- Mertens upper bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≤ log N + log 4 + 4`. -/
 lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
@@ -92,9 +90,7 @@ lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
     ring
   rw [h3] at h2
   have h4 := Chebyshev.psi_le_const_mul_self (x := (N : ℝ)) hNR.le
-  have h5 : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, Λ n / n ≤ N * (Real.log N + (Real.log 4 + 4)) := by
-    nlinarith
-  exact le_of_mul_le_mul_left h5 hNR
+  exact le_of_mul_le_mul_left (by nlinarith) hNR
 
 /-- **Mertens' first theorem**: `|Σ_{n ≤ x} Λ(n)/n - log x| ≤ 6` for `x ≥ 1`. -/
 lemma abs_mertensSum_sub_log_le (x : ℝ) (hx : 1 ≤ x) :
@@ -130,7 +126,7 @@ lemma mertensSum_short (q : ℕ) (hq : 1 < q) {a b : ℝ} (ha : 0 ≤ a) (hb : 0
 /-! ### Summation over a partition -/
 
 /-- If `φ ≤ c i` on each cell `(u i, u (i + 1)]` of a partition starting at `u 0 = 0`, then the
-weighted sum over `n ≤ q ^ u j` is bounded by the Mertens masses of the cells weighted by `c`. -/
+weighted sum over `n ≤ (q : ℝ) ^ u j` is bounded by the Mertens masses of the cells weighted by `c`. -/
 lemma sum_le_partition (φ : ℝ → ℝ) (q : ℕ) (hq : 1 < q) (u c : ℕ → ℝ) (hu0 : u 0 = 0)
     (hmono : ∀ i, u i ≤ u (i + 1)) (j : ℕ)
     (hφ : ∀ i < j, ∀ t, u i < t → t ≤ u (i + 1) → φ t ≤ c i) :
@@ -366,7 +362,7 @@ lemma tendsto_integral_stepFn (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (h
     exact tendsto_stepFn hX hbd htIoo (hcont t htIoo ht.1)
 
 /-- The statement of `GradedNear.riemann_upper`, proved inside the helper namespace. -/
-theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
+theorem _root_.GradedNear.riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
     (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
     (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
     {ε : ℝ} (hε : 0 < ε) :
@@ -435,14 +431,4 @@ theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 
   nlinarith
 
 end FirstFactor
-
-theorem riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
-    (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
-    (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
-      (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε :=
-  FirstFactor.riemann_upper_aux φ X M P hX hbd hcont hε
-
 end GradedNear

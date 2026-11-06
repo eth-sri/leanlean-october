@@ -52,16 +52,11 @@ lemma sieve_error_eventually (m : ℕ) (h t lev : ℕ → ℝ) (hlev : ∀ k < m
         funext q; field_simp
       rw [this]; simpa using (hinv.pow 3).const_mul (CB / lev k ^ 2)
     have h3 : Tendsto (fun q : ℕ => |CC| * (q : ℝ) ^ (-κ) / Real.log q) atTop (𝓝 0) := by
-      have : (fun q : ℕ => |CC| * (q : ℝ) ^ (-κ) / Real.log q) =
-          fun q : ℕ => |CC| * ((q : ℝ) ^ (-κ) * (Real.log q)⁻¹) := by
-        funext q; ring
-      rw [this]; simpa using ((tendsto_rpow_neg_nat hκ).mul hinv).const_mul |CC|
+      simpa [div_eq_mul_inv, mul_assoc] using
+        ((tendsto_rpow_neg_nat hκ).mul hinv).const_mul |CC|
     have h4 : Tendsto (fun q : ℕ => 2 * lev k * (q : ℝ) ^ (lev k - t k)) atTop (𝓝 0) := by
       have hneg : 0 < t k - lev k := by linarith [hlt k hk']
-      have : (fun q : ℕ => 2 * lev k * (q : ℝ) ^ (lev k - t k)) =
-          fun q : ℕ => 2 * lev k * (q : ℝ) ^ (-(t k - lev k)) := by
-        funext q; congr 2; ring
-      rw [this]; simpa using (tendsto_rpow_neg_nat hneg).const_mul (2 * lev k)
+      simpa [neg_sub] using (tendsto_rpow_neg_nat hneg).const_mul (2 * lev k)
     exact ((h1.add h2).add h3).add h4
   have hev := (tendsto_order.1 hT).2 ε hε
   obtain ⟨q₀, hq₀⟩ := Filter.eventually_atTop.1 hev

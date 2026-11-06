@@ -53,11 +53,16 @@ def thresholdCost {ι : Type*} [Fintype ι]
   t ^ 2 / d + ∑ i, (pos (v i - t)) ^ 2 / D i
 
 /-- Existence of the common threshold, by a continuous scalar fixed-point equation. -/
-theorem exists_common_threshold {ι : Type*} [Fintype ι]
+theorem _root_.GradedNear.threshold_of_quadratic {ι : Type*} [Fintype ι]
     (v D : ι → ℝ) (d : ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d)
-    (hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
-      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a) :
-    ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧ thresholdCost v D d t ≤ 1 := by
+    (hq : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
+      (max 0 (∑ i, a i * v i)) ^ 2 ≤ ∑ i, D i * a i ^ 2 + d * (∑ i, a i) ^ 2) :
+    ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧
+      ∑ i, (max 0 (v i - t)) ^ 2 / D i ≤ 1 - t ^ 2 / d := by
+  have hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
+      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a := by
+    intro a ha
+    simpa only [pos, resource, max_comm] using hq a ha
   let b : ℝ := d * ∑ i, pos (v i) / D i
   let f : ℝ → ℝ := fun t => d * (∑ i, pos (v i - t) / D i) - t
   have hb : 0 ≤ b := by
@@ -120,30 +125,12 @@ theorem exists_common_threshold {ι : Type*} [Fintype ι]
       dsimp [thresholdCost] at hres₁
       linarith
     exact (div_le_one hd).1 hdiv
-  refine ⟨t, ht.1, ?_, hcost ▸ hres₁⟩
-  exact Real.le_sqrt_of_sq_le ht₂
-
-end
-
-end ThresholdAux
-
-theorem threshold_of_quadratic {ι : Type*} [Fintype ι] (v D : ι → ℝ) (d : ℝ)
-    (hD : ∀ j, 0 < D j) (hd : 0 < d)
-    (hq : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
-      (max 0 (∑ j, a j * v j)) ^ 2 ≤ ∑ j, D j * a j ^ 2 + d * (∑ j, a j) ^ 2) :
-    ∃ τ : ℝ, 0 ≤ τ ∧ τ ≤ Real.sqrt d ∧
-      ∑ j, (max 0 (v j - τ)) ^ 2 / D j ≤ 1 - τ ^ 2 / d := by
-  have hquad : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
-      (ThresholdAux.pos (∑ j, a j * v j)) ^ 2 ≤ ThresholdAux.resource D d a := by
-    intro a ha
-    have h := hq a ha
-    rw [ThresholdAux.pos, max_comm]
-    exact h
-  obtain ⟨τ, hτ0, hτd, hcost⟩ := ThresholdAux.exists_common_threshold v D d hD hd hquad
-  refine ⟨τ, hτ0, hτd, ?_⟩
-  have hmax : ∀ j, max 0 (v j - τ) = ThresholdAux.pos (v j - τ) := fun j => max_comm _ _
+  refine ⟨t, ht.1, Real.le_sqrt_of_sq_le ht₂, ?_⟩
+  have hmax : ∀ i, max 0 (v i - t) = pos (v i - t) := fun i => max_comm _ _
   simp only [hmax]
-  unfold ThresholdAux.thresholdCost at hcost
+  unfold thresholdCost at hcost
   linarith
 
+end
+end ThresholdAux
 end GradedNear

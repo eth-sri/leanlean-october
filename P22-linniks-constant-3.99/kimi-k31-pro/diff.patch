@@ -1,0 +1,2803 @@
+diff --git a/CertCore.lean b/CertCore.lean
+deleted file mode 100644
+index d22399bb1..000000000
+--- a/CertCore.lean
++++ /dev/null
+@@ -1,48 +0,0 @@
+-module
+-
+-/-!
+-# The leaf-certificate checker, without Mathlib
+-
+-A copy of the checker `GradedNear.Cert.checkLeaf` (`GradedNear/Defs.lean`, section "Exact
+-certificates for the leaf LPs") that depends on Lean core only, so that it can be compiled to a
+-native executable (`CertRunNative.lean`, `lake build certrun`) without compiling Mathlib.
+-
+-The definitions are those of `GradedNear.Defs`, with `Int`, `Nat`, core `Rat` and core `List`
+-functions. The pieces that `GradedNear.Defs` takes from Mathlib are replaced:
+-* `List.zipWith3` is `CertCore.zipWith3` (the same recursion);
+-* the ceiling `⌈·⌉ : ℚ → ℤ` is `ratCeil q = -Rat.floor (-q)`, which is how Mathlib's
+-  `FloorRing ℚ` instance defines it.
+-
+-The one function computed differently is `caseValue`, the dual check of a case, where almost all
+-the time goes (every column, every case, every box). Instead of building the list of costs of a
+-column and summing its products with the duals `Z`, it accumulates the sum row by row
+-(`dotAcc`), skipping rows whose dual or cost is `0`, with the per-row constants of the costs
+-computed once per case (`costPrep`, `costOf`); the products of the duals `V`, `U`, `P - M` with
+-zero column coefficients are skipped too (`addMul`), and the budgets are computed only for rows
+-with a nonzero dual (`budgetAcc`). The casts of the duals to `Int` are done once per case. The
+-results are the same integers, by `0 * x = 0`, `x + 0 = x`, the associativity of `+`,
+-`x ^ 2 = x * x` and `max y 0 = y` for `y > 0`.
+-
+-`GradedNear.Cert.checkLeaf_toCore` and `GradedNear.Cert.checkLeaf_ofCore`
+-(`GradedNear/Cert/FastEq.lean`) prove that `CertCore.checkLeaf` computes exactly
+-`GradedNear.Cert.checkLeaf` on the data converted field by field, so the soundness theorem
+-`GradedNear.Cert.checkLeaf_sound` applies to the values computed by the compiled checker.
+--/
+-
+-@[expose] public section
+-
+-namespace CertCore
+-
+-/-! ## The checker -/
+-
+-/-! ### The dual check of a case, computed row by row -/
+-
+-/-- The constants of the column costs of a row on the box interval `[a, b]` for case `c`: the
+-case, the shift `m` (`b·S/TS` for `c = 2`, `(a + b)·HS` otherwise) and, for the tangent cases,
+-`h = 2(b - a)·HS`. -/
+-structure CostPrep where
+-  c : Nat
+-  m : Int
+-  h : Int
+-
+-end CertCore
+diff --git a/GradedNear/Admissible.lean b/GradedNear/Admissible.lean
+deleted file mode 100644
+index 2a994c930..000000000
+--- a/GradedNear/Admissible.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.LaplaceDecay
+diff --git a/GradedNear/Basic.lean b/GradedNear/Basic.lean
+index 2a9c8be85..9af2bfae8 100644
+--- a/GradedNear/Basic.lean
++++ b/GradedNear/Basic.lean
+@@ -90,4 +90,13 @@ lemma weighted_cs {β : Type*} (N : Finset β) (c w y : β → ℝ) (hw : ∀ n
+   · refine Finset.sum_congr rfl fun n hn => ?_
+     rw [mul_pow, Real.sq_sqrt (hw n hn)]
+ 
++lemma response_arg {q : ℕ} (σ γ : ℝ) (ρ : ℂ) (hℓ : Real.log q ≠ 0) :
++    ((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I - ρ) * (Real.log q : ℂ) =
++      ((((1 - ρ.re) * Real.log q - σ : ℝ)) : ℂ) + (((γ - ρ.im) * Real.log q : ℝ) : ℂ) * I := by
++  apply Complex.ext <;>
++    simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
++      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im, Complex.add_im]
++  · field_simp; ring
++  · ring
++
+ end GradedNear
+diff --git a/GradedNear/Bookkeeping.lean b/GradedNear/Bookkeeping.lean
+index 6ef0dad57..acf182e63 100644
+--- a/GradedNear/Bookkeeping.lean
++++ b/GradedNear/Bookkeeping.lean
+@@ -34,9 +34,9 @@ lemma gram_bookkeeping (same : ι → ι → Prop) [DecidableRel same]
+     intro j k
+     simp only [hP]
+     by_cases h : k ≠ j ∧ same k j
+-    · have h' : j ≠ k ∧ same j k := ⟨fun e => h.1 e.symm, hsymm _ _ h.2⟩
+-      rw [ite_eq_left_iff.2 (fun hn => absurd h hn), ite_eq_left_iff.2 (fun hn => absurd h' hn), hR]
+-    · have h' : ¬ (j ≠ k ∧ same j k) := fun h' => h ⟨fun e => h'.1 e.symm, hsymm _ _ h'.2⟩
++    · simp_all [eq_comm]
++    · have h' : ¬ (j ≠ k ∧ same j k) := fun h' =>
++        h ⟨fun e => h'.1 e.symm, hsymm _ _ h'.2⟩
+       rw [ite_eq_right_iff.2 (fun hh => absurd hh h), ite_eq_right_iff.2 (fun hh => absurd hh h')]
+   -- termwise bound
+   have hterm : ∀ j k, a j * a k * M j k ≤
+@@ -116,7 +116,7 @@ lemma gram_bookkeeping (same : ι → ι → Prop) [DecidableRel same]
+         rw [← sum_add_distrib, ← sum_add_distrib]
+     _ ≤ (d + ε) * (∑ j, a j) ^ 2 + ∑ j, (R j j - d) * a j ^ 2 +
+           ∑ j, (∑ k, P j k) * a j ^ 2 := by
+-        rw [hconst, hdiag]; linarith [hpair]
++        rw [hconst, hdiag]; linarith
+     _ = _ := by
+         simp_rw [hPsum]
+         simp only [add_mul, sum_add_distrib]
+diff --git a/GradedNear/BurgessReduction.lean b/GradedNear/BurgessReduction.lean
+index 6e3ecc40c..7563dc3dd 100644
+--- a/GradedNear/BurgessReduction.lean
++++ b/GradedNear/BurgessReduction.lean
+@@ -1,6 +1,7 @@
+ module
+ 
+ public import GradedNear.Defs
++public import GradedNear.CharacterSums
+ 
+ /-!
+ # Burgess's bound: from the printed primitive statement to all non-principal characters
+@@ -116,71 +117,28 @@ theorem card_divisors_le_rpow {ε : ℝ} (hε : 0 < ε) :
+ 
+ /-! ## Complete periods -/
+ 
+-/-- Summing over `ZMod q` is summing over the residues `0, …, q - 1`. -/
+-private lemma sum_zmod_eq_sum_range {q : ℕ} [NeZero q] (f : ZMod q → ℂ) :
+-    ∑ x : ZMod q, f x = ∑ i ∈ range q, f i := by
+-  refine Finset.sum_nbij' (fun x => x.val) (fun i => (i : ZMod q)) ?_ ?_ ?_ ?_ ?_
+-  · intro x _
+-    simpa using ZMod.val_lt x
+-  · intro i _
+-    simp
+-  · intro x _
+-    simp
+-  · intro i hi
+-    exact ZMod.val_cast_of_lt (Finset.mem_range.mp hi)
+-  · intro x _
+-    simp
+-
+-/-- For a function of period `q` on `ℕ`, the sums over `q` consecutive integers agree. -/
+-private lemma sum_range_add_of_periodic {q : ℕ} (f : ℕ → ℂ) (hf : ∀ n, f (n + q) = f n)
+-    (a : ℕ) : ∑ i ∈ range q, f (a + i) = ∑ i ∈ range q, f i := by
+-  induction a with
+-  | zero => simp
+-  | succ a ih =>
+-    rw [← ih]
+-    have h1 : ∑ i ∈ range (q + 1), f (a + i) = ∑ i ∈ range q, f (a + (i + 1)) + f (a + 0) :=
+-      Finset.sum_range_succ' (fun i => f (a + i)) q
+-    have h2 : ∑ i ∈ range (q + 1), f (a + i) = ∑ i ∈ range q, f (a + i) + f (a + q) :=
+-      Finset.sum_range_succ (fun i => f (a + i)) q
+-    have h3 : f (a + q) = f (a + 0) := by rw [hf, add_zero]
+-    have h4 : ∑ i ∈ range q, f (a + 1 + i) = ∑ i ∈ range q, f (a + (i + 1)) :=
+-      Finset.sum_congr rfl fun i _ => by rw [add_assoc, add_comm 1 i]
+-    rw [h4]
+-    rw [h3] at h2
+-    exact add_right_cancel (h1.symm.trans h2)
+-
+-/-- A non-principal character sums to zero over any `q` consecutive integers. -/
+-private lemma sum_Ioc_period_eq_zero {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q)
+-    (hψ : ψ ≠ 1) (a : ℕ) : ∑ n ∈ Ioc a (a + q), ψ n = 0 := by
+-  have hper : ∀ n : ℕ, (fun n : ℕ => ψ n) (n + q) = (fun n : ℕ => ψ n) n := by
+-    intro n
+-    simp [Nat.cast_add]
+-  rw [← Finset.Ico_add_one_add_one_eq_Ioc, Finset.sum_Ico_eq_sum_range,
+-    show a + q + 1 - (a + 1) = q by omega]
+-  have h := sum_range_add_of_periodic (fun n : ℕ => ψ n) hper (a + 1)
+-  rw [h, ← sum_zmod_eq_sum_range (fun x => ψ x)]
+-  exact MulChar.sum_eq_zero_of_ne_one hψ
+-
+ /-- A non-principal character sums to zero over any `q k` consecutive integers. -/
+ private lemma sum_Ioc_mul_period_eq_zero {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q)
+     (hψ : ψ ≠ 1) (a k : ℕ) : ∑ n ∈ Ioc a (a + q * k), ψ n = 0 := by
++  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
+   induction k with
+   | zero => simp
+   | succ k ih =>
+     have e : a + q * (k + 1) = a + q * k + q := by ring
+     rw [e, ← Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a (q * k))
+       (Nat.le_add_right (a + q * k) q), ih, zero_add]
+-    exact sum_Ioc_period_eq_zero ψ hψ _
++    exact sum_Ioc_period_eq_zero hq ψ hψ _
+ 
+ /-- Shifting an interval by the period does not change the sum of a non-principal character. -/
+ private lemma sum_Ioc_add_period {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
+     (a h : ℕ) : ∑ n ∈ Ioc (a + q) (a + q + h), ψ n = ∑ n ∈ Ioc a (a + h), ψ n := by
++  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
+   have e1 := Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a q)
+     (Nat.le_add_right (a + q) h)
+   have e2 := Finset.sum_Ioc_consecutive (fun n : ℕ => ψ n) (Nat.le_add_right a h)
+     (Nat.le_add_right (a + h) q)
+-  rw [sum_Ioc_period_eq_zero ψ hψ a, zero_add] at e1
+-  rw [sum_Ioc_period_eq_zero ψ hψ (a + h), add_zero] at e2
++  rw [sum_Ioc_period_eq_zero hq ψ hψ a, zero_add] at e1
++  rw [sum_Ioc_period_eq_zero hq ψ hψ (a + h), add_zero] at e2
+   rw [e1, e2, show a + q + h = a + h + q by ring]
+ 
+ /-- The primitive bound on every interval `(N, N + H]`: complete periods are removed and the
+@@ -189,11 +147,11 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
+     (hB : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
+       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
+         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
+-          C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3))
++          C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔)
+     {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q) (hprim : ψ.IsPrimitive) (hψ : ψ ≠ 1)
+     (N H : ℕ) :
+     ‖∑ n ∈ Finset.Ioc N (N + H), ψ n‖ ≤
+-      C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
+   have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
+   have hH : H % q + q * (H / q) = H := Nat.mod_add_div H q
+   have hsplit : ∑ n ∈ Ioc N (N + H), ψ n = ∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n := by
+@@ -201,14 +159,14 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
+       (show N + H % q ≤ N + H by omega), show N + H = N + H % q + q * (H / q) by omega,
+       sum_Ioc_mul_period_eq_zero ψ hψ, add_zero, sum_Ioc_add_period ψ hψ]
+   rw [hsplit]
+-  have hRHS : 0 ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by positivity
++  have hRHS : 0 ≤ C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by positivity
+   rcases Nat.eq_zero_or_pos (H % q) with hr | hr
+   · rw [hr, add_zero, Finset.Ioc_self, Finset.sum_empty, norm_zero]
+     exact hRHS
+   · calc ‖∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n‖
+-        ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * ((H % q : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
++        ≤ C * (q : ℝ) ^ (⅑ + ε) * ((H % q : ℕ) : ℝ) ^ ⅔ :=
+           hB q hq ψ hprim (N + q) (H % q) (by omega) hr (Nat.mod_lt H hq).le
+-      _ ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      _ ≤ C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
+           gcongr
+           exact_mod_cast Nat.mod_le H q
+ 
+@@ -258,35 +216,13 @@ private lemma sum_eq_sum_divisors {q : ℕ} (hq : q ≠ 0) (χ : DirichletCharac
+   rw [Finset.sum_filter, Finset.mul_sum]
+   simp only [mul_ite, mul_zero]
+ 
+-/-- The multiples of `d` in `(N, N + H]` are the `d m` with `⌊N/d⌋ < m ≤ ⌊(N + H)/d⌋`. -/
+-private lemma filter_dvd_Ioc {d : ℕ} (hd : 0 < d) (N H : ℕ) :
+-    (Ioc N (N + H)).filter (d ∣ ·) = (Ioc (N / d) ((N + H) / d)).image (d * ·) := by
+-  ext n
+-  simp only [mem_filter, mem_Ioc, mem_image]
+-  constructor
+-  · rintro ⟨⟨h1, h2⟩, ⟨m, rfl⟩⟩
+-    refine ⟨m, ⟨?_, ?_⟩, rfl⟩
+-    · rw [Nat.div_lt_iff_lt_mul hd]
+-      linarith [mul_comm d m]
+-    · rw [Nat.le_div_iff_mul_le hd]
+-      linarith [mul_comm d m]
+-  · rintro ⟨m, ⟨h1, h2⟩, rfl⟩
+-    refine ⟨⟨?_, ?_⟩, dvd_mul_right d m⟩
+-    · rw [Nat.div_lt_iff_lt_mul hd] at h1
+-      linarith [mul_comm d m]
+-    · rw [Nat.le_div_iff_mul_le hd] at h2
+-      linarith [mul_comm d m]
+-
+ /-- `Σ_{N < n ≤ N + H, d ∣ n} ψ(n) = ψ(d) Σ_{⌊N/d⌋ < m ≤ ⌊(N + H)/d⌋} ψ(m)`. -/
+ private lemma sum_filter_dvd_Ioc {q : ℕ} (ψ : DirichletCharacter ℂ q) {d : ℕ} (hd : 0 < d)
+     (N H : ℕ) :
+     ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), ψ n =
+       ψ d * ∑ m ∈ Ioc (N / d) ((N + H) / d), ψ m := by
+-  rw [filter_dvd_Ioc hd, Finset.sum_image (fun a _ b _ h => Nat.eq_of_mul_eq_mul_left hd h),
+-    Finset.mul_sum]
+-  refine Finset.sum_congr rfl fun m _ => ?_
+-  push_cast
+-  exact map_mul ψ _ _
++  rw [Finset.sum_filter, sum_Ioc_ite_dvd (fun n => ψ n) hd]
++  simp only [Nat.cast_mul, map_mul, ← Finset.mul_sum]
+ 
+ /-- The number of multiples of `d ≥ 1` in `(N, N + H]` is at most `H`. -/
+ private lemma div_sub_div_le {d : ℕ} (hd : 0 < d) (N H : ℕ) : (N + H) / d - N / d ≤ H := by
+@@ -306,7 +242,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
+   have hC₁' : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
+       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
+         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
+-          C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++          C₁' * (q : ℝ) ^ (⅑ + ε / 2) * (H : ℝ) ^ ⅔ := by
+     intro q hq χ hχ N H hN hH hHq
+     refine (hC₁ q hq χ hχ N H hN hH hHq).trans ?_
+     gcongr
+@@ -324,7 +260,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
+   have hψprim : χ.primitiveCharacter.IsPrimitive := χ.primitiveCharacter_isPrimitive
+   have hcond : (χ.conductor : ℝ) ≤ q := by
+     exact_mod_cast Nat.le_of_dvd (by omega) χ.conductor_dvd_level
+-  set B : ℝ := C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) with hBdef
++  set B : ℝ := C₁' * (q : ℝ) ^ (⅑ + ε / 2) * (H : ℝ) ^ ⅔ with hBdef
+   have hB0 : 0 ≤ B := by positivity
+   have hinner : ∀ d ∈ q.divisors,
+       ‖(μ d : ℂ) * ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), χ.primitiveCharacter n‖ ≤ B := by
+@@ -344,8 +280,8 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
+         = ‖(μ d : ℂ)‖ * (‖χ.primitiveCharacter d‖ * ‖S‖) := by rw [norm_mul, norm_mul]
+       _ ≤ 1 * (1 * ‖S‖) := by gcongr
+       _ = ‖S‖ := by ring
+-      _ ≤ C₁' * (χ.conductor : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) *
+-            (((N + H) / d - N / d : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
++      _ ≤ C₁' * (χ.conductor : ℝ) ^ (⅑ + ε / 2) *
++            (((N + H) / d - N / d : ℕ) : ℝ) ^ ⅔ :=
+           primitive_bound_all hC₁'0 hC₁' _ hψprim hψ1 _ _
+       _ ≤ B := by
+           rw [hBdef]
+@@ -363,9 +299,9 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
+     _ ≤ (C₂ * (q : ℝ) ^ (ε / 2)) * B := by
+         gcongr
+         exact hτ q hq0
+-    _ = C₁' * C₂ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+-        rw [hBdef, show (1 : ℝ) / 9 + ε = ε / 2 + ((1 : ℝ) / 9 + ε / 2) by ring,
+-          Real.rpow_add hqpos (ε / 2) ((1 : ℝ) / 9 + ε / 2)]
++    _ = C₁' * C₂ * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔ := by
++        rw [hBdef, show ⅑ + ε = ε / 2 + (⅑ + ε / 2) by ring,
++          Real.rpow_add hqpos (ε / 2) (⅑ + ε / 2)]
+         ring
+ 
+ end GradedNear
+diff --git a/GradedNear/Cert/Relax.lean b/GradedNear/Cert/Relax.lean
+index 424e0b475..47dd90702 100644
+--- a/GradedNear/Cert/Relax.lean
++++ b/GradedNear/Cert/Relax.lean
+@@ -24,8 +24,8 @@ namespace GradedNear.Cert
+ 
+ /-- The relaxed linear constraint of row `k` for case `c` on the box interval `[a, b]`. -/
+ def RelaxHolds (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (a b : ℤ) (c : ℕ) : Prop :=
+-  ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) a b c : ℤ) : ℝ) *
+-      x j ≤ ((rowBudget (L.rows.getD k ⟨1, []⟩) a b c : ℤ) : ℝ)
++  ∑ j, ((colCost (L.v j k) (L.D j k) a b c : ℤ) : ℝ) *
++      x j ≤ ((rowBudget (L.row k) a b c : ℤ) : ℝ)
+ 
+ namespace RelaxAux
+ 
+@@ -57,19 +57,21 @@ lemma cast_le_ceil (q : ℚ) : (q : ℝ) ≤ ((⌈q⌉ : ℤ) : ℝ) := by
+ /-! ### Well-formedness -/
+ 
+ lemma wf_colD {L : Leaf} (hwf : wellFormed L = true) (j : Fin L.cols.length) (k : ℕ) :
+-    0 < (L.cols.get j).D.getD k 1 := by
++    0 < L.D j k := by
+   unfold wellFormed at hwf
+   simp only [Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq] at hwf
+   have hD := (hwf.1 _ (List.get_mem L.cols j)).2
++  unfold Leaf.D Leaf.col
+   rw [List.getD_eq_getElem?_getD]
+-  cases h : (L.cols.get j).D[k]? with
++  cases h : (L.col j).D[k]? with
+   | none => simp
+   | some y => simpa using hD y (List.mem_of_getElem? h)
+ 
+ lemma wf_row {L : Leaf} (hwf : wellFormed L = true) (k : ℕ) :
+-    0 < (L.rows.getD k ⟨1, []⟩).d ∧ ∀ t ∈ (L.rows.getD k ⟨1, []⟩).fam, 0 ≤ t.1 ∧ 0 < t.2.2 := by
++    0 < (L.row k).d ∧ ∀ t ∈ (L.row k).fam, 0 ≤ t.1 ∧ 0 < t.2.2 := by
+   unfold wellFormed at hwf
+   simp only [Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq] at hwf
++  unfold Leaf.row
+   rw [List.getD_eq_getElem?_getD]
+   cases h : L.rows[k]? with
+   | none => simp
+@@ -107,9 +109,7 @@ lemma list_affine {α : Type*} (l : List α) (g : α → ℝ → ℝ)
+       s * ((l.map (fun i => g i 1)).sum - (l.map (fun i => g i 0)).sum) := by
+   induction l with
+   | nil => simp
+-  | cons a l ih =>
+-    simp only [List.map_cons, List.sum_cons]
+-    rw [ih, hg a s]; ring
++  | cons a l ih => simp only [List.map_cons, List.sum_cons]; rw [ih, hg a s]; ring
+ 
+ lemma finset_affine {ι : Type*} (u : Finset ι) (g : ι → ℝ → ℝ)
+     (hg : ∀ i s, g i s = g i 0 + s * (g i 1 - g i 0)) (s : ℝ) :
+@@ -183,7 +183,7 @@ noncomputable def sgn (a b : ℤ) (c : ℕ) : ℝ := (2 * (c : ℝ) - 1) * hw a
+ 
+ /-- Column part of the tangent line of row `k` at `m`, evaluated at `m + s`. -/
+ noncomputable def colT (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : ℝ) : ℝ :=
+-  ∑ j, x j * tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) m s / (((L.cols.get j).D.getD k 1 : ℝ) / S)
++  ∑ j, x j * tgt ((L.v j k : ℝ) / S) m s / ((L.D j k : ℝ) / S)
+ 
+ /-- Family part of the tangent line. -/
+ noncomputable def famT (r : RowHead) (m s : ℝ) : ℝ :=
+@@ -194,21 +194,21 @@ noncomputable def quadT (r : RowHead) (m s : ℝ) : ℝ := (m ^ 2 + 2 * m * s) /
+ 
+ /-- The tangent line at `m` of `τ ↦ rowLHS + τ²/(d/S)`, evaluated at `m + s`. -/
+ noncomputable def tline (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : ℝ) : ℝ :=
+-  colT L x k m s + famT (L.rows.getD k ⟨1, []⟩) m s + quadT (L.rows.getD k ⟨1, []⟩) m s
++  colT L x k m s + famT (L.row k) m s + quadT (L.row k) m s
+ 
+ lemma tline_affine (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : ℝ) :
+     tline L x k m s = tline L x k m 0 + s * (tline L x k m 1 - tline L x k m 0) := by
+   have h1 : colT L x k m s = colT L x k m 0 + s * (colT L x k m 1 - colT L x k m 0) :=
+     finset_affine Finset.univ
+-      (fun j s => x j * tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) m s /
+-        (((L.cols.get j).D.getD k 1 : ℝ) / S)) (fun j s => by simp only [tgt]; ring) s
+-  have h2 : famT (L.rows.getD k ⟨1, []⟩) m s = famT (L.rows.getD k ⟨1, []⟩) m 0 +
+-      s * (famT (L.rows.getD k ⟨1, []⟩) m 1 - famT (L.rows.getD k ⟨1, []⟩) m 0) :=
++      (fun j s => x j * tgt ((L.v j k : ℝ) / S) m s /
++        ((L.D j k : ℝ) / S)) (fun j s => by simp only [tgt]; ring) s
++  have h2 : famT (L.row k) m s = famT (L.row k) m 0 +
++      s * (famT (L.row k) m 1 - famT (L.row k) m 0) :=
+     list_affine _
+       (fun (t : ℤ × ℤ × ℤ) s => (t.1 : ℝ) * tgt ((t.2.1 : ℝ) / S) m s / ((t.2.2 : ℝ) / S))
+       (fun t s => by simp only [tgt]; ring) s
+-  have h3 : quadT (L.rows.getD k ⟨1, []⟩) m s = quadT (L.rows.getD k ⟨1, []⟩) m 0 +
+-      s * (quadT (L.rows.getD k ⟨1, []⟩) m 1 - quadT (L.rows.getD k ⟨1, []⟩) m 0) := by
++  have h3 : quadT (L.row k) m s = quadT (L.row k) m 0 +
++      s * (quadT (L.row k) m 1 - quadT (L.row k) m 0) := by
+     simp only [quadT]; ring
+   unfold tline
+   linear_combination h1 + h2 + h3
+@@ -217,27 +217,27 @@ lemma tline_affine (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : 
+ lemma tline_le (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
+     (hx : ∀ j, 0 ≤ x j) (k : ℕ) (m τ : ℝ) :
+     tline L x k m (τ - m) ≤
+-      rowLHS L x k τ + τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
++      rowLHS L x k τ + τ ^ 2 / (((L.row k).d : ℝ) / S) := by
+   obtain ⟨hd, hfam⟩ := wf_row hwf k
+   have hS := S_pos
+   have h1 : colT L x k m (τ - m) ≤
+-      ∑ j, x j * (max 0 (((L.cols.get j).v.getD k 0 : ℝ) / S - τ)) ^ 2 /
+-        (((L.cols.get j).D.getD k 1 : ℝ) / S) := by
++      ∑ j, x j * (max 0 ((L.v j k : ℝ) / S - τ)) ^ 2 /
++        ((L.D j k : ℝ) / S) := by
+     unfold colT
+     refine Finset.sum_le_sum fun j _ => ?_
+-    have hD : (0 : ℝ) < ((L.cols.get j).D.getD k 1 : ℝ) / S :=
++    have hD : (0 : ℝ) < (L.D j k : ℝ) / S :=
+       div_pos (by exact_mod_cast wf_colD hwf j k) hS
+     exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (tangent_ineq _ _ _) (hx j)) hD.le
+-  have h2 : famT (L.rows.getD k ⟨1, []⟩) m (τ - m) ≤ ((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
++  have h2 : famT (L.row k) m (τ - m) ≤ ((L.row k).fam.map fun t =>
+       (t.1 : ℝ) * (max 0 ((t.2.1 : ℝ) / S - τ)) ^ 2 / ((t.2.2 : ℝ) / S)).sum := by
+     unfold famT
+     refine list_sum_le _ _ _ fun t ht => ?_
+     have hD : (0 : ℝ) < (t.2.2 : ℝ) / S := div_pos (by exact_mod_cast (hfam t ht).2) hS
+     have hn : (0 : ℝ) ≤ t.1 := by exact_mod_cast (hfam t ht).1
+     exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (tangent_ineq _ _ _) hn) hD.le
+-  have h3 : quadT (L.rows.getD k ⟨1, []⟩) m (τ - m) ≤
+-      τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
+-    have hdS : (0 : ℝ) < ((L.rows.getD k ⟨1, []⟩).d : ℝ) / S :=
++  have h3 : quadT (L.row k) m (τ - m) ≤
++      τ ^ 2 / (((L.row k).d : ℝ) / S) := by
++    have hdS : (0 : ℝ) < ((L.row k).d : ℝ) / S :=
+       div_pos (by exact_mod_cast hd) hS
+     exact div_le_div_of_nonneg_right (by nlinarith [sq_nonneg (τ - m)]) hdS.le
+   unfold tline rowLHS
+@@ -249,8 +249,6 @@ lemma tline_le (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length →
+ lemma tangentCost_le (v a b : ℤ) (c : ℕ) (hc : c = 0 ∨ c = 1) :
+     ((tangentCost v (a + b) (b - a) c : ℤ) : ℝ) ≤ S * tgt ((v : ℝ) / S) (mid a b) (sgn a b c) := by
+   have hS := S_pos
+-  have hT := TS_pos
+-  have hH := HS_mul
+   unfold tangentCost
+   dsimp only
+   generalize hxi : v - (a + b) * HS = xi
+@@ -357,23 +355,23 @@ lemma relax_case (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length 
+     (hx : ∀ j, 0 ≤ x j) (k : ℕ) (a b : ℤ) (c : ℕ) (hc : c = 0 ∨ c = 1)
+     (hG : tline L x k (mid a b) (sgn a b c) ≤ 1) : RelaxHolds L x k a b c := by
+   have hS := S_pos
+-  have hcols : ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) a b c :
++  have hcols : ∑ j, ((colCost (L.v j k) (L.D j k) a b c :
+       ℤ) : ℝ) * x j ≤ S * colT L x k (mid a b) (sgn a b c) := by
+     unfold colT
+     rw [Finset.mul_sum]
+     refine Finset.sum_le_sum fun j _ => ?_
+-    calc ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) a b c : ℤ) : ℝ) * x j
+-        ≤ S * (tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) (mid a b) (sgn a b c) /
+-            (((L.cols.get j).D.getD k 1 : ℝ) / S)) * x j :=
++    calc ((colCost (L.v j k) (L.D j k) a b c : ℤ) : ℝ) * x j
++        ≤ S * (tgt ((L.v j k : ℝ) / S) (mid a b) (sgn a b c) /
++            ((L.D j k : ℝ) / S)) * x j :=
+           mul_le_mul_of_nonneg_right (colCost_tangent_le _ _ a b (wf_colD hwf j k) c hc) (hx j)
+-      _ = S * (x j * tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) (mid a b) (sgn a b c) /
+-            (((L.cols.get j).D.getD k 1 : ℝ) / S)) := by ring
+-  have hbud := rowBudget_tangent_ge (L.rows.getD k ⟨1, []⟩) a b c hc
++      _ = S * (x j * tgt ((L.v j k : ℝ) / S) (mid a b) (sgn a b c) /
++            ((L.D j k : ℝ) / S)) := by ring
++  have hbud := rowBudget_tangent_ge (L.row k) a b c hc
+   unfold tline at hG
+   unfold RelaxHolds
+   calc _ ≤ S * colT L x k (mid a b) (sgn a b c) := hcols
+-    _ ≤ S * (1 - famT (L.rows.getD k ⟨1, []⟩) (mid a b) (sgn a b c) -
+-          quadT (L.rows.getD k ⟨1, []⟩) (mid a b) (sgn a b c)) :=
++    _ ≤ S * (1 - famT (L.row k) (mid a b) (sgn a b c) -
++          quadT (L.row k) (mid a b) (sgn a b c)) :=
+         mul_le_mul_of_nonneg_left (by linarith) hS.le
+     _ ≤ _ := hbud
+ 
+@@ -382,7 +380,7 @@ end RelaxAux
+ theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
+     (hx : ∀ j, 0 ≤ x j) {k : ℕ} (_hk : k < L.rows.length) {a b : ℤ} (ha : 0 ≤ a) {τ : ℝ}
+     (hτa : (a : ℝ) ≤ τ * TS) (hτb : τ * TS ≤ b)
+-    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) :
++    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.row k).d : ℝ) / S)) :
+     RelaxHolds L x k a b 2 := by
+   obtain ⟨hd, hfam⟩ := RelaxAux.wf_row hwf k
+   have hS := RelaxAux.S_pos
+@@ -392,26 +390,26 @@ theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.lengt
+     calc (S : ℝ) * τ = ((S / TS : ℤ) : ℝ) * (τ * TS) := by rw [← RelaxAux.S_div_TS_mul]; ring
+       _ ≤ ((S / TS : ℤ) : ℝ) * b := mul_le_mul_of_nonneg_left hτb RelaxAux.S_div_TS_nonneg
+       _ = ((b * (S / TS) : ℤ) : ℝ) := by push_cast; ring
+-  have hcols : ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) a b 2 :
+-      ℤ) : ℝ) * x j ≤ S * ∑ j, x j * (max 0 (((L.cols.get j).v.getD k 0 : ℝ) / S - τ)) ^ 2 /
+-        (((L.cols.get j).D.getD k 1 : ℝ) / S) := by
++  have hcols : ∑ j, ((colCost (L.v j k) (L.D j k) a b 2 :
++      ℤ) : ℝ) * x j ≤ S * ∑ j, x j * (max 0 ((L.v j k : ℝ) / S - τ)) ^ 2 /
++        ((L.D j k : ℝ) / S) := by
+     rw [Finset.mul_sum]
+     refine Finset.sum_le_sum fun j _ => ?_
+-    have h := RelaxAux.first_col_le ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) _
++    have h := RelaxAux.first_col_le (L.v j k) (L.D j k) _
+       (RelaxAux.wf_colD hwf j k) hsh
+     rw [colCost, ite_eq_left rfl]
+-    calc _ ≤ S * ((max 0 (((L.cols.get j).v.getD k 0 : ℝ) / S - τ)) ^ 2 /
+-          (((L.cols.get j).D.getD k 1 : ℝ) / S)) * x j := mul_le_mul_of_nonneg_right h (hx j)
++    calc _ ≤ S * ((max 0 ((L.v j k : ℝ) / S - τ)) ^ 2 /
++          ((L.D j k : ℝ) / S)) * x j := mul_le_mul_of_nonneg_right h (hx j)
+       _ = _ := by ring
+-  have hfamb : ((((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
++  have hfamb : ((((L.row k).fam.map fun t =>
+       (t.1 * (max (t.2.1 - b * (S / TS)) 0) ^ 2) / t.2.2).sum : ℤ) : ℝ) ≤
+-      S * (((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
++      S * (((L.row k).fam.map fun t =>
+         (t.1 : ℝ) * (max 0 ((t.2.1 : ℝ) / S - τ)) ^ 2 / ((t.2.2 : ℝ) / S)).sum) :=
+     RelaxAux.list_cast_sum_le _ _ _ _ fun t ht =>
+       RelaxAux.first_le t.1 t.2.1 t.2.2 _ (hfam t ht).1 (hfam t ht).2 hsh
+-  have hquad : (((S * S * a * a) / (TS * TS * (L.rows.getD k ⟨1, []⟩).d) : ℤ) : ℝ) ≤
+-      S * (τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) := by
+-    have hdr : (0 : ℝ) < (L.rows.getD k ⟨1, []⟩).d := by exact_mod_cast hd
++  have hquad : (((S * S * a * a) / (TS * TS * (L.row k).d) : ℤ) : ℝ) ≤
++      S * (τ ^ 2 / (((L.row k).d : ℝ) / S)) := by
++    have hdr : (0 : ℝ) < (L.row k).d := by exact_mod_cast hd
+     have hTi : (0 : ℤ) < TS := by unfold TS; norm_num
+     refine (RelaxAux.cast_ediv_le _ _ (mul_pos (mul_pos hTi hTi) hd)).trans ?_
+     have har : (0 : ℝ) ≤ a := by exact_mod_cast ha
+@@ -419,9 +417,9 @@ theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.lengt
+     push_cast
+     rw [div_le_iff₀ (mul_pos (mul_pos hT hT) hdr)]
+     have hS0 : (S : ℝ) ≠ 0 := hS.ne'
+-    have hd0 : ((L.rows.getD k ⟨1, []⟩).d : ℝ) ≠ 0 := hdr.ne'
+-    have e : (S : ℝ) * (τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) *
+-        (TS * TS * (L.rows.getD k ⟨1, []⟩).d) = S * S * ((τ * TS) * (τ * TS)) := by
++    have hd0 : ((L.row k).d : ℝ) ≠ 0 := hdr.ne'
++    have e : (S : ℝ) * (τ ^ 2 / (((L.row k).d : ℝ) / S)) *
++        (TS * TS * (L.row k).d) = S * S * ((τ * TS) * (τ * TS)) := by
+       field_simp
+     rw [e]
+     nlinarith [mul_le_mul_of_nonneg_left h1 (mul_nonneg hS.le hS.le)]
+@@ -435,7 +433,7 @@ theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.lengt
+ theorem relax_tangent (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
+     (hx : ∀ j, 0 ≤ x j) {k : ℕ} (_hk : k < L.rows.length) {a b : ℤ} {τ : ℝ}
+     (hτa : (a : ℝ) ≤ τ * TS) (hτb : τ * TS ≤ b)
+-    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) :
++    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.row k).d : ℝ) / S)) :
+     RelaxHolds L x k a b 0 ∨ RelaxHolds L x k a b 1 := by
+   have hT := RelaxAux.TS_pos
+   have hB := RelaxAux.tline_le L hwf x hx k (RelaxAux.mid a b) τ
+diff --git a/GradedNear/Cert/Sound.lean b/GradedNear/Cert/Sound.lean
+index ef9313385..6d3fca086 100644
+--- a/GradedNear/Cert/Sound.lean
++++ b/GradedNear/Cert/Sound.lean
+@@ -38,46 +38,43 @@ namespace SoundAux
+ theorem getD_zipWith3 {α β γ δ : Type*} (f : α → β → γ → δ) (d : δ) (d1 : α) (d2 : β) (d3 : γ) :
+     ∀ (l1 : List α) (l2 : List β) (l3 : List γ) (i : ℕ), i < l1.length → i < l2.length →
+       i < l3.length →
+-      (List.zipWith3 f l1 l2 l3).getD i d = f (l1.getD i d1) (l2.getD i d2) (l3.getD i d3)
+-  | [], _, _, _, h, _, _ => absurd h (Nat.not_lt_zero _)
+-  | _ :: _, [], _, _, _, h, _ => absurd h (Nat.not_lt_zero _)
+-  | _ :: _, _ :: _, [], _, _, _, h => absurd h (Nat.not_lt_zero _)
+-  | _ :: _, _ :: _, _ :: _, 0, _, _, _ => rfl
+-  | _ :: xs, _ :: ys, _ :: zs, i + 1, h1, h2, h3 => by
+-      simp only [List.zipWith3, List.getD_cons_succ]
+-      exact getD_zipWith3 f d d1 d2 d3 xs ys zs i (by simpa using h1) (by simpa using h2)
+-        (by simpa using h3)
++      (List.zipWith3 f l1 l2 l3).getD i d = f (l1.getD i d1) (l2.getD i d2) (l3.getD i d3) := by
++  intro l1
++  induction l1 with
++  | nil => intros; simp_all
++  | cons x xs ih =>
++    intro l2 l3 i
++    cases l2 <;> cases l3 <;> cases i <;> simp_all [List.zipWith3]
+ 
+ theorem length_zipWith3 {α β γ δ : Type*} (f : α → β → γ → δ) :
+     ∀ (l1 : List α) (l2 : List β) (l3 : List γ), l2.length = l1.length →
+-      l3.length = l1.length → (List.zipWith3 f l1 l2 l3).length = l1.length
+-  | [], _, _, _, _ => rfl
+-  | _ :: _, [], _, h, _ => by simp at h
+-  | _ :: _, _ :: _, [], _, h => by simp at h
+-  | _ :: xs, _ :: ys, _ :: zs, h2, h3 => by
+-      simp only [List.zipWith3, List.length_cons]
+-      rw [length_zipWith3 f xs ys zs (by simpa using h2) (by simpa using h3)]
++      l3.length = l1.length → (List.zipWith3 f l1 l2 l3).length = l1.length := by
++  intro l1
++  induction l1 with
++  | nil => intros; simp_all [List.zipWith3]
++  | cons x xs ih =>
++    intro l2 l3
++    cases l2 <;> cases l3 <;> simp_all [List.zipWith3]
+ 
+ theorem getD_zip {α β : Type*} (d1 : α) (d2 : β) :
+     ∀ (l1 : List α) (l2 : List β) (i : ℕ), i < l1.length → i < l2.length →
+-      (l1.zip l2).getD i (d1, d2) = (l1.getD i d1, l2.getD i d2)
+-  | [], _, _, h, _ => absurd h (Nat.not_lt_zero _)
+-  | _ :: _, [], _, _, h => absurd h (Nat.not_lt_zero _)
+-  | _ :: _, _ :: _, 0, _, _ => rfl
+-  | _ :: xs, _ :: ys, i + 1, h1, h2 => by
+-      simp only [List.zip_cons_cons, List.getD_cons_succ]
+-      exact getD_zip d1 d2 xs ys i (by simpa using h1) (by simpa using h2)
++      (l1.zip l2).getD i (d1, d2) = (l1.getD i d1, l2.getD i d2) := by
++  intro l1
++  induction l1 with
++  | nil => intros; simp_all
++  | cons x xs ih =>
++    intro l2 i
++    cases l2 <;> cases i <;> simp_all
+ 
+ theorem sum_zipWith {α β : Type*} (f : α → β → ℤ) (d1 : α) (d2 : β) :
+     ∀ (l1 : List α) (l2 : List β), l2.length = l1.length →
+-      (List.zipWith f l1 l2).sum = ∑ k ∈ Finset.range l1.length, f (l1.getD k d1) (l2.getD k d2)
+-  | [], _, _ => by simp
+-  | _ :: _, [], h => by simp at h
+-  | x :: xs, y :: ys, h => by
+-      simp only [List.zipWith_cons_cons, List.sum_cons, List.length_cons, Finset.sum_range_succ',
+-        List.getD_cons_succ, List.getD_cons_zero]
+-      rw [sum_zipWith f d1 d2 xs ys (by simpa using h)]
+-      ring
++      (List.zipWith f l1 l2).sum = ∑ k ∈ Finset.range l1.length, f (l1.getD k d1) (l2.getD k d2) := by
++  intro l1
++  induction l1 with
++  | nil => intros; simp
++  | cons x xs ih =>
++    intro l2
++    cases l2 <;> simp_all [List.zipWith, Finset.sum_range_succ', add_comm]
+ 
+ /-- The coercion `List ℕ → List ℤ` of the duals `Z` in `caseValue` is elaborated through the
+ list monad; it is the pointwise cast. -/
+@@ -114,10 +111,10 @@ theorem colCosts_getD {L : Leaf} (hwf : wellFormed L = true) {col : Col} (hcol :
+     {box : List (ℤ × ℤ)} (hbox : box.length = L.rows.length) {cs : List ℕ}
+     (hcs : cs.length = L.rows.length) {k : ℕ} (hk : k < L.rows.length) :
+     (colCosts col box cs).getD k 0 = colCost (col.v.getD k 0) (col.D.getD k 1)
+-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) := by
++      (box.getD k 0).1 (box.getD k 0).2 (cs.getD k 0) := by
+   obtain ⟨hv, hD⟩ := wf_col hwf hcol
+   unfold colCosts
+-  rw [getD_zipWith3 _ _ (0, 0) (0, 1) 0 _ _ _ k (by omega) (by simp [hv, hD]; omega) (by omega),
++  rw [getD_zipWith3 _ _ 0 (0, 1) 0 _ _ _ k (by omega) (by simp [hv, hD]; omega) (by omega),
+     getD_zip 0 1 _ _ k (by omega) (by omega)]
+ 
+ theorem budgets_length {L : Leaf} {box : List (ℤ × ℤ)} (hbox : box.length = L.rows.length)
+@@ -129,10 +126,16 @@ theorem budgets_length {L : Leaf} {box : List (ℤ × ℤ)} (hbox : box.length =
+ /-- Entry `k` of `budgets` is the budget of row `k`, as in `RelaxHolds`. -/
+ theorem budgets_getD {L : Leaf} {box : List (ℤ × ℤ)} (hbox : box.length = L.rows.length)
+     {cs : List ℕ} (hcs : cs.length = L.rows.length) {k : ℕ} (hk : k < L.rows.length) :
+-    (budgets L box cs).getD k 0 = rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1
+-      (box.getD k (0, 0)).2 (cs.getD k 0) := by
++    (budgets L box cs).getD k 0 = rowBudget (L.row k) (box.getD k 0).1
++      (box.getD k 0).2 (cs.getD k 0) := by
+   unfold budgets
+-  rw [getD_zipWith3 _ _ ⟨1, []⟩ (0, 0) 0 _ _ _ k hk (by omega) (by omega)]
++  rw [getD_zipWith3 _ _ ⟨1, []⟩ 0 0 _ _ _ k hk (by omega) (by omega)]
++
++abbrev cc (L : Leaf) (j : Fin L.cols.length) (box : List (ℤ × ℤ)) (cs : List ℕ) (k : ℕ) : ℤ :=
++  colCost (L.v j k) (L.D j k) (box.getD k 0).1 (box.getD k 0).2 (cs.getD k 0)
++
++abbrev bb (L : Leaf) (box : List (ℤ × ℤ)) (cs : List ℕ) (k : ℕ) : ℤ :=
++  rowBudget (L.row k) (box.getD k 0).1 (box.getD k 0).2 (cs.getD k 0)
+ 
+ /-! ### Weak duality for one case -/
+ 
+@@ -166,15 +169,13 @@ theorem weak_duality {m n : ℕ} (x : Fin m → ℝ) (hx : ∀ j, 0 ≤ x j)
+     exact mul_le_mul_of_nonneg_right (hcol j) (hx j)
+   have h2 : ∑ k ∈ Finset.range n, z k * ∑ j, c j k * x j ≤ ∑ k ∈ Finset.range n, z k * bud k :=
+     Finset.sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hrel k (Finset.mem_range.mp hk)) (hz k)
+-  have h3 := mul_le_mul_of_nonneg_left hW hY
+-  have h4 := mul_le_mul_of_nonneg_left hC hV
+-  have h5 := mul_le_mul_of_nonneg_left hNH hU
+   rw [hsplit, hE] at h1
+-  linarith
++  linarith [mul_le_mul_of_nonneg_left hW hY, mul_le_mul_of_nonneg_left hC hV,
++    mul_le_mul_of_nonneg_left hNH hU]
+ 
+ /-- From `DS · Σ G x ≤ T` to the certified value `⌈T / DS⌉ + first + final`. -/
+ theorem obj_le_of {L : Leaf} {x : Fin L.cols.length → ℝ} {T : ℤ}
+-    (h : ((DS : ℤ) : ℝ) * ∑ j, ((L.cols.get j).G : ℝ) * x j ≤ (T : ℝ)) :
++    (h : ((DS : ℤ) : ℝ) * ∑ j, ((L.col j).G : ℝ) * x j ≤ (T : ℝ)) :
+     objective L x ≤ ((ceilDiv T DS + L.first + L.final : ℤ) : ℝ) := by
+   have hDS : (0 : ℤ) < DS := by norm_num [DS]
+   have h2 : (T : ℝ) ≤ (DS : ℝ) * (ceilDiv T DS : ℝ) := by exact_mod_cast le_mul_ceilDiv T hDS
+@@ -191,7 +192,7 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ
+     {du : Duals} {v : ℤ} (hv : caseValue L box cs du = some v)
+     {x : Fin L.cols.length → ℝ} {τ : ℕ → ℝ} (hfeas : Feasible L x τ)
+     (hrel : ∀ k < L.rows.length,
+-      RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0)) :
++      RelaxHolds L x k (box.getD k 0).1 (box.getD k 0).2 (cs.getD k 0)) :
+     objective L x ≤ v := by
+   obtain ⟨hx, hW, hC, hNH, hE, -⟩ := hfeas
+   unfold caseValue at hv
+@@ -204,40 +205,31 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ
+   rw [sum_zipWith _ 0 0 _ _ (by rw [budgets_length hbox hcs, hZm]), hZm]
+   have hsum : ∑ k ∈ Finset.range L.rows.length,
+       (du.Z.map (Nat.cast : ℕ → ℤ)).getD k 0 * (budgets L box cs).getD k 0 =
+-      ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) *
+-        rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+-          (cs.getD k 0) :=
++      ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) * bb L box cs k :=
+     Finset.sum_congr rfl fun k hk => by
+       rw [getD_map_cast, budgets_getD hbox hcs (Finset.mem_range.mp hk)]
+   rw [hsum]
+-  have hcol : ∀ j : Fin L.cols.length, ((DS : ℤ) : ℝ) * ((L.cols.get j).G : ℝ) ≤
+-      (du.Y : ℝ) * ((L.cols.get j).W : ℝ) + (du.V : ℝ) * ((L.cols.get j).C : ℝ) +
+-        (du.U : ℝ) * ((L.cols.get j).NH : ℝ) +
+-        ((du.P : ℝ) - (du.M : ℝ)) * ((L.cols.get j).E : ℝ) +
+-        ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℝ) *
+-          ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
+-            (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ) := by
++  have hcol : ∀ j : Fin L.cols.length, ((DS : ℤ) : ℝ) * ((L.col j).G : ℝ) ≤
++      (du.Y : ℝ) * ((L.col j).W : ℝ) + (du.V : ℝ) * ((L.col j).C : ℝ) +
++        (du.U : ℝ) * ((L.col j).NH : ℝ) +
++        ((du.P : ℝ) - (du.M : ℝ)) * ((L.col j).E : ℝ) +
++        ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℝ) * (cc L j box cs k : ℝ) := by
+     intro j
+-    have hmem : L.cols.get j ∈ L.cols := List.get_mem _ _
++    have hmem : L.col j ∈ L.cols := List.get_mem _ _
+     have h1 := List.all_eq_true.mp hcols _ hmem
+     rw [decide_eq_true_eq, sum_zipWith _ 0 0 _ _
+       (by rw [colCosts_length hwf hmem hbox hcs, hZm]), hZm] at h1
+     have h2 : ∑ k ∈ Finset.range L.rows.length,
+-        (du.Z.map (Nat.cast : ℕ → ℤ)).getD k 0 * (colCosts (L.cols.get j) box cs).getD k 0 =
+-        ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) *
+-          colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
+-            (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) :=
++        (du.Z.map (Nat.cast : ℕ → ℤ)).getD k 0 * (colCosts (L.col j) box cs).getD k 0 =
++        ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) * cc L j box cs k :=
+       Finset.sum_congr rfl fun k hk => by
+         rw [getD_map_cast, colCosts_getD hwf hmem hbox hcs (Finset.mem_range.mp hk)]
+     rw [h2] at h1
+     exact_mod_cast h1
+-  have key := weak_duality x hx (fun j => ((L.cols.get j).G : ℝ))
+-    (fun j => ((L.cols.get j).W : ℝ)) (fun j => ((L.cols.get j).C : ℝ))
+-    (fun j => ((L.cols.get j).NH : ℝ)) (fun j => ((L.cols.get j).E : ℝ))
+-    (fun j k => ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
+-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ))
+-    (fun k => ((rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+-      (cs.getD k 0) : ℤ) : ℝ))
++  have key := weak_duality x hx (fun j => ((L.col j).G : ℝ))
++    (fun j => ((L.col j).W : ℝ)) (fun j => ((L.col j).C : ℝ))
++    (fun j => ((L.col j).NH : ℝ)) (fun j => ((L.col j).E : ℝ))
++    (fun j k => (cc L j box cs k : ℝ)) (fun k => (bb L box cs k : ℝ))
+     (fun k => ((du.Z.getD k 0 : ℕ) : ℝ)) (fun k => Nat.cast_nonneg _)
+     (du.Y : ℝ) (du.V : ℝ) (du.U : ℝ) ((du.P : ℝ) - (du.M : ℝ)) (L.F : ℝ) (2 * (S : ℝ))
+     ((L.ng : ℝ) * S) ((L.n2 : ℝ) * S) ((DS : ℤ) : ℝ) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+@@ -252,7 +244,7 @@ theorem not_excludable {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
+     (hbox : box.length = L.rows.length) {cs : List ℕ} (hcs : cs.length = L.rows.length)
+     {x : Fin L.cols.length → ℝ} (hx : ∀ j, 0 ≤ x j)
+     (hrel : ∀ k < L.rows.length,
+-      RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0)) :
++      RelaxHolds L x k (box.getD k 0).1 (box.getD k 0).2 (cs.getD k 0)) :
+     excludable L box cs ≠ true := by
+   intro hex
+   unfold excludable at hex
+@@ -263,15 +255,13 @@ theorem not_excludable {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
+   rw [budgets_getD hbox hcs hk] at hneg
+   have hr := hrel k hk
+   unfold RelaxHolds at hr
+-  have hnn : (0 : ℝ) ≤ ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
+-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ) * x j := by
++  have hnn : (0 : ℝ) ≤ ∑ j, (cc L j box cs k : ℝ) * x j := by
+     refine Finset.sum_nonneg fun j _ => ?_
+-    have hmem : L.cols.get j ∈ L.cols := List.get_mem _ _
++    have hmem : L.col j ∈ L.cols := List.get_mem _ _
+     have h1 := hcost _ hmem
+     rw [decide_eq_true_eq, colCosts_getD hwf hmem hbox hcs hk] at h1
+     exact mul_nonneg (by exact_mod_cast h1) (hx j)
+-  have hneg' : ((rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+-      (cs.getD k 0) : ℤ) : ℝ) < 0 := by exact_mod_cast hneg
++  have hneg' : (bb L box cs k : ℝ) < 0 := by exact_mod_cast hneg
+   linarith
+ 
+ /-! ### Case vectors -/
+@@ -361,17 +351,17 @@ theorem checkBox_spec {L : Leaf} {box : List (ℤ × ℤ)} {orders : List ℕ} {
+ /-- The value of a node bounds the objective at every feasible point whose thresholds lie in the
+ node's box. -/
+ theorem checkBox_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ × ℤ)}
+-    (hbox : box.length = L.rows.length) (hlo : ∀ k < L.rows.length, 0 ≤ (box.getD k (0, 0)).1)
++    (hbox : box.length = L.rows.length) (hlo : ∀ k < L.rows.length, 0 ≤ (box.getD k 0).1)
+     {orders : List ℕ} {certs : List CaseCert} {m : ℤ} (h : checkBox L box orders certs = some m)
+     {x : Fin L.cols.length → ℝ} {τ : ℕ → ℝ} (hfeas : Feasible L x τ)
+     (hτ : ∀ k < L.rows.length,
+-      ((box.getD k (0, 0)).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k (0, 0)).2) :
++      ((box.getD k 0).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k 0).2) :
+     objective L x ≤ m := by
+   obtain ⟨hord, hcv⟩ := checkBox_spec h
+   have hx := hfeas.1
+   have hrow := hfeas.2.2.2.2.2
+   obtain ⟨cs, hcs, hlen, hrel⟩ := exists_caseVector
+-    (fun k c => RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 c) orders (by
++    (fun k c => RelaxHolds L x k (box.getD k 0).1 (box.getD k 0).2 c) orders (by
+       intro k hk
+       rw [hord] at hk
+       obtain ⟨-, -, hr⟩ := hrow k hk
+@@ -386,7 +376,7 @@ theorem checkBox_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
+ /-! ### The bisection tree -/
+ 
+ theorem getD_set_of_lt {box : List (ℤ × ℤ)} {k : ℕ} (hk : k < box.length) (p : ℤ × ℤ) (i : ℕ) :
+-    (box.set k p).getD i (0, 0) = if i = k then p else box.getD i (0, 0) := by
++    (box.set k p).getD i 0 = if i = k then p else box.getD i 0 := by
+   rw [List.getD_eq_getElem?_getD, List.getElem?_set, List.getD_eq_getElem?_getD]
+   by_cases hi : i = k
+   · subst hi
+@@ -398,9 +388,9 @@ contains every `τ_k·TS`, the value of the tree bounds the objective. -/
+ theorem verifyTree_sound {L : Leaf} (hwf : wellFormed L = true) {x : Fin L.cols.length → ℝ}
+     {τ : ℕ → ℝ} (hfeas : Feasible L x τ) (T : Tree) :
+     ∀ (box : List (ℤ × ℤ)) (m : ℤ), verifyTree L T box = some m →
+-      box.length = L.rows.length → (∀ k < L.rows.length, 0 ≤ (box.getD k (0, 0)).1) →
++      box.length = L.rows.length → (∀ k < L.rows.length, 0 ≤ (box.getD k 0).1) →
+       (∀ k < L.rows.length,
+-        ((box.getD k (0, 0)).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k (0, 0)).2) →
++        ((box.getD k 0).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k 0).2) →
+       objective L x ≤ m := by
+   induction T with
+   | split k mid l r ihl ihr =>
+@@ -412,7 +402,7 @@ theorem verifyTree_sound {L : Leaf} (hwf : wellFormed L = true) {x : Fin L.cols.
+       obtain ⟨m1, h1, h2⟩ := Option.bind_eq_some_iff.mp h
+       obtain ⟨m2, h3, rfl⟩ := Option.map_eq_some_iff.mp h2
+       obtain ⟨hkl, hkv⟩ := List.getElem?_eq_some_iff.mp hk
+-      have hgk : box.getD k (0, 0) = (a, b) := by rw [List.getD_eq_getElem _ _ hkl, hkv]
++      have hgk : box.getD k 0 = (a, b) := by rw [List.getD_eq_getElem _ _ hkl, hkv]
+       have hkn : k < L.rows.length := hlen ▸ hkl
+       obtain ⟨hτa, hτb⟩ := hτ k hkn
+       rw [hgk] at hτa hτb
+@@ -516,8 +506,8 @@ theorem rootBox_length (L : Leaf) : (rootBox L).length = L.rows.length := by
+   simp [rootBox]
+ 
+ theorem rootBox_getD {L : Leaf} {k : ℕ} (hk : k < L.rows.length) :
+-    (rootBox L).getD k (0, 0) = (0, rootEnd (L.rows.getD k ⟨1, []⟩).d) := by
+-  unfold rootBox
++    (rootBox L).getD k 0 = (0, rootEnd (L.row k).d) := by
++  unfold rootBox Leaf.row
+   rw [List.getD_eq_getElem _ _ (by simpa using hk), List.getElem_map,
+     List.getD_eq_getElem _ _ hk]
+ 
+diff --git a/GradedNear/CharacterSums.lean b/GradedNear/CharacterSums.lean
+new file mode 100644
+index 000000000..fc29fb8b4
+--- /dev/null
++++ b/GradedNear/CharacterSums.lean
+@@ -0,0 +1,53 @@
++module
++
++public import GradedNear.Defs
++
++@[expose] public section
++
++open Complex
++
++namespace GradedNear
++
++/-- A non-principal character sums to zero over `q` consecutive integers. -/
++lemma sum_range_char_eq_zero {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
++    (c : ℕ) : ∑ k ∈ Finset.range q, χ ((c + k : ℕ) : ZMod q) = 0 := by
++  have : NeZero q := ⟨hq.ne'⟩
++  rw [← MulChar.sum_eq_zero_of_ne_one hχ]
++  apply Finset.sum_nbij (fun k : ℕ => ((c + k : ℕ) : ZMod q))
++  · intro k _; exact Finset.mem_univ _
++  · intro k hk k' hk' h
++    simp only [Finset.coe_range, Set.mem_Iio] at hk hk'
++    simp only [Nat.cast_add, add_right_inj] at h
++    rw [ZMod.natCast_eq_natCast_iff'] at h
++    rwa [Nat.mod_eq_of_lt hk, Nat.mod_eq_of_lt hk'] at h
++  · intro x _
++    refine ⟨(x - (c : ZMod q)).val, ?_, ?_⟩
++    · simp only [Finset.coe_range, Set.mem_Iio]; exact ZMod.val_lt _
++    · simp only [Nat.cast_add, ZMod.natCast_zmod_val]; ring
++  · intro k _; rfl
++
++/-- A non-principal character sums to zero over a complete period `(N, N + q]`. -/
++lemma sum_Ioc_period_eq_zero {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
++    (N : ℕ) : ∑ n ∈ Finset.Ioc N (N + q), χ n = 0 := by
++  rw [← Finset.Ico_add_one_add_one_eq_Ioc, Finset.sum_Ico_eq_sum_range]
++  rw [show N + q + 1 - (N + 1) = q by omega]
++  exact sum_range_char_eq_zero hq χ hχ (N + 1)
++
++/-- A sum over the multiples of `l` in `(a, b]`, after the substitution `k = l m`. -/
++lemma sum_Ioc_ite_dvd {M : Type*} [AddCommMonoid M] (f : ℕ → M) {l : ℕ} (hl : 0 < l)
++    (a b : ℕ) :
++    ∑ k ∈ Finset.Ioc a b, (if l ∣ k then f k else 0) =
++      ∑ m ∈ Finset.Ioc (a / l) (b / l), f (l * m) := by
++  classical
++  rw [← Finset.sum_filter]
++  symm
++  apply Finset.sum_nbij (fun m => l * m) <;>
++    simp_all [Finset.mem_Ioc, Nat.div_lt_iff_lt_mul hl, Nat.le_div_iff_mul_le hl,
++      Nat.mul_comm]
++  · intro m _ m' _ h
++    exact Nat.eq_of_mul_eq_mul_left hl h
++  · rintro k ⟨⟨h1, h2⟩, m, rfl⟩
++    refine ⟨m, ?_, rfl⟩
++    simp_all [Nat.div_lt_iff_lt_mul hl, Nat.le_div_iff_mul_le hl, Nat.mul_comm]
++
++end GradedNear
+diff --git a/GradedNear/Defs.lean b/GradedNear/Defs.lean
+index f0443a81b..7e451befd 100644
+--- a/GradedNear/Defs.lean
++++ b/GradedNear/Defs.lean
+@@ -46,6 +46,10 @@ this repository); that application is not formalized here.
+ open Complex MeasureTheory
+ open scoped ArithmeticFunction.vonMangoldt ArithmeticFunction.Moebius
+ 
++notation "⅔" => (2 : ℝ) / 3
++notation "⅓" => (1 : ℝ) / 3
++notation "⅑" => (1 : ℝ) / 9
++
+ noncomputable section
+ 
+ namespace GradedNear
+@@ -138,7 +142,7 @@ def BurgessBound : Prop :=
+   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q, χ ≠ 1 →
+     ∀ N H : ℕ, 1 ≤ H → H ≤ q →
+       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
+-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
++        C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔
+ 
+ /-- [HB, Lemma 2.1, p. 7], the case `k = 3`, as printed: "Let `q ≥ 1` and let `χ` be a primitive
+ character modulo `q`. Let `N ≥ 1` and `1 ≤ H ≤ q`. Then for any `ε > 0` we have
+@@ -155,7 +159,7 @@ def BurgessPrimitive : Prop :=
+   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
+     ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
+       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
+-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
++        C * (q : ℝ) ^ (⅑ + ε) * (H : ℝ) ^ ⅔
+ 
+ /-- The Selberg weights `ψ_d = μ(d) log(V/d) / log V` for `d ≤ V`, and `0` otherwise
+ ([HB, (11.6)] with `U = 1`). -/
+@@ -367,6 +371,13 @@ structure Leaf where
+   final : ℤ
+ deriving Repr
+ 
++namespace Leaf
++abbrev row (L : Leaf) (k : ℕ) : RowHead := L.rows.getD k ⟨1, []⟩
++abbrev col (L : Leaf) (j : Fin L.cols.length) : Col := L.cols.get j
++abbrev v (L : Leaf) (j : Fin L.cols.length) (k : ℕ) : ℤ := (L.col j).v.getD k 0
++abbrev D (L : Leaf) (j : Fin L.cols.length) (k : ℕ) : ℤ := (L.col j).D.getD k 1
++end Leaf
++
+ /-! ## The checker -/
+ 
+ /-- `⌈√n⌉`. -/
+diff --git a/GradedNear/Entries.lean b/GradedNear/Entries.lean
+index 48c531497..9a4748a66 100644
+--- a/GradedNear/Entries.lean
++++ b/GradedNear/Entries.lean
+@@ -54,8 +54,8 @@ lemma principal_entry (hX31 : XylourisLemma31) {g : ℝ → ℝ} {xg Bg : ℝ}
+   obtain ⟨C, q₁, hC⟩ := hX31 g xg Bg hg
+   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge (max K (|C| / ε + 1))
+   refine ⟨max q₁ q₂, fun q hq s hre him => ?_⟩
+-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
+-  have hq2 : q₂ ≤ q := le_trans (le_max_right _ _) hq
++  have hq1 : q₁ ≤ q := by omega
++  have hq2 : q₂ ≤ q := by omega
+   obtain ⟨hsq, hll, hq2'⟩ := hq₂ q hq2
+   have hℓ := log_q_pos hq2'
+   have hll_pos : 0 < Real.log (Real.log q) :=
+@@ -115,8 +115,8 @@ lemma nonprincipal_entry (hX32 : XylourisLemma32) {g : ℝ → ℝ} {xg Bg : ℝ
+     hX32 g xg Bg hg (hg2.nonneg 0 le_rfl) ε hε
+   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge K
+   refine ⟨δ, hδ0, hδ1, max q₁ q₂, fun q _ hq ψ hψ s hre him hz => ?_⟩
+-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
+-  obtain ⟨hsq, -, hq2'⟩ := hq₂ q (le_trans (le_max_right _ _) hq)
++  have hq1 : q₁ ≤ q := by omega
++  obtain ⟨hsq, -, hq2'⟩ := hq₂ q (by omega)
+   have hℓ := log_q_pos hq2'
+   have hreg : LemmaRegion q s :=
+     ⟨le_trans hre (div_le_div_of_nonneg_right hsq hℓ.le), him⟩
+diff --git a/GradedNear/Far.lean b/GradedNear/Far.lean
+deleted file mode 100644
+index dfa4a5766..000000000
+--- a/GradedNear/Far.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Functions
+diff --git a/GradedNear/FarFacts.lean b/GradedNear/FarFacts.lean
+deleted file mode 100644
+index 40f89da8e..000000000
+--- a/GradedNear/FarFacts.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Far
+diff --git a/GradedNear/FirstFactor.lean b/GradedNear/FirstFactor.lean
+index ba8293c56..0e4773902 100644
+--- a/GradedNear/FirstFactor.lean
++++ b/GradedNear/FirstFactor.lean
+@@ -63,9 +63,7 @@ lemma mertens_nat_lower (N : ℕ) (hN : 1 ≤ N) :
+     intro n _
+     ring
+   rw [h3] at h2
+-  have h4 : (N : ℝ) * (Real.log N - 1) ≤ N * ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
+-    linarith
+-  exact le_of_mul_le_mul_left h4 hNR
++  exact le_of_mul_le_mul_left (by linarith) hNR
+ 
+ /-- Mertens upper bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≤ log N + log 4 + 4`. -/
+ lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
+@@ -92,9 +90,7 @@ lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
+     ring
+   rw [h3] at h2
+   have h4 := Chebyshev.psi_le_const_mul_self (x := (N : ℝ)) hNR.le
+-  have h5 : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, Λ n / n ≤ N * (Real.log N + (Real.log 4 + 4)) := by
+-    nlinarith
+-  exact le_of_mul_le_mul_left h5 hNR
++  exact le_of_mul_le_mul_left (by nlinarith) hNR
+ 
+ /-- **Mertens' first theorem**: `|Σ_{n ≤ x} Λ(n)/n - log x| ≤ 6` for `x ≥ 1`. -/
+ lemma abs_mertensSum_sub_log_le (x : ℝ) (hx : 1 ≤ x) :
+@@ -130,7 +126,7 @@ lemma mertensSum_short (q : ℕ) (hq : 1 < q) {a b : ℝ} (ha : 0 ≤ a) (hb : 0
+ /-! ### Summation over a partition -/
+ 
+ /-- If `φ ≤ c i` on each cell `(u i, u (i + 1)]` of a partition starting at `u 0 = 0`, then the
+-weighted sum over `n ≤ q ^ u j` is bounded by the Mertens masses of the cells weighted by `c`. -/
++weighted sum over `n ≤ (q : ℝ) ^ u j` is bounded by the Mertens masses of the cells weighted by `c`. -/
+ lemma sum_le_partition (φ : ℝ → ℝ) (q : ℕ) (hq : 1 < q) (u c : ℕ → ℝ) (hu0 : u 0 = 0)
+     (hmono : ∀ i, u i ≤ u (i + 1)) (j : ℕ)
+     (hφ : ∀ i < j, ∀ t, u i < t → t ≤ u (i + 1) → φ t ≤ c i) :
+@@ -366,7 +362,7 @@ lemma tendsto_integral_stepFn (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (h
+     exact tendsto_stepFn hX hbd htIoo (hcont t htIoo ht.1)
+ 
+ /-- The statement of `GradedNear.riemann_upper`, proved inside the helper namespace. -/
+-theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
++theorem _root_.GradedNear.riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
+     (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
+     (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
+     {ε : ℝ} (hε : 0 < ε) :
+@@ -435,14 +431,4 @@ theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX :
+   nlinarith
+ 
+ end FirstFactor
+-
+-theorem riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
+-    (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
+-    (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
+-    {ε : ℝ} (hε : 0 < ε) :
+-    ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
+-      (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
+-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε :=
+-  FirstFactor.riemann_upper_aux φ X M P hX hbd hcont hε
+-
+ end GradedNear
+diff --git a/GradedNear/Functions.lean b/GradedNear/Functions.lean
+deleted file mode 100644
+index c28894c26..000000000
+--- a/GradedNear/Functions.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Kernel
+diff --git a/GradedNear/GramForm.lean b/GradedNear/GramForm.lean
+index 58b4cbb17..3170d69b7 100644
+--- a/GradedNear/GramForm.lean
++++ b/GradedNear/GramForm.lean
+@@ -81,17 +81,8 @@ omit [Fintype ι] in
+ lemma sjk_arg (D : NearData) (E : Entries q ι) (j k : ι) (hℓ : Real.log q ≠ 0) :
+     (sjk D E j k - 1) * (Real.log q : ℂ) =
+       (((-(D.s₁ - E.δ j - E.δ k)) : ℝ) : ℂ) + (((E.γ j - E.γ k) * Real.log q : ℝ) : ℂ) * I := by
+-  unfold sjk
+-  apply Complex.ext
+-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
+-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.one_re,
+-      Complex.sub_im, Complex.add_im, Complex.one_im]
+-    field_simp
+-    ring
+-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
+-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.one_re,
+-      Complex.sub_im, Complex.add_im, Complex.one_im]
+-    ring
++  simpa only [sjk, Complex.one_re, Complex.one_im, sub_self, zero_mul, zero_sub, sub_zero] using
++    response_arg (q := q) (D.s₁ - E.δ j - E.δ k) (E.γ j - E.γ k) 1 hℓ
+ 
+ omit [Fintype ι] in
+ lemma sjk_re (D : NearData) (E : Entries q ι) (j k : ι) :
+@@ -134,9 +125,9 @@ theorem gram_form_bound (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (D : N
+   obtain ⟨q₁, hq₁⟩ := principal_entry hX31 hD.g_cond1 K hε
+   obtain ⟨δ, hδ0, hδ1, q₂, hq₂⟩ := nonprincipal_entry hX32 hD.g_cond1 hD.g_cond2 K hε
+   refine ⟨max (max q₁ q₂) 2, fun q _ hq T hT hTq hsafe ι _ E hγ hΔ a ha => ?_⟩
+-  have hq1 : q₁ ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
+-  have hq2' : q₂ ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
+-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
++  have hq1 : q₁ ≤ q := by omega
++  have hq2' : q₂ ≤ q := by omega
++  have hq2 : 2 ≤ q := by omega
+   have hℓ := log_q_pos hq2
+   classical
+   -- bounds on the Gram point
+diff --git a/GradedNear/Interval/Sound.lean b/GradedNear/Interval/Sound.lean
+deleted file mode 100644
+index 105b26995..000000000
+--- a/GradedNear/Interval/Sound.lean
++++ /dev/null
+@@ -1,69 +0,0 @@
+-module
+-
+-public import IntervalCore
+-public import Mathlib.Analysis.Complex.Exponential
+-public import Mathlib.Data.Rat.Cast.Order
+-public import Mathlib.Data.Nat.Cast.Order.Field
+-public import Mathlib.Tactic.FieldSimp
+-public import Mathlib.Tactic.GCongr
+-public import Mathlib.Tactic.Linarith
+-public import Mathlib.Tactic.Positivity
+-
+-/-!
+-# Soundness of the interval library `IntervalCore`
+-
+-`x ∈ₗ I` means `(I.lo : ℝ) ≤ x ≤ (I.hi : ℝ)`. For every operation of `IntervalCore` we prove the
+-inclusion property: if the arguments are members of the argument intervals, the value is a member
+-of the result (`Ival.mem_add`, `mem_sub`, `mem_neg`, `mem_mul`, `mem_div`, `mem_inv`, `mem_sqr`,
+-`mem_pow`, `mem_addRat`, `mem_mulRat`, `mem_divRat`, `mem_ofRat`, `mem_join_left`,
+-`mem_join_right`, `mem_round`, `mem_exp`), and the checks (`Ival.le_of_le`, `le_of_leRat`, …) are sound. The
+-rounding lemmas are `roundDown_le` and `le_roundUp` (in `ℚ`) and their casts to `ℝ`.
+-
+-For the exponential (`expLo_le`, `le_expHi`, `Ival.mem_exp`): the fixed-point Taylor sum is a lower
+-bound by `Real.sum_le_exp_of_nonneg` (`taylor_fst_le`); its error bound gives an upper bound by
+-`Real.exp_bound` for the tail after `m ≥ 1` terms, `|Y|^m (m+1)/(m!·m) ≤ 2 Y^m/m!` for `|Y| ≤ 1`
+-(`le_taylor_add`), and `Real.abs_exp_sub_one_le` covers the rounding of the reduced argument. The
+-squarings use `Real.exp_add`, negative arguments `Real.exp_neg`, and `q ≤ -p` the bound
+-`2 ≤ exp 1`.
+--/
+-
+-@[expose] public section
+-
+-namespace IntervalCore
+-
+-open Finset
+-
+-/-- Membership of a real number in an interval with rational ends. -/
+-def Mem (x : ℝ) (I : Ival) : Prop := (I.lo : ℝ) ≤ x ∧ x ≤ (I.hi : ℝ)
+-
+-@[inherit_doc] infix:50 " ∈ₗ " => Mem
+-
+-/-! ## Rounding -/
+-
+-/-! ## Checks -/
+-
+-namespace Ival
+-
+-/-! ## Arithmetic -/
+-
+-/-! ### Products -/
+-
+-/-! ### Notation -/
+-
+-end Ival
+-
+-/-! ## Fixed point -/
+-
+-/-! ## Taylor sums -/
+-
+-/-! ## Squarings -/
+-
+-/-! ## Exponential of `n / d ≥ 0` -/
+-
+-/-! ## Exponential of a rational -/
+-
+-namespace Ival
+-
+-end Ival
+-
+-end IntervalCore
+diff --git a/GradedNear/Kernel.lean b/GradedNear/Kernel.lean
+deleted file mode 100644
+index e0b7c5f31..000000000
+--- a/GradedNear/Kernel.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Prime
+diff --git a/GradedNear/KernelFacts.lean b/GradedNear/KernelFacts.lean
+deleted file mode 100644
+index dfa4a5766..000000000
+--- a/GradedNear/KernelFacts.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Functions
+diff --git a/GradedNear/LeafNumSound.lean b/GradedNear/LeafNumSound.lean
+deleted file mode 100644
+index 383b6aaae..000000000
+--- a/GradedNear/LeafNumSound.lean
++++ /dev/null
+@@ -1,5 +0,0 @@
+-module
+-public import LeafNumCore
+-public import GradedNear.KernelFacts
+-public import GradedNear.FarFacts
+-public import GradedNear.Interval.Sound
+diff --git a/GradedNear/Main.lean b/GradedNear/Main.lean
+index 0edbc8fe4..fcc19991c 100644
+--- a/GradedNear/Main.lean
++++ b/GradedNear/Main.lean
+@@ -2,6 +2,7 @@ module
+ 
+ public import GradedNear.FirstPart
+ public import GradedNear.SievePart
++public import GradedNear.BurgessReduction
+ 
+ /-!
+ # Proof of the graded near lemma
+@@ -38,14 +39,12 @@ lemma re_sum_sq_le {β : Type*} (S : Finset β) (c : β → ℝ) (Y : β → ℂ
+     refine (Complex.abs_re_le_norm _).trans ((norm_sum_le _ _).trans (le_of_eq ?_))
+     refine Finset.sum_congr rfl fun n _ => ?_
+     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+-  have h2 : 0 ≤ ∑ n ∈ S, |c n| * ‖Y n‖ :=
+-    Finset.sum_nonneg fun n _ => mul_nonneg (abs_nonneg _) (norm_nonneg _)
+   calc ((∑ n ∈ S, (c n : ℂ) * Y n).re) ^ 2 = |(∑ n ∈ S, (c n : ℂ) * Y n).re| ^ 2 :=
+         (sq_abs _).symm
+     _ ≤ _ := pow_le_pow_left₀ (abs_nonneg _) h1 2
+ 
+-theorem graded_near_lemma'
+-    (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessBound)
++theorem graded_near_lemma
++    (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessPrimitive)
+     (hGr : GrahamEstimate) (D : NearData) (hD : D.Valid) {η : ℝ} (hη : 0 < η) :
+     ∃ q₀ : ℕ, ∀ q : ℕ, [NeZero q] → q₀ ≤ q → ∀ T : ℝ, 0 ≤ T → T ≤ Real.log q / 3 →
+       SafeAnchor q D.s₁ (2 * T + 1) →
+@@ -60,13 +59,14 @@ theorem graded_near_lemma'
+   have hIB := hD.IB_pos
+   obtain ⟨qF, hqF⟩ := first_factor_bound D hD (ε := η * D.IB) (mul_pos hη hIB)
+   obtain ⟨qG, hqG⟩ := gram_form_bound hX31 hX32 D hD (ε := η / 2) (half_pos hη)
+-  obtain ⟨qS, hqS⟩ := sieve_part_bound hGr hBur D hD (ε := η / 2) (half_pos hη)
++  obtain ⟨qS, hqS⟩ := sieve_part_bound hGr (burgessBound_of_primitive hBur) D hD
++    (half_pos hη)
+   obtain ⟨c, hc, hωc⟩ := hD.omega_lb
+   refine ⟨max (max qF qG) (max qS 2), fun q _ hq T hT hTq hsafe ι _ E _ hγ hΔ hinj a ha => ?_⟩
+-  have hqF' : qF ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
+-  have hqG' : qG ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
+-  have hqS' : qS ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hq
+-  have hq2 : 2 ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hq
++  have hqF' : qF ≤ q := by omega
++  have hqG' : qG ≤ q := by omega
++  have hqS' : qS ≤ q := by omega
++  have hq2 : 2 ≤ q := by omega
+   have hℓ := log_q_pos hq2
+   set Sf := Finset.Icc 1 ⌊(q : ℝ) ^ D.xf⌋₊ with hSf
+   set N := max ⌊(q : ℝ) ^ D.xf⌋₊ ⌊(q : ℝ) ^ D.xg⌋₊ with hN
+@@ -142,8 +142,6 @@ theorem graded_near_lemma'
+     linarith
+   have hsecond0 : 0 ≤ (∑ n ∈ Sf, w n * ‖Yn E a n‖ ^ 2) / Real.log q :=
+     div_nonneg (Finset.sum_nonneg fun n _ => mul_nonneg (hw0 n) (sq_nonneg _)) hℓ.le
+-  have hfirst0 : 0 ≤ (∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q :=
+-    div_nonneg (Finset.sum_nonneg fun n _ => div_nonneg (sq_nonneg _) (hw0 n)) hℓ.le
+   -- combine
+   have hsq : (∑ j, a j * response D E j) ^ 2 ≤
+       ((∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q) *
+diff --git a/GradedNear/Parabolic.lean b/GradedNear/Parabolic.lean
+deleted file mode 100644
+index e41c59c48..000000000
+--- a/GradedNear/Parabolic.lean
++++ /dev/null
+@@ -1,55 +0,0 @@
+-module
+-
+-public import GradedNear.Admissible
+-public import GradedNear.Entry
+-
+-/-!
+-# The parabolic autocorrelation tests
+-
+-The near rows of the leaves use, as detector `f` and as short Gram test `g₁`, the normalized
+-autocorrelation of the parabola `(γ² - y²)₊` ([HB, §7]; `computations/sieve_near/sieve_inputs.py` in the research repository,
+-`fnorm`): with `c = 2γ`,
+-`f(t) = P(t/c)` for `t ≤ c` and `f(t) = 0` for `t > c`, where
+-`P(u) = (1 - u)³(1 + 3u + u²) = 1 - 5u² + 5u³ - u⁵`, so that `f(0) = 1`.
+-
+-* `fpar_condition1`: Condition 1 with `x₀ = c` and `B = 10 / c²`;
+-* `integral_P_cos`: `∫₀¹ P(s) cos(ws) ds = 60 (w cos(w/2) - 2 sin(w/2))² / w⁶` for `w ≠ 0`, which is
+-  `≥ 0` (the autocorrelation identity `Re F(iy) = (15/(8γ⁵)) (∫₀^γ (γ² - s²) cos(sy) ds)²` in closed
+-  form);
+-* `fpar_condition2`: Condition 2, by the criterion `condition2_of_imag_axis`;
+-* `fpar_anti`, `fpar_pos`: `f` decreases on `[0, ∞)` and is positive on `[0, c)`;
+-* `laplace_fpar_real`: at a real point, `Re F(x) = c Φ(c x)` with `Φ(u) = ∫₀¹ P(s) e^{-us} ds`;
+-  `Phi_eq_closed`: the closed form of `Φ(u)` for `u ≠ 0` (five integrations by parts);
+-  `Phi_sub_taylor`: the Taylor polynomial of `Φ` with its remainder for `|u| ≤ 1`.
+--/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open Complex MeasureTheory Set Filter
+-open scoped Interval
+-
+-namespace GradedNear
+-
+-namespace Parabolic
+-
+-/-- `P(u) = (1 - u)³(1 + 3u + u²) = 1 - 5u² + 5u³ - u⁵`. -/
+-def P (u : ℝ) : ℝ := 1 - 5 * u ^ 2 + 5 * u ^ 3 - u ^ 5
+-
+-@[fun_prop] lemma continuous_P : Continuous P := by unfold P; fun_prop
+-
+-/-- The normalized parabolic autocorrelation of width `c = 2γ`. -/
+-def fpar (c t : ℝ) : ℝ := if t ≤ c then P (t / c) else 0
+-
+-/-! ## Condition 2 -/
+-
+-/-! ## Monotonicity -/
+-
+-/-! ## The transform at real points -/
+-
+-end Parabolic
+-
+-end GradedNear
+-
+-end
+diff --git a/GradedNear/Prime.lean b/GradedNear/Prime.lean
+deleted file mode 100644
+index d51f601e2..000000000
+--- a/GradedNear/Prime.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import GradedNear.Entry
+diff --git a/GradedNear/Response.lean b/GradedNear/Response.lean
+index 8858a0226..5880f39ae 100644
+--- a/GradedNear/Response.lean
++++ b/GradedNear/Response.lean
+@@ -27,20 +27,6 @@ noncomputable section
+ 
+ namespace GradedNear
+ 
+-lemma response_arg {q : ℕ} (σ γ : ℝ) (ρ : ℂ) (hℓ : Real.log q ≠ 0) :
+-    ((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I - ρ) * (Real.log q : ℂ) =
+-      ((((1 - ρ.re) * Real.log q - σ : ℝ)) : ℂ) + (((γ - ρ.im) * Real.log q : ℝ) : ℂ) * I := by
+-  apply Complex.ext
+-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
+-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im,
+-      Complex.add_im]
+-    field_simp
+-    ring
+-  · simp only [Complex.mul_re, Complex.sub_re, Complex.add_re, Complex.ofReal_re,
+-      Complex.mul_im, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.sub_im,
+-      Complex.add_im]
+-    ring
+-
+ /-- **The response lemma** (paper Lemma 8.7; [X, Lemma 3.2]). Fix a test `f` satisfying Conditions 1
+ and 2, a bound `σmax` for the anchors, a count `K₀` and `η > 0`. There are a separation `M > 0`, a
+ disc radius `δ < 1` and a `q₀` such that the following holds for `q ≥ q₀`, a non-principal `χ`,
+@@ -69,8 +55,8 @@ theorem response_lemma (hX32 : XylourisLemma32) {f : ℝ → ℝ} {x₀ B : ℝ}
+   obtain ⟨M, hM, hdecay⟩ := laplace_decay hf1 σmax hε'pos
+   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge σmax
+   refine ⟨M, hM, δ, hδ0, hδ1, max q₁ q₂, fun q _ hq χ hχ σ γ hσ hγ Sz hSz hsep hK => ?_⟩
+-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
+-  obtain ⟨hsq, -, hq2⟩ := hq₂ q (le_trans (le_max_right _ _) hq)
++  have hq1 : q₁ ≤ q := by omega
++  obtain ⟨hsq, -, hq2⟩ := hq₂ q (by omega)
+   have hℓ := log_q_pos hq2
+   set s : ℂ := (((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I with hs
+   have hsre : s.re = 1 - σ / Real.log q := by
+diff --git a/GradedNear/Row.lean b/GradedNear/Row.lean
+deleted file mode 100644
+index 9563e9bed..000000000
+--- a/GradedNear/Row.lean
++++ /dev/null
+@@ -1,109 +0,0 @@
+-module
+-
+-public import GradedNear.Parabolic
+-
+-/-!
+-# The near rows of the leaves: a concrete instance of the graded near lemma
+-
+-A near row of a leaf (paper §§9.1–9.4; `computations/sieve_near/sieve_inputs.py` in the research repository,
+-`SieveNearTest`) fixes rational parameters: the detector `f = f_{2γ}` and the short Gram test
+-`g = f_{2g₁}` (the parabolic tests of `Parabolic.lean`, normalized so that `f(0) = g(0) = 1`), the
+-anchors `s ≥ s₁ ≥ 0`, and a Selberg-sieve weight with heights `h_k ≥ 0` on the `m` cells
+-`[t_k, t_{k+1})`, `t_k = t₀ + (2γ - t₀) k/m`, with level margin `ε' = 1/2000`. `Params.near` is
+-the corresponding `NearData`.
+-
+-* `Params.valid`: the standing hypotheses `NearData.Valid` follow from checkable conditions on the
+-  rationals (`Params.Good`) and positive lower bounds `L_k` of `ω` on the cells;
+-* `Params.IB_le`: `I_B ≤ Σ_{j<n} (t₀/n) e^{(2s-s₁)b_j} f(a_j)²/g(b_j) +
+-  Σ_{k<m} (t_{k+1}-t_k) e^{2s t_{k+1}} f(t_k)²/L_k`, the upper Riemann sum of the builders
+-  (`n` short cells `[a_j, b_j)` of `[0, t₀)`, where the sieve weight vanishes);
+-* `Params.Dδ_eq`, `Params.Dδ_anti`: `D(δ) = 2g₁ Φ(2g₁(2δ - s₁)) + Σ_k c_k e^{-2δ t_k}` with
+-  `c_k = h_k (t_{k+1}² - t_k²)/(2δ_k)`, and `D` decreases in `δ ≥ 0`.
+--/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open MeasureTheory Set Filter
+-open scoped Interval
+-
+-namespace GradedNear
+-
+-namespace Row
+-
+-open Parabolic
+-
+-/-- The rational parameters of a near row. -/
+-structure Params where
+-  /-- The detector is `f_{2γ}`. -/
+-  γ : ℚ
+-  /-- The short Gram test is `f_{2g₁}`. -/
+-  g1 : ℚ
+-  /-- The first sieve cell starts at `t₀`. -/
+-  t0 : ℚ
+-  /-- The reference anchor. -/
+-  s : ℚ
+-  /-- The safe anchor. -/
+-  s1 : ℚ
+-  /-- The sieve heights `h_k`, one per cell. -/
+-  h : List ℚ
+-
+-/-- The level margin `ε' = 1/2000` (`EPS_LEVEL`). -/
+-def epsLev : ℚ := 1 / 2000
+-
+-namespace Params
+-
+-variable (p : Params)
+-
+-/-- The number of sieve cells. -/
+-def m : ℕ := p.h.length
+-
+-/-- The cell ends `t_k = t₀ + (2γ - t₀) k / m`. -/
+-def tk (k : ℕ) : ℚ := p.t0 + (2 * p.γ - p.t0) * k / p.m
+-
+-/-- The sieve height of cell `k` (`0` beyond the list). -/
+-def hk (k : ℕ) : ℚ := p.h.getD k 0
+-
+-/-- The `NearData` of the row, with the finite set `Δ` of anchor offsets of its entries. -/
+-def near (Δ : Finset ℝ) : NearData where
+-  f := fpar (2 * (p.γ : ℝ))
+-  xf := 2 * (p.γ : ℝ)
+-  Bf := 10 / (2 * (p.γ : ℝ)) ^ 2
+-  g := fpar (2 * (p.g1 : ℝ))
+-  xg := 2 * (p.g1 : ℝ)
+-  Bg := 10 / (2 * (p.g1 : ℝ)) ^ 2
+-  s₁ := p.s1
+-  s := p.s
+-  m := p.m
+-  t := fun k => (p.tk k : ℝ)
+-  h := fun k => (p.hk k : ℝ)
+-  ε' := (epsLev : ℝ)
+-  Δ := Δ
+-
+-@[simp] lemma near_f (Δ : Finset ℝ) : (p.near Δ).f = fpar (2 * (p.γ : ℝ)) := rfl
+-@[simp] lemma near_g (Δ : Finset ℝ) : (p.near Δ).g = fpar (2 * (p.g1 : ℝ)) := rfl
+-@[simp] lemma near_s (Δ : Finset ℝ) : (p.near Δ).s = p.s := rfl
+-@[simp] lemma near_s₁ (Δ : Finset ℝ) : (p.near Δ).s₁ = p.s1 := rfl
+-@[simp] lemma near_m (Δ : Finset ℝ) : (p.near Δ).m = p.m := rfl
+-@[simp] lemma near_t (Δ : Finset ℝ) (k : ℕ) : (p.near Δ).t k = (p.tk k : ℝ) := rfl
+-@[simp] lemma near_h (Δ : Finset ℝ) (k : ℕ) : (p.near Δ).h k = (p.hk k : ℝ) := rfl
+-@[simp] lemma near_ε' (Δ : Finset ℝ) : (p.near Δ).ε' = (epsLev : ℝ) := rfl
+-
+-variable {p}
+-
+-/-! ## The weight `ω` -/
+-
+-/-! ## The integral `I_B` -/
+-
+-/-! ## The diagonal `D(δ)` -/
+-
+-/-! ## Validity -/
+-
+-end Params
+-
+-end Row
+-
+-end GradedNear
+-
+-end
+diff --git a/GradedNear/Row/CheckSound.lean b/GradedNear/Row/CheckSound.lean
+deleted file mode 100644
+index fc5f245d3..000000000
+--- a/GradedNear/Row/CheckSound.lean
++++ /dev/null
+@@ -1,58 +0,0 @@
+-module
+-
+-public import RowCheckCore
+-public import GradedNear.Row
+-public import GradedNear.LeafNumSound
+-
+-/-!
+-# Soundness of the near-row checker `RowCheckCore`
+-
+-* `phiI_sound`, `fI_sound`: the enclosures of `Φ(u)` and of the transform `F_c(x) = c Φ(cx)`
+-  (`Parabolic.laplace_fpar_real`) contain the true values;
+-* `good_sound`: `RowP.good` gives `Params.Good`;
+-* `shortSum_sound`, `longSum_sound`, `ibUpper_sound`: the checker's Riemann sum bounds the builders'
+-  `Params.riemann`, hence `I_B` (`Params.IB_le`), and every cell bound `L_k` is positive;
+-* `mem_hornerL`, `dI_sound`: the enclosure of `D(δ)` (`Params.Dδ_eq`) contains `D(δ)`.
+-
+-The enclosures at complex points are proved sound in `GradedNear/Row/SpecialSound.lean`, the
+-special entries' values in `GradedNear/Row/SpecSound.lean`, and the row check in
+-`GradedNear/Row/RowSound.lean`.
+--/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open IntervalCore LeafNumCore MeasureTheory Set
+-
+-namespace GradedNear.Row
+-
+-open Parabolic
+-
+-/-- The row parameters of the checker as `Params`. -/
+-def ofCore (p : RowCheckCore.RowP) : Params := ⟨p.γ, p.g1, p.t0, p.s, p.s1, p.h⟩
+-
+-@[simp] lemma ofCore_m (p : RowCheckCore.RowP) : (ofCore p).m = p.m := rfl
+-@[simp] lemma ofCore_tk (p : RowCheckCore.RowP) (k : ℕ) : (ofCore p).tk k = p.tk k := rfl
+-@[simp] lemma ofCore_hk (p : RowCheckCore.RowP) (k : ℕ) : (ofCore p).hk k = p.hk k := rfl
+-@[simp] lemma ofCore_γ (p : RowCheckCore.RowP) : (ofCore p).γ = p.γ := rfl
+-@[simp] lemma ofCore_g1 (p : RowCheckCore.RowP) : (ofCore p).g1 = p.g1 := rfl
+-@[simp] lemma ofCore_t0 (p : RowCheckCore.RowP) : (ofCore p).t0 = p.t0 := rfl
+-@[simp] lemma ofCore_s (p : RowCheckCore.RowP) : (ofCore p).s = p.s := rfl
+-@[simp] lemma ofCore_s1 (p : RowCheckCore.RowP) : (ofCore p).s1 = p.s1 := rfl
+-
+-/-! ## Casts -/
+-
+-/-! ## `Φ` and `F` -/
+-
+-/-! ## The parameters -/
+-
+-/-! ## The Riemann sum -/
+-
+-/-! ## `D(δ)` -/
+-
+-/-! ## The constants -/
+-
+-end GradedNear.Row
+-
+-end
+diff --git a/GradedNear/SieveCell.lean b/GradedNear/SieveCell.lean
+index 0142d2cfa..c8ee34649 100644
+--- a/GradedNear/SieveCell.lean
++++ b/GradedNear/SieveCell.lean
+@@ -61,8 +61,6 @@ lemma sieve_term {n : ℕ} (hn : 1 ≤ n) (hq : 2 ≤ q) (E : Entries q ι) (a :
+     rw [one_div, ← Real.exp_log hnpos, ← Real.exp_neg, Real.exp_log hnpos, ← Real.exp_add]
+     congr 1; unfold tn; field_simp; ring
+   rw [hexp]
+-  have e1 : cexp (-(((E.γ j - E.γ j') * Real.log n : ℝ) : ℂ) * I) =
+-      cexp (-((((E.γ j - E.γ j' : ℝ)) * Real.log n : ℝ) : ℂ) * I) := rfl
+   rw [Complex.re_ofReal_mul]
+   have : (E.χ j * (E.χ j')⁻¹) n * (Real.log n : ℂ) *
+       (((1 / n * Real.exp (-(E.δ j + E.δ j') * tn q n) : ℝ) : ℂ) *
+@@ -115,7 +113,6 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h
+   classical
+   have hY : ∀ n, ‖Yn E a n‖ ^ 2 ≤ (∑ j, a j) ^ 2 := fun n =>
+     pow_le_pow_left₀ (norm_nonneg _) (norm_Yn_le E a ha hδ hq) 2
+-  have hsumA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
+   -- majorant
+   have step1 : ∑ n ∈ C, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
+       ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 +
+@@ -140,22 +137,21 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h
+       _ = (∑ n ∈ C, pp n / n) * (∑ j, a j) ^ 2 := by rw [Finset.sum_mul]
+       _ ≤ Pk * (∑ j, a j) ^ 2 := mul_le_mul_of_nonneg_right hppsum (sq_nonneg _)
+   -- expand the Selberg part
++  set Z : ι → ι → ℕ → ℝ := fun j j' n => sieveNu V n *
++    (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) with hZ
+   have hexpand : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 =
+-      ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
+-        (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) := by
+-    simp_rw [norm_Yn_sq, Finset.mul_sum]
++      ∑ j, ∑ j', ∑ n ∈ C, Z j j' n := by
++    simp_rw [hZ, norm_Yn_sq, Finset.mul_sum]
+     rw [Finset.sum_comm]
+     refine Finset.sum_congr rfl fun j _ => ?_
+     rw [Finset.sum_comm]
+     refine Finset.sum_congr rfl fun j' _ => Finset.sum_congr rfl fun n _ => ?_
+     ring
+   have hν : ∀ n, 0 ≤ sieveNu V n := sieveNu_nonneg V
+-  have hdiagj : ∀ j, ∑ n ∈ C, sieveNu V n *
+-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re) ≤
++  have hdiagj : ∀ j, ∑ n ∈ C, Z j j n ≤
+       Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 := by
+     intro j
+-    calc ∑ n ∈ C, sieveNu V n *
+-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re)
++    calc ∑ n ∈ C, Z j j n
+         ≤ ∑ n ∈ C, (Real.log n / n * sieveNu V n) * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) := by
+           refine Finset.sum_le_sum fun n hn => ?_
+           have hlog : 0 ≤ Real.log n / n :=
+@@ -174,8 +170,7 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h
+       _ ≤ Dk * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) :=
+           mul_le_mul_of_nonneg_right hdiag (mul_nonneg (sq_nonneg _) (Real.exp_pos _).le)
+       _ = _ := by ring
+-  have hoffj : ∀ j j', j ≠ j' → ∑ n ∈ C, sieveNu V n *
+-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) ≤
++  have hoffj : ∀ j j', j ≠ j' → ∑ n ∈ C, Z j j' n ≤
+       a j * a j' * Ok := by
+     intro j j' hjj'
+     have hrw : ∀ n ∈ C, sieveNu V n *
+@@ -192,8 +187,7 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h
+   have step3 : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 ≤
+       ∑ j, Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 + Ok * (∑ j, a j) ^ 2 := by
+     rw [hexpand]
+-    calc ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
+-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re)
++    calc ∑ j, ∑ j', ∑ n ∈ C, Z j j' n
+         ≤ ∑ j, ∑ j', (if j' = j then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2
+             else a j * a j' * Ok) := by
+           refine Finset.sum_le_sum fun j _ => Finset.sum_le_sum fun j' _ => ?_
+@@ -219,6 +213,6 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h
+             rw [Finset.mul_sum]
+             refine Finset.sum_congr rfl fun j' _ => ?_
+             ring
+-  linarith [step1, step2, step3]
++  linarith
+ 
+ end GradedNear
+diff --git a/GradedNear/SieveError.lean b/GradedNear/SieveError.lean
+index d4d2de3f7..2675b5a3e 100644
+--- a/GradedNear/SieveError.lean
++++ b/GradedNear/SieveError.lean
+@@ -52,16 +52,11 @@ lemma sieve_error_eventually (m : ℕ) (h t lev : ℕ → ℝ) (hlev : ∀ k < m
+         funext q; field_simp
+       rw [this]; simpa using (hinv.pow 3).const_mul (CB / lev k ^ 2)
+     have h3 : Tendsto (fun q : ℕ => |CC| * (q : ℝ) ^ (-κ) / Real.log q) atTop (𝓝 0) := by
+-      have : (fun q : ℕ => |CC| * (q : ℝ) ^ (-κ) / Real.log q) =
+-          fun q : ℕ => |CC| * ((q : ℝ) ^ (-κ) * (Real.log q)⁻¹) := by
+-        funext q; ring
+-      rw [this]; simpa using ((tendsto_rpow_neg_nat hκ).mul hinv).const_mul |CC|
++      simpa [div_eq_mul_inv, mul_assoc] using
++        ((tendsto_rpow_neg_nat hκ).mul hinv).const_mul |CC|
+     have h4 : Tendsto (fun q : ℕ => 2 * lev k * (q : ℝ) ^ (lev k - t k)) atTop (𝓝 0) := by
+       have hneg : 0 < t k - lev k := by linarith [hlt k hk']
+-      have : (fun q : ℕ => 2 * lev k * (q : ℝ) ^ (lev k - t k)) =
+-          fun q : ℕ => 2 * lev k * (q : ℝ) ^ (-(t k - lev k)) := by
+-        funext q; congr 2; ring
+-      rw [this]; simpa using (tendsto_rpow_neg_nat hneg).const_mul (2 * lev k)
++      simpa [neg_sub] using (tendsto_rpow_neg_nat hneg).const_mul (2 * lev k)
+     exact ((h1.add h2).add h3).add h4
+   have hev := (tendsto_order.1 hT).2 ε hε
+   obtain ⟨q₀, hq₀⟩ := Filter.eventually_atTop.1 hev
+diff --git a/GradedNear/SieveOffDiagonal.lean b/GradedNear/SieveOffDiagonal.lean
+index 1b2c025f5..396b0f3a7 100644
+--- a/GradedNear/SieveOffDiagonal.lean
++++ b/GradedNear/SieveOffDiagonal.lean
+@@ -1,6 +1,7 @@
+ module
+ 
+ public import GradedNear.SieveBasic
++public import GradedNear.CharacterSums
+ 
+ /-!
+ # (C) The off-diagonal of the sieve part: Burgess's bound and Abel summation
+@@ -61,67 +62,13 @@ lemma grahamWeight_eq_zero_of_floor_lt {V : ℝ} {d : ℕ} (h : ⌊V⌋₊ < d)
+ 
+ /-! ### Character sums over intervals and over multiples -/
+ 
+-/-- A sum over the multiples of `l` in `(a, b]`, after the substitution `k = l m`. -/
+-lemma sum_Ioc_ite_dvd {M : Type*} [AddCommMonoid M] (f : ℕ → M) {l : ℕ} (hl : 0 < l)
+-    (a b : ℕ) :
+-    ∑ k ∈ Finset.Ioc a b, (if l ∣ k then f k else 0) =
+-      ∑ m ∈ Finset.Ioc (a / l) (b / l), f (l * m) := by
+-  rw [← Finset.sum_filter]
+-  symm
+-  apply Finset.sum_nbij (fun m => l * m)
+-  · intro m hm
+-    simp only [Finset.mem_Ioc] at hm
+-    simp only [Finset.mem_filter, Finset.mem_Ioc]
+-    refine ⟨⟨?_, ?_⟩, dvd_mul_right l m⟩
+-    · have := (Nat.div_lt_iff_lt_mul hl).1 hm.1
+-      rw [Nat.mul_comm]; exact this
+-    · have := (Nat.le_div_iff_mul_le hl).1 hm.2
+-      rw [Nat.mul_comm]; exact this
+-  · intro m _ m' _ h
+-    exact Nat.eq_of_mul_eq_mul_left hl h
+-  · intro k hk
+-    simp only [Finset.coe_filter, Finset.mem_Ioc, Set.mem_ofPred_eq] at hk
+-    obtain ⟨⟨h1, h2⟩, ⟨m, rfl⟩⟩ := hk
+-    refine ⟨m, ?_, rfl⟩
+-    simp only [Finset.coe_Ioc, Set.mem_Ioc]
+-    constructor
+-    · exact (Nat.div_lt_iff_lt_mul hl).2 (by rw [Nat.mul_comm]; exact h1)
+-    · exact (Nat.le_div_iff_mul_le hl).2 (by rw [Nat.mul_comm]; exact h2)
+-  · intro m _
+-    rfl
+-
+-/-- A non-principal character sums to zero over `q` consecutive integers. -/
+-lemma sum_range_char_eq_zero {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
+-    (c : ℕ) : ∑ k ∈ Finset.range q, χ ((c + k : ℕ) : ZMod q) = 0 := by
+-  have : NeZero q := ⟨hq.ne'⟩
+-  rw [← MulChar.sum_eq_zero_of_ne_one hχ]
+-  apply Finset.sum_nbij (fun k : ℕ => ((c + k : ℕ) : ZMod q))
+-  · intro k _; exact Finset.mem_univ _
+-  · intro k hk k' hk' h
+-    simp only [Finset.coe_range, Set.mem_Iio] at hk hk'
+-    simp only [Nat.cast_add, add_right_inj] at h
+-    rw [ZMod.natCast_eq_natCast_iff'] at h
+-    rwa [Nat.mod_eq_of_lt hk, Nat.mod_eq_of_lt hk'] at h
+-  · intro x _
+-    refine ⟨(x - (c : ZMod q)).val, ?_, ?_⟩
+-    · simp only [Finset.coe_range, Set.mem_Iio]; exact ZMod.val_lt _
+-    · simp only [Nat.cast_add, ZMod.natCast_zmod_val]; ring
+-  · intro k _; rfl
+-
+-/-- A non-principal character sums to zero over a complete period `(N, N + q]`. -/
+-lemma sum_Ioc_period_eq_zero {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
+-    (N : ℕ) : ∑ n ∈ Finset.Ioc N (N + q), χ n = 0 := by
+-  rw [← Finset.Ico_add_one_add_one_eq_Ioc, Finset.sum_Ico_eq_sum_range]
+-  rw [show N + q + 1 - (N + 1) = q by omega]
+-  exact sum_range_char_eq_zero hq χ hχ (N + 1)
+-
+ /-- Burgess's bound for intervals of any length: split off complete periods, on which the
+ character sums to zero, and apply the bound for `H ≤ q` to the remainder. -/
+ lemma burgess_any_length {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
+     {K : ℝ} (hK : 0 ≤ K)
+     (h : ∀ N H : ℕ, 1 ≤ H → H ≤ q →
+-      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3)) :
+-    ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ⅔) :
++    ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ⅔ := by
+   intro N H
+   induction H using Nat.strong_induction_on generalizing N with
+   | _ H ih =>
+@@ -136,8 +83,8 @@ lemma burgess_any_length {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q)
+         rw [Finset.sum_Ioc_consecutive _ (by omega) (by omega)]
+         congr 2; omega
+       rw [hsplit, sum_Ioc_period_eq_zero hq χ hχ, zero_add]
+-      calc _ ≤ K * ((H - q : ℕ) : ℝ) ^ ((2 : ℝ) / 3) := ih (H - q) (by omega) (N + q)
+-        _ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      calc _ ≤ K * ((H - q : ℕ) : ℝ) ^ ⅔ := ih (H - q) (by omega) (N + q)
++        _ ≤ K * (H : ℝ) ^ ⅔ := by
+           gcongr
+           exact_mod_cast Nat.sub_le H q
+ 
+@@ -270,25 +217,25 @@ lemma norm_wt_sub_le (s : ℂ) (hs : 1 ≤ s.re) {n : ℕ} (hn : 1 ≤ n) :
+ 
+ /-- `(x/l)^{2/3} ≤ l^{-2/3} c^{-1/3} x` for `0 < c ≤ x`. -/
+ lemma rpow_two_thirds_div_le {x l c : ℝ} (hc : 0 < c) (hcx : c ≤ x) (hl : 0 < l) :
+-    (x / l) ^ ((2 : ℝ) / 3) ≤ l ^ (-((2 : ℝ) / 3)) * c ^ (-((1 : ℝ) / 3)) * x := by
++    (x / l) ^ ⅔ ≤ l ^ (-⅔) * c ^ (-⅓) * x := by
+   have hx : 0 < x := lt_of_lt_of_le hc hcx
+   rw [Real.div_rpow hx.le hl.le, div_eq_mul_inv, ← Real.rpow_neg hl.le]
+-  have h1 : x ^ ((2 : ℝ) / 3) = x * x ^ (-((1 : ℝ) / 3)) := by
+-    rw [show (2 : ℝ) / 3 = 1 + (-((1 : ℝ) / 3)) by norm_num, Real.rpow_add hx, Real.rpow_one]
++  have h1 : x ^ ⅔ = x * x ^ (-⅓) := by
++    rw [show ⅔ = 1 + (-⅓) by norm_num, Real.rpow_add hx, Real.rpow_one]
+   rw [h1]
+-  have h2 : x ^ (-((1 : ℝ) / 3)) ≤ c ^ (-((1 : ℝ) / 3)) :=
++  have h2 : x ^ (-⅓) ≤ c ^ (-⅓) :=
+     Real.rpow_le_rpow_of_nonpos hc hcx (by norm_num)
+-  have h3 : 0 ≤ l ^ (-((2 : ℝ) / 3)) := Real.rpow_nonneg hl.le _
+-  calc x * x ^ (-((1 : ℝ) / 3)) * l ^ (-((2 : ℝ) / 3))
+-      ≤ x * c ^ (-((1 : ℝ) / 3)) * l ^ (-((2 : ℝ) / 3)) := by gcongr
+-    _ = l ^ (-((2 : ℝ) / 3)) * c ^ (-((1 : ℝ) / 3)) * x := by ring
++  have h3 : 0 ≤ l ^ (-⅔) := Real.rpow_nonneg hl.le _
++  calc x * x ^ (-⅓) * l ^ (-⅔)
++      ≤ x * c ^ (-⅓) * l ^ (-⅔) := by gcongr
++    _ = l ^ (-⅔) * c ^ (-⅓) * x := by ring
+ 
+ /-- Partial sums of `χ` over the multiples of `l` in `(a, x]`, from Burgess's bound. -/
+ lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤ K)
+-    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3))
++    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ⅔)
+     {l : ℕ} (hl : 0 < l) (a x : ℕ) :
+     ‖∑ k ∈ Finset.Ioc a x, (if l ∣ k then χ k else 0)‖ ≤
+-      K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := by
++      K * ((x : ℝ) / l) ^ ⅔ := by
+   rw [sum_Ioc_ite_dvd (f := fun k => χ k) hl]
+   simp only [Nat.cast_mul, map_mul]
+   rw [← Finset.mul_sum, norm_mul]
+@@ -301,10 +248,10 @@ lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (h
+             exact_mod_cast (show H ≤ x / l by rw [hH]; exact Nat.le_add_left _ _)
+         _ ≤ (x : ℝ) / l := Nat.cast_div_le
+     calc ‖χ (l : ZMod q)‖ * ‖∑ m ∈ Finset.Ioc (a / l) (a / l + H), χ m‖
+-        ≤ 1 * (K * (H : ℝ) ^ ((2 : ℝ) / 3)) := by
++        ≤ 1 * (K * (H : ℝ) ^ ⅔) := by
+           gcongr
+           exact h _ _
+-      _ ≤ K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := by
++      _ ≤ K * ((x : ℝ) / l) ^ ⅔ := by
+           rw [one_mul]
+           gcongr
+   · rw [Finset.Ioc_eq_empty (by omega)]
+@@ -315,18 +262,18 @@ lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (h
+ `|Σ_{a < n ≤ b, l ∣ n} χ(n) W(n)| ≤ K l^{-2/3} (a+1)^{-1/3} Λ`, where
+ `Λ = log(b+1) + (1 + |s| log(b+1))(1 + log(b+1))`. -/
+ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤ K)
+-    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3))
++    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ⅔)
+     (s : ℂ) (hs : 1 ≤ s.re) {l : ℕ} (hl : 0 < l) (a b : ℕ) :
+     ‖∑ n ∈ Finset.Ioc a b, (if l ∣ n then χ n * wt s n else 0)‖ ≤
+-      K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
++      K * (l : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) *
+         (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1))) := by
+   have hlpos : (0 : ℝ) < l := by exact_mod_cast hl
+   have ha1 : (0 : ℝ) < (a : ℝ) + 1 := by positivity
+-  have hE0 : 0 ≤ K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) := by
++  have hE0 : 0 ≤ K * (l : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) := by
+     positivity
+   have hL0 : 0 ≤ Real.log ((b : ℝ) + 1) :=
+     Real.log_nonneg (by linarith [(Nat.cast_nonneg b : (0:ℝ) ≤ b)])
+-  generalize hE : K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) = E at hE0
++  generalize hE : K * (l : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) = E at hE0
+   generalize hL : Real.log ((b : ℝ) + 1) = L at hL0
+   have hsum : ∑ n ∈ Finset.Ioc a b, (if l ∣ n then χ n * wt s n else 0) =
+       ∑ n ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) n * wt s n := by
+@@ -334,13 +281,12 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+     intro n _
+     by_cases hd : l ∣ n <;> simp [hd]
+   rw [hsum, sum_Ioc_by_parts]
+-  have hkey : ∀ x : ℕ, a < x →
+-      ‖∑ k ∈ Finset.Ioc a x, (fun n => if l ∣ n then χ n else 0) k‖ ≤ E * x := by
++  set P : ℕ → ℂ := fun n => ∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k with hP
++  have hkey : ∀ x : ℕ, a < x → ‖P x‖ ≤ E * x := by
+     intro x hx
+     have hcx : (a : ℝ) + 1 ≤ x := by exact_mod_cast hx
+-    calc ‖∑ k ∈ Finset.Ioc a x, (fun n => if l ∣ n then χ n else 0) k‖
+-        ≤ K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := norm_sum_Ioc_dvd_le χ hK h hl a x
+-      _ ≤ K * ((l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * x) := by
++    calc ‖P x‖ ≤ K * ((x : ℝ) / l) ^ ⅔ := norm_sum_Ioc_dvd_le χ hK h hl a x
++      _ ≤ K * ((l : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) * x) := by
+           gcongr
+           exact rpow_two_thirds_div_le ha1 hcx hlpos
+       _ = E * x := by rw [← hE]; ring
+@@ -352,14 +298,12 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+     exact mul_nonneg hE0 hΛ0
+   have hb0 : (0 : ℝ) < b := by exact_mod_cast (show 0 < b by omega)
+   -- the boundary term
+-  have hT1 : ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1)‖ ≤
+-      E * L := by
++  have hT1 : ‖P b * wt s (b + 1)‖ ≤ E * L := by
+     rw [norm_mul]
+     have hw := norm_wt_le s hs (b + 1)
+     push_cast at hw
+     rw [hL] at hw
+-    calc ‖∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k‖ * ‖wt s (b + 1)‖
+-        ≤ (E * b) * (L / ((b : ℝ) + 1)) :=
++    calc ‖P b‖ * ‖wt s (b + 1)‖ ≤ (E * b) * (L / ((b : ℝ) + 1)) :=
+           mul_le_mul (hkey b hab) hw (norm_nonneg _) (mul_nonneg hE0 hb0.le)
+       _ = E * L * (b / ((b : ℝ) + 1)) := by ring
+       _ ≤ E * L * 1 := by
+@@ -369,8 +313,7 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+       _ = E * L := mul_one _
+   -- the interior terms
+   have hT2 : ∀ n ∈ Finset.Ioc a b,
+-      ‖(∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
+-        (wt s n - wt s (n + 1))‖ ≤ E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) := by
++      ‖P n * (wt s n - wt s (n + 1))‖ ≤ E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) := by
+     intro n hn
+     rw [Finset.mem_Ioc] at hn
+     have hn1 : 1 ≤ n := by omega
+@@ -384,8 +327,7 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+     have hw : ‖wt s n - wt s (n + 1)‖ ≤ (1 + ‖s‖ * L) / (n : ℝ) ^ 2 := by
+       refine (norm_wt_sub_le s hs hn1).trans ?_
+       gcongr
+-    calc ‖∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k‖ *
+-          ‖wt s n - wt s (n + 1)‖
++    calc ‖P n‖ * ‖wt s n - wt s (n + 1)‖
+         ≤ (E * n) * ((1 + ‖s‖ * L) / (n : ℝ) ^ 2) :=
+           mul_le_mul (hkey n hn.1) hw (norm_nonneg _) (mul_nonneg hE0 hn0.le)
+       _ = E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) := by field_simp
+@@ -395,12 +337,8 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+           rw [← hL]
+           gcongr
+           linarith
+-  calc ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1) +
+-        ∑ n ∈ Finset.Ioc a b, (∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
+-          (wt s n - wt s (n + 1))‖
+-      ≤ ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1)‖ +
+-        ∑ n ∈ Finset.Ioc a b, ‖(∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
+-          (wt s n - wt s (n + 1))‖ :=
++  calc ‖P b * wt s (b + 1) + ∑ n ∈ Finset.Ioc a b, P n * (wt s n - wt s (n + 1))‖
++      ≤ ‖P b * wt s (b + 1)‖ + ∑ n ∈ Finset.Ioc a b, ‖P n * (wt s n - wt s (n + 1))‖ :=
+         (norm_add_le _ _).trans (add_le_add le_rfl (norm_sum_le _ _))
+     _ ≤ E * L + ∑ n ∈ Finset.Ioc a b, E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) :=
+         add_le_add hT1 (Finset.sum_le_sum hT2)
+@@ -414,29 +352,29 @@ lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤
+ 
+ /-- `Σ_{j ≤ Y} j^{-2/3} ≤ 3 Y^{1/3}`, by telescoping. -/
+ lemma sum_rpow_neg_two_thirds_le (Y : ℕ) :
+-    ∑ j ∈ Finset.Ioc 0 Y, (j : ℝ) ^ (-((2 : ℝ) / 3)) ≤ 3 * (Y : ℝ) ^ ((1 : ℝ) / 3) := by
++    ∑ j ∈ Finset.Ioc 0 Y, (j : ℝ) ^ (-⅔) ≤ 3 * (Y : ℝ) ^ (⅓) := by
+   induction Y with
+   | zero => simp
+   | succ Y ih =>
+     rw [Finset.sum_Ioc_succ_top (Nat.zero_le Y)]
+     have hY0 : (0 : ℝ) ≤ Y := Nat.cast_nonneg Y
+     have hY1 : (0 : ℝ) < (Y : ℝ) + 1 := by linarith
+-    have key : ((Y : ℝ) + 1) ^ (-((2 : ℝ) / 3)) ≤
+-        3 * (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) - (Y : ℝ) ^ ((1 : ℝ) / 3)) := by
+-      have ha3 : (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3)) ^ 3 = (Y : ℝ) + 1 := by
++    have key : ((Y : ℝ) + 1) ^ (-⅔) ≤
++        3 * (((Y : ℝ) + 1) ^ (⅓) - (Y : ℝ) ^ (⅓)) := by
++      have ha3 : (((Y : ℝ) + 1) ^ (⅓)) ^ 3 = (Y : ℝ) + 1 := by
+         rw [← Real.rpow_natCast, ← Real.rpow_mul hY1.le]; norm_num
+-      have hb3 : ((Y : ℝ) ^ ((1 : ℝ) / 3)) ^ 3 = (Y : ℝ) := by
++      have hb3 : ((Y : ℝ) ^ (⅓)) ^ 3 = (Y : ℝ) := by
+         rw [← Real.rpow_natCast, ← Real.rpow_mul hY0]; norm_num
+-      have hlhs : ((Y : ℝ) + 1) ^ (-((2 : ℝ) / 3)) = 1 / (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3)) ^ 2 := by
++      have hlhs : ((Y : ℝ) + 1) ^ (-⅔) = 1 / (((Y : ℝ) + 1) ^ (⅓)) ^ 2 := by
+         rw [Real.rpow_neg hY1.le, ← Real.rpow_natCast, ← Real.rpow_mul hY1.le, one_div]
+         norm_num
+-      have ha0 : 0 < ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hY1 _
+-      have hb0 : 0 ≤ (Y : ℝ) ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hY0 _
+-      have hba : (Y : ℝ) ^ ((1 : ℝ) / 3) ≤ ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) :=
++      have ha0 : 0 < ((Y : ℝ) + 1) ^ (⅓) := Real.rpow_pos_of_pos hY1 _
++      have hb0 : 0 ≤ (Y : ℝ) ^ (⅓) := Real.rpow_nonneg hY0 _
++      have hba : (Y : ℝ) ^ (⅓) ≤ ((Y : ℝ) + 1) ^ (⅓) :=
+         Real.rpow_le_rpow hY0 (by linarith) (by norm_num)
+       rw [hlhs]
+-      generalize ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) = a at *
+-      generalize (Y : ℝ) ^ ((1 : ℝ) / 3) = b at *
++      generalize ((Y : ℝ) + 1) ^ (⅓) = a at *
++      generalize (Y : ℝ) ^ (⅓) = b at *
+       rw [div_le_iff₀ (by positivity)]
+       nlinarith [mul_nonneg (mul_nonneg (sub_nonneg.2 hba) (sub_nonneg.2 hba))
+         (by positivity : (0 : ℝ) ≤ 2 * a + b)]
+@@ -445,63 +383,63 @@ lemma sum_rpow_neg_two_thirds_le (Y : ℕ) :
+ 
+ /-- `[d, e]^{-2/3} = (d, e)^{2/3} d^{-2/3} e^{-2/3}`. -/
+ lemma lcm_rpow_eq {d e : ℕ} (hd : 0 < d) (he : 0 < e) :
+-    ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) =
+-      ((Nat.gcd d e : ℕ) : ℝ) ^ ((2 : ℝ) / 3) *
+-        ((d : ℝ) ^ (-((2 : ℝ) / 3)) * (e : ℝ) ^ (-((2 : ℝ) / 3))) := by
++    ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) =
++      ((Nat.gcd d e : ℕ) : ℝ) ^ ⅔ *
++        ((d : ℝ) ^ (-⅔) * (e : ℝ) ^ (-⅔)) := by
+   have hg : (0 : ℝ) < (Nat.gcd d e : ℕ) := by exact_mod_cast Nat.gcd_pos_of_pos_left e hd
+   have hl : (0 : ℝ) < (Nat.lcm d e : ℕ) := by exact_mod_cast Nat.lcm_pos hd he
+   have hprod : ((Nat.gcd d e : ℕ) : ℝ) * (Nat.lcm d e : ℕ) = (d : ℝ) * e := by
+     exact_mod_cast Nat.gcd_mul_lcm d e
+-  have h1 : ((d : ℝ) * e) ^ (-((2 : ℝ) / 3)) =
+-      (d : ℝ) ^ (-((2 : ℝ) / 3)) * (e : ℝ) ^ (-((2 : ℝ) / 3)) :=
++  have h1 : ((d : ℝ) * e) ^ (-⅔) =
++      (d : ℝ) ^ (-⅔) * (e : ℝ) ^ (-⅔) :=
+     Real.mul_rpow (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+   rw [← h1, ← hprod, Real.mul_rpow hg.le hl.le, ← mul_assoc, ← Real.rpow_add hg]
+   norm_num
+ 
+ /-- `Σ_{d ≤ K, g ∣ d} d^{-2/3} ≤ 3 K^{1/3} / g`. -/
+ lemma sum_dvd_rpow_le (K : ℕ) {g : ℕ} (hg : 0 < g) :
+-    ∑ d ∈ Finset.Ioc 0 K, (if g ∣ d then (d : ℝ) ^ (-((2 : ℝ) / 3)) else 0) ≤
+-      3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ := by
+-  rw [sum_Ioc_ite_dvd (f := fun d => (d : ℝ) ^ (-((2 : ℝ) / 3))) hg, Nat.zero_div]
++    ∑ d ∈ Finset.Ioc 0 K, (if g ∣ d then (d : ℝ) ^ (-⅔) else 0) ≤
++      3 * (K : ℝ) ^ (⅓) * (g : ℝ)⁻¹ := by
++  rw [sum_Ioc_ite_dvd (f := fun d => (d : ℝ) ^ (-⅔)) hg, Nat.zero_div]
+   have hg0 : (0 : ℝ) < g := by exact_mod_cast hg
+   simp only [Nat.cast_mul]
+-  have hsplit : ∀ m ∈ Finset.Ioc 0 (K / g), ((g : ℝ) * m) ^ (-((2 : ℝ) / 3)) =
+-      (g : ℝ) ^ (-((2 : ℝ) / 3)) * (m : ℝ) ^ (-((2 : ℝ) / 3)) :=
++  have hsplit : ∀ m ∈ Finset.Ioc 0 (K / g), ((g : ℝ) * m) ^ (-⅔) =
++      (g : ℝ) ^ (-⅔) * (m : ℝ) ^ (-⅔) :=
+     fun m _ => Real.mul_rpow hg0.le (Nat.cast_nonneg _)
+   rw [Finset.sum_congr rfl hsplit, ← Finset.mul_sum]
+-  have hgg : (g : ℝ) ^ (-((2 : ℝ) / 3)) / (g : ℝ) ^ ((1 : ℝ) / 3) = (g : ℝ)⁻¹ := by
+-    rw [← Real.rpow_sub hg0, show (-((2 : ℝ) / 3) - 1 / 3) = -1 by norm_num, Real.rpow_neg_one]
+-  calc (g : ℝ) ^ (-((2 : ℝ) / 3)) * ∑ m ∈ Finset.Ioc 0 (K / g), (m : ℝ) ^ (-((2 : ℝ) / 3))
+-      ≤ (g : ℝ) ^ (-((2 : ℝ) / 3)) * (3 * ((K : ℝ) / g) ^ ((1 : ℝ) / 3)) := by
++  have hgg : (g : ℝ) ^ (-⅔) / (g : ℝ) ^ (⅓) = (g : ℝ)⁻¹ := by
++    rw [← Real.rpow_sub hg0, show (-⅔ - 1 / 3) = -1 by norm_num, Real.rpow_neg_one]
++  calc (g : ℝ) ^ (-⅔) * ∑ m ∈ Finset.Ioc 0 (K / g), (m : ℝ) ^ (-⅔)
++      ≤ (g : ℝ) ^ (-⅔) * (3 * ((K : ℝ) / g) ^ (⅓)) := by
+         gcongr
+-        calc _ ≤ 3 * ((K / g : ℕ) : ℝ) ^ ((1 : ℝ) / 3) := sum_rpow_neg_two_thirds_le _
+-          _ ≤ 3 * ((K : ℝ) / g) ^ ((1 : ℝ) / 3) := by
++        calc _ ≤ 3 * ((K / g : ℕ) : ℝ) ^ (⅓) := sum_rpow_neg_two_thirds_le _
++          _ ≤ 3 * ((K : ℝ) / g) ^ (⅓) := by
+               gcongr
+               exact Nat.cast_div_le
+-    _ = 3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ := by
++    _ = 3 * (K : ℝ) ^ (⅓) * (g : ℝ)⁻¹ := by
+         rw [Real.div_rpow (Nat.cast_nonneg _) hg0.le, ← hgg]
+         ring
+ 
+ /-- `Σ_{d, e ≤ K} [d, e]^{-2/3} ≤ 9 K^{2/3} (1 + log K)`. -/
+ lemma lcm_sum_le (K : ℕ) :
+-    ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) ≤
+-      9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log K) := by
+-  let F : ℕ → ℕ → ℝ := fun g d => if g ∣ d then (d : ℝ) ^ (-((2 : ℝ) / 3)) else 0
++    ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) ≤
++      9 * (K : ℝ) ^ ⅔ * (1 + Real.log K) := by
++  let F : ℕ → ℕ → ℝ := fun g d => if g ∣ d then (d : ℝ) ^ (-⅔) else 0
+   have hF0 : ∀ g d, 0 ≤ F g d := by
+     intro g d
+     simp only [F]
+     split_ifs <;> positivity
+-  let X : ℕ → ℕ → ℕ → ℝ := fun g d e => (g : ℝ) ^ ((2 : ℝ) / 3) * (F g d * F g e)
++  let X : ℕ → ℕ → ℕ → ℝ := fun g d e => (g : ℝ) ^ ⅔ * (F g d * F g e)
+   have hX0 : ∀ g d e, 0 ≤ X g d e := fun g d e =>
+     mul_nonneg (by positivity) (mul_nonneg (hF0 g d) (hF0 g e))
+   have h1 : ∀ d ∈ Finset.Ioc 0 K, ∀ e ∈ Finset.Ioc 0 K,
+-      ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) ≤ ∑ g ∈ Finset.Ioc 0 K, X g d e := by
++      ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) ≤ ∑ g ∈ Finset.Ioc 0 K, X g d e := by
+     intro d hd e he
+     rw [Finset.mem_Ioc] at hd he
+     have hgS : Nat.gcd d e ∈ Finset.Ioc 0 K := by
+       rw [Finset.mem_Ioc]
+       exact ⟨Nat.gcd_pos_of_pos_left e hd.1, le_trans (Nat.gcd_le_left e hd.1) hd.2⟩
+-    have hval : ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) = X (Nat.gcd d e) d e := by
++    have hval : ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) = X (Nat.gcd d e) d e := by
+       rw [lcm_rpow_eq hd.1 he.1]
+       simp only [X, F, Nat.gcd_dvd_left d e, Nat.gcd_dvd_right d e, ite_true]
+     rw [hval]
+@@ -516,51 +454,51 @@ lemma lcm_sum_le (K : ℕ) :
+       _ = ∑ g ∈ Finset.Ioc 0 K, ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, X g d e :=
+           Finset.sum_comm
+   have hfactor : ∀ g, ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, X g d e =
+-      (g : ℝ) ^ ((2 : ℝ) / 3) *
++      (g : ℝ) ^ ⅔ *
+         ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e)) := by
+     intro g
+     rw [Finset.sum_mul_sum, Finset.mul_sum]
+     apply Finset.sum_congr rfl
+     intro d _
+     rw [Finset.mul_sum]
+-  have hK13 : ((K : ℝ) ^ ((1 : ℝ) / 3)) * ((K : ℝ) ^ ((1 : ℝ) / 3)) =
+-      (K : ℝ) ^ ((2 : ℝ) / 3) := by
++  have hK13 : ((K : ℝ) ^ (⅓)) * ((K : ℝ) ^ (⅓)) =
++      (K : ℝ) ^ ⅔ := by
+     rw [← Real.rpow_add' (Nat.cast_nonneg _) (by norm_num)]
+     norm_num
+-  calc ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3))
++  calc ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔)
+       ≤ ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ∑ g ∈ Finset.Ioc 0 K, X g d e :=
+         Finset.sum_le_sum fun d hd => Finset.sum_le_sum fun e he => h1 d hd e he
+-    _ = ∑ g ∈ Finset.Ioc 0 K, (g : ℝ) ^ ((2 : ℝ) / 3) *
++    _ = ∑ g ∈ Finset.Ioc 0 K, (g : ℝ) ^ ⅔ *
+           ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e)) := by
+         rw [hswap]
+         exact Finset.sum_congr rfl fun g _ => hfactor g
+-    _ ≤ ∑ g ∈ Finset.Ioc 0 K, 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 / (g : ℝ)) := by
++    _ ≤ ∑ g ∈ Finset.Ioc 0 K, 9 * (K : ℝ) ^ ⅔ * (1 / (g : ℝ)) := by
+         apply Finset.sum_le_sum
+         intro g hg
+         have hg1' : 0 < g := (Finset.mem_Ioc.1 hg).1
+         have hg1 : (1 : ℝ) ≤ g := by exact_mod_cast hg1'
+         have hg0 : (0 : ℝ) < g := by linarith
+-        have hU : ∑ d ∈ Finset.Ioc 0 K, F g d ≤ 3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ :=
++        have hU : ∑ d ∈ Finset.Ioc 0 K, F g d ≤ 3 * (K : ℝ) ^ (⅓) * (g : ℝ)⁻¹ :=
+           sum_dvd_rpow_le K hg1'
+         have hU0 : 0 ≤ ∑ d ∈ Finset.Ioc 0 K, F g d := Finset.sum_nonneg fun d _ => hF0 g d
+-        have hgg : (g : ℝ) ^ ((2 : ℝ) / 3) * (g : ℝ)⁻¹ ≤ 1 := by
++        have hgg : (g : ℝ) ^ ⅔ * (g : ℝ)⁻¹ ≤ 1 := by
+           rw [mul_inv_le_iff₀ hg0, one_mul]
+-          calc (g : ℝ) ^ ((2 : ℝ) / 3) ≤ (g : ℝ) ^ (1 : ℝ) :=
++          calc (g : ℝ) ^ ⅔ ≤ (g : ℝ) ^ (1 : ℝ) :=
+                 Real.rpow_le_rpow_of_exponent_le hg1 (by norm_num)
+             _ = g := Real.rpow_one _
+-        calc (g : ℝ) ^ ((2 : ℝ) / 3) *
++        calc (g : ℝ) ^ ⅔ *
+               ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e))
+-            ≤ (g : ℝ) ^ ((2 : ℝ) / 3) * ((3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹) *
+-                (3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹)) :=
++            ≤ (g : ℝ) ^ ⅔ * ((3 * (K : ℝ) ^ (⅓) * (g : ℝ)⁻¹) *
++                (3 * (K : ℝ) ^ (⅓) * (g : ℝ)⁻¹)) :=
+               mul_le_mul_of_nonneg_left (mul_self_le_mul_self hU0 hU) (by positivity)
+-          _ = 9 * ((K : ℝ) ^ ((1 : ℝ) / 3) * (K : ℝ) ^ ((1 : ℝ) / 3)) *
+-                ((g : ℝ) ^ ((2 : ℝ) / 3) * (g : ℝ)⁻¹) * (g : ℝ)⁻¹ := by ring
+-          _ ≤ 9 * ((K : ℝ) ^ ((1 : ℝ) / 3) * (K : ℝ) ^ ((1 : ℝ) / 3)) * 1 * (g : ℝ)⁻¹ := by
++          _ = 9 * ((K : ℝ) ^ (⅓) * (K : ℝ) ^ (⅓)) *
++                ((g : ℝ) ^ ⅔ * (g : ℝ)⁻¹) * (g : ℝ)⁻¹ := by ring
++          _ ≤ 9 * ((K : ℝ) ^ (⅓) * (K : ℝ) ^ (⅓)) * 1 * (g : ℝ)⁻¹ := by
+               gcongr
+-          _ = 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 / (g : ℝ)) := by rw [hK13]; ring
+-    _ = 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * ∑ g ∈ Finset.Ioc 0 K, 1 / (g : ℝ) := by
++          _ = 9 * (K : ℝ) ^ ⅔ * (1 / (g : ℝ)) := by rw [hK13]; ring
++    _ = 9 * (K : ℝ) ^ ⅔ * ∑ g ∈ Finset.Ioc 0 K, 1 / (g : ℝ) := by
+         rw [Finset.mul_sum]
+-    _ ≤ 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log K) := by
++    _ ≤ 9 * (K : ℝ) ^ ⅔ * (1 + Real.log K) := by
+         gcongr
+         exact sum_Ioc_inv_le 0 K
+ 
+@@ -650,10 +588,6 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+   obtain ⟨c₁, hc₁1, hc₁t⟩ : ∃ c₁ : ℝ, 1 ≤ c₁ ∧ tmax ≤ c₁ :=
+     ⟨max 1 tmax, le_max_left _ _, le_max_right _ _⟩
+   obtain ⟨M, hM⟩ : ∃ M : ℝ, M = 1 + 24 / ε' := ⟨_, rfl⟩
+-  have hM1 : 1 ≤ M := by
+-    rw [hM]
+-    have : 0 < 24 / ε' := by positivity
+-    linarith
+   refine ⟨C₀ * (63 * c₁ ^ 3 * M ^ 4), ε' / 6, by positivity, 2, ?_⟩
+   intro q hq ψ hψ t t' β τ ht htt' ht'max hβ0 hβ1 hτ
+   have hqpos : 0 < q := by omega
+@@ -663,16 +597,16 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+   have hℓ0 : 0 ≤ Real.log q := Real.log_nonneg hq1
+   have ht0 : 0 < t := by linarith
+   -- Burgess's bound for intervals of any length
+-  have hKq0 : 0 ≤ C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) := by positivity
++  have hKq0 : 0 ≤ C₀ * (q : ℝ) ^ (⅑ + ε' / 3) := by positivity
+   have hBurq : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), ψ n‖ ≤
+-      C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      C₀ * (q : ℝ) ^ (⅑ + ε' / 3) * (H : ℝ) ^ ⅔ := by
+     apply burgess_any_length hqpos ψ hψ hKq0
+     intro N H hH1 hHq
+-    calc _ ≤ CB * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) :=
++    calc _ ≤ CB * (q : ℝ) ^ (⅑ + ε' / 3) * (H : ℝ) ^ ⅔ :=
+           hCB q ψ hψ N H hH1 hHq
+-      _ ≤ C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
++      _ ≤ C₀ * (q : ℝ) ^ (⅑ + ε' / 3) * (H : ℝ) ^ ⅔ := by
+           gcongr
+-  generalize hKq : C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) = Kq at hKq0 hBurq
++  generalize hKq : C₀ * (q : ℝ) ^ (⅑ + ε' / 3) = Kq at hKq0 hBurq
+   -- the exponent `s = 1 + β + iτ`
+   have hs : 1 ≤ (((1 + β : ℝ) : ℂ) + (τ : ℂ) * I).re := by
+     simp
+@@ -692,8 +626,8 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+   generalize hδ : (t - 1 / 3) / 2 - ε' = δ at hδ0 ⊢
+   have hV1 : 1 ≤ (q : ℝ) ^ δ := Real.one_le_rpow hq1 hδ0.le
+   have hlogV : Real.log ((q : ℝ) ^ δ) = δ * Real.log q := Real.log_rpow hq0 δ
+-  have hexp : (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * ((q : ℝ) ^ t) ^ (-((1 : ℝ) / 3)) *
+-      ((q : ℝ) ^ δ) ^ ((2 : ℝ) / 3) = (q : ℝ) ^ (-(ε' / 3)) := by
++  have hexp : (q : ℝ) ^ (⅑ + ε' / 3) * ((q : ℝ) ^ t) ^ (-⅓) *
++      ((q : ℝ) ^ δ) ^ ⅔ = (q : ℝ) ^ (-(ε' / 3)) := by
+     rw [← Real.rpow_mul hq0.le, ← Real.rpow_mul hq0.le, ← Real.rpow_add hq0,
+       ← Real.rpow_add hq0]
+     congr 1
+@@ -735,7 +669,7 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+   have hT : ∀ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∀ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+       ‖((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
+           ∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖ ≤
+-        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
++        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) *
+           (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1))) := by
+     intro d hd e he
+     rw [Finset.mem_Ioc] at hd he
+@@ -743,8 +677,8 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_mul]
+     calc |grahamWeight V d| * |grahamWeight V e| *
+           ‖∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖
+-        ≤ 1 * 1 * (Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) *
+-            ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
++        ≤ 1 * 1 * (Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) *
++            ((a : ℝ) + 1) ^ (-⅓) *
+             (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1)))) :=
+           mul_le_mul (mul_le_mul (abs_grahamWeight_le_one V d) (abs_grahamWeight_le_one V e)
+             (abs_nonneg _) zero_le_one) (norm_T_le ψ hKq0 hBurq s hs hl a b) (norm_nonneg _)
+@@ -776,9 +710,9 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+     have hδt : δ ≤ c₁ := by rw [← hδ]; linarith
+     have h3 : δ * Real.log q ≤ c₁ * Real.log q := mul_le_mul_of_nonneg_right hδt hℓ0
+     linarith
+-  have hK23 : (⌊V⌋₊ : ℝ) ^ ((2 : ℝ) / 3) ≤ V ^ ((2 : ℝ) / 3) :=
++  have hK23 : (⌊V⌋₊ : ℝ) ^ ⅔ ≤ V ^ ⅔ :=
+     Real.rpow_le_rpow (Nat.cast_nonneg _) (Nat.floor_le (by linarith)) (by norm_num)
+-  have hA13 : ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) ≤ A ^ (-((1 : ℝ) / 3)) := by
++  have hA13 : ((a : ℝ) + 1) ^ (-⅓) ≤ A ^ (-⅓) := by
+     rw [ha1]
+     exact Real.rpow_le_rpow_of_nonpos hA0 (Nat.le_ceil A) (by norm_num)
+   have hPq : (1 + Real.log q) ^ 4 ≤ M ^ 4 * (q : ℝ) ^ (ε' / 6) := by
+@@ -804,8 +738,7 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+     add_nonneg hL0 (mul_nonneg (by nlinarith [norm_nonneg s]) (by linarith))
+   have hΛ : L + (1 + ‖s‖ * L) * (1 + L) ≤ 7 * c₁ ^ 2 * P ^ 3 :=
+     Lambda_bound hL0 hLle (norm_nonneg s) hsn hc₁1 hP1
+-  have hAr0 : 0 ≤ A ^ (-((1 : ℝ) / 3)) := Real.rpow_nonneg hA0.le _
+-  have hVr0 : 0 ≤ V ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
++  have hAr0 : 0 ≤ A ^ (-⅓) := Real.rpow_nonneg hA0.le _
+   have hc0 : 0 ≤ c₁ := by linarith
+   have hP0 : 0 ≤ P := by linarith
+   calc ‖∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+@@ -816,12 +749,12 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+           ∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖ :=
+         (norm_sum_le _ _).trans (Finset.sum_le_sum fun d _ => norm_sum_le _ _)
+     _ ≤ ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+-        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
++        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) * ((a : ℝ) + 1) ^ (-⅓) *
+           (L + (1 + ‖s‖ * L) * (1 + L)) :=
+         Finset.sum_le_sum fun d hd => Finset.sum_le_sum fun e he => hT d hd e he
+-    _ = Kq * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * (L + (1 + ‖s‖ * L) * (1 + L)) *
++    _ = Kq * ((a : ℝ) + 1) ^ (-⅓) * (L + (1 + ‖s‖ * L) * (1 + L)) *
+         ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+-          ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) := by
++          ((Nat.lcm d e : ℕ) : ℝ) ^ (-⅔) := by
+         rw [Finset.mul_sum]
+         apply Finset.sum_congr rfl
+         intro d _
+@@ -829,12 +762,12 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+         apply Finset.sum_congr rfl
+         intro e _
+         ring
+-    _ ≤ Kq * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * (L + (1 + ‖s‖ * L) * (1 + L)) *
+-        (9 * (⌊V⌋₊ : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log ⌊V⌋₊)) :=
++    _ ≤ Kq * ((a : ℝ) + 1) ^ (-⅓) * (L + (1 + ‖s‖ * L) * (1 + L)) *
++        (9 * (⌊V⌋₊ : ℝ) ^ ⅔ * (1 + Real.log ⌊V⌋₊)) :=
+         mul_le_mul_of_nonneg_left (lcm_sum_le _)
+           (mul_nonneg (mul_nonneg hKq0 (Real.rpow_nonneg (by positivity) _)) hΛ0)
+-    _ ≤ Kq * A ^ (-((1 : ℝ) / 3)) * (7 * c₁ ^ 2 * P ^ 3) *
+-        (9 * V ^ ((2 : ℝ) / 3) * (c₁ * P)) := by
++    _ ≤ Kq * A ^ (-⅓) * (7 * c₁ ^ 2 * P ^ 3) *
++        (9 * V ^ ⅔ * (c₁ * P)) := by
+         apply mul_le_mul
+         · exact mul_le_mul (mul_le_mul_of_nonneg_left hA13 hKq0) hΛ hΛ0
+             (mul_nonneg hKq0 hAr0)
+@@ -843,8 +776,8 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
+         · exact mul_nonneg (mul_nonneg (by norm_num) (Real.rpow_nonneg (by positivity) _))
+             (by linarith)
+         · exact mul_nonneg (mul_nonneg hKq0 hAr0) (by positivity)
+-    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * ((q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) *
+-        A ^ (-((1 : ℝ) / 3)) * V ^ ((2 : ℝ) / 3))) := by
++    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * ((q : ℝ) ^ (⅑ + ε' / 3) *
++        A ^ (-⅓) * V ^ ⅔)) := by
+         rw [← hKq]
+         ring
+     _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * (q : ℝ) ^ (-(ε' / 3))) := by rw [hexp]
+diff --git a/GradedNear/SievePart.lean b/GradedNear/SievePart.lean
+index 0a49b8c8a..9cb810182 100644
+--- a/GradedNear/SievePart.lean
++++ b/GradedNear/SievePart.lean
+@@ -57,10 +57,7 @@ lemma rpow_le_natCast_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ)
+ 
+ lemma natCast_lt_rpow_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ) :
+     (n : ℝ) < (q : ℝ) ^ t ↔ tn q n < t := by
+-  have := rpow_le_natCast_iff_tn hq hn t
+-  constructor
+-  · intro h; by_contra h'; linarith [this.2 (not_lt.1 h')]
+-  · intro h; by_contra h'; linarith [this.1 (not_lt.1 h')]
++  simpa only [not_le] using not_congr (rpow_le_natCast_iff_tn hq hn t)
+ 
+ /-- The integers of a cell lie in `[⌈q^t⌉, ⌈q^{t'}⌉)`. -/
+ lemma cell_filter_subset {q : ℕ} (hq : 2 ≤ q) (N : ℕ) (t t' : ℝ) :
+@@ -128,7 +125,7 @@ lemma cell_k_bound {V₀ CB CC κ : ℝ}
+     unfold NearData.level; linarith [hD.ε'_pos]
+   have hVA : V ≤ A := Real.rpow_le_rpow_of_exponent_le hq1 hlev_lt.le
+   have hAB : A ≤ B := Real.rpow_le_rpow_of_exponent_le hq1 htk_lt.le
+-  have hA1 : 1 ≤ A := Real.one_le_rpow hq1 (by linarith [hlev_lt])
++  have hA1 : 1 ≤ A := Real.one_le_rpow hq1 (by linarith)
+   have hlogV : Real.log V = D.level k * Real.log q := Real.log_rpow hq0 _
+   have hlogA : Real.log A = D.t k * Real.log q := Real.log_rpow hq0 _
+   have hlogB : Real.log B = D.t (k + 1) * Real.log q := Real.log_rpow hq0 _
+@@ -252,7 +249,7 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
+     congr 1
+     refine Finset.sum_congr rfl fun k _ => ?_
+     ring
+-  linarith [herr_le, hlast]
++  linarith
+ 
+ lemma t_mono_le (D : NearData) (hD : D.Valid) {k l : ℕ} (hkl : k ≤ l) (hl : l ≤ D.m) :
+     D.t k ≤ D.t l := by
+@@ -297,19 +294,14 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
+     (tendsto_log_nat_atTop.eventually_ge_atTop (2 * ∑ δ ∈ D.Δ, δ))
+   refine ⟨max (max (max qC qE) (max qV qβ)) 2,
+     fun q hq T hT hTq ι _ E hγ hΔ hinj a ha N => ?_⟩
+-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
+-  have hqC : qC ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_left _ _)
+-    (le_max_left _ _))) hq
+-  have hqE' : qE ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_left _ _)
+-    (le_max_left _ _))) hq
+-  have hqV' : qV ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _)
+-    (le_max_left _ _))) hq
+-  have hqβ' : qβ ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _)
+-    (le_max_left _ _))) hq
++  have hq2 : 2 ≤ q := by omega
++  have hqC : qC ≤ q := by omega
++  have hqE' : qE ≤ q := by omega
++  have hqV' : qV ≤ q := by omega
++  have hqβ' : qβ ≤ q := by omega
+   have hℓ := log_q_pos hq2
+   have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
+   have hδ : ∀ j, 0 ≤ E.δ j := fun j => hD.Δ_nonneg _ (hΔ j)
+-  have hA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
+   by_cases hH : ∃ k < D.m, D.h k ≠ 0
+   swap
+   · -- the sieve weight vanishes
+diff --git a/GradedNear/Statement.lean b/GradedNear/Statement.lean
+deleted file mode 100644
+index 718841373..000000000
+--- a/GradedNear/Statement.lean
++++ /dev/null
+@@ -1,45 +0,0 @@
+-module
+-
+-public import GradedNear.Main
+-public import GradedNear.BurgessReduction
+-
+-/-!
+-# The graded near lemma: statement
+-
+-Paper §8.2 (Theorem 8.4). For fixed data, every `η > 0` and
+-all large `q`: for every finite family of entries of height at most `T ≤ (log q)/3` under the
+-safe-anchor hypothesis at height `2T + 1`, and every `a ≥ 0`,
+-`(Σ a_j R_j)_+² ≤ (1 + η) I_B [Σ_j (D(δ_j) - d₁ + e_j) a_j² + (d₁ + η)(Σ_j a_j)²]`.
+-Entries of the same character are allowed only when the sieve weight vanishes.
+--/
+-
+-@[expose] public section
+-
+-namespace GradedNear
+-
+-open NearData
+-
+-/-- **The graded near lemma** (paper Theorem 8.4, slightly generalized). Assumes the four printed
+-inputs (`XylourisLemma31`, `XylourisLemma32`, `BurgessPrimitive`, `GrahamEstimate`), data `D` with
+-`D.Valid`, and, for the modulus `q`, the zero-free case hypothesis `SafeAnchor q D.s₁ (2T + 1)`
+-(not a printed result; it is provable when `s₁ ≤ 0`, and in the application it is the case
+-hypothesis `s₁ ≤ λ₁` together with [X, Lemma 3.3]). Then for `q ≥ q₀`, all non-principal entries
+-of height `≤ T ≤ (log q)/3` with offsets in `D.Δ` (distinct characters when the sieve weight is
+-nonzero) and all `a ≥ 0`:
+-`(Σ a_j R_j)_+² ≤ (1+η) I_B [Σ_j (D(δ_j) - d₁ + e_j) a_j² + (d₁+η)(Σ_j a_j)²]`. -/
+-theorem graded_near_lemma
+-    (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessPrimitive)
+-    (hGr : GrahamEstimate) (D : NearData) (hD : D.Valid) {η : ℝ} (hη : 0 < η) :
+-    ∃ q₀ : ℕ, ∀ q : ℕ, [NeZero q] → q₀ ≤ q → ∀ T : ℝ, 0 ≤ T → T ≤ Real.log q / 3 →
+-      SafeAnchor q D.s₁ (2 * T + 1) →
+-      ∀ (ι : Type) [Fintype ι] (E : Entries q ι),
+-        (∀ j, E.χ j ≠ 1) → (∀ j, |E.γ j| ≤ T) → (∀ j, E.δ j ∈ D.Δ) →
+-        ((∃ k < D.m, D.h k ≠ 0) → Function.Injective E.χ) →
+-        ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
+-          (max 0 (∑ j, a j * response D E j)) ^ 2 ≤
+-            (1 + η) * D.IB *
+-              (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
+-                (D.d₁ + η) * (∑ j, a j) ^ 2) :=
+-  graded_near_lemma' hX31 hX32 (burgessBound_of_primitive hBur) hGr D hD hη
+-
+-end GradedNear
+diff --git a/GradedNear/Threshold.lean b/GradedNear/Threshold.lean
+index dee5ea64a..93d023170 100644
+--- a/GradedNear/Threshold.lean
++++ b/GradedNear/Threshold.lean
+@@ -53,11 +53,16 @@ def thresholdCost {ι : Type*} [Fintype ι]
+   t ^ 2 / d + ∑ i, (pos (v i - t)) ^ 2 / D i
+ 
+ /-- Existence of the common threshold, by a continuous scalar fixed-point equation. -/
+-theorem exists_common_threshold {ι : Type*} [Fintype ι]
++theorem _root_.GradedNear.threshold_of_quadratic {ι : Type*} [Fintype ι]
+     (v D : ι → ℝ) (d : ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d)
+-    (hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
+-      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a) :
+-    ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧ thresholdCost v D d t ≤ 1 := by
++    (hq : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
++      (max 0 (∑ i, a i * v i)) ^ 2 ≤ ∑ i, D i * a i ^ 2 + d * (∑ i, a i) ^ 2) :
++    ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧
++      ∑ i, (max 0 (v i - t)) ^ 2 / D i ≤ 1 - t ^ 2 / d := by
++  have hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
++      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a := by
++    intro a ha
++    simpa only [pos, resource, max_comm] using hq a ha
+   let b : ℝ := d * ∑ i, pos (v i) / D i
+   let f : ℝ → ℝ := fun t => d * (∑ i, pos (v i - t) / D i) - t
+   have hb : 0 ≤ b := by
+@@ -120,30 +125,12 @@ theorem exists_common_threshold {ι : Type*} [Fintype ι]
+       dsimp [thresholdCost] at hres₁
+       linarith
+     exact (div_le_one hd).1 hdiv
+-  refine ⟨t, ht.1, ?_, hcost ▸ hres₁⟩
+-  exact Real.le_sqrt_of_sq_le ht₂
+-
+-end
+-
+-end ThresholdAux
+-
+-theorem threshold_of_quadratic {ι : Type*} [Fintype ι] (v D : ι → ℝ) (d : ℝ)
+-    (hD : ∀ j, 0 < D j) (hd : 0 < d)
+-    (hq : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
+-      (max 0 (∑ j, a j * v j)) ^ 2 ≤ ∑ j, D j * a j ^ 2 + d * (∑ j, a j) ^ 2) :
+-    ∃ τ : ℝ, 0 ≤ τ ∧ τ ≤ Real.sqrt d ∧
+-      ∑ j, (max 0 (v j - τ)) ^ 2 / D j ≤ 1 - τ ^ 2 / d := by
+-  have hquad : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
+-      (ThresholdAux.pos (∑ j, a j * v j)) ^ 2 ≤ ThresholdAux.resource D d a := by
+-    intro a ha
+-    have h := hq a ha
+-    rw [ThresholdAux.pos, max_comm]
+-    exact h
+-  obtain ⟨τ, hτ0, hτd, hcost⟩ := ThresholdAux.exists_common_threshold v D d hD hd hquad
+-  refine ⟨τ, hτ0, hτd, ?_⟩
+-  have hmax : ∀ j, max 0 (v j - τ) = ThresholdAux.pos (v j - τ) := fun j => max_comm _ _
++  refine ⟨t, ht.1, Real.le_sqrt_of_sq_le ht₂, ?_⟩
++  have hmax : ∀ i, max 0 (v i - t) = pos (v i - t) := fun i => max_comm _ _
+   simp only [hmax]
+-  unfold ThresholdAux.thresholdCost at hcost
++  unfold thresholdCost at hcost
+   linarith
+ 
++end
++end ThresholdAux
+ end GradedNear
+diff --git a/GradedNear/ZeroForm.lean b/GradedNear/ZeroForm.lean
+index 72140a42a..1017df8ba 100644
+--- a/GradedNear/ZeroForm.lean
++++ b/GradedNear/ZeroForm.lean
+@@ -1,6 +1,6 @@
+ module
+ 
+-public import GradedNear.Statement
++public import GradedNear.Main
+ public import GradedNear.Response
+ public import GradedNear.Threshold
+ 
+@@ -67,9 +67,8 @@ theorem graded_near_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
+     response_lemma hX32 hD.f_cond hf2 (|D.s| + ∑ δ ∈ D.Δ, |δ|) K₀ hη
+   refine ⟨M, hM, δ, hδ0, hδ1, max q₁ q₂, ?_⟩
+   intro q _ hq T hT0 hTl hsafe ι _ E hχ hγ hΔ hinj Sz hSz hsep hK Dn hDn hDj
+-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
+-  have hq2 : q₂ ≤ q := le_trans (le_max_right _ _) hq
+-  have hℓ0 : 0 ≤ Real.log q := Real.log_natCast_nonneg q
++  have hq1 : q₁ ≤ q := by omega
++  have hq2 : q₂ ≤ q := by omega
+   -- the kept zeros bound each response from below
+   have hresp : ∀ j, keptBound D E Sz η j ≤ response D E j := by
+     intro j
+diff --git a/IntervalCore.lean b/IntervalCore.lean
+deleted file mode 100644
+index 9cfd8b115..000000000
+--- a/IntervalCore.lean
++++ /dev/null
+@@ -1,133 +0,0 @@
+-module
+-
+-/-!
+-# Interval arithmetic with rational endpoints, without Mathlib
+-
+-An interval `Ival` is a pair of rationals `[lo, hi]`. Every operation returns an interval that
+-contains the image of its inputs: exact rational results are rounded outward (`roundDown` for
+-lower ends, `roundUp` for upper ends) to the dyadic grid `2^-p`, which keeps numerators and
+-denominators bounded. The precision `p` is the last argument of each operation, with default
+-`defaultPrec = 128` (about 38 decimal digits of absolute precision).
+-
+-The library depends on Lean core only (`Int`, `Nat`, core `Rat`), so it can be compiled to native
+-code without compiling Mathlib. The soundness theorems (every operation contains the true values,
+-for real numbers and `Real.exp`) are in `GradedNear/Interval/Sound.lean`.
+-
+-Nothing here assumes `lo ≤ hi`: for an interval with `lo > hi` no real number is a member, and
+-the inclusion theorems hold vacuously.
+-
+-## The exponential
+-
+-`expLo p q ≤ exp q ≤ expHi p q` for a rational `q`, and `Ival.exp` applies these to the two ends
+-(`exp` is increasing; `expBoth` shares the work when `lo = hi`). For `q ≥ 0` write `q = n / d`;
+-with `k = expShift n d` we have `Y = q / 2^k < 2^-8`. The computation is in fixed point: a natural
+-number `a` stands for `a / 2^w`, with `w = p + k + 12`. With `y = ⌊2^w Y⌋`, one pass of the Taylor
+-series of `exp (y / 2^w)` with the terms rounded down (`taylor`) gives a lower bound `s` and an
+-error bound `e`: every rounded term is within `3` units of the exact term, and the pass stops at
+-the first term that rounds to `0`, whose tail is at most twice the term (`Real.exp_bound`: the tail
+-after `m ≥ 1` terms is at most `Y^m (m+1)/(m!·m) ≤ 2 Y^m/m!`). The upper bound `s + e` is
+-multiplied by `1 + 2^(1-w) ≥ exp (2^-w)` to cover the rounding of `y`. Then `k` squarings, rounded
+-down or up, give `exp q = exp(Y)^(2^k)`. For `q < 0` we use `exp q = 1 / exp(-q)`, and for
+-`q ≤ -p` the bounds `0 ≤ exp q ≤ 2^-p`.
+-
+-With the default precision the enclosures of `exp q` have width at most about `2^-128` for
+-`q ≤ 0` and relative width about `2^-128` for `q ≥ 0` (about 38 correct digits). Values below
+-`2^-p` are only known to lie in `[0, 2^-p]`, as the grid is absolute.
+--/
+-
+-@[expose] public section
+-
+-namespace IntervalCore
+-
+-/-- The default precision: results are rounded outward to the grid `2^-128`. -/
+-def defaultPrec : Nat := 128
+-
+-/-! ## Comparisons of rationals -/
+-
+-/-- `a ≤ b` as a `Bool`. -/
+-@[inline] def ratLe (a b : Rat) : Bool := decide (a ≤ b)
+-
+-/-- `a < b` as a `Bool`. -/
+-@[inline] def ratLt (a b : Rat) : Bool := decide (a < b)
+-
+-/-- The minimum of two rationals. -/
+-@[inline] def rmin (a b : Rat) : Rat := if a ≤ b then a else b
+-
+-/-- The maximum of two rationals. -/
+-@[inline] def rmax (a b : Rat) : Rat := if a ≤ b then b else a
+-
+-/-! ## Outward rounding to the grid `2^-p` -/
+-
+-/-- `⌊n·2^p/d⌋ / 2^p`, the largest multiple of `2^-p` that is `≤ n / d` (for `d > 0`). -/
+-@[inline] def divDown (p : Nat) (n : Int) (d : Nat) : Rat :=
+-  mkRat (n * ((2 ^ p : Nat) : Int) / (d : Int)) (2 ^ p)
+-
+-/-- `⌈n·2^p/d⌉ / 2^p`, the smallest multiple of `2^-p` that is `≥ n / d` (for `d > 0`). -/
+-@[inline] def divUp (p : Nat) (n : Int) (d : Nat) : Rat :=
+-  mkRat (-(-n * ((2 ^ p : Nat) : Int) / (d : Int))) (2 ^ p)
+-
+-/-- `q` rounded down to the grid `2^-p`. Rationals on the grid (denominator dividing `2^p`) are
+-returned unchanged. -/
+-def roundDown (p : Nat) (q : Rat) : Rat :=
+-  if 2 ^ p % q.den = 0 then q else divDown p q.num q.den
+-
+-/-- `q` rounded up to the grid `2^-p`. Rationals on the grid are returned unchanged. -/
+-def roundUp (p : Nat) (q : Rat) : Rat :=
+-  if 2 ^ p % q.den = 0 then q else divUp p q.num q.den
+-
+-/-! ## Intervals -/
+-
+-/-- The closed interval `[lo, hi]` of real numbers. -/
+-structure Ival where
+-  lo : Rat
+-  hi : Rat
+-  deriving Repr, Inhabited, BEq, DecidableEq
+-
+-namespace Ival
+-
+-/-! ### Constructors and checks -/
+-
+-/-! ### Arithmetic -/
+-
+-/-- `-I` (exact). -/
+-def neg (I : Ival) : Ival := ⟨-I.hi, -I.lo⟩
+-
+-/-- `I + J`. -/
+-def add (I J : Ival) (p : Nat := defaultPrec) : Ival :=
+-  ⟨roundDown p (I.lo + J.lo), roundUp p (I.hi + J.hi)⟩
+-
+-/-- `I - J`. -/
+-def sub (I J : Ival) (p : Nat := defaultPrec) : Ival :=
+-  ⟨roundDown p (I.lo - J.hi), roundUp p (I.hi - J.lo)⟩
+-
+-/-- `I · J`: the minimum and maximum of the four products of ends, rounded outward (two products
+-when both intervals are nonnegative). -/
+-def mul (I J : Ival) (p : Nat := defaultPrec) : Ival :=
+-  if 0 ≤ I.lo ∧ 0 ≤ J.lo then
+-    ⟨roundDown p (I.lo * J.lo), roundUp p (I.hi * J.hi)⟩
+-  else
+-    let a := I.lo * J.lo
+-    let b := I.lo * J.hi
+-    let c := I.hi * J.lo
+-    let d := I.hi * J.hi
+-    ⟨roundDown p (rmin (rmin a b) (rmin c d)), roundUp p (rmax (rmax a b) (rmax c d))⟩
+-
+-end Ival
+-
+-/-! ## Fixed-point helpers: a natural number `a` stands for `a / 2^w` -/
+-
+-/-- `⌊a / 2^w⌋ + 1`, an upper bound for `a / 2^w`. -/
+-@[inline] def shrUp (a w : Nat) : Nat := (a >>> w) + 1
+-
+-namespace Ival
+-
+-/-! ### Notation at the default precision -/
+-
+-instance : Neg Ival := ⟨neg⟩
+-instance : Add Ival := ⟨fun I J => add I J⟩
+-instance : Sub Ival := ⟨fun I J => sub I J⟩
+-instance : Mul Ival := ⟨fun I J => mul I J⟩
+-
+-end Ival
+-
+-end IntervalCore
+diff --git a/LeafNumCore.lean b/LeafNumCore.lean
+deleted file mode 100644
+index 53a3c3514..000000000
+--- a/LeafNumCore.lean
++++ /dev/null
+@@ -1,80 +0,0 @@
+-module
+-
+-public import IntervalCore
+-
+-/-!
+-# Interval enclosures of the leaf functions, without Mathlib
+-
+-Interval enclosures (in `IntervalCore.Ival`, at precision `prec`, default `128`) of the real
+-functions of `GradedNear/Functions.lean` whose values a certificate leaf stores (specification:
+-§1 of `research/notes/leaf-data-semantics-2026-09-29.md` in the research repository). The inputs are rationals. The soundness
+-theorems (every enclosure contains the true value) are in `GradedNear/LeafNumSound.lean`.
+-
+-* The kernel constants `T`, `beta`, `kappa` and `H0` as rationals (the same rationals as
+-  `GradedNear.Kernel.T`, `beta`, `kappa`, and `H₀ = (κ Σ β_i)²`).
+-* `benv φ λ`: the envelope `B_φ(λ)` by its closed form
+-  `H₀ B_φ(λ) = Σ_i E^i (β_i² (Q₀ + (φ/2) U) + κ U β_i Σ_{j>i} β_j)`, `E = e^{−2κλ}`,
+-  `U = (1 − E)/λ`, `Q₀ = κ/λ − U/(2λ)` (for `λ ≠ 0`); the two polynomials in `E` are evaluated by
+-  Horner's rule.
+-* `gphi L φ λ = e^{−(L−2T)λ} B_φ(λ)`; `hratio λ = h(λ)`; `cpa p a = C(p, a)` from the exact
+-  step-cell sums (`a ≠ 0`); `jold`, `jnew`: the first-family bounds `J_old`, `J_new`.
+-* The far weight of a profile `(c₁, c₂, θ)`: with `a = 2λ − θ`, `ε = 10⁻⁷`,
+-  `w(λ)⁻¹ = 2 e^{a(u−ε)} ∫_{√ε}^{√(c₂+ε)} r² e^{a r²} dr + √(c₂+ε) ∫_v^x e^{at} dt`
+-  (`winv`), and `w = 1/winv` (`w`).
+-* `vUpper`: an upper bound for the constant `V` of the far bound, through
+-  `J_i = K(ih) − K((i+1)h)` with `K(d) = ∫_u^x w₀(t)⁻² (t − u − d)₊ dt`.
+-
+-**The integrals `∫ (r² − D) e^{c r²} dr`** (`rInt`) over `[√y_a, √y_b]` are computed from the
+-Taylor polynomial `P_N` of `exp` with `N = seriesTerms + 4⌈|c| y_b⌉` terms: the polynomial part
+-integrates exactly to `√y_b Φ(y_b) − √y_a Φ(y_a)` with
+-`Φ(y) = Σ_{k<N} (cy)^k/k! (y/(2k+3) − D/(2k+1))` (`serPhi`), and
+-`|e^x − P_N(x)| ≤ 2|x|^N/N!` for `2|x| ≤ N + 1` bounds the rest. The square roots of rationals are
+-enclosed by rationals checked by squaring (`sqrtI`).
+-
+-**Fixed point.** The two inner loops, Horner's rule (`horner`) and the series `Φ` (`serStep`),
+-run on `Fx`: intervals with integer ends at a fixed scale `2^w`, where additions are exact and
+-products round outward by one floor or ceiling division (about 4× faster than `Ival`, whose every
+-operation normalizes a `Rat`). The exponentials are `IntervalCore.Ival.exp`.
+-
+-**Precision and cost.** With the default precision `128` the enclosures have widths of about
+-`10⁻³⁶` (relative) for `λ ∈ [0, 3]`. Natively compiled, one `gphi` takes about 0.25 ms and one
+-`w`/`winv` about 0.6 ms (on a loaded machine); `cpa` and `jnew` a few ms, `vUpper` about 20 ms.
+--/
+-
+-@[expose] public section
+-
+-namespace LeafNumCore
+-
+-open IntervalCore
+-
+-/-! ## The kernel constants -/
+-
+-/-! ## Interval helpers -/
+-
+-/-! ### Fixed-point intervals
+-
+-The two inner loops (Horner's rule and the Taylor series of `rInt`) run on intervals with integer
+-ends at a fixed scale `2^w`: additions are exact and the other operations round outward by a
+-floor or ceiling division, without the `gcd` normalizations of `Rat`. -/
+-
+-/-- `⌊n / d⌋` for `d > 0`. -/
+-@[inline] def fdivI (n : Int) (d : Nat) : Int := n / (d : Int)
+-
+-/-- `⌈n / d⌉` for `d > 0`. -/
+-@[inline] def cdivI (n : Int) (d : Nat) : Int := -((-n) / (d : Int))
+-
+-namespace Fx
+-
+-end Fx
+-
+-/-! ## The envelope, `G_φ`, `h`, `C(p, a)` and the first-family bounds -/
+-
+-/-! ## The integrals `∫ (r² − D) e^{c r²} dr` -/
+-
+-/-! ## The far weight -/
+-
+-/-! ## The constant `V` -/
+-
+-/-! ## The two far profiles of the corpus -/
+-
+-end LeafNumCore
+diff --git a/RowCheckCore.lean b/RowCheckCore.lean
+deleted file mode 100644
+index 9d50f9a1f..000000000
+--- a/RowCheckCore.lean
++++ /dev/null
+@@ -1,117 +0,0 @@
+-module
+-
+-public import LeafNumCore
+-public import CertCore
+-
+-/-!
+-# The near-row checker, without Mathlib
+-
+-`rowCheck` decides, in exact rational and interval arithmetic, that the stored integers of one
+-near row of a leaf (its radius `d`, and the feature `v` and diagonal `D` of each entry with a
+-positive feature) are valid for a concrete instance of the graded near lemma
+-(`GradedNear/Row.lean`). The row's parameters `RowP` are those of
+-`computations/sieve_near/sieve_inputs.py` in the research repository (`SieveNearTest`): the parabolic detector of width `2γ`,
+-the parabolic Gram test of width `2g₁`, the anchors `s ≥ s₁ ≥ 0`, and the sieve heights `h_k` on
+-`m` cells of `[t₀, 2γ)`. Each entry `Ent` names the entry's semantics: its feature is taken at
+-`hi` from the response anchor `anc`, its diagonal at the offset `del ≤ s - anc`, and `sp` names a
+-second kept zero, if any (`Spec`).
+-
+-The checker computes, as the builders do:
+-* an upper bound `I_L ≥ I_B` (`ibUpper`), the upper Riemann sum with `nShort = 2000` cells on
+-  `[0, t₀)` and the `m` sieve cells, whose exponentials run along geometric sequences;
+-* enclosures of `D(δ) = 2g₁ Φ(2g₁(2δ - s₁)) + e^{-2δt₀} Σ_k c_k ρ^k`, `ρ = e^{-2δ(2γ - t₀)/m}`
+-  (`dI`, Horner's rule), for the listed offsets;
+-* enclosures of `F(x) = 2γ Φ(2γ x)` (`fI`) for the listed feature points;
+-* for each entry, the values `(add, exc)` of its semantics (`specVals`): a lower bound for its
+-  second kept zero's term and an upper bound for its pair excess, from enclosures of
+-  `Re F(x + iy)` at complex points (`reFI`, with `cos` and `sin` from `cosSinI`) and of the
+-  exponential moment `E₂` (`e2I`);
+-
+-and then chooses the normalizer `D_u` as the least value that the radius and every diagonal
+-allow (`duOf`), and checks every feature against it:
+-`(v + Sη)² I_L D_u ≤ S² (F(x) + add - 1/6)²` with `F(x) + add > 1/6`.
+-
+-`Φ(u) = ∫₀¹ P(s) e^{-us} ds` is enclosed by its closed form for `|u| ≥ 1` and by its Taylor
+-polynomial of degree `< 40` with the remainder bound for `|u| < 1` (`phiI`, and `rePhiCI` at
+-complex points). The soundness theorems are `GradedNear.Row.rowCheck_sound`
+-(`GradedNear/Row/RowSound.lean`) and `GradedNear.Row.specVals_sound`
+-(`GradedNear/Row/SpecSound.lean`).
+-
+-`checkRows` applies the check to every near row of a leaf (`CertCore.Leaf`) that has metadata
+-(`RowMeta`; the inherited two-test row has none): the entries are the columns with a positive
+-feature in the row, each of which must have a semantics, and the family terms with a positive
+-feature and a semantics. Every family term's diagonal must be positive.
+--/
+-
+-@[expose] public section
+-
+-namespace RowCheckCore
+-
+-open IntervalCore LeafNumCore
+-
+-/-! ## The parabolic tests and `Φ` -/
+-
+-/-! ## The row parameters -/
+-
+-/-- The rational parameters of a near row (as `GradedNear.Row.Params`). -/
+-structure RowP where
+-  γ : Rat
+-  g1 : Rat
+-  t0 : Rat
+-  s : Rat
+-  s1 : Rat
+-  h : List Rat
+-  deriving Repr, Inhabited, BEq
+-
+-namespace RowP
+-
+-variable (p : RowP)
+-
+-/-- The number of sieve cells. -/
+-def m : Nat := p.h.length
+-
+-/-- The cell ends `t_k = t₀ + (2γ - t₀) k / m`. -/
+-def tk (k : Nat) : Rat := p.t0 + (2 * p.γ - p.t0) * k / p.m
+-
+-/-- The sieve height of cell `k`. -/
+-def hk (k : Nat) : Rat := p.h.getD k 0
+-
+-end RowP
+-
+-/-! ## The Riemann sum of `I_B` -/
+-
+-/-! ## The diagonal `D(δ)` -/
+-
+-/-! ## Complex points -/
+-
+-namespace CQ
+-
+-end CQ
+-
+-/-! ## `cos` and `sin` -/
+-
+-/-! ## `Re ΦC` and `Re F` -/
+-
+-/-! ## The exponential moment `E₂` -/
+-
+-/-! ## The special entries (paper §9.4)
+-
+-Three family terms keep a second zero besides the one at the entry's height: the `rc` pair and the
+-first family's second zero (a second zero left of the test point, at height difference `y`), and
+-the shifted `rc` entry (the conjugate zero, somewhere in `Re z ≥ a - s`). An entry's `Spec` names
+-the case, and `specVals` computes its values `(add, exc)`: a lower bound `add` for the second
+-zero's term and an upper bound `exc` for the entry's pair excess `(Re G(-s₁ + iy) - 1/6)₊`.
+-* `two`: `Re F(x + iy)` at the midpoint `x₀` of `[xa, xb]` and `Re G(-s₁ + iy)` on a uniform grid of
+-  `n` cells of `[ylo, min(yhi, ytop)]`, with the second-derivative slacks `c³m₂h²/8` and
+-  `c₁³E₂(c₁s₁)h²/8` and the Lipschitz slack `c²m₁(xb - xa)/2`; beyond `ytop` the closed-form tail
+-  of `G` and `Re F ≥ 0`; `add = max(R, 0)` and `exc = max(C - 1/6, 0)`;
+-* `cz`: `C ≥ -Re F` on the line `Re z = -d` from the cells between consecutive points of `ys`
+-  (starting at `0`), the second-derivative slack `c³E₂(cd)(b - a)²/8`, and the closed-form tail
+-  beyond the last point; `add = -C`, `exc = 0` (the half-plane follows by the minimum principle).
+--/
+-
+-/-! ## The row check -/
+-
+-/-! ## The rows of a leaf -/
+-
+-end RowCheckCore
+diff --git a/Solution.lean b/Solution.lean
+index eb5d2ccaf..9fce96e97 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -1,19 +1,9 @@
+ module
+ import GradedNear.Builder
+ import GradedNear.BurgessReduction
+-import GradedNear.Cert.Bins
+ import GradedNear.Cert.Sound
+ import GradedNear.Conj
+-import GradedNear.Entry
+-import GradedNear.Interval.Sound
+-import GradedNear.Parabolic
+-import GradedNear.Response
+-import GradedNear.Row
+-import GradedNear.Row.CheckSound
+-import GradedNear.Statement
+-import GradedNear.ZeroForm
+-import IntervalCore
+-import LeafNumCore
++import GradedNear.Main
+ 
+ 
+ /-!
+diff --git a/lakefile.toml b/lakefile.toml
+index 27120b9e1..56bdc6cf1 100644
+--- a/lakefile.toml
++++ b/lakefile.toml
+@@ -26,42 +26,3 @@ name = "Samples"
+ roots = ["GradedNear.Cert.Samples.O1193_0", "GradedNear.Cert.Samples.O1202_0", "GradedNear.Cert.Samples.O2455_0", "GradedNear.Cert.Samples.I2766_0", "GradedNear.Cert.Samples.I1155_0", "GradedNear.Cert.Samples.I1155_1", "GradedNear.Cert.Samples.Large"]
+ globs = []
+ 
+-# The checker without Mathlib, and its native runner: `lake build certrun` (no Mathlib compiled).
+-# `GradedNear.Cert.FastEq` proves that `CertCore.checkLeaf` computes `GradedNear.Cert.checkLeaf`.
+-[[lean_lib]]
+-name = "CertCore"
+-roots = ["CertCore"]
+-
+-[[lean_lib]]
+-name = "IntervalCore"
+-roots = ["IntervalCore"]
+-
+-# Interval enclosures of the leaf functions without Mathlib: `lake build LeafNumCore`.
+-# Soundness (`B_φ`, `G_φ`, `h`, `C`, `J_old`, `J_new`, `w⁻¹`, `w`, `V`): `GradedNear.LeafNumSound`.
+-[[lean_lib]]
+-name = "LeafNumCore"
+-roots = ["LeafNumCore"]
+-
+-# Leaf metadata for the numeric checker (Mathlib-free).
+-[[lean_lib]]
+-name = "LeafMetaCore"
+-roots = ["LeafMetaCore"]
+-globs = []
+-
+-# The numeric checker of a leaf's data against its metadata, without Mathlib:
+-# `lake build LeafCheckCore`. Soundness (`checkNum_sound : checkNum m L = true →
+-# MetaValid m (Leaf.ofCore L)`): `GradedNear.Cert.NumericsSound`.
+-[[lean_lib]]
+-name = "LeafCheckCore"
+-roots = ["LeafCheckCore"]
+-globs = []
+-
+-# The near-row checker without Mathlib, with the enclosures at complex points for the special
+-# family terms: `lake build RowCheckCore`. Soundness: `GradedNear.Row.rowCheck_sound`
+-# (`GradedNear/Row/RowSound.lean`) and `GradedNear.Row.specVals_sound` (`GradedNear/Row/SpecSound.lean`).
+-[[lean_lib]]
+-name = "RowCheckCore"
+-roots = ["RowCheckCore"]
+-
+-# The native runner of the near-row checker (`lake build rowcheck`, no Mathlib compiled): JSON
+-# lines `{"name", "leaf", "rows"}` from `graded_lean_export.py --rows`.

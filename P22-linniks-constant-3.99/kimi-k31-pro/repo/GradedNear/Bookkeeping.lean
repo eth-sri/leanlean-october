@@ -34,9 +34,9 @@ lemma gram_bookkeeping (same : ι → ι → Prop) [DecidableRel same]
     intro j k
     simp only [hP]
     by_cases h : k ≠ j ∧ same k j
-    · have h' : j ≠ k ∧ same j k := ⟨fun e => h.1 e.symm, hsymm _ _ h.2⟩
-      rw [ite_eq_left_iff.2 (fun hn => absurd h hn), ite_eq_left_iff.2 (fun hn => absurd h' hn), hR]
-    · have h' : ¬ (j ≠ k ∧ same j k) := fun h' => h ⟨fun e => h'.1 e.symm, hsymm _ _ h'.2⟩
+    · simp_all [eq_comm]
+    · have h' : ¬ (j ≠ k ∧ same j k) := fun h' =>
+        h ⟨fun e => h'.1 e.symm, hsymm _ _ h'.2⟩
       rw [ite_eq_right_iff.2 (fun hh => absurd hh h), ite_eq_right_iff.2 (fun hh => absurd hh h')]
   -- termwise bound
   have hterm : ∀ j k, a j * a k * M j k ≤
@@ -116,7 +116,7 @@ lemma gram_bookkeeping (same : ι → ι → Prop) [DecidableRel same]
         rw [← sum_add_distrib, ← sum_add_distrib]
     _ ≤ (d + ε) * (∑ j, a j) ^ 2 + ∑ j, (R j j - d) * a j ^ 2 +
           ∑ j, (∑ k, P j k) * a j ^ 2 := by
-        rw [hconst, hdiag]; linarith [hpair]
+        rw [hconst, hdiag]; linarith
     _ = _ := by
         simp_rw [hPsum]
         simp only [add_mul, sum_add_distrib]

@@ -2,6 +2,7 @@ module
 
 public import GradedNear.FirstPart
 public import GradedNear.SievePart
+public import GradedNear.BurgessReduction
 
 /-!
 # Proof of the graded near lemma
@@ -38,14 +39,12 @@ lemma re_sum_sq_le {β : Type*} (S : Finset β) (c : β → ℝ) (Y : β → ℂ
     refine (Complex.abs_re_le_norm _).trans ((norm_sum_le _ _).trans (le_of_eq ?_))
     refine Finset.sum_congr rfl fun n _ => ?_
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  have h2 : 0 ≤ ∑ n ∈ S, |c n| * ‖Y n‖ :=
-    Finset.sum_nonneg fun n _ => mul_nonneg (abs_nonneg _) (norm_nonneg _)
   calc ((∑ n ∈ S, (c n : ℂ) * Y n).re) ^ 2 = |(∑ n ∈ S, (c n : ℂ) * Y n).re| ^ 2 :=
         (sq_abs _).symm
     _ ≤ _ := pow_le_pow_left₀ (abs_nonneg _) h1 2
 
-theorem graded_near_lemma'
-    (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessBound)
+theorem graded_near_lemma
+    (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessPrimitive)
     (hGr : GrahamEstimate) (D : NearData) (hD : D.Valid) {η : ℝ} (hη : 0 < η) :
     ∃ q₀ : ℕ, ∀ q : ℕ, [NeZero q] → q₀ ≤ q → ∀ T : ℝ, 0 ≤ T → T ≤ Real.log q / 3 →
       SafeAnchor q D.s₁ (2 * T + 1) →
@@ -60,13 +59,14 @@ theorem graded_near_lemma'
   have hIB := hD.IB_pos
   obtain ⟨qF, hqF⟩ := first_factor_bound D hD (ε := η * D.IB) (mul_pos hη hIB)
   obtain ⟨qG, hqG⟩ := gram_form_bound hX31 hX32 D hD (ε := η / 2) (half_pos hη)
-  obtain ⟨qS, hqS⟩ := sieve_part_bound hGr hBur D hD (ε := η / 2) (half_pos hη)
+  obtain ⟨qS, hqS⟩ := sieve_part_bound hGr (burgessBound_of_primitive hBur) D hD
+    (half_pos hη)
   obtain ⟨c, hc, hωc⟩ := hD.omega_lb
   refine ⟨max (max qF qG) (max qS 2), fun q _ hq T hT hTq hsafe ι _ E _ hγ hΔ hinj a ha => ?_⟩
-  have hqF' : qF ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
-  have hqG' : qG ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
-  have hqS' : qS ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hq
-  have hq2 : 2 ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hq
+  have hqF' : qF ≤ q := by omega
+  have hqG' : qG ≤ q := by omega
+  have hqS' : qS ≤ q := by omega
+  have hq2 : 2 ≤ q := by omega
   have hℓ := log_q_pos hq2
   set Sf := Finset.Icc 1 ⌊(q : ℝ) ^ D.xf⌋₊ with hSf
   set N := max ⌊(q : ℝ) ^ D.xf⌋₊ ⌊(q : ℝ) ^ D.xg⌋₊ with hN
@@ -142,8 +142,6 @@ theorem graded_near_lemma'
     linarith
   have hsecond0 : 0 ≤ (∑ n ∈ Sf, w n * ‖Yn E a n‖ ^ 2) / Real.log q :=
     div_nonneg (Finset.sum_nonneg fun n _ => mul_nonneg (hw0 n) (sq_nonneg _)) hℓ.le
-  have hfirst0 : 0 ≤ (∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q :=
-    div_nonneg (Finset.sum_nonneg fun n _ => div_nonneg (sq_nonneg _) (hw0 n)) hℓ.le
   -- combine
   have hsq : (∑ j, a j * response D E j) ^ 2 ≤
       ((∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q) *
