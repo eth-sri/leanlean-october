@@ -25,7 +25,7 @@ universe w
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
 /-- A constant tail above every context bounds the top grade of every context. -/
-theorem topGrade_le_of_isCoinitial {K : ℕ}
+theorem topGrade_le_of_isCoinitial {K}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
     (x : R.LabelledExt) : x.type.topGrade ≤ K := by
   obtain ⟨y, hxy, hy⟩ := hcoin x

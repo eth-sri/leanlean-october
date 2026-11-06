@@ -18,7 +18,6 @@ lower prescription, including distinct values above the owner and literal top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedActiveLift
 open Transform Value ExtOrd CoatomBoundaryExtension
 open CanonicalRecursiveSeedRows CanonicalSeedCutPrefix
@@ -29,47 +28,54 @@ variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 abbrev outputRows := rows sem hA hp
 
-def faceEquiv (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3) :
+def faceEquiv J (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3) :
     (cut (D := D)).below J ≃ (carrier sem hA).below J :=
   (GradeCutBoundary.belowEquiv D 3 J hj).trans
     (CanonicalRecursiveBoundaryTransport.properEquiv sem 0 hA J hJ)
 
-theorem faceEquiv_val (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3)
-    (d : (cut (D := D)).below J) :
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3)
+
+section
+variable (d : (cut (D := D)).below J)
+
+theorem faceEquiv_val  :
     (faceEquiv sem hA J hJ hj d).1 = (oldTarget sem hA d.1).1 :=
   CanonicalRecursiveBoundaryTransport.properEquiv_val sem 0 hA J hJ _
 
-theorem faceEquiv_cell (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3)
-    (d : (cut (D := D)).below J) :
+theorem faceEquiv_cell  :
     (carrier sem hA).cell (faceEquiv sem hA J hJ hj d).1 =
       (cut (D := D)).cell d.1 := by
   rw [faceEquiv_val, oldTarget_cell]
 
-theorem pullback_respects (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ 3)
-    {p : (carrier sem hA).below J → ExtOrd}
+end
+
+theorem pullback_respects {p}
     (hpr : RespectsSemanticsBelow (outputRows sem hA hp) J p) :
     RespectsSemanticsBelow (cutRows sem) J (p ∘ faceEquiv sem hA J hJ hj) :=
   GradeCutBoundary.pullback_respects D 3 sem hj
     (CanonicalRecursiveBoundaryTransport.pullback_respects sem hp 0 hA J hJ hpr)
 
+end
+
 /-- Active seed branch. Every auxiliary cap is retained. The only lifting
 inputs concern the actual predecessor and the two old boundary faces. -/
 theorem exists_lift
     (hb : CanonicalSeedRestoration.LowerBountiful sem hA hp)
-    {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 3 ≤ C.card)
+    {C} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 3 ≤ C.card)
     (hfull : ∃ c : (cut (D := D)).below (C, 3),
       (cut (D := D)).cell c.1 = (C, 3))
-    {p : (carrier sem hA).below (C, 3) → ExtOrd}
+    {p}
     (hpr : RespectsSemanticsBelow (outputRows sem hA hp) (C, 3) p)
     {q : CanonicalSeedAmbient.target sem hA → ExtOrd}
     (hqr : RespectsSemanticsBelow (outputRows sem hA hp) (A, 3) q)
-    {γ : ExtOrd} (hγ : SelfVis 3 γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis 3 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e, min (p e) γ = min (q (CellScheme.below.mono
       (show GradedLe (C, 3) (A, 3) from
         ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) e)) γ)
     (hactive : ∃ d : (carrier sem hA).below (C, 3),
       (carrier sem hA).grade d.1 = 3 ∧ γ < p d)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell (cut (D := D)),
       GradedLe ((cut (D := D)).cell d) U ∨ GradedLe ((cut (D := D)).cell d) V)
     (hCU : GradedLe (C, 3) U) (hOU : GradedLe O U) (hOV : GradedLe O V)

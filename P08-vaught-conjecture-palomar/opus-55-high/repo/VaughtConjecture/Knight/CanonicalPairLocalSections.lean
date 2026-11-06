@@ -17,7 +17,6 @@ Both seed controller layers retain their existing rows and catalogues.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairLocalSections
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
 open CanonicalPairBoundary
@@ -42,24 +41,29 @@ theorem cut_lawful : RespectsSemantics (GradeCutBoundary.rows D 2 sem)
   exact hr.toRespects (fun d =>
     ⟨D.isPlan.subset_of_mem (D.scope_mem_plan _), GradeCutBoundary.grade_bound D 2 d⟩)
 
-def smallSection (G : Finset ExtOrd) (C : ExtOrd) : Cell (small sem hA) → ExtOrd :=
+section
+variable (G : Finset ExtOrd) (C : ExtOrd)
+
+def smallSection  : Cell (small sem hA) → ExtOrd :=
   CanonicalMixedGradeLayers.sectionOf (GradeCutBoundary.rows D 2 sem) 1 (by decide)
     (one_le hA) (GradeCutBoundary.proper D 2 hp) 2 (GradeCutBoundary.grade_bound D 2)
     (by decide) hA (by decide) (cut_lawful sem hK hpr)
     (fun d => ht (GradeCutBoundary.toCell D 2 d)) G C
 
-def sectionOf (G : Finset ExtOrd) (C : ExtOrd) : Cell (carrier sem hA) → ExtOrd :=
+def sectionOf  : Cell (carrier sem hA) → ExtOrd :=
   GradeCutPairRows.glue D _ _ 1 2 (by decide) (one_le hA) (by decide) hA p
     (smallSection sem hA hp hK hpr ht G C)
 
-theorem section_old {G : Finset ExtOrd} {C : ExtOrd} (d : Cell D) :
+end
+
+theorem section_old {G} {C} d :
     sectionOf sem hA hp hK hpr ht G C (original sem hA d) = p d :=
   GradeCutPairRows.glue_old D _ _ 1 2 (by decide) (one_le hA) (by decide) hA p _ d
 
 variable {G : Finset ExtOrd} {C : ExtOrd}
 
 theorem small_readback (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C)
-    (d : Cell (GradeCutBoundary.scheme D 2)) :
+    d :
     smallSection sem hA hp hK hpr ht G C
       (GradeCutPairCarrier.old (GradeCutBoundary.scheme D 2) _ _ 1 2
         (by decide) (one_le hA) (by decide) hA d) = p (GradeCutBoundary.toCell D 2 d) :=
@@ -68,7 +72,7 @@ theorem small_readback (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C)
     (by decide) hA (by decide) (cut_lawful sem hK hpr) _ hG hC d
 
 theorem section_embedded (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C)
-    (d : Cell (small sem hA)) :
+    d :
     sectionOf sem hA hp hK hpr ht G C
       (embed sem 1 2 (by decide) (one_le hA) (by decide) hA d) =
       smallSection sem hA hp hK hpr ht G C d :=
@@ -133,19 +137,19 @@ theorem section_lawful (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C) :
   · exact hlow _ (by rw [GradeCutPairCarrier.cell_idx]; exact le_rfl)
 
 theorem section_bound (hC : SelfVis 2 C) (hb : ∀ d, p d ≤ C)
-    (d : Cell (carrier sem hA)) : sectionOf sem hA hp hK hpr ht G C d ≤ C := by
+    d : sectionOf sem hA hp hK hpr ht G C d ≤ C := by
   unfold sectionOf GradeCutPairRows.glue
   rcases (GradeCutPairCarrier.occEquiv D _ _ 1 2 (by decide)
     (one_le hA) (by decide) hA).symm d with (a | q) | q
-  · exact hb a
+  · grind
   all_goals
     exact CanonicalMixedGradeLayers.section_bound (GradeCutBoundary.rows D 2 sem)
       1 (by decide) (one_le hA) (GradeCutBoundary.proper D 2 hp) 2
       (GradeCutBoundary.grade_bound D 2) (by decide) hA (by decide)
       (cut_lawful sem hK hpr) _ hC (fun a => hb (GradeCutBoundary.toCell D 2 a)) _
 
-theorem section_supported {L : ℕ} (hL : 2 ≤ L) (hCG : C ∈ G)
-    (d : Cell (carrier sem hA)) :
+theorem section_supported {L} (hL : 2 ≤ L) (hCG : C ∈ G)
+    d :
     OrbitPrefixSupport.Supported L (G : Set ExtOrd) p
       (sectionOf sem hA hp hK hpr ht G C d) := by
   have hl (a : Cell (small sem hA)) : OrbitPrefixSupport.Supported L (G : Set ExtOrd) p
@@ -164,7 +168,7 @@ theorem section_supported {L : ℕ} (hL : 2 ≤ L) (hCG : C ∈ G)
   · change OrbitPrefixSupport.Supported L (G : Set ExtOrd) p (p a)
     rcases ExtOrd.cases (p a) with hb | ht | ⟨v, hv⟩
     · exact Or.inl hb
-    · exact Or.inr (Or.inr ⟨a, L, le_rfl, by rw [ht, extVisibilityReplace_top]⟩)
+    · grind
     · by_cases hi : finitePart v < L
       · exact Or.inr (Or.inr ⟨a, finitePart v, hi.le, by
           rw [hv, extVisibilityReplace_of_finitePart_lt hi, limitPart_add_finitePart]⟩)
@@ -173,9 +177,9 @@ theorem section_supported {L : ℕ} (hL : 2 ≤ L) (hCG : C ∈ G)
   · exact hl _
   · exact hl _
 
-theorem section_agreement {q : Cell D → ExtOrd}
-    (hqr : RespectsSemanticsBelow sem (A, K) (fun d => q d.1)) (htq : ∀ d, q d ≠ ⊤)
-    {h : ExtOrd} (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C)
+theorem section_agreement {q}
+    hqr (htq : ∀ d, q d ≠ ⊤)
+    {h} (hG : ∀ z ∈ G, SelfVis 2 z) (hC : SelfVis 2 C)
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem hA hp hK hpr ht G C) (sectionOf sem hA hp hK hqr htq G C) h := by
   have hl := CanonicalMixedGradeLayers.section_agreement (GradeCutBoundary.rows D 2 sem)
@@ -187,11 +191,7 @@ theorem section_agreement {q : Cell D → ExtOrd}
     (fun d => hag (GradeCutBoundary.toCell D 2 d))
   intro d
   unfold sectionOf GradeCutPairRows.glue
-  rcases (GradeCutPairCarrier.occEquiv D _ _ 1 2 (by decide)
-    (one_le hA) (by decide) hA).symm d with (a | r) | r
-  · exact hag a
-  · exact hl _
-  · exact hl _
+  aesop
 
 end
 end VaughtConjecture.Knight.CanonicalPairLocalSections

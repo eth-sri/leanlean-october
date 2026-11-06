@@ -19,7 +19,6 @@ conclusion about the grade-three tail is inferred from the lower lift.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairLowerLifting
 open Transform Value ExtOrd CanonicalPairBoundary CoatomBoundaryExtension AmalgamationPlan
 noncomputable section
@@ -29,7 +28,7 @@ variable (sem : Semantics D) (j k : ℕ)
 variable (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
 variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
 
-theorem transport_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ k)
+theorem transport_lift {I J} (h : GradedLe I J) (hJ : J.2 ≤ k)
     (hl : CappedLift (lowerRows sem j k hj hjA hk hkA hp hjk) h) :
     CappedLift (rows sem j k hj hjA hk hkA hp hjk) h := by
   let eI := GradeCutPairCarrier.belowEquiv D (firstProfiles sem j k) (secondProfiles sem k)

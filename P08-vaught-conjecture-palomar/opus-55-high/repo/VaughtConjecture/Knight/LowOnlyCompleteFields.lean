@@ -31,36 +31,46 @@ def completeAt (a : Cell P.scheme → ExtOrd)
     (u : P.scheme.below (effC n j) → ExtOrd) (d : Cell P.scheme) : ExtOrd :=
   if hd : GradedLe (P.scheme.cell d) (effC n j) then u ⟨d, hd⟩ else a d
 
-theorem completeAt_present (a : Cell P.scheme → ExtOrd)
-    (u : P.scheme.below (effC n j) → ExtOrd) (d : P.scheme.below (effC n j)) :
+section
+variable (a : Cell P.scheme → ExtOrd)
+
+section
+variable (u : P.scheme.below (effC n j) → ExtOrd)
+
+theorem completeAt_present (d : P.scheme.below (effC n j)) :
     completeAt a u d.1 = u d := by
   unfold completeAt
   rw [dite_eq_left d.2]
   rfl
 
-theorem completeAt_future (a : Cell P.scheme → ExtOrd)
-    (u : P.scheme.below (effC n j) → ExtOrd) (d : Cell P.scheme)
+theorem completeAt_future (d : Cell P.scheme)
     (hd : j < P.scheme.grade d) : completeAt a u d = a d := by
   unfold completeAt
   rw [dite_eq_right (fun h => (not_le.mpr hd) (h.2.trans (min_le_left _ _)))]
 
-theorem completeAt_respects (a : Cell P.scheme → ExtOrd)
-    {u : P.scheme.below (effC n j) → ExtOrd}
-    (hu : RespectsSemanticsBelow P.rows (effC n j) u) :
+end
+
+section
+variable {u : P.scheme.below (effC n j) → ExtOrd}
+
+theorem completeAt_respects (hu : RespectsSemanticsBelow P.rows (effC n j) u) :
     RespectsSemanticsBelow P.rows (effC n j) (fun d => completeAt a u d.1) := by
   have h : (fun d : P.scheme.below (effC n j) => completeAt a u d.1) = u :=
     funext (completeAt_present a u)
   rw [h]; exact hu
 
 /-- Every field, not just present fields, retains its original comparison-cap reading. -/
-theorem completeAt_cap (a : Cell P.scheme → ExtOrd)
-    {u : P.scheme.below (effC n j) → ExtOrd} {γ : ExtOrd}
+theorem completeAt_cap {γ : ExtOrd}
     (hcap : ∀ d, min (u d) γ = min (a d.1) γ) (d : Cell P.scheme) :
     min (completeAt a u d) γ = min (a d) γ := by
   unfold completeAt
   split_ifs with hd
   · exact hcap ⟨d, hd⟩
   · rfl
+
+end
+
+end
 
 section Barrier
 
@@ -71,14 +81,17 @@ open Classical in
 def nonTopMax (T : F → Prop) (a : F → ExtOrd) : ExtOrd :=
   (Finset.univ.filter fun d => ¬ T d).sup a
 
-theorem le_nonTopMax {T : F → Prop} (a : F → ExtOrd) {d : F} (hd : ¬ T d) :
+section
+variable {T : F → Prop}
+
+theorem le_nonTopMax (a : F → ExtOrd) {d} (hd : ¬ T d) :
     a d ≤ nonTopMax T a := by
   classical
   exact Finset.le_sup (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩)
 
 /-- Activation after clipping the cutoff pins all old non-top fields literally.
 There is no exception for future fields or fields above the LOW threshold. -/
-theorem clipped_activation {T : F → Prop} {a a' : F → ExtOrd} {b γ : ExtOrd}
+theorem clipped_activation {a a' : F → ExtOrd} {b γ}
     (hcap : ∀ d, min (a' d) γ = min (a d) γ)
     (hactive : nonTopMax T a' < min b γ) :
     (∀ d, ¬ T d → a' d = a d) ∧ nonTopMax T a' = nonTopMax T a ∧
@@ -93,6 +106,8 @@ theorem clipped_activation {T : F → Prop} {a a' : F → ExtOrd} {b γ : ExtOrd
     intro d hd
     exact hfix d (Finset.mem_filter.mp hd).2
   exact ⟨hfix, hM, hM ▸ hactive.trans_le (min_le_left _ _)⟩
+
+end
 
 theorem clipped_cutoff_cap (b γ : ExtOrd) : min (min b γ) γ = min b γ := by
   rw [min_assoc, min_self]

@@ -6,7 +6,16 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CappedDonorSelector
-public import VaughtConjecture.Knight.GradeTwoCodedBountiful
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import VaughtConjecture.Knight.FullScopeZeroExtension
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.PositiveNormalization
 
 /-! # The gated receiving-input family and both original-state fibres (notes32 §§4–6)
 
@@ -85,10 +94,10 @@ open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan
 /-! ## Bountifulness with equal indices -/
 
 /-- Bountifulness with the source index allowed to equal the target index. -/
-theorem Semantics.IsBountiful.extend {ι : Type*} [DecidableEq ι] {A : Finset ι}
-    {D : CellScheme A} {sem : Semantics D} (hb : sem.IsBountiful) {CI BJ : Finset ι × ℕ}
-    (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan) (h : GradedLe CI BJ)
-    {p : D.below CI → ExtOrd} {q : D.below BJ → ExtOrd} {γ : ExtOrd}
+theorem Semantics.IsBountiful.extend {ι} [DecidableEq ι] {A}
+    {D : CellScheme A} {sem} (hb : sem.IsBountiful) {CI BJ : Finset ι × ℕ}
+    (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan) h
+    {p} {q} {γ}
     (hp : RespectsSemanticsBelow sem CI p) (hq : RespectsSemanticsBelow sem BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (hcompat : ∀ d : D.below CI, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
@@ -98,7 +107,7 @@ theorem Semantics.IsBountiful.extend {ι : Type*} [DecidableEq ι] {A : Finset �
   by_cases heq : CI = BJ
   · subst heq
     exact ⟨p, hp, fun d => (hcompat d).symm, fun _ => rfl⟩
-  · exact hb CI BJ hCI hBJ h heq p q γ hp hq hγ hcompat
+  · aesop
 
 namespace CappedDonor
 
@@ -114,16 +123,16 @@ section Cutoffs
 
 variable {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
 
-theorem effP_mem {j : ℕ} (hj : 0 < j) : effP nP j ∈ Plan.gradedPlan P.scheme.plan :=
+theorem effP_mem {j} (hj : 0 < j) : effP nP j ∈ Plan.gradedPlan P.scheme.plan :=
   Plan.mem_gradedPlan.mpr ⟨P.scheme.isPlan.domain_mem, lt_min hj (Nat.succ_pos _), by
     change min j (nP + 1) ≤ (Finset.univ : Finset (Fin (nP + 1))).card
     rw [Finset.card_univ, Fintype.card_fin]
     exact min_le_right _ _⟩
 
-theorem gradeC_le (d : Cell C.scheme) : C.scheme.grade d ≤ J :=
+theorem gradeC_le d : C.scheme.grade d ≤ J :=
   (C.scheme.grade_le_card_scope d).trans (by simpa using Finset.card_le_univ (C.scheme.scope d))
 
-theorem effC_mem {j : ℕ} (hj : 0 < j) (hJ : 0 < J) : effC J j ∈ Plan.gradedPlan C.scheme.plan :=
+theorem effC_mem {j} (hj : 0 < j) (hJ : 0 < J) : effC J j ∈ Plan.gradedPlan C.scheme.plan :=
   Plan.mem_gradedPlan.mpr ⟨C.scheme.isPlan.domain_mem, lt_min hj hJ, by
     change min j J ≤ (Finset.univ : Finset (Fin J)).card
     rw [Finset.card_univ, Fintype.card_fin]
@@ -145,23 +154,33 @@ include R in
 theorem effP_snd_le_effC (j : ℕ) : (effP nP j).2 ≤ (effC J j).2 :=
   min_le_min_left j (R.arity_lt.le.trans R.N_le)
 
+section
+variable {j : ℕ}
+
 /-- Once the cap is present, its whole lower domain is present. -/
-theorem capLe {j : ℕ} (hj : N ≤ j) : GradedLe (C.scheme.cell R.cap) (effC J j) := by
+theorem capLe (hj : N ≤ j) : GradedLe (C.scheme.cell R.cap) (effC J j) := by
   rw [R.cap_cell]
   exact ⟨Finset.subset_univ _, le_min hj R.N_le⟩
 
+section
+variable (hj : N ≤ j)
+
 /-- The cap as a present field. -/
-def capC {j : ℕ} (hj : N ≤ j) : C.scheme.below (effC J j) :=
+def capC  : C.scheme.below (effC J j) :=
   CellScheme.below.mono (R.capLe hj) R.capL
 
 /-- The restriction of a present private section to the cap's lower domain. -/
-def lowC {j : ℕ} (hj : N ≤ j) (v : C.scheme.below (effC J j) → ExtOrd) (d : R.Low) : ExtOrd :=
+def lowC (v : C.scheme.below (effC J j) → ExtOrd) (d : R.Low) : ExtOrd :=
   v (CellScheme.below.mono (R.capLe hj) d)
 
-theorem lowC_respects {j : ℕ} (hj : N ≤ j) {v : C.scheme.below (effC J j) → ExtOrd}
+theorem lowC_respects {v : C.scheme.below (effC J j) → ExtOrd}
     (hv : RespectsSemanticsBelow C.rows (effC J j) v) :
     RespectsSemanticsBelow C.rows (C.scheme.cell R.cap) (R.lowC hj v) :=
   hv.mono (R.capLe hj)
+
+end
+
+end
 
 include R in
 theorem selfVis_N_of_effC {j : ℕ} (hj : N ≤ j) {γ : ExtOrd} (hγ : SelfVis (effC J j).2 γ) :
@@ -178,46 +197,61 @@ theorem selfVis_effP_of_N (j : ℕ) {β : ExtOrd} (hβ : SelfVis N β) : SelfVis
 
 /-! ## The present portion of the face -/
 
+section
+variable {j : ℕ} (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j)
+
 /-- A face cell present at cutoff `j` as a present request field. -/
-def reqFace {j : ℕ} (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j) :
+def reqFace  :
     P.scheme.below (effP nP j) :=
   ⟨a.1, ⟨Finset.subset_univ _, le_min h (gradeP_le a.1)⟩⟩
 
 /-- The private copy of a face cell present at cutoff `j` as a present private field. -/
-def privFace {j : ℕ} (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j) :
+def privFace  :
     C.scheme.below (effC J j) :=
   ⟨(R.face a).1, ⟨Finset.subset_univ _, le_min ((R.face_grade a).trans_le h) (gradeC_le _)⟩⟩
 
+end
+
+section
+variable {j : ℕ}
+
 /-- Every face cell is present once the cap is. -/
-theorem face_grade_le_of_N {j : ℕ} (hj : N ≤ j) (a : P.scheme.below (R.A, R.KA)) :
+theorem face_grade_le_of_N (hj : N ≤ j) (a : P.scheme.below (R.A, R.KA)) :
     P.scheme.grade a.1 ≤ j := a.2.2.trans (R.KA_lt_N.le.trans hj)
 
 /-- The present portion `(A, min KA j)` of the face at cutoff `j`. -/
-theorem face_le_effP {j : ℕ} : GradedLe (R.A, min R.KA j) (effP nP j) :=
+theorem face_le_effP  : GradedLe (R.A, min R.KA j) (effP nP j) :=
   ⟨Finset.subset_univ _, le_min (min_le_right _ _) ((min_le_left _ _).trans R.KA_le)⟩
 
-theorem face_le_effC {j : ℕ} : GradedLe (R.A', min R.KA j) (effC J j) :=
+theorem face_le_effC  : GradedLe (R.A', min R.KA j) (effC J j) :=
   ⟨Finset.subset_univ _, le_min (min_le_right _ _)
     ((min_le_left _ _).trans (R.KA_lt_N.le.trans R.N_le))⟩
 
 /-- No face cell is present when the present portion has grade zero. -/
-theorem face_absent {j : ℕ} (hk : ¬ 0 < min R.KA j) (a : P.scheme.below (R.A, R.KA))
+theorem face_absent (hk : ¬ 0 < min R.KA j) (a : P.scheme.below (R.A, R.KA))
     (h : P.scheme.grade a.1 ≤ j) : False :=
   hk (lt_min ((P.scheme.grade_pos a.1).trans_le a.2.2) ((P.scheme.grade_pos a.1).trans_le h))
 
+end
+
 /-- A private section read on the present portion of the request copy of the face. -/
-def faceSec {j : ℕ} (v : C.scheme.below (effC J j) → ExtOrd)
+def faceSec {j} (v : C.scheme.below (effC J j) → ExtOrd)
     (a : P.scheme.below (R.A, min R.KA j)) : ExtOrd :=
   v (R.privFace (R.faceLift (min_le_left _ _) a) (a.2.2.trans (min_le_right _ _)))
 
-theorem faceSec_respects {j : ℕ} {v : C.scheme.below (effC J j) → ExtOrd}
+section
+variable {j : ℕ}
+
+theorem faceSec_respects {v : C.scheme.below (effC J j) → ExtOrd}
     (hv : RespectsSemanticsBelow C.rows (effC J j) v) :
     RespectsSemanticsBelow P.rows (R.A, min R.KA j) (R.faceSec v) :=
   (R.faceAt_respects (min_le_left _ _) _).mp (hv.mono R.face_le_effC)
 
-theorem lowC_face {j : ℕ} (hj : N ≤ j) (v : C.scheme.below (effC J j) → ExtOrd)
-    (a : P.scheme.below (R.A, R.KA)) :
+theorem lowC_face (hj : N ≤ j) v
+    a :
     R.lowC hj v (R.lowFace a) = v (R.privFace a (R.face_grade_le_of_N hj a)) := rfl
+
+end
 
 /-! ## States and admissibility -/
 
@@ -255,8 +289,11 @@ structure Admissible {j : ℕ} (st : R.State j) : Prop where
     ∀ d : P.scheme.below (effP nP j),
       min (st.u d) (R.cut (R.lowC hj st.v)) = R.sel (R.lowC hj st.v) d.1
 
+section
+variable {j : ℕ}
+
 /-- In an active admissible state the restricted private section is active for the selector. -/
-theorem Admissible.active {j : ℕ} {st : R.State j} (hst : R.Admissible st) (hj : N ≤ j)
+theorem Admissible.active {st : R.State j} (hst : R.Admissible st) hj
     (hg : st.gate ≠ ⊥) (hc : st.v (R.capC hj) ≠ ⊥) : R.Active (R.lowC hj st.v) := by
   obtain ⟨href, hsupp⟩ := hst.support hg ((hst.shadowC_iff (R.capC hj)).mpr hc)
   refine ⟨R.lowC_respects hj hst.v_respects, hc, fun i => ?_, ?_⟩
@@ -271,22 +308,27 @@ theorem Admissible.active {j : ℕ} {st : R.State j} (hst : R.Admissible st) (hj
 
 /-- **Cap receipts**: the gate and every shadow of the new state agree with the old ones below
 the comparison cap `γ`. -/
-def CapReceipts {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) : Prop :=
+def CapReceipts (γ : ExtOrd) (st st₁ : R.State j) : Prop :=
   min st₁.gate γ = min st.gate γ ∧ (∀ d, min (st₁.shadowP d) γ = min (st.shadowP d) γ) ∧
     ∀ d, min (st₁.shadowC d) γ = min (st.shadowC d) γ
 
-theorem capReceipts_bot {j : ℕ} (st st₁ : R.State j) : R.CapReceipts ⊥ st st₁ :=
+end
+
+section
+variable {j : ℕ}
+
+theorem capReceipts_bot (st st₁ : R.State j) : R.CapReceipts ⊥ st st₁ :=
   ⟨by rw [min_bot_right, min_bot_right], fun _ => by rw [min_bot_right, min_bot_right],
     fun _ => by rw [min_bot_right, min_bot_right]⟩
 
-theorem capReceipts_of_eq {j : ℕ} (γ : ExtOrd) {st st₁ : R.State j} (hg : st₁.gate = st.gate)
+theorem capReceipts_of_eq (γ : ExtOrd) {st st₁ : R.State j} (hg : st₁.gate = st.gate)
     (hP : st₁.shadowP = st.shadowP) (hC : st₁.shadowC = st.shadowC) : R.CapReceipts γ st st₁ :=
-  ⟨by rw [hg], fun _ => by rw [hP], fun _ => by rw [hC]⟩
+  ⟨by grind, fun _ => by grind, fun _ => by grind⟩
 
 /-- **Persistence**: at a positive cap the gate and every shadow are retained; new lawful
 sections agreeing with the old ones below the cap, with the literal face and the relation, form
 an admissible state. -/
-theorem admissible_persist {j : ℕ} {st : R.State j} (hst : R.Admissible st) {γ : ExtOrd}
+theorem admissible_persist {st : R.State j} (hst : R.Admissible st) {γ : ExtOrd}
     (hγ : γ ≠ ⊥) {u₁ : P.scheme.below (effP nP j) → ExtOrd}
     {v₁ : C.scheme.below (effC J j) → ExtOrd}
     (hu₁ : RespectsSemanticsBelow P.rows (effP nP j) u₁)
@@ -312,6 +354,8 @@ theorem admissible_persist {j : ℕ} {st : R.State j} (hst : R.Admissible st) {�
     exact not_congr (bottom_pattern_of_cap_agreement hγ hv d).symm
   support := hst.support
   relation := hrel
+
+end
 
 open Classical in
 /-- **The bottom-cap state**: the gate switched off, the shadows of the present fields
@@ -366,18 +410,21 @@ theorem admissible_off {j : ℕ} {st : R.State j} (hst : R.Admissible st)
 
 /-! ## Installing a face prescription by old bountifulness -/
 
+section
+variable {j : ℕ}
+
 /-- Old `P`-bountifulness installs a lawful private face prescription into a request section at
 a permissible cap, on the present portion of the face; nothing is done when that portion is
 empty. -/
-theorem exists_installP {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
+theorem exists_installP {u}
     (hu : RespectsSemanticsBelow P.rows (effP nP j) u)
     {v₁ : C.scheme.below (effC J j) → ExtOrd} (hv₁ : RespectsSemanticsBelow C.rows (effC J j) v₁)
-    {γ : ExtOrd} (hγ : SelfVis (effP nP j).2 γ)
-    (hcompat : ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
+    {γ} (hγ : SelfVis (effP nP j).2 γ)
+    (hcompat : ∀ a h,
       min (u (R.reqFace a h)) γ = min (v₁ (R.privFace a h)) γ) :
     ∃ u₁ : P.scheme.below (effP nP j) → ExtOrd, RespectsSemanticsBelow P.rows (effP nP j) u₁ ∧
       (∀ d, min (u₁ d) γ = min (u d) γ) ∧
-      ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
+      ∀ a h,
         u₁ (R.reqFace a h) = v₁ (R.privFace a h) := by
   by_cases hk : 0 < min R.KA j
   · obtain ⟨u₁, hu₁, hcap, hface⟩ := P.bountiful.extend (R.face_mem hk (min_le_left _ _))
@@ -395,13 +442,13 @@ current private section below a permissible cap `γ` lifts to an admissible stat
 literally, the whole request cap vector `u ∧ γ`, the entire common face, the cap receipts of the
 gate and of every shadow — and, at a positive cap, the gate and every shadow literally.  The only
 extension operation is old `P`-bountifulness. -/
-theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    {v₁ : C.scheme.below (effC J j) → ExtOrd} (hv₁ : RespectsSemanticsBelow C.rows (effC J j) v₁)
-    {γ : ExtOrd} (hγ : SelfVis (effC J j).2 γ) (hagree : ∀ d, min (v₁ d) γ = min (st.v d) γ) :
-    ∃ st₁ : R.State j, R.Admissible st₁ ∧ st₁.v = v₁ ∧ (∀ d, min (st₁.u d) γ = min (st.u d) γ) ∧
+theorem exists_private_lift {st : R.State j} (hst : R.Admissible st)
+    {v₁} (hv₁ : RespectsSemanticsBelow C.rows (effC J j) v₁)
+    {γ} (hγ : SelfVis (effC J j).2 γ) (hagree : ∀ d, min (v₁ d) γ = min (st.v d) γ) :
+    ∃ st₁, R.Admissible st₁ ∧ st₁.v = v₁ ∧ (∀ d, min (st₁.u d) γ = min (st.u d) γ) ∧
       R.CapReceipts γ st st₁ ∧
       (γ ≠ ⊥ → st₁.gate = st.gate ∧ st₁.shadowP = st.shadowP ∧ st₁.shadowC = st.shadowC) := by
-  have hcompat : ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
+  have hcompat : ∀ a h,
       min (st.u (R.reqFace a h)) γ = min (v₁ (R.privFace a h)) γ := by
     intro a h
     rw [hst.face a h]
@@ -414,7 +461,7 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
       R.capReceipts_bot _ _, fun h => absurd rfl h⟩
   have hγP : SelfVis (effP nP j).2 γ := R.selfVis_effP_of_effC hγ
   have hpat := bottom_pattern_of_cap_agreement hbot hagree
-  by_cases hact : ∃ hj : N ≤ j, st.gate ≠ ⊥ ∧ st.v (R.capC hj) ≠ ⊥
+  by_cases hact : ∃ hj, st.gate ≠ ⊥ ∧ st.v (R.capC hj) ≠ ⊥
   · obtain ⟨hj, hg, hc⟩ := hact
     have hγN : SelfVis N γ := R.selfVis_N_of_effC hj hγ
     have hA₀ := Admissible.active R hst hj hg hc
@@ -485,13 +532,18 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
     intro hj hg hc
     exact absurd ⟨hj, hg, fun h => hc ((hpat _).mpr h)⟩ hact
 
+end
+
 /-! ## The request-prescribed fibre (notes32 §6) -/
 
 /-! ## The actual state -/
 
+section
+variable (j : ℕ)
+
 /-- The actual pair — the donor on the request scheme and the actual private labelling — with
 the gate on and the shadows the `1`-visible roundings of the actual values, at any cutoff. -/
-noncomputable def actualState (j : ℕ) : R.State j where
+noncomputable def actualState  : R.State j where
   u d := R.p d.1
   v d := R.vact d.1
   gate := ⊤
@@ -500,7 +552,7 @@ noncomputable def actualState (j : ℕ) : R.State j where
 
 /-- The actual pair is admissible with a positive gate (notes32 §8, first step): it matches on
 the face and satisfies the relation by `sel_actual`. -/
-theorem actual_admissible (j : ℕ) : R.Admissible (R.actualState j) where
+theorem actual_admissible  : R.Admissible (R.actualState j) where
   u_respects := R.p_respects.toBelow _
   v_respects := R.vact_respects.toBelow _
   face a _ := (R.face_actual a).symm
@@ -516,6 +568,8 @@ theorem actual_admissible (j : ℕ) : R.Admissible (R.actualState j) where
   relation _ _ _ d := by
     change min (R.p d.1) (R.cut R.vactL) = R.sel R.vactL d.1
     exact (R.sel_actual d.1).symm
+
+end
 
 end Ref
 

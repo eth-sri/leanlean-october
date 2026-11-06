@@ -17,7 +17,6 @@ them in the same ambient inventory. No local operator is an input to the step.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeIteration
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open SourcePrefixRows OrbitPrefixSupport
@@ -90,7 +89,7 @@ theorem ready : OrdinaryRawScope.Ready (restrictedRows X hB) where
     have hsub := Finset.mem_powerset.mp (Finset.mem_inter.mp hm.1).2
     have hd := hready J.1 hmem (Finset.ssubset_iff_subset_ne.mpr ⟨hsub, hJB⟩)
     obtain ⟨d, hd⟩ := X.complete J (Plan.mem_gradedPlan.mpr ⟨hmem, hm.2⟩) hd
-    have hs : X.carrier.scope d ⊆ B := by change (X.carrier.cell d).1 ⊆ B; rwa [hd]
+    have hs : X.carrier.scope d ⊆ B := by aesop
     obtain ⟨e, he⟩ := ScopeBoundary.exhaustive X.carrier B (X.plan.symm ▸ hB) hs
     exact ⟨e, (congrArg X.carrier.cell he).trans hd⟩
   lifts I J hI hJ hJB h := by

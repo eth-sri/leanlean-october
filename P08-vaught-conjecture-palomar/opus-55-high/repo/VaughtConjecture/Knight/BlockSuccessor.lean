@@ -19,7 +19,7 @@ namespace VaughtConjecture.Knight
 open Value
 
 /-- Successor block stages are next blocks. -/
-theorem blockStage_succ_eq_nextBlock (ρ : Ordinal.{0}) :
+theorem blockStage_succ_eq_nextBlock ρ :
     blockStage (ρ + 1) = (blockStage ρ).nextBlock := by
   apply Subtype.ext
   change blockLevel (ρ + 1) = blockLevel ρ + Ordinal.omega0

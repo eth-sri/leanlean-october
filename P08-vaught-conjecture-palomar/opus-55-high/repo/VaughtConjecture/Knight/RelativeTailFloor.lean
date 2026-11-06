@@ -48,7 +48,7 @@ open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 /-! ## Replacement cannot cross a visible cutoff -/
 
 /-- For `δ` `k`-visible, a value and its replacement at grade `k` lie on the same side of `δ`. -/
-theorem le_iff_evr_le {δ x : ExtOrd} {k i : ℕ} (hδ : SelfVis k δ) (hi : i ≤ k) :
+theorem le_iff_evr_le {δ x} {k i} (hδ : SelfVis k δ) (hi : i ≤ k) :
     x ≤ δ ↔ extVisibilityReplace x k i ≤ δ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rw [extVisibilityReplace_bot]
@@ -90,7 +90,5 @@ theorem le_iff_evr_le {δ x : ExtOrd} {k i : ℕ} (hδ : SelfVis k δ) (hi : i �
 /-! ## The exact cap identity -/
 
 /-! ## Transport on unchanged rows -/
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
 
 end VaughtConjecture.Knight

@@ -17,7 +17,6 @@ or model-receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedIteration
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
@@ -60,15 +59,20 @@ def build : (t : ℕ) → t + 2 ≤ A.card → Layer I F hroot hA hB hC (t + 2)
   | 0, _ => initial I F hroot hA hB hC
   | t + 1, ht => successor (build t (by omega)) (by omega) (by omega)
 
-theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+theorem build_plan  :
     (build I F hroot hA hB hC t ht).carrier.plan = I.boundary.plan := by
   induction t with
   | zero => rfl
   | succ t ih => exact ih (by omega)
 
-theorem build_consistent (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_consistent  :
     (build I F hroot hA hB hC t ht).rows.IsConsistent :=
   (build I F hroot hA hB hC t ht).consistent
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedIteration

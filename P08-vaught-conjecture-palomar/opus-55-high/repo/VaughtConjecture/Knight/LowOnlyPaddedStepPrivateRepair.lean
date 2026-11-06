@@ -16,7 +16,6 @@ and supported decoder construct the replacement and every external-cap receipt.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepPrivateRepair
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -31,7 +30,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-theorem private_grade (d : I.right.scheme.below (effC n (k + 1))) :
+theorem private_grade d :
     (carrier P hnext).grade (privateAt P hnext d).1 =
       I.right.scheme.grade d.1 := by
   exact (congrArg Prod.snd (original_index P hnext
@@ -40,13 +39,13 @@ theorem private_grade (d : I.right.scheme.below (effC n (k + 1))) :
 /-- A supplied original owner identifies the actual private lower domain.
 The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped
-    (c : I.right.scheme.below (effC n (k + 1)))
+    c
     (hc : I.right.scheme.cell c.1 = effC n (k + 1)) (hg : I.right.scheme.grade c.1 = (k + 1))
-    {p : I.right.scheme.below (effC n (k + 1)) → ExtOrd}
-    {q : (carrier P hnext).below (A, (k + 1)) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.right.rows (effC n (k + 1)) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ) (hactive : γ < p c)
+    {γ} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (privateAt P hnext d)) γ = min (p d) γ) :
     ∃ u, RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) u ∧
       (∀ d, u (privateAt P hnext d) = min (p d) (p c)) ∧
@@ -121,7 +120,6 @@ theorem owner_capped
       (boundedMap_of_witness hν) (ne_of_gt hpos) hcap, ?_, hcap, fun _ => fac.bounded _⟩
   intro d
   exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
-
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedStepPrivateRepair

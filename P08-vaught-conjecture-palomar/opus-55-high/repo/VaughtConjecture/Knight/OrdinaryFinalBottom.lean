@@ -23,7 +23,6 @@ one, is bottom in the constructed section.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalBottom
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue
@@ -42,17 +41,17 @@ theorem exists_private_display
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (A, N)),
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
+      (∀ d, Short (D.grade c.1) (F.sem.E c.1 d)) ∨
+      (∀ d : D.below (D.cell c.1), ∃ f, F.lower a d.1 = a.val f))
     (priv : Cell C.scheme ↪ Cell D)
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
-    {p : C.scheme.below (effC N N) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow C.rows (effC N N) p) :
-    ∃ (b : OrdinaryFinalCatalogue.Member R) (δ : ExtOrd → ExtOrd),
+    ∃ b δ,
       Witness (gTop N) δ ∧
       RespectsSemanticsBelow F.rows (A, N) (fun d => δ (F.source b d.1)) ∧
-      (∀ d : C.scheme.below (effC N N), δ (F.source b (F.old (priv d.1))) = p d) ∧
-      ∀ a : OrdinaryFinalCatalogue.Member R, δ (F.source b (F.added a true)) = ⊥ := by
+      (∀ d, δ (F.source b (F.old (priv d.1))) = p d) ∧
+      ∀ a, δ (F.source b (F.added a true)) = ⊥ := by
   obtain ⟨a, ha, hprivate, hgateOff, -⟩ := bottom_supply (R := R) hp
   obtain ⟨b₀, _, _, hprefix, _, hadm, hcan, δ, hδ, hread⟩ := ha.exists_terminal 0
   let b : OrdinaryFinalCatalogue.Member R := ⟨PairedSlotEncoding.normalize N b₀, hcan, hadm⟩

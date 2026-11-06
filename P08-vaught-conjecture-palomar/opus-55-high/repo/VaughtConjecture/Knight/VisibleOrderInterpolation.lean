@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FullRowLifting
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
 
 /-! # Interpolating a finite table of self-visible values
 
@@ -35,10 +36,13 @@ open Classical in
 noncomputable def orderInterpolate (E r : X → ExtOrd) (x : ExtOrd) : ExtOrd :=
   if x = ⊥ then ⊥ else Finset.univ.inf (fun i => if x ≤ E i then r i else ⊤)
 
-theorem orderInterpolate_bot (E r : X → ExtOrd) : orderInterpolate E r ⊥ = ⊥ := by
+section
+variable (E r : X → ExtOrd)
+
+theorem orderInterpolate_bot  : orderInterpolate E r ⊥ = ⊥ := by
   simp [orderInterpolate]
 
-theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate E r) := by
+theorem orderInterpolate_mono  : Monotone (orderInterpolate E r) := by
   classical
   intro x y hxy
   by_cases hx : x = ⊥
@@ -56,8 +60,15 @@ theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate 
   · rw [ite_eq_right hi]
     exact le_top
 
-theorem orderInterpolate_visible {E r : X → ExtOrd} {K : ℕ}
-    (hr : ∀ i, SelfVis K (r i)) (x : ExtOrd) : SelfVis K (orderInterpolate E r x) := by
+end
+
+section
+variable {E r : X → ExtOrd}
+
+section
+variable {K : ℕ}
+
+theorem orderInterpolate_visible (hr : ∀ i, SelfVis K (r i)) (x : ExtOrd) : SelfVis K (orderInterpolate E r x) := by
   classical
   unfold orderInterpolate
   split_ifs
@@ -70,8 +81,7 @@ theorem orderInterpolate_visible {E r : X → ExtOrd} {K : ℕ}
     · exact extVisibilityReplace_top _ _
 
 /-- The interpolation commutes with all replacements at thresholds at most K. -/
-theorem orderInterpolate_bounded {E r : X → ExtOrd} {K : ℕ}
-    (hE : ∀ i, SelfVis K (E i)) (hr : ∀ i, SelfVis K (r i)) :
+theorem orderInterpolate_bounded (hE : ∀ i, SelfVis K (E i)) (hr : ∀ i, SelfVis K (r i)) :
     BoundedMap K (orderInterpolate E r) where
   bot := orderInterpolate_bot E r
   mono := orderInterpolate_mono E r
@@ -86,10 +96,11 @@ theorem orderInterpolate_bounded {E r : X → ExtOrd} {K : ℕ}
       intro j _
       simp only [replace_le_visible_cut_iff (hE j) hk hi]
 
+end
+
 /-- Equal source occurrences must have equal targets, as a consequence of the
 two source-order implications. No quotient of the occurrences is taken. -/
-theorem orderInterpolate_read {E r : X → ExtOrd}
-    (hord : ∀ i j, E i ≤ E j → r i ≤ r j)
+theorem orderInterpolate_read (hord : ∀ i j, E i ≤ E j → r i ≤ r j)
     (hbot : ∀ i, E i = ⊥ → r i = ⊥) (i : X) : orderInterpolate E r (E i) = r i := by
   classical
   by_cases hi : E i = ⊥
@@ -105,9 +116,8 @@ theorem orderInterpolate_read {E r : X → ExtOrd}
     · exact hord i j hij
     · exact le_top
 
-end Interpolation
+end
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ}
+end Interpolation
 
 end VaughtConjecture.Knight.FullRowLifting

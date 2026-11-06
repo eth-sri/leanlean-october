@@ -45,20 +45,31 @@ structure State (P C : SemScheme n) where
 
 namespace State
 
-def lowerP (S : State P C) (j : ℕ) (d : P.scheme.below (effC n j)) : ExtOrd := S.u d.1
-def lowerC (S : State P C) (j : ℕ) (d : C.scheme.below (effC n j)) : ExtOrd := S.v d.1
+section
+variable (S : State P C)
 
-def replace (S : State P C) {j : ℕ} (u : P.scheme.below (effC n j) → ExtOrd)
+section
+variable (j : ℕ)
+
+def lowerP (d : P.scheme.below (effC n j)) : ExtOrd := S.u d.1
+def lowerC (d : C.scheme.below (effC n j)) : ExtOrd := S.v d.1
+
+end
+
+def replace {j} (u : P.scheme.below (effC n j) → ExtOrd)
     (v : C.scheme.below (effC n j) → ExtOrd) (b : ExtOrd) : State P C :=
   ⟨completeAt S.u u, completeAt S.v v, b⟩
 
-theorem replace_lowerP (S : State P C) {j : ℕ}
-    (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
-    (b : ExtOrd) : (S.replace u v b).lowerP j = u := funext (completeAt_present S.u u)
+end
 
-theorem replace_lowerC (S : State P C) {j : ℕ}
-    (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
-    (b : ExtOrd) : (S.replace u v b).lowerC j = v := funext (completeAt_present S.v v)
+section
+variable (S : State P C) {j : ℕ} (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd) (b : ExtOrd)
+
+theorem replace_lowerP  : (S.replace u v b).lowerP j = u := funext (completeAt_present S.u u)
+
+theorem replace_lowerC  : (S.replace u v b).lowerC j = v := funext (completeAt_present S.v v)
+
+end
 
 def CapEq (γ : ExtOrd) (S S' : State P C) : Prop :=
   (∀ d, min (S'.u d) γ = min (S.u d) γ) ∧
@@ -68,17 +79,20 @@ def FutureEq (j : ℕ) (S S' : State P C) : Prop :=
   (∀ d, j < P.scheme.grade d → S'.u d = S.u d) ∧
   (∀ d, j < C.scheme.grade d → S'.v d = S.v d)
 
-theorem replace_future (S : State P C) {j : ℕ}
-    (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
+section
+variable (S : State P C) {j : ℕ}
+
+theorem replace_future (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
     (b : ExtOrd) : S.FutureEq j (S.replace u v b) :=
   ⟨completeAt_future S.u u, completeAt_future S.v v⟩
 
-theorem replace_caps (S : State P C) {j : ℕ}
-    {u : P.scheme.below (effC n j) → ExtOrd} {v : C.scheme.below (effC n j) → ExtOrd}
+theorem replace_caps {u : P.scheme.below (effC n j) → ExtOrd} {v : C.scheme.below (effC n j) → ExtOrd}
     {b γ : ExtOrd} (hu : ∀ d, min (u d) γ = min (S.lowerP j d) γ)
     (hv : ∀ d, min (v d) γ = min (S.lowerC j d) γ) (hb : min b γ = min S.b γ) :
     S.CapEq γ (S.replace u v b) :=
   ⟨completeAt_cap S.u hu, completeAt_cap S.v hv, hb⟩
+
+end
 
 end State
 
@@ -101,7 +115,10 @@ structure Admissible (j : ℕ) (S : State P C) : Prop extends F.Source j S where
   low : ∀ hj : K ≤ j, F.maximum S < S.b → ∀ d, F.p d = ⊤ →
     max S.b (F.gap.eC hj (S.lowerC j)) ≤ S.u d
 
-theorem Source.replace {j : ℕ} {S : State P C} (hS : F.Source j S)
+section
+variable {j : ℕ} {S : State P C}
+
+theorem Source.replace (hS : F.Source j S)
     {u : P.scheme.below (effC n j) → ExtOrd} {v : C.scheme.below (effC n j) → ExtOrd}
     (hu : RespectsSemanticsBelow P.rows (effC n j) u)
     (hv : RespectsSemanticsBelow C.rows (effC n j) v) (b : ExtOrd)
@@ -120,45 +137,51 @@ theorem Source.replace {j : ℕ} {S : State P C} (hS : F.Source j S)
     exact hS.futureC d hd
 
 /-- First install only the prescribed root in the opposite original scheme. -/
-theorem Source.install_private {j : ℕ} {S : State P C} (hS : F.Source j S)
+theorem Source.install_private (hS : F.Source j S)
     {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ}
     (hγ : SelfVis (effC n j).2 γ)
     (hag : ∀ d, min (v d) γ = min (S.lowerC j d) γ) :
     ∃ u, F.Source j (S.replace u v (min S.b γ)) ∧
       (∀ d, min (u d) γ = min (S.lowerP j d) γ) := by
   obtain ⟨u, hu, hcap, hface⟩ := F.root.installP hS.lawfulP hv hγ (fun a => by
-    rw [hag]
+    simp_all
     exact congrArg (fun x => min x γ) (F.root.shared_at hS.shared a))
   exact ⟨u, hS.replace F hu hv _ hface, hcap⟩
 
-theorem Source.install_donor {j : ℕ} {S : State P C} (hS : F.Source j S)
+theorem Source.install_donor (hS : F.Source j S)
     {u : P.scheme.below (effC n j) → ExtOrd}
-    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ : ExtOrd}
+    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ}
     (hγ : SelfVis (effC n j).2 γ)
     (hag : ∀ d, min (u d) γ = min (S.lowerP j d) γ) :
     ∃ v, F.Source j (S.replace u v (min S.b γ)) ∧
       (∀ d, min (v d) γ = min (S.lowerC j d) γ) := by
   obtain ⟨v, hv, hcap, hface⟩ := F.root.installC hS.lawfulC hu hγ (fun a => by
-    rw [hag]
+    simp_all
     exact congrArg (fun x => min x γ) (F.root.shared_at hS.shared a).symm)
   exact ⟨v, hS.replace F hu hv _ (fun a => (hface a).symm), hcap⟩
 
-theorem frontier_cap {j : ℕ} (hj : K ≤ j) {v v' : C.scheme.below (effC n j) → ExtOrd}
-    {γ : ExtOrd} (hγ : SelfVis K γ) (hag : ∀ d, min (v' d) γ = min (v d) γ) :
+end
+
+section
+variable {j : ℕ} (hj : K ≤ j)
+
+theorem frontier_cap {v v'}
+    {γ} (hγ : SelfVis K γ) (hag : ∀ d, min (v' d) γ = min (v d) γ) :
     min (F.gap.eC hj v') γ = min (F.gap.eC hj v) γ := by
   unfold SourceGap.eC
   rw [← F.gap.e_min hγ, ← F.gap.e_min hγ]
   congr 1
   exact funext (fun d => hag (CellScheme.below.mono (F.gap.domLe hj) d))
 
-theorem frontier_le_root {j : ℕ} (hj : K ≤ j)
-    {v : C.scheme.below (effC n j) → ExtOrd}
+theorem frontier_le_root {v}
     (hv : RespectsSemanticsBelow C.rows (effC n j) v)
-    (a : P.scheme.below (faceIndex F.root.A j)) (ht : F.p a.1 = ⊤) :
+    a (ht : F.p a.1 = ⊤) :
     F.gap.eC hj v ≤ v (CellScheme.below.mono (faceIndex_le F.root.B j)
       (F.root.faceAt j a)) :=
   F.gap.e_le_of_gap (F.gap.lowD_respects hj hv) _ (F.root_gap (F.root.fullP a) ht)
+
+end
 
 end Family
 end

@@ -20,7 +20,6 @@ old-face lifting remain explicit, separate from ordered installation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 open CanonicalRecursiveSeedRows CanonicalSeedCutPrefix CanonicalSeedActiveLift

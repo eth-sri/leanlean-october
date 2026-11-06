@@ -12,7 +12,6 @@ public import VaughtConjecture.Knight.CanonicalLowerDomain
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalLowerLift
 open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension
 noncomputable section
@@ -21,7 +20,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-- The old graded-pair clause transports exactly to the grade cut, retaining
 every old occurrence and its original cap. -/
-theorem cut_lift {sem : Semantics D} {I U : Finset ι × ℕ} {j : ℕ}
+theorem cut_lift {sem} {I U} {j}
     (h : GradedLe I U) (hU : U.2 ≤ j) (hlift : CappedLift sem h) :
     CappedLift (GradeCutBoundary.rows D j sem) h := by
   intro p q γ hp hq hγ hag
@@ -40,15 +39,14 @@ theorem cut_lift {sem : Semantics D} {I U : Finset ι × ℕ} {j : ℕ}
   refine ⟨r ∘ eU, GradeCutBoundary.pullback_respects D j sem hU hr, ?_, ?_⟩
   · intro d
     simpa only [Function.comp_apply, Equiv.symm_apply_apply] using hcap (eU d)
-  · intro d
-    simpa only [Function.comp_apply, hm, Equiv.symm_apply_apply] using hread (eI d)
+  · grind
 
 variable (sem : Semantics D) (hA : 1 ≤ A.card)
 variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
 variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
 variable (hk : 0 < k) (hkA : k ≤ A.card) (h1k : 1 < k)
 
-def oldLow (d : Cell D) (hd : D.grade d ≤ 1) :
+def oldLow d (hd : D.grade d ≤ 1) :
     (scheme sem 1 (by decide) hA k hk hkA).below (A, 1) :=
   ⟨oldCell sem 1 (by decide) hA k hk hkA (lowerOld sem 1 (by decide) hA d), by
     simpa only [oldCell, lowerOld, CanonicalGradeCutSections.old,
@@ -56,7 +54,7 @@ def oldLow (d : Cell D) (hd : D.grade d ≤ 1) :
       (show GradedLe (D.cell d) (A, 1) from
         ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩)⟩
 
-theorem equiv_old (d : Cell (GradeCutBoundary.scheme D 1)) :
+theorem equiv_old d :
     CanonicalLowerDomain.equiv sem 1 (by decide) hA k hk hkA h1k (A, 1) le_rfl
       (CanonicalFieldOwnerLift.oldTarget (GradeCutBoundary.rows D 1 sem) 1 (Cell D)
         (GradeCutBoundary.toCell D 1) (by decide) hA (GradeCutBoundary.proper D 1 hproper)
@@ -74,15 +72,15 @@ theorem equiv_old (d : Cell (GradeCutBoundary.scheme D 1)) :
 /-- The actual lower-layer lift, from arbitrary lawful local inputs. It
 restores distinct values and top, with no bound by an upper-grade owner.
 The only section-supply inputs are the two OLD face lifting clauses. -/
-theorem exists_positive_lift {C : Finset ι}
+theorem exists_positive_lift {C}
     (hfull : ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
-    {p : D.below (C, 1) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, 1) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, 1) p)
     {q : (scheme sem 1 (by decide) hA k hk hkA).below (A, 1) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows sem 1 (by decide) hA hproper k hg hk hkA h1k) (A, 1) q)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis 1 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (C, 1),
       min (p e) γ = min (q (oldLow sem hA k hk hkA e.1 e.2.2)) γ)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, D.grade d ≤ 1 →
       GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, 1) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
@@ -131,10 +129,7 @@ theorem exists_positive_lift {C : Finset ι}
     rw [eC.apply_symm_apply] at hm
     rw [← hm, Function.comp_apply, eA.symm_apply_apply, he]
     exact congrArg p (eC.apply_symm_apply e)
-  · intro d
-    have he := hcap (eA.symm d)
-    change min (r (eA.symm d)) γ = min (q (eA (eA.symm d))) γ at he
-    simpa only [Function.comp_apply, eA.apply_symm_apply] using he
+  · grind
 
 end
 end VaughtConjecture.Knight.CanonicalLowerLift

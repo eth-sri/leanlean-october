@@ -57,8 +57,11 @@ theorem one_le_N (R : Ref I nP N J P C) : 1 ≤ N := by
 
 /-! ## Closure -/
 
+section
+variable {a : Field P C → ExtOrd}
+
 /-- Canonical normalization preserves admission. -/
-theorem Admitted.normalize {a : Field P C → ExtOrd} (h : R.Admitted a) :
+theorem Admitted.normalize (h : R.Admitted a) :
     R.Admitted (PairedSlotEncoding.normalize N a) := by
   obtain ⟨st, hst, hs, hg, rfl⟩ := h
   exact ⟨normalizeState st, normalizeState_admissible R.one_le_N hst,
@@ -66,13 +69,15 @@ theorem Admitted.normalize {a : Field P C → ExtOrd} (h : R.Admitted a) :
     funext fun f => sourceProfile_normalizeState st f⟩
 
 /-- Positive `N`-visible caps preserve admission. -/
-theorem Admitted.cap {a : Field P C → ExtOrd} (h : R.Admitted a) {β : ExtOrd}
+theorem Admitted.cap (h : R.Admitted a) {β}
     (hβ : SelfVis N β) (hβbot : β ≠ ⊥) : R.Admitted (fun f => min (a f) β) := by
   obtain ⟨st, hst, hs, hg, rfl⟩ := h
   exact ⟨mapState (fun x => min x β) st,
     hst.map (capWitness hβ hβbot) (min_le_left _ _) R.one_le_N (capWitness_reflects_bottom hβbot),
     hs.map (capWitness hβ hβbot) R.one_le_N, selfVis_map (capWitness hβ hβbot) le_rfl hg,
     funext fun f => sourceProfile_map _ st f⟩
+
+end
 
 variable (R) in
 /-- The zero vector is admitted (the all-bottom state, gate off). -/
@@ -84,12 +89,12 @@ theorem Admitted.zero : R.Admitted (fun _ => ⊥) :=
 agreeing with an admitted source below a positive `N`-visible cap is installed exactly in an
 admitted source that keeps every complete-field `γ`-cap: present fields numerically, future
 fields persistently, the gate literally. -/
-theorem Admitted.private_repair {a : Field P C → ExtOrd} (h : R.Admitted a)
-    {v₁ : C.scheme.below (effC J N) → ExtOrd} (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁)
-    {γ : ExtOrd} (hγ : SelfVis N γ) (hγbot : γ ≠ ⊥)
+theorem Admitted.private_repair {a} (h : R.Admitted a)
+    {v₁} (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁)
+    {γ} (hγ : SelfVis N γ) (hγbot : γ ≠ ⊥)
     (hagree : ∀ d, min (v₁ d) γ = min (a (.priv d.1)) γ) :
-    ∃ b : Field P C → ExtOrd, R.Admitted b ∧
-      (∀ d : C.scheme.below (effC J N), b (.priv d.1) = v₁ d) ∧
+    ∃ b, R.Admitted b ∧
+      (∀ d, b (.priv d.1) = v₁ d) ∧
       ∀ f, min (b f) γ = min (a f) γ := by
   obtain ⟨st, hst, hs, hg, rfl⟩ := h
   have hγ' : SelfVis (effC J N).2 γ := selfVis_mono hγ (min_le_left _ _)
@@ -127,11 +132,14 @@ theorem Admitted.private_repair {a : Field P C → ExtOrd} (h : R.Admitted a)
 /-! ## Switching the gate off -/
 
 /-- The state with its gate switched off. -/
-def gateOff {j : ℕ} (st : R.State j) : R.State j := { st with gate := ⊥ }
+def gateOff {j} (st : R.State j) : R.State j := { st with gate := ⊥ }
+
+section
+variable {j : ℕ}
 
 /-- Switching the gate off preserves admissibility: the support guard and the relation have a
 positive-gate antecedent, and nothing else reads the gate. -/
-theorem Admissible.gateOff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
+theorem Admissible.gateOff {st : R.State j} (hst : R.Admissible st) :
     R.Admissible (Ref.gateOff st) where
   u_respects := hst.u_respects
   v_respects := hst.v_respects
@@ -145,60 +153,63 @@ theorem Admissible.gateOff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
   relation _ hg := absurd rfl hg
 
 /-- Switching the gate off preserves synchronization. -/
-theorem Synchronized.gateOff {j : ℕ} (hj : 1 ≤ j) {st : R.State j} (hs : Synchronized st) :
+theorem Synchronized.gateOff (hj : 1 ≤ j) {st : R.State j} (hs : Synchronized st) :
     Synchronized (Ref.gateOff st) := by
   intro f
   cases f with
   | gate =>
-      change (⊥ : ExtOrd) = extVisibilityReplace ((Ref.gateOff st).sourceProfile .gate) 1 1
       rw [State.sourceProfile_of_present _ (by exact hj)]
       rfl
   | req d =>
       change st.shadowP d = _
       have h := hs (.req d)
-      change st.shadowP d = _ at h
-      rw [h]
-      congr 1
+      aesop
   | priv d =>
       change st.shadowC d = _
       have h := hs (.priv d)
-      change st.shadowC d = _ at h
-      rw [h]
-      congr 1
+      aesop
+
+end
 
 /-! ## Terminal insertion -/
 
 /-- A fresh limit block floor above every proper value of the source vector and above a given
 ordinal. -/
-noncomputable def State.freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) : Ordinal.{0} :=
+noncomputable def State.freshFloor {j} (st : R.State j) (h : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * ((insert h st.inventory).sup id + 1)
 
-theorem State.freshFloor_limit {j : ℕ} (st : R.State j) (h : Ordinal.{0}) :
+section
+variable {j : ℕ} (st : R.State j) (h : Ordinal.{0})
+
+theorem State.freshFloor_limit  :
     limitPart (st.freshFloor h) = st.freshFloor h :=
   limitPart_omega0_mul _
 
-theorem State.lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) {a : Ordinal.{0}}
+theorem State.lt_freshFloor {a : Ordinal.{0}}
     (ha : a ∈ insert h st.inventory) : a < st.freshFloor h := by
   unfold State.freshFloor
   set m : Ordinal.{0} := (insert h st.inventory).sup id with hm
-  have h1 : a ≤ m := Finset.le_sup (f := id) ha
   have h2 : m + 1 ≤ Ordinal.omega0 * (m + 1) := Ordinal.le_mul_right _ Ordinal.omega0_pos
-  have h3 : a < m + 1 := Order.lt_add_one_iff.mpr h1
-  exact h3.trans_le h2
+  aesop
 
-theorem State.profile_lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) (f : Field P C) :
+theorem State.profile_lt_freshFloor (f : Field P C) :
     st.sourceProfile f < ofOrd (st.freshFloor h) ∨ st.sourceProfile f = ⊤ := by
   rcases ExtOrd.cases (st.sourceProfile f) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
-  · exact Or.inr ht
+  · simp_all
+  · grind
   · refine Or.inl ?_
-    rw [ha, ofOrd_lt_ofOrd]
+    simp_all
     exact st.lt_freshFloor h (Finset.mem_insert_of_mem
       (PairedSlotEncoding.mem_values.mpr ⟨f, ha⟩))
 
-theorem State.h_lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) :
+theorem State.h_lt_freshFloor  :
     h < st.freshFloor h :=
   st.lt_freshFloor h (Finset.mem_insert_self _ _)
+
+end
+
+section
+variable {a : Field P C → ExtOrd}
 
 /-- **Terminal insertion, with a supported decoder.**  Capping an admitted source at `β = λ + N`
 for the fresh limit floor `λ` above every proper value and above a prescribed cut `h` gives an
@@ -208,13 +219,13 @@ normalized witness through `N` (the right-filled decoder over the grid `{β}`, t
 collapse) reads every original field back exactly, literal tops included, and sends **every**
 value — represented or not, unused grid points and the terminal region included — to a value
 supported by the original field vector `a`, with bottom and top allowed. -/
-theorem Admitted.exists_terminal' {a : Field P C → ExtOrd} (h : R.Admitted a)
-    (hh : Ordinal.{0}) :
+theorem Admitted.exists_terminal' (h : R.Admitted a)
+    hh :
     ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
       (∀ f, min (b₀ f) (ofOrd hh) = min (a f) (ofOrd hh)) ∧ (∀ f, a f ≠ ⊤ → b₀ f = a f) ∧
       R.Admitted (PairedSlotEncoding.normalize N b₀) ∧
       PairedSlotEncoding.normalize N b₀ ∈ CanonicalPairedProfiles.inventory (Field P C) N ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
+      ∃ δ, Witness (gTop N) δ ∧
         (∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f) ∧
         ∀ x, OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) a (δ x) := by
   obtain ⟨st, hst, hs, hg, rfl⟩ := h
@@ -269,15 +280,17 @@ theorem Admitted.exists_terminal' {a : Field P C → ExtOrd} (h : R.Admitted a)
           exact Or.inr (Or.inl (Set.mem_singleton _))
 
 /-- **Terminal insertion** (the decoder's support conjunct dropped). -/
-theorem Admitted.exists_terminal {a : Field P C → ExtOrd} (h : R.Admitted a) (hh : Ordinal.{0}) :
-    ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
+theorem Admitted.exists_terminal (h : R.Admitted a) hh :
+    ∃ b₀, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
       (∀ f, min (b₀ f) (ofOrd hh) = min (a f) (ofOrd hh)) ∧ (∀ f, a f ≠ ⊤ → b₀ f = a f) ∧
       R.Admitted (PairedSlotEncoding.normalize N b₀) ∧
       PairedSlotEncoding.normalize N b₀ ∈ CanonicalPairedProfiles.inventory (Field P C) N ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
+      ∃ δ, Witness (gTop N) δ ∧
         ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
   obtain ⟨b₀, h1, h2, h3, h4, h5, h6, δ, hδ, hread, -⟩ := h.exists_terminal' hh
   exact ⟨b₀, h1, h2, h3, h4, h5, h6, δ, hδ, hread⟩
+
+end
 
 /-! ## The finite canonical catalogue -/
 
@@ -291,7 +304,7 @@ theorem catalogue_finite : (R.Catalogue).Finite :=
   (CanonicalPairedProfiles.inventory_finite (Field P C) N).subset fun _ h => h.1
 
 /-- The normalization of a proper admitted source is in the catalogue. -/
-theorem Admitted.normalize_mem_catalogue {a : Field P C → ExtOrd} (h : R.Admitted a)
+theorem Admitted.normalize_mem_catalogue {a} (h : R.Admitted a)
     (hproper : ∀ f, a f ≠ ⊤) : PairedSlotEncoding.normalize N a ∈ R.Catalogue :=
   ⟨CanonicalPairedProfiles.normalize_mem_inventory _ _ hproper, h.normalize⟩
 

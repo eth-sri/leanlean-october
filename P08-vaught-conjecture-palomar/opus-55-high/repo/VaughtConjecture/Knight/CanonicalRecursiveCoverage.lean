@@ -16,13 +16,12 @@ nonemptiness or output completeness is an additional assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveCoverage
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
 
-def bottomProfile {ι X : Type*} [DecidableEq ι] [Fintype X]
-    {A : Finset ι} {D : CellScheme A} (sem : Semantics D) (j : ℕ) (occ : Cell D → X) :
+def bottomProfile {ι X} [DecidableEq ι] [Fintype X]
+    {A : Finset ι} {D : CellScheme A} sem j (occ : Cell D → X) :
     CanonicalFieldLayer.Profile sem j X occ := by
   refine ⟨fun _ => ⊥, ⟨?_, ?_, ?_⟩, rfl, fun _ => bot_ne_top⟩
   · intro d
@@ -42,7 +41,10 @@ def bottom (j : ℕ) : CanonicalRecursiveInventory.Profile sem j := by
   · exact bottomProfile _ _ _
   · exact bottomProfile _ _ _
 
-theorem full_index (n : ℕ) (hn : n ≤ A.card) (j : ℕ) (hj : 0 < j) (hjn : j ≤ n) :
+section
+variable (n : ℕ) (hn : n ≤ A.card)
+
+theorem full_index j (hj : 0 < j) (hjn : j ≤ n) :
     ∃ d : Cell (CanonicalRecursiveInventory.scheme sem n hn),
       (CanonicalRecursiveInventory.scheme sem n hn).cell d = (A, j) := by
   obtain ⟨i, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hj)
@@ -52,9 +54,8 @@ theorem full_index (n : ℕ) (hn : n ≤ A.card) (j : ℕ) (hj : 0 < j) (hjn : j
     RecursiveSourceCarrier.retained_cell D (CanonicalRecursiveInventory.Profile sem)
       i t hn (bottom sem (i + 1))⟩
 
-theorem grade_bound (n : ℕ) (hn : n ≤ A.card)
-    (hg : ∀ d : Cell D, D.grade d ≤ n)
-    (d : Cell (CanonicalRecursiveInventory.scheme sem n hn)) :
+theorem grade_bound (hg : ∀ d, D.grade d ≤ n)
+    d :
     (CanonicalRecursiveInventory.scheme sem n hn).grade d ≤ n := by
   rcases RecursiveSourceCarrier.classify D (CanonicalRecursiveInventory.Profile sem) n hn d
     with ⟨c, rfl⟩ | ⟨j, _, hj, he⟩
@@ -63,9 +64,8 @@ theorem grade_bound (n : ℕ) (hn : n ≤ A.card)
   · exact (congrArg Prod.snd he).le.trans hj
 
 /-- Completeness through the constructed height, not at the still absent apex. -/
-theorem complete_through (n : ℕ) (hn : n ≤ A.card)
-    (hc : ∀ J ∈ Plan.gradedPlan D.plan, J.1 ≠ A → ∃ d : Cell D, D.cell d = J)
-    (J : Finset ι × ℕ)
+theorem complete_through (hc : ∀ J ∈ Plan.gradedPlan D.plan, J.1 ≠ A → ∃ d : Cell D, D.cell d = J)
+    J
     (hJ : J ∈ Plan.gradedPlan (CanonicalRecursiveInventory.scheme sem n hn).plan)
     (hj : J.2 ≤ n) :
     ∃ d, (CanonicalRecursiveInventory.scheme sem n hn).cell d = J := by
@@ -77,6 +77,8 @@ theorem complete_through (n : ℕ) (hn : n ≤ A.card)
   · obtain ⟨d, hd⟩ := hc J hm hs
     exact ⟨CanonicalRecursiveInventory.boundary sem n hn d,
       (CanonicalRecursiveInventory.boundary_cell sem n hn d).trans hd⟩
+
+end
 
 end
 end VaughtConjecture.Knight.CanonicalRecursiveCoverage

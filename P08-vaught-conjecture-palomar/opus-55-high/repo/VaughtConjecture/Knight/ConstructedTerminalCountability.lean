@@ -27,13 +27,12 @@ inside the existing classification infrastructure.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ConstructedSpectrumEndpoint
 open TypeTower KnightRealization
 universe w
 
 /-- The constructed non-hollow growth prolongation producer at every block stage. -/
-theorem growthAnchorProlongationAt {M : Type w} {ρ : Ordinal.{0}}
+theorem growthAnchorProlongationAt {M} {ρ}
     {W : KnightRealization (blockStage ρ) M} (hW : W.IsModel) :
     GrowthAnchorProlongationAt W := by
   rintro ⟨hh, hg⟩

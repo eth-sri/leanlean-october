@@ -15,14 +15,13 @@ catalogue is designed and no output lawfulness or lifting premise is supplied.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SmallCoatomSeeds
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
 open CoatomBoundaryExtension CoatomSeedInstallation
 noncomputable section
 
-private def bottomProfile {ι X : Type*} [DecidableEq ι] [Fintype X]
-    {A : Finset ι} {D : CellScheme A} (sem : Semantics D) (j : ℕ) (occ : Cell D → X) :
+private def bottomProfile {ι X} [DecidableEq ι] [Fintype X]
+    {A : Finset ι} {D : CellScheme A} sem j (occ : Cell D → X) :
     CanonicalFieldLayer.Profile sem j X occ := by
   refine ⟨fun _ => ⊥, ⟨?_, ?_, ?_⟩, rfl, fun _ => bot_ne_top⟩
   · intro d
@@ -87,7 +86,7 @@ end One
 section Two
 variable {s : Step (Finset.univ : Finset (Fin 3))} {m : ℕ} (I : Input s m 2 2)
 abbrev twoHeight : 2 ≤ (Finset.univ : Finset (Fin 3)).card := by simp
-theorem twoGrade (d : Cell I.boundary) : I.boundary.grade d ≤ 2 := by
+theorem twoGrade d : I.boundary.grade d ≤ 2 := by
   simpa only [max_self] using I.grade_le d
 
 def two : Seed I where

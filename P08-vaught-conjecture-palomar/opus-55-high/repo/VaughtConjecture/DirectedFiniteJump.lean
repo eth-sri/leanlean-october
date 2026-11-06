@@ -25,8 +25,6 @@ passes from all finite observations to their completed vector.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.DirectedFiniteJump
 
 open Filter JumpClosed
@@ -51,9 +49,12 @@ private theorem eventually_approximates_coordinate (f : I → ℕ) (hf : Monoton
     exact ⟨fun _ => le_antisymm (le_iSup (fun a => (f a : ℕ∞)) i)
       (ha ▸ ENat.natCast_le_natCast.mpr (hf hai)), fun h => (hr h).elim⟩
 
+section
+variable (f : J → I → ℕ)
+
 /-- Above any base, all finite-coordinate attainments and infinite-coordinate
 escapes hold together on one common tail. -/
-theorem exists_approximates_iSup_above (f : J → I → ℕ) (hf : ∀ j, Monotone (f j))
+theorem exists_approximates_iSup_above (hf : ∀ j, Monotone (f j))
     (K : ℕ) (base : I) :
     ∃ i : I, base ≤ i ∧ ∀ a, i ≤ a →
       Approximates K (fun j => (f j a : ℕ∞)) (fun j => ⨆ b, (f j b : ℕ∞)) :=
@@ -61,7 +62,7 @@ theorem exists_approximates_iSup_above (f : J → I → ℕ) (hf : ∀ j, Monoto
 
 /-- One sufficiently large cutoff reconstructs the completed vector on a
 tail. The cutoff bounds every finite completed coordinate simultaneously. -/
-theorem exists_eventually_jump_eq_iSup (f : J → I → ℕ) (hf : ∀ j, Monotone (f j))
+theorem exists_eventually_jump_eq_iSup (hf : ∀ j, Monotone (f j))
     (K0 : ℕ) :
     ∃ K : ℕ, K0 ≤ K ∧ ∀ᶠ i in atTop,
       jump K (fun j => (f j i : ℕ∞)) = (fun j => ⨆ a, (f j a : ℕ∞)) := by
@@ -81,7 +82,7 @@ theorem exists_eventually_jump_eq_iSup (f : J → I → ℕ) (hf : ∀ j, Monoto
 
 /-- The cutoff is independent of the requested base index; the reconstructing
 finite observation can always be chosen above that base. -/
-theorem exists_jump_eq_iSup_above (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)) (K0 : ℕ) :
+theorem exists_jump_eq_iSup_above (hf : ∀ j, Monotone (f j)) (K0 : ℕ) :
     ∃ K : ℕ, K0 ≤ K ∧ ∀ i0 : I, ∃ i : I, i0 ≤ i ∧
       jump K (fun j => (f j i : ℕ∞)) = (fun j => ⨆ a, (f j a : ℕ∞)) := by
   obtain ⟨K, hK, h⟩ := exists_eventually_jump_eq_iSup f hf K0
@@ -92,7 +93,7 @@ theorem exists_jump_eq_iSup_above (f : J → I → ℕ) (hf : ∀ j, Monotone (f
 
 /-- A predicate preserved by every jump above `K0` passes from all finite
 observations to the completed vector. No topological closedness is assumed. -/
-theorem predicate_iSup_of_jump (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)) (K0 : ℕ)
+theorem predicate_iSup_of_jump (hf : ∀ j, Monotone (f j)) (K0 : ℕ)
     (P : (J → ℕ∞) → Prop)
     (hjump : ∀ K : ℕ, K0 ≤ K → ∀ z : J → ℕ∞, P z → P (jump K z))
     (hfinite : ∀ i : I, P (fun j => (f j i : ℕ∞))) :
@@ -101,5 +102,7 @@ theorem predicate_iSup_of_jump (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)
   obtain ⟨i, _, hi⟩ := h (Classical.arbitrary I)
   rw [← hi]
   exact hjump K hK _ (hfinite i)
+
+end
 
 end VaughtConjecture.DirectedFiniteJump

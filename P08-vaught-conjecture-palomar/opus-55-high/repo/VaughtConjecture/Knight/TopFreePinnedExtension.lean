@@ -24,17 +24,17 @@ open TypeTower StageType Value ExtOrd FixedHeight CellScheme.restrictFace
 
 variable {β : LimitStage} {n m : ℕ}
 
-noncomputable def cap (Q : S β.1 (n + 1)) (γ : ExtOrd)
-    (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ) (hγβ : γ < ofOrd β.1) :
+section
+variable (Q : S β.1 (n + 1)) (γ : ExtOrd) (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ) (hγβ : γ < ofOrd β.1)
+
+noncomputable def cap  :
     S β.1 (n + 1) where
   scheme := Q.scheme
   label d := min (Q.label d) γ
   label_bound _ := Or.inl ((min_le_right _ _).trans_lt hγβ)
   respects := FiniteCutCapping.respects_cap Q.respects hγ
 
-theorem cap_typeMap_fixed (Q : S β.1 (n + 1)) (γ : ExtOrd)
-    (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ) (hγβ : γ < ofOrd β.1)
-    (f : Fin m ↪ Fin (n + 1)) (P : S β.1 m) (hf : typeMap f Q = some P)
+theorem cap_typeMap_fixed f (P : S β.1 m) (hf : typeMap f Q = some P)
     (hP : ∀ d, P.label d ≤ γ) : typeMap f (cap Q γ hγ hγβ) = some P := by
   have hv := (typeMap_isSome_iff f Q).mp (by rw [hf]; rfl)
   have he := Option.some.inj ((typeMap_eq_some f Q hv).symm.trans hf)
@@ -47,16 +47,18 @@ theorem cap_typeMap_fixed (Q : S β.1 (n + 1)) (γ : ExtOrd)
   funext d
   exact min_eq_left (hP d)
 
+end
+
 /-- An arbitrary prescribed donor over a visible face of a top-free master is
 received at any proper observation cutoff by a top-free literal master extension.
 Includes the empty master/root, bottom cutoff and donor labels equal to top. -/
-theorem exists_pinned {N n : ℕ} (P : S β.1 N) (hP : ∀ d, P.label d ≠ ⊤)
-    (g : Fin n ↪ Fin N) (p : S β.1 n) (hg : typeMap g P = some p)
-    (q : S β.1 (n + 1)) (hq : IsCoface p q)
-    (δ : ExtOrd) (hδ : δ < ofOrd β.1) :
+theorem exists_pinned {N n} P (hP : ∀ d, P.label d ≠ ⊤)
+    g p (hg : typeMap g P = some p)
+    q (hq : IsCoface p q)
+    δ (hδ : δ < ofOrd β.1) :
     ∃ Q : S β.1 (N + 1), IsCoface P Q ∧ (∀ d, Q.label d ≠ ⊤) ∧
       ∃ q' : S β.1 (n + 1), typeMap (extendFace g) Q = some q' ∧
-        ∃ he : q'.scheme = q.scheme,
+        ∃ he,
           ∀ d, min (q'.label d) δ = min (q.label (SemScheme.castCell he d)) δ := by
   classical
   obtain ⟨Q, hQP, hQq⟩ :=

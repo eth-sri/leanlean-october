@@ -18,7 +18,6 @@ domain. This operation does not impose a grade bound on the ambient scheme.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrderedScopeRelocation
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -38,12 +37,12 @@ def enumeration : Occ sem hB S ≃ Fin (Fintype.card (Occ sem hB S)) :=
 def index : Occ sem hB S → Finset ι × ℕ :=
   ProfileFaceUnion.paste (rightMap sem hB S) D.cell S.carrier.cell
 
-theorem index_right (d : Cell S.carrier) :
+theorem index_right d :
     index sem hB S (ProfileFaceUnion.right (leftMap hB) (rightMap sem hB S) d) =
       S.carrier.cell d :=
   ProfileFaceUnion.paste_right _ _ (fun c => (S.index c).symm) d
 
-theorem index_mem (z : Occ sem hB S) : index sem hB S z ∈ Plan.gradedPlan D.plan := by
+theorem index_mem z : index sem hB S z ∈ Plan.gradedPlan D.plan := by
   rcases ProfileFaceUnion.covered (leftMap hB) (rightMap sem hB S) z with
     ⟨d, rfl⟩ | ⟨d, rfl⟩
   · exact D.cell_mem d
@@ -65,12 +64,11 @@ def old (d : Cell D) : Cell (carrier sem hB S) :=
 def localCell (d : Cell S.carrier) : Cell (carrier sem hB S) :=
   enumeration sem hB S (ProfileFaceUnion.right (leftMap hB) (rightMap sem hB S) d)
 
-theorem old_index (d : Cell D) : (carrier sem hB S).cell (old sem hB S d) = D.cell d := by
+theorem old_index d : (carrier sem hB S).cell (old sem hB S d) = D.cell d := by
   change index sem hB S ((enumeration sem hB S).symm (enumeration sem hB S _)) = _
-  rw [Equiv.symm_apply_apply]
-  rfl
+  aesop
 
-theorem local_index (d : Cell S.carrier) :
+theorem local_index d :
     (carrier sem hB S).cell (localCell sem hB S d) = S.carrier.cell d := by
   change index sem hB S ((enumeration sem hB S).symm (enumeration sem hB S _)) = _
   rw [Equiv.symm_apply_apply, index_right]
@@ -81,11 +79,14 @@ theorem old_order : StrictMono (old sem hB S) :=
 theorem local_order : StrictMono (localCell sem hB S) :=
   ProfileBoundaryOrder.enumeration_right _ _ _ _
 
-theorem shared_cell (c : Cell (shared hB)) :
+theorem shared_cell c :
     localCell sem hB S (S.original c) = old sem hB S (ScopeBoundary.toCell D B hB c) :=
   congrArg (enumeration sem hB S) (ProfileFaceUnion.right_shared _ _ c)
 
-theorem covered (z : Cell (carrier sem hB S)) :
+section
+variable (z : Cell (carrier sem hB S))
+
+theorem covered  :
     (∃ d, old sem hB S d = z) ∨ ∃ e, localCell sem hB S e = z := by
   rcases ProfileFaceUnion.covered (leftMap hB) (rightMap sem hB S)
     ((enumeration sem hB S).symm z) with ⟨d, hd⟩ | ⟨e, he⟩
@@ -94,22 +95,23 @@ theorem covered (z : Cell (carrier sem hB S)) :
   · exact Or.inr ⟨e, (congrArg (enumeration sem hB S) he).trans
       ((enumeration sem hB S).apply_symm_apply z)⟩
 
-theorem classify (z : Cell (carrier sem hB S)) :
+theorem classify  :
     (∃ d, old sem hB S d = z) ∨ (carrier sem hB S).scope z = B := by
   rcases covered sem hB S z with ⟨d, rfl⟩ | ⟨e, rfl⟩
-  · exact Or.inl ⟨d, rfl⟩
+  · grind
   · rcases S.coverage e with ⟨c, rfl⟩ | hc
     · exact Or.inl ⟨ScopeBoundary.toCell D B hB c, (shared_cell sem hB S c).symm⟩
     · exact Or.inr ((congrArg Prod.fst (local_index sem hB S e)).trans hc)
 
-theorem local_exhaustive (z : Cell (carrier sem hB S))
-    (hz : (carrier sem hB S).scope z ⊆ B) : ∃ e, localCell sem hB S e = z := by
+theorem local_exhaustive (hz : (carrier sem hB S).scope z ⊆ B) : ∃ e, localCell sem hB S e = z := by
   rcases covered sem hB S z with ⟨d, rfl⟩ | ⟨e, rfl⟩
   · change ((carrier sem hB S).cell (old sem hB S d)).1 ⊆ B at hz
     rw [old_index] at hz
     obtain ⟨c, rfl⟩ := ScopeBoundary.exhaustive D B hB hz
     exact ⟨S.original c, shared_cell sem hB S c⟩
-  · exact ⟨e, rfl⟩
+  · grind
+
+end
 
 /-- Separation concerns scope containment, not a global bound on old grades. -/
 def Separated : Prop := ∀ d : Cell D, ¬ B ⊆ D.scope d
@@ -120,10 +122,10 @@ include hsep in
 theorem old_exhaustive (c : Cell D) (z : Cell (carrier sem hB S))
     (hz : (carrier sem hB S).scope z ⊆ D.scope c) : ∃ d, old sem hB S d = z := by
   rcases classify sem hB S z with h | h
-  · exact h
+  · grind
   · exact False.elim (hsep c (h ▸ hz))
 
-def oldBelow (c : Cell D) :
+def oldBelow c :
     D.below (D.cell c) ≃ (carrier sem hB S).below ((carrier sem hB S).cell (old sem hB S c)) :=
   Equiv.ofBijective (fun d => ⟨old sem hB S d.1, by
     rw [old_index, old_index]; exact d.2⟩) ⟨by
@@ -137,7 +139,7 @@ def oldBelow (c : Cell D) :
       have h := z.2
       simpa only [← hd, old_index] using h⟩
 
-def localBelow (c : Cell S.carrier) :
+def localBelow c :
     S.carrier.below (S.carrier.cell c) ≃
       (carrier sem hB S).below ((carrier sem hB S).cell (localCell sem hB S c)) :=
   Equiv.ofBijective (fun d => ⟨localCell sem hB S d.1, by
@@ -159,10 +161,9 @@ local notation "K" => carrier sem hB S
 local notation "l" => old sem hB S
 local notation "r" => localCell sem hB S
 
-theorem total_shared (c d : Cell (shared hB)) :
+theorem total_shared c d :
     total sem (ScopeBoundary.toCell D B hB c) (ScopeBoundary.toCell D B hB d) =
       total S.rows (S.original c) (S.original d) := by
-  classical
   by_cases hd : GradedLe ((shared hB).cell d) ((shared hB).cell c)
   · exact (total_below sem (ScopeBoundary.toCell D B hB c)
       ⟨ScopeBoundary.toCell D B hB d, hd⟩).trans
@@ -196,10 +197,10 @@ def table (c : Cell K) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste (rightMap sem hB S) (pushRow l sem) (pushRow r S.rows)
     ((enumeration sem hB S).symm c)
 
-theorem table_old (c d : Cell D) : table sem hB S (l c) (l d) = total sem c d := by
+theorem table_old c d : table sem hB S (l c) (l d) = total sem c d := by
   change ProfileFaceUnion.paste _ (pushRow l sem) (pushRow r S.rows) ((enumeration sem hB S).symm
     (enumeration sem hB S (ProfileFaceUnion.left _ c))) (l d) = _
-  rw [Equiv.symm_apply_apply]
+  simp_all
   exact pushRow_at l (old_order sem hB S).injective sem c d
 
 include hsep in
@@ -231,11 +232,11 @@ def rows : Semantics K where
   E c d := table sem hB S c d.1
   orderly := table_orderly sem hB S hsep
 
-theorem row_old (c : Cell D) (d : D.below (D.cell c)) :
+theorem row_old c (d : D.below (D.cell c)) :
     (rows sem hB S hsep).E (l c) (oldBelow sem hB S hsep c d) = sem.E c d :=
   (table_old sem hB S c d.1).trans (total_below sem c d)
 
-theorem row_local (c : Cell S.carrier) (d : S.carrier.below (S.carrier.cell c)) :
+theorem row_local c (d : S.carrier.below (S.carrier.cell c)) :
     (rows sem hB S hsep).E (r c) (localBelow sem hB S c d) = S.rows.E c d :=
   (table_local sem hB S hsep c d.1).trans (total_below S.rows c d)
 

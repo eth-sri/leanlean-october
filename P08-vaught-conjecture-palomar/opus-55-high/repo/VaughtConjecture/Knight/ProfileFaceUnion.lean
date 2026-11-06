@@ -5,7 +5,16 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.NormalizedProfileLifting
+public import VaughtConjecture.Knight.FiniteProfileControllers
+public import VaughtConjecture.Knight.SlotControllerFamily
+public import VaughtConjecture.Knight.FreshSourceSlots
+public import VaughtConjecture.Knight.SourceBlockPadding
+public import VaughtConjecture.Knight.FreeDiagonal
+public import Mathlib.Data.Finset.Sort
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # Occurrence-exact unions of two faces
 
@@ -15,8 +24,6 @@ boundary inventory, not the missing full-scope rows of a support plan.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProfileFaceUnion
 
@@ -30,7 +37,7 @@ open Classical in
 noncomputable def right (y : Y) : Carrier (X := X) g :=
   if h : y ∈ Set.range g then .inl (f h.choose) else .inr ⟨y, h⟩
 
-theorem right_shared (c : C) : right f g (g c) = left g (f c) := by
+theorem right_shared c : right f g (g c) = left g (f c) := by
   classical
   have h : g c ∈ Set.range g := ⟨c, rfl⟩
   rw [right, dite_eq_left h]
@@ -41,7 +48,7 @@ theorem right_private (y : {y : Y // y ∉ Set.range g}) :
   classical
   simp only [right, dite_eq_right y.property]
 
-theorem overlap (x : X) (y : Y) :
+theorem overlap x y :
     left g x = right f g y ↔ ∃ c, f c = x ∧ g c = y := by
   classical
   constructor
@@ -65,8 +72,8 @@ def paste {V : Type*} (p : X → V) (q : Y → V) : Carrier (X := X) g → V
   | .inl x => p x
   | .inr y => q y
 
-theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
-    (h : ∀ c, p (f c) = q (g c)) (y : Y) : paste g p q (right f g y) = q y := by
+theorem paste_right {V} {p} {q : Y → V}
+    (h : ∀ c, p (f c) = q (g c)) y : paste g p q (right f g y) = q y := by
   classical
   by_cases hy : y ∈ Set.range g
   · obtain ⟨c, rfl⟩ := hy
@@ -74,7 +81,5 @@ theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
     exact h c
   · rw [right, dite_eq_right hy]
     rfl
-
-open NormalizedProfileFamily Transform Value ExtOrd
 
 end VaughtConjecture.Knight.ProfileFaceUnion

@@ -59,8 +59,6 @@ over one shared codebook; it builds no section, controller family, or extension 
 faces encoded with unrelated codebooks are not covered. -/
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -87,7 +85,7 @@ theorem Witness.comp_of_bottom_reflecting
         apply le_bot_iff.mp
         simpa only [Function.comp_apply, gTop_of_gt (not_le.mp hk)] using hact
       have ht : τ x = ⊥ := hbot _ hz
-      rw [hτ.clause5 x k (by rw [ht]; exact bot_le) i hi,
+      rw [hτ.clause5 x k (by grind) i hi,
         ht, extVisibilityReplace_bot, hν.bot, extVisibilityReplace_bot]
 
 /-- The two existing names for the normalized suppressor have the same definition. -/
@@ -104,8 +102,8 @@ theorem Transform.IsStepShifter.normalizedWitness {K : ℕ} {ν : ExtOrd → Ext
 /-- Adding ordinal zero to the finite inventory removes every nonbottom point
 from the canonical normalizer's bottom fibre. -/
 theorem canonicalNormalizer_reflects_bottom_of_zero_mem
-    {S : Finset Ordinal.{0}} {K : ℕ} (h0 : (0 : Ordinal.{0}) ∈ S)
-    (x : ExtOrd) (hx : canonicalNormalizer S K x = ⊥) : x = ⊥ := by
+    {S} {K} (h0 : (0 : Ordinal.{0}) ∈ S)
+    x (hx : canonicalNormalizer S K x = ⊥) : x = ⊥ := by
   classical
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · rfl
@@ -115,7 +113,7 @@ theorem canonicalNormalizer_reflects_bottom_of_zero_mem
       simpa only [Nat.cast_zero] using finitePart_natCast 0
     have hlim : limitPart (0 : Ordinal.{0}) = 0 := by
       simpa only [Nat.cast_zero] using limitPart_natCast 0
-    have hitem : (0 : Ordinal.{0}) ∈ items S K := by
+    have hitem := by
       simpa only [hlim] using
         (limitPart_mem_items (K := K) h0 (by rw [hfp]; exact Nat.zero_le K))
     have hpos : 0 < rank S K ξ := rank_pos_of_item hitem (zero_le (a := ξ))
@@ -125,8 +123,8 @@ theorem canonicalNormalizer_reflects_bottom_of_zero_mem
 /-- Transport one actual controller locality, after normalizing its witness.
 The semantic source row is unchanged. -/
 theorem map_capped_locality_of_bottom_reflecting
-    {X : Type*} {grade : X → ℕ} {E p : X → ExtOrd} {c : X}
-    {K : ℕ} {ν : ExtOrd → ExtOrd}
+    {X} {grade} {E p : X → ExtOrd} {c}
+    {K} {ν}
     (hmax : ∀ d, grade d ≤ grade c) (hcK : grade c ≤ K)
     (hvis : SelfVis (grade c) (p c))
     (hloc : TransformsTo grade E (fun d => min (p d) (p c)))
@@ -138,12 +136,13 @@ theorem map_capped_locality_of_bottom_reflecting
   simp only [Function.comp_apply, gTop_of_le (hmax d), min_top_right]
   rw [hread d, hν.mono.map_min]
 
+section
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd} {K : ℕ}
+
 /-- **Respect is closed under every bottom-reflecting `K`-step shifter**, with the semantic rows
 unchanged (after the reviewer's decoder scout). -/
 theorem RespectsSemanticsBelow.map_bottom_reflecting
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    {K : ℕ} {ν : ExtOrd → ExtOrd}
+    {ν : ExtOrd → ExtOrd}
     (hr : RespectsSemanticsBelow sem BJ r)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (hν : IsStepShifter K ν) (hbot : ∀ x, ν x = ⊥ → x = ⊥) :
@@ -168,9 +167,7 @@ theorem RespectsSemanticsBelow.map_bottom_reflecting
 when zero is included in its inventory. This is a restricted NC theorem, not
 an assertion of the repository's universally quantified NormalizationClosure. -/
 theorem RespectsSemanticsBelow.canonical_of_zero_mem
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    {K : ℕ} {S : Finset Ordinal.{0}}
+    {S}
     (hr : RespectsSemanticsBelow sem BJ r)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (h0 : (0 : Ordinal.{0}) ∈ S) :
@@ -181,14 +178,13 @@ theorem RespectsSemanticsBelow.canonical_of_zero_mem
 /-- The existential normalization needed for a finite inventory costs at most
 one extra ordinal item. Existing coding and decoder results apply unchanged. -/
 theorem RespectsSemanticsBelow.canonical_insert_zero
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    {K : ℕ} (S : Finset Ordinal.{0})
+    S
     (hr : RespectsSemanticsBelow sem BJ r)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
     RespectsSemanticsBelow sem BJ (fun d => canonicalNormalizer (insert 0 S) K (r d)) := by
-  classical
   exact hr.canonical_of_zero_mem hK (Finset.mem_insert_self _ _)
+
+end
 
 /-! ## The finite cover of a fixed finite lower domain -/
 
@@ -201,18 +197,17 @@ open Classical in
 noncomputable def ordOf (x : ExtOrd) : Ordinal.{0} :=
   if h : ∃ s : Ordinal.{0}, x = ofOrd s then h.choose else 0
 
-theorem ordOf_ofOrd (s : Ordinal.{0}) : ordOf (ofOrd s) = s := by
-  have h : ∃ t : Ordinal.{0}, ofOrd s = ofOrd t := ⟨s, rfl⟩
+theorem ordOf_ofOrd s : ordOf (ofOrd s) = s := by
+  have h : ∃ t, ofOrd s = ofOrd t := ⟨s, rfl⟩
   unfold ordOf
-  rw [dite_eq_left h]
-  exact (ofOrd_inj.mp h.choose_spec).symm
+  simp_all
 
 /-- **Every respecting labelling of a finite lower domain has a respecting representative in one
 uniformly bounded finite coded inventory, decoding exactly to it.**  With at most `m` cells and
 grades at most `K`, the inventory is `codedAlphabet (m + 1) K`: the labelling's ordinal values
 plus zero cost at most `m + 1` items. -/
-theorem RespectsSemanticsBelow.exists_coded_representative {sem : Semantics D}
-    {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd} {K m : ℕ}
+theorem RespectsSemanticsBelow.exists_coded_representative {sem}
+    {BJ} {r} {K m}
     (hr : RespectsSemanticsBelow sem BJ r) (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (hm : Nat.card (D.below BJ) ≤ m) :
     ∃ (S : Finset Ordinal.{0}) (r' : D.below BJ → ExtOrd),
@@ -220,11 +215,11 @@ theorem RespectsSemanticsBelow.exists_coded_representative {sem : Semantics D}
       (∀ d, r' d ∈ ExtOrd.codedAlphabet (m + 1) K) ∧
       (∀ d, canonicalDecoder S K (r' d) = r d) := by
   have hfin : Fintype (D.below BJ) := Fintype.ofFinite _
-  obtain ⟨S₀, hS₀⟩ : ∃ S₀ : Finset Ordinal.{0},
+  obtain ⟨S₀, hS₀⟩ : ∃ S₀,
       S₀ = (Finset.univ : Finset (D.below BJ)).image fun d => ordOf (r d) := ⟨_, rfl⟩
   have hS₀card : S₀.card ≤ m := by
     refine le_trans ?_ hm
-    rw [hS₀, Nat.card_eq_fintype_card, ← Finset.card_univ]
+    simp_all
     exact Finset.card_image_le
   have hcard : (insert (0 : Ordinal.{0}) S₀).card ≤ m + 1 :=
     (Finset.card_insert_le _ _).trans (Nat.succ_le_succ hS₀card)
@@ -250,11 +245,11 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 /-- The canonical decoder reflects bottom for every inventory: each nonbottom branch returns an
 ordinal or `⊤`. -/
 theorem canonicalDecoder_reflects_bottom
-    {S : Finset Ordinal.{0}} {K : ℕ} (x : ExtOrd)
+    {S} {K} x
     (hx : canonicalDecoder S K x = ⊥) : x = ⊥ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · rfl
-  · exact False.elim (top_ne_bot hx)
+  · simp_all
   · exfalso
     by_cases hy : ξ < Ordinal.omega0 * (items S K).card
     · by_cases h0 : finitePart (blockItem S K ξ) = 0
@@ -270,8 +265,8 @@ theorem canonicalDecoder_reflects_bottom
 
 /-- **Decoding preserves respect**, for every inventory, with the semantic rows unchanged. -/
 theorem RespectsSemanticsBelow.decoded
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    {K : ℕ} (S : Finset Ordinal.{0})
+    {sem} {BJ} {r : D.below BJ → ExtOrd}
+    {K} S
     (hr : RespectsSemanticsBelow sem BJ r)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
     RespectsSemanticsBelow sem BJ (fun d => canonicalDecoder S K (r d)) :=

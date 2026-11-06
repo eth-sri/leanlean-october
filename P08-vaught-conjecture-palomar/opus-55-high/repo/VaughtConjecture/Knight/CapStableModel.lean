@@ -24,14 +24,17 @@ open TypeTower StageType KnightRealization Value ExtOrd
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
-theorem finiteCutReceiving (hM : W.IsModel) (hh : ¬ W.IsHollow)
+section
+variable (hM : W.IsModel)
+
+theorem finiteCutReceiving (hh : ¬ W.IsHollow)
     (hg : W.HasTopGradeGrowth) : FiniteCutReceiving (stableLift hM) := by
   apply FiniteCutReceiving.of_positive hM.nonempty
     (stableLiftOf_consistent hM.consistent hM.covering)
     (stableLiftOf_covering hM.consistent hM.covering)
   intro n hn t p hp q hqp δ hδ hδα
   obtain ⟨p₀, hp₀, rfl⟩ := stableLift_eval_eq_some hM hp
-  obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal.{0}, δ = ofOrd ν ∧ ν < α.nextBlock.1 := by
+  obtain ⟨ν, rfl, hν⟩ : ∃ ν, δ = ofOrd ν ∧ ν < α.nextBlock.1 := by
     rcases ExtOrd.cases δ with rfl | rfl | ⟨ν, rfl⟩
     · exact False.elim (lt_irrefl _ hδ)
     · exact False.elim ((not_lt_of_ge le_top) hδα)
@@ -51,10 +54,12 @@ theorem finiteCutReceiving (hM : W.IsModel) (hh : ¬ W.IsHollow)
 
 /-- Alternative constructed stable modelhood, without assuming the stable candidate
 is a model or using its occurrence package as an input. -/
-theorem isModel (hM : W.IsModel) (hh : ¬ W.IsHollow) (hg : W.HasTopGradeGrowth) :
+theorem isModel (hh : ¬ W.IsHollow) (hg : W.HasTopGradeGrowth) :
     (stableLift hM).IsModel :=
   FiniteCutReceiving.isModel (finiteCutReceiving hM hh hg) hM.nonempty
     (stableLiftOf_consistent hM.consistent hM.covering)
     (stableLiftOf_covering hM.consistent hM.covering)
+
+end
 
 end VaughtConjecture.Knight.CapStableModel

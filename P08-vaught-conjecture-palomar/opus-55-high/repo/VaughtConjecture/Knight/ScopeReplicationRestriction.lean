@@ -17,7 +17,6 @@ or hidden-original completion is assumed in this generic lemma.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationRestriction
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
 open ScopeReplicationSemantics ScopeReplicationAuxExtension

@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SpectrumAssembly
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 public import VaughtConjecture.Knight.NoTop
 
 /-! # Terminal models: the low-level definitions
@@ -23,17 +24,22 @@ namespace VaughtConjecture.Knight
 
 open TypeTower KnightRealization Cardinal
 
+section
+variable (ρ : Ordinal.{0})
+
 /-- The terminal models at block `ρ` on `ℕ`. -/
-abbrev TerminalModel (ρ : Ordinal.{0}) : Type 1 :=
+abbrev TerminalModel  : Type 1 :=
   {W : KnightRealization (blockStage ρ) ℕ //
     W.IsModel ∧ W.NoProlongationToIn IsModelClass (blockStage_le_succ ρ)}
 
 /-- Terminal models up to isomorphism. -/
-noncomputable def terminalSetoid (ρ : Ordinal.{0}) : Setoid (TerminalModel ρ) :=
+noncomputable def terminalSetoid  : Setoid (TerminalModel ρ) :=
   (Realization.isoSetoid knightTower (blockStage ρ) ℕ).comap Subtype.val
 
 /-- **The terminal classes at block `ρ`.** -/
-abbrev TerminalClass (ρ : Ordinal.{0}) : Type 1 := Quotient (terminalSetoid ρ)
+abbrev TerminalClass  : Type 1 := Quotient (terminalSetoid ρ)
+
+end
 
 theorem omegaStage_le_blockStage_zero : omegaStage ≤ blockStage 0 :=
   le_of_eq blockStage_zero.symm
@@ -50,17 +56,22 @@ theorem liftBlockZero_reduct (R : KnightRealization omegaStage ℕ) :
   rw [Realization.reduct_reduct]
   exact Realization.reduct_refl R
 
+section
+variable {ρ : Ordinal.{0}}
+
 /-- The counted model underlying a terminal model: reduct to block `0`, lifted. -/
-noncomputable def TerminalModel.toNatModel {ρ : Ordinal.{0}} (W : TerminalModel ρ) :
+noncomputable def TerminalModel.toNatModel (W : TerminalModel ρ) :
     KnightNatModel :=
   ⟨liftBlockZero (W.1.reduct (blockStage_zero_le ρ)),
     (W.2.1.reduct (blockStage_zero_le ρ)).reduct omegaStage_le_blockStage_zero⟩
 
 /-- Isomorphic terminal models have isomorphic underlying counted models. -/
-theorem TerminalModel.toNatModel_iso {ρ : Ordinal.{0}} {W W' : TerminalModel ρ}
+theorem TerminalModel.toNatModel_iso {W W' : TerminalModel ρ}
     (h : (terminalSetoid ρ).r W W') : knightModelSetoid.r W.toNatModel W'.toNatModel := by
   obtain ⟨i⟩ := h
   exact ⟨(i.reduct (blockStage_zero_le ρ)).reduct omegaStage_le_blockStage_zero⟩
+
+end
 
 /-- **Reduct on classes**: the terminal classes at block `ρ` map to the counted classes. -/
 noncomputable def terminalToClass (ρ : Ordinal.{0}) :

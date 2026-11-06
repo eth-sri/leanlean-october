@@ -46,7 +46,7 @@ def structureOfCode {M : Type} (c : Code R M) : (language R).Structure M where
   RelMap := fun {n} r xs => c ⟨⟨n, r⟩, xs⟩ = true
 
 /-- Ordinary satisfaction in the decoded structure. -/
-def Satisfies {M : Type} (φ : (language R).Sentenceω) (c : Code R M) : Prop :=
+def Satisfies {M} (φ : (language R).Sentenceω) (c : Code R M) : Prop :=
   letI := structureOfCode R c
   FirstOrder.Language.BoundedFormulaInf.Realize (M := M) φ Empty.elim Fin.elim0
 
@@ -72,7 +72,7 @@ def isoSetoid : Setoid (Code R ℕ) := ⟨Isomorphic R, isomorphic_equivalence R
 abbrev NatModel (φ : (language R).Sentenceω) := {c : Code R ℕ // Satisfies R φ c}
 
 /-- Isomorphism restricted to the models. -/
-def modelSetoid (φ : (language R).Sentenceω) : Setoid (NatModel R φ) :=
+def modelSetoid φ : Setoid (NatModel R φ) :=
   Setoid.comap Subtype.val (isoSetoid R)
 
 /-- Isomorphism classes of models. -/

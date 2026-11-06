@@ -18,7 +18,6 @@ The donor is already wholly present at activation. No physical carrier is built.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -43,19 +42,22 @@ def ofProfile (a : Field DA DQ → ExtOrd) : State DA DQ :=
 @[simp] theorem ofProfile_profile (S : State DA DQ) : ofProfile S.profile = S := rfl
 
 @[simp] theorem profile_ofProfile (a : Field DA DQ → ExtOrd) :
-    (ofProfile a).profile = a := by
-  funext f
-  cases f <;> rfl
+    (ofProfile a).profile = a := by aesop
 
 theorem profile_injective : Function.Injective (profile (DA := DA) (DQ := DQ)) := by
   intro S T h
   simpa only [ofProfile_profile] using congrArg ofProfile h
 
-def map (σ : ExtOrd → ExtOrd) (S : State DA DQ) : State DA DQ :=
+section
+variable (σ : ExtOrd → ExtOrd) (S : State DA DQ)
+
+def map  : State DA DQ :=
   ⟨σ ∘ S.privateValues, σ ∘ S.donorValues⟩
 
-theorem profile_map (σ : ExtOrd → ExtOrd) (S : State DA DQ) (f : Field DA DQ) :
+theorem profile_map (f : Field DA DQ) :
     (S.map σ).profile f = σ (S.profile f) := by cases f <;> rfl
+
+end
 
 def CapEq (γ : ExtOrd) (S T : State DA DQ) : Prop :=
   ∀ f, min (T.profile f) γ = min (S.profile f) γ
@@ -89,22 +91,25 @@ def zero : State DA DQ := ⟨fun _ => ⊥, fun _ => ⊥⟩
 theorem zero_admitted (j : ℕ) : Admitted X j (zero (DA := DA) (DQ := DQ)) where
   private_lawful := respectsBelow_bot semA (A, j)
   donor_lawful := respectsBelow_bot semQ (Q, j)
-  visible f := by cases f <;> exact selfVis_bot _
+  visible f := by aesop
   shared _ := rfl
   correct _ hc := (X.C_notin ((hc X.req.capCell).mp rfl)).elim
 
-def capAt {j : ℕ} (hj : X.req.N ≤ j) (d : DA.below (DA.cell X.req.C)) :
+def capAt {j} (hj : X.req.N ≤ j) (d : DA.below (DA.cell X.req.C)) :
     DA.below (A, j) :=
   ⟨d.1, DA.isPlan.subset_of_mem (DA.scope_mem_plan d.1),
     d.2.2.trans (X.grade_C.le.trans hj)⟩
 
-theorem zeroAbove_cap {j : ℕ} (hj : X.req.N ≤ j)
+section
+variable {j : ℕ}
+
+theorem zeroAbove_cap hj
     (p : DA.below (A, j) → ExtOrd) (d : DA.below (DA.cell X.req.C)) :
     CellScheme.zeroAbove p d.1 = p (capAt X hj d) :=
   CellScheme.zeroAbove_low p (capAt X hj d)
 
-theorem zeroAbove_capEq {j : ℕ} {p q : DA.below (A, j) → ExtOrd} {γ : ExtOrd}
-    (h : ∀ d, min (p d) γ = min (q d) γ) (d : Cell DA) :
+theorem zeroAbove_capEq {p q : DA.below (A, j) → ExtOrd} {γ}
+    (h : ∀ d, min (p d) γ = min (q d) γ) d :
     min (CellScheme.zeroAbove p d) γ = min (CellScheme.zeroAbove q d) γ := by
   by_cases hd : DA.grade d ≤ j
   · exact (congrArg (min · γ) (CellScheme.zeroAbove_low p
@@ -113,39 +118,44 @@ theorem zeroAbove_capEq {j : ℕ} {p q : DA.below (A, j) → ExtOrd} {γ : ExtOr
         ⟨d, DA.isPlan.subset_of_mem (DA.scope_mem_plan d), hd⟩)).symm)
   · rw [CellScheme.zeroAbove_high p hd, CellScheme.zeroAbove_high q hd]
 
+end
+
 /-- Restore the future bookkeeping coordinates after the temporary zero tail. -/
-def complete {j : ℕ} (u : Cell DA → ExtOrd) (p : DA.below (A, j) → ExtOrd)
+def complete {j} (u : Cell DA → ExtOrd) (p : DA.below (A, j) → ExtOrd)
     (d : Cell DA) : ExtOrd :=
   if hd : DA.grade d ≤ j then
     p ⟨d, DA.isPlan.subset_of_mem (DA.scope_mem_plan d), hd⟩ else u d
 
-theorem complete_present {j : ℕ} (u : Cell DA → ExtOrd)
-    (p : DA.below (A, j) → ExtOrd) (d : DA.below (A, j)) : complete u p d.1 = p d := by
+section
+variable {j : ℕ} (u : Cell DA → ExtOrd) (p : DA.below (A, j) → ExtOrd)
+
+theorem complete_present (d : DA.below (A, j)) : complete u p d.1 = p d := by
   have hd : DA.grade d.1 ≤ j := d.2.2
   rw [complete, dite_eq_left hd]
   rfl
 
-theorem complete_future {j : ℕ} (u : Cell DA → ExtOrd)
-    (p : DA.below (A, j) → ExtOrd) (d : Cell DA) (hd : j < DA.grade d) :
+theorem complete_future (d : Cell DA) (hd : j < DA.grade d) :
     complete u p d = u d := by rw [complete, dite_eq_right (not_le.mpr hd)]
+
+end
 
 /-- All-cap active private repair on the actual full-scope grade cutoff.
 Neither the replacement donor nor its correctness is an input. Future private
 fields, and every complete-field original cap, are retained. -/
 theorem private_repair {j : ℕ} (hj : X.req.N ≤ j) {S : State DA DQ}
-    (hS : Admitted X j S) {p : DA.below (A, j) → ExtOrd}
-    (hp : RespectsSemanticsBelow semA (A, j) p) {γ : ExtOrd} (hγ : SelfVis j γ)
+    (hS : Admitted X j S) {p}
+    (hp : RespectsSemanticsBelow semA (A, j) p) {γ} (hγ : SelfVis j γ)
     (hag : ∀ d, min (p d) γ = min (S.privateValues d.1) γ) :
-    ∃ T : State DA DQ, Admitted X j T ∧
-      (∀ d : DA.below (A, j), T.privateValues d.1 = p d) ∧ S.CapEq γ T ∧
+    ∃ T, Admitted X j T ∧
+      (∀ d, T.privateValues d.1 = p d) ∧ S.CapEq γ T ∧
       ∀ d, j < DA.grade d → T.privateValues d = S.privateValues d := by
   let u₀ := CellScheme.zeroAbove (fun d : DA.below (A, j) => S.privateValues d.1)
   have hsec : X.req.sec u₀ = X.req.sec S.privateValues :=
     funext (fun d => zeroAbove_cap X hj
-      (fun d : DA.below (A, j) => S.privateValues d.1) d)
+      (fun d => S.privateValues d.1) d)
   have hcls : InClass X.ZA u₀ ↔ InClass X.ZA S.privateValues := by
     unfold InClass
-    simp only [show ∀ d : DA.below (DA.cell X.req.C), u₀ d.1 = S.privateValues d.1
+    simp only [show ∀ d, u₀ d.1 = S.privateValues d.1
       from fun d => zeroAbove_cap X hj _ d]
   have hv : RespectsSemantics semQ S.donorValues := by
     exact hS.donor_lawful.toRespects (fun d =>
@@ -153,7 +163,7 @@ theorem private_repair {j : ℕ} (hj : X.req.N ≤ j) {S : State DA DQ}
   have hall : X.Allowed u₀ S.donorValues :=
     ⟨hS.private_lawful.zeroAbove, hv,
       fun d => (hS.shared d).trans (zeroAbove_cap X hj
-        (fun d : DA.below (A, j) => S.privateValues d.1) (X.κ d)).symm,
+        (fun d => S.privateValues d.1) (X.κ d)).symm,
       fun hc => hsec.symm ▸ hS.correct hj (hcls.mp hc)⟩
   obtain ⟨v, hv, hvcap⟩ := X.relative_lift hall hp.zeroAbove (hγ.mono hj)
     (zeroAbove_capEq hag)

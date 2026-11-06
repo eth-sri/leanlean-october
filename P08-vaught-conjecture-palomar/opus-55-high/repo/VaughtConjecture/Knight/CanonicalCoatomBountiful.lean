@@ -20,7 +20,6 @@ at the actual grade ceiling, retaining their original permitted caps.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCoatomBountiful
 open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension AmalgamationPlan
 noncomputable section

@@ -62,7 +62,7 @@ prolongs through actual models to a strictly higher limit stage `B`, then over e
 labelled source tuple the source realizes a one-point extension carrying an `∞` cell of
 full grade.  Same-carrier normalization + high-grade dominance at `γ = A₀` + the forcing
 certificate `truncExt_eq_top_of_ge`. -/
-theorem sourceTopProduction_of_prolongsToIn {B : LimitStage} (hlt : A₀ < B)
+theorem sourceTopProduction_of_prolongsToIn {B} (hlt : A₀ < B)
     (hp : Rs.ProlongsToIn IsModelClass hlt.le) : Rs.SourceTopProduction := by
   -- 1. Normalize to a literal fixed-carrier reduct: an actual model on `M` itself.
   obtain ⟨R', hR', hred⟩ := (prolongsToIn_isModelClass_iff_on Rs hlt.le).mp hp

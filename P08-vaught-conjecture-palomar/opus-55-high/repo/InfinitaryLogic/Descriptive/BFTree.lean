@@ -6,7 +6,11 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Descriptive.KleeneBrouwer
-public import InfinitaryLogic.Descriptive.BFEquivBorel
+public import InfinitaryLogic.OrdinalUtil
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
+public import Mathlib.SetTheory.Cardinal.Aleph
+public import Architect
 public import InfinitaryLogic.Descriptive.StructureIsoSetoid
 public import Mathlib.Basic.Finite.Sum
 
@@ -101,33 +105,8 @@ structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
 
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
-
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
-
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
-
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
-
 /-- On a prefix, the decoded tuples are restrictions. -/
-private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
+private theorem bfLeft_comp_castLE {s t} (hst : s <+: t) :
     bfLeft t ∘ Fin.castLE hst.length_le = bfLeft s := by
   funext j
   simp only [Function.comp_apply, bfLeft, Fin.val_castLE]
@@ -135,7 +114,7 @@ private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
   · rfl
   · exact (hst.getElem j.2).symm
 
-private theorem bfRight_comp_castLE {s t : List ℕ} (hst : s <+: t) :
+private theorem bfRight_comp_castLE {s t} (hst : s <+: t) :
     bfRight t ∘ Fin.castLE hst.length_le = bfRight s := by
   funext j
   simp only [Function.comp_apply, bfRight, Fin.val_castLE]
@@ -145,12 +124,12 @@ private theorem bfRight_comp_castLE {s t : List ℕ} (hst : s <+: t) :
 
 /-- The decoded tuples of a one-step extension: the left tuple gains the left move of position
 `s.length`. -/
-private theorem bfLeft_append_singleton (s : List ℕ) (x : ℕ) :
+private theorem bfLeft_append_singleton s x :
     bfLeft (s ++ [x]) = Fin.snoc (bfLeft s)
       (if s.length % 2 = 0 then s.length / 2 else x) ∘ Fin.cast (by simp) := by
   funext j
   obtain ⟨j, hj⟩ := j
-  have hj' : j < s.length + 1 := by simpa using hj
+  have hj' : j < s.length + 1 := by grind
   rcases Nat.lt_succ_iff_lt_or_eq.mp hj' with hlt | rfl
   · have : (Fin.cast (by simp) ⟨j, hj⟩ : Fin (s.length + 1)) = Fin.castSucc ⟨j, hlt⟩ := rfl
     simp only [Function.comp_apply, this, Fin.snoc_castSucc, bfLeft]
@@ -159,12 +138,12 @@ private theorem bfLeft_append_singleton (s : List ℕ) (x : ℕ) :
     simp only [Function.comp_apply, this, Fin.snoc_last, bfLeft]
     split_ifs <;> simp
 
-private theorem bfRight_append_singleton (s : List ℕ) (x : ℕ) :
+private theorem bfRight_append_singleton s x :
     bfRight (s ++ [x]) = Fin.snoc (bfRight s)
       (if s.length % 2 = 0 then x else s.length / 2) ∘ Fin.cast (by simp) := by
   funext j
   obtain ⟨j, hj⟩ := j
-  have hj' : j < s.length + 1 := by simpa using hj
+  have hj' : j < s.length + 1 := by grind
   rcases Nat.lt_succ_iff_lt_or_eq.mp hj' with hlt | rfl
   · have : (Fin.cast (by simp) ⟨j, hj⟩ : Fin (s.length + 1)) = Fin.castSucc ⟨j, hlt⟩ := rfl
     simp only [Function.comp_apply, this, Fin.snoc_castSucc, bfRight]
@@ -182,9 +161,9 @@ def bfNodes (c d : StructureSpace L) : Set (List ℕ) :=
 
 /-- The node set is closed under one-step prefixes: restricting a partial isomorphism keeps the
 atomic type (`SameAtomicType.relabel`). -/
-theorem bfNodes_prefix (c d : StructureSpace L) ⦃s : List ℕ⦄ ⦃a : ℕ⦄
+theorem bfNodes_prefix (c d : StructureSpace L) ⦃s⦄ ⦃a⦄
     (h : s ++ [a] ∈ bfNodes c d) : s ∈ bfNodes c d := by
-  have hst : s <+: s ++ [a] := List.prefix_append s [a]
+  have hst := List.prefix_append s [a]
   have := @SameAtomicType.relabel L ℕ c.toStructure ℕ d.toStructure _ _ _ _ h
     (Fin.castLE hst.length_le)
   rwa [bfLeft_comp_castLE hst, bfRight_comp_castLE hst] at this
@@ -194,21 +173,21 @@ def bfTree (c d : StructureSpace L) : tree ℕ :=
   ⟨bfNodes c d, fun _ _ h ↦ bfNodes_prefix c d h⟩
 
 /-- Membership in the tree is atomic agreement of the decoded tuples. -/
-theorem mem_bfTree_iff {c d : StructureSpace L} {s : List ℕ} :
+theorem mem_bfTree_iff {c d} {s} :
     s ∈ bfTree c d ↔
       @SameAtomicType L ℕ c.toStructure s.length ℕ d.toStructure (bfLeft s) (bfRight s) :=
   Iff.rfl
 
-private theorem mem_bfTree_of_bfEquiv {c d : StructureSpace L} {α : Ordinal.{0}}
-    {s : List ℕ}
+private theorem mem_bfTree_of_bfEquiv {c d} {α : Ordinal.{0}}
+    {s}
     (h : @BFEquiv L ℕ c.toStructure ℕ d.toStructure α s.length (bfLeft s) (bfRight s)) :
     s ∈ bfTree c d :=
   (@BFEquiv.zero L ℕ c.toStructure ℕ d.toStructure _ _ _).mp
     (@BFEquiv.monotone L ℕ c.toStructure ℕ d.toStructure _ _ _ zero_le _ _ h)
 
-private theorem bfLeft_nil : bfLeft [] = Fin.elim0 := funext fun j ↦ absurd j.2 (by simp)
+private theorem bfLeft_nil : bfLeft [] = Fin.elim0 := by decide
 
-private theorem bfRight_nil : bfRight [] = Fin.elim0 := funext fun j ↦ absurd j.2 (by simp)
+private theorem bfRight_nil : bfRight [] = Fin.elim0 := by decide
 
 /-- `CodeBFEquiv` is back-and-forth equivalence at the root node. -/
 private theorem codeBFEquiv_iff_root {α : Ordinal.{0}} {c d : StructureSpace L} :
@@ -227,7 +206,7 @@ theorem nil_mem_bfTree_iff {c d : StructureSpace L} :
 /-! ### Closedness and measurability of the node conditions -/
 
 /-- One atomic condition at fixed tuples is clopen on the pair space. -/
-private theorem isClopen_setOf_holds_iff {n : ℕ} (a b : Fin n → ℕ) (idx : L.AtomicIdx n) :
+private theorem isClopen_setOf_holds_iff {n} a b idx :
     IsClopen {p : StructureSpace L × StructureSpace L |
       @AtomicIdx.holds L ℕ p.1.toStructure n idx a ↔
         @AtomicIdx.holds L ℕ p.2.toStructure n idx b} := by
@@ -247,10 +226,7 @@ private theorem isClopen_setOf_holds_iff {n : ℕ} (a b : Fin n → ℕ) (idx : 
 private theorem setOf_mem_bfTree_eq_iInter (s : List ℕ) :
     {p : StructureSpace L × StructureSpace L | s ∈ bfTree p.1 p.2} =
       ⋂ idx : L.AtomicIdx s.length, {p | @AtomicIdx.holds L ℕ p.1.toStructure _ idx (bfLeft s) ↔
-        @AtomicIdx.holds L ℕ p.2.toStructure _ idx (bfRight s)} := by
-  ext p
-  simp only [Set.mem_ofPred_eq, Set.mem_iInter]
-  rfl
+        @AtomicIdx.holds L ℕ p.2.toStructure _ idx (bfRight s)} := by aesop
 
 /-- **Node conditions are closed**, for every relational `L`: the set of code pairs whose tree
 contains `s` is an intersection of clopen atomic conditions.  It need not be clopen, and the
@@ -303,7 +279,7 @@ private theorem holds_seq_of_branch {c d : StructureSpace L} {z : ℕ → ℕ}
       @AtomicIdx.holds L ℕ d.toStructure l idx (seqRight z ∘ g) := by
   obtain ⟨N, hN⟩ : ∃ N, ∀ k, g k < N :=
     ⟨Finset.univ.sup g + 1, fun k ↦ Nat.lt_succ_of_le (Finset.le_sup (Finset.mem_univ k))⟩
-  have ht : ∀ k, g k < (List.ofFn fun i : Fin N ↦ z i).length := by simpa using hN
+  have ht : ∀ k, g k < (List.ofFn fun i : Fin N ↦ z i).length := by grind
   let σ : Fin l → Fin (List.ofFn fun i : Fin N ↦ z i).length := fun k ↦ ⟨g k, ht k⟩
   have h := @SameAtomicType.relabel L ℕ c.toStructure ℕ d.toStructure _ _ _ _ (hz N) σ idx
   have hl : bfLeft (List.ofFn fun i : Fin N ↦ z i) ∘ σ = seqLeft z ∘ g :=
@@ -347,11 +323,9 @@ This is the special case `(SameAtomicType.map_equiv (Language.Equiv.refl L M) e)
 (SameAtomicType.refl a)` of the library lemma `SameAtomicType.map_equiv`, which lives in
 `Scott/AtomicDiagram.lean`, inside this module's minimal import closure; the proof is that one
 line.  The helper is kept only to fix the structures as implicit arguments. -/
-private theorem sameAtomicType_comp_equiv {M N : Type*} {iM : L.Structure M}
-    {iN : L.Structure N} (e : @Language.Equiv L M N iM iN) {n : ℕ} (a : Fin n → M) :
+private theorem sameAtomicType_comp_equiv {M N} {iM : L.Structure M}
+    {iN : L.Structure N} (e : @Language.Equiv L M N iM iN) {n} a :
     @SameAtomicType L M iM n N iN a (e.toEquiv ∘ a) := by
-  let _ := iM
-  let _ := iN
   exact (SameAtomicType.map_equiv (Language.Equiv.refl L M) e).mpr (SameAtomicType.refl a)
 
 /-- **An isomorphism gives a branch**: `z (2 i) = e i` answers element `i` of the left
@@ -366,7 +340,7 @@ private theorem branch_of_equiv {c d : StructureSpace L}
   have hR : ∀ j, seqRight z j = f (seqLeft z j) := by
     intro j
     by_cases hj : j % 2 = 0 <;> simp [seqLeft, seqRight, hz, hj]
-  have hfun : bfRight (List.ofFn fun i : Fin n ↦ z i) =
+  have hfun : bfRight (List.ofFn fun i ↦ z i) =
       f ∘ bfLeft (List.ofFn fun i : Fin n ↦ z i) := by
     funext j
     rw [Function.comp_apply, bfLeft_ofFn, bfRight_ofFn, hR]
@@ -391,16 +365,14 @@ theorem hasInfiniteBranch_bfTree_iff (c d : StructureSpace L) :
 omit [L.IsRelational] in
 /-- Reindexing along a cast of the tuple length does not change `BFEquiv`.  The structures are
 implicit arguments, not instances. -/
-private theorem bfEquiv_comp_cast {M N : Type*} {iM : L.Structure M} {iN : L.Structure N}
-    {α : Ordinal.{0}} {n m : ℕ} (h : n = m) (a : Fin m → M) (b : Fin m → N) :
+private theorem bfEquiv_comp_cast {M N} {iM} {iN}
+    {α : Ordinal.{0}} {n m} h a b :
     @BFEquiv L M iM N iN α n (a ∘ Fin.cast h) (b ∘ Fin.cast h) ↔
-      @BFEquiv L M iM N iN α m a b := by
-  subst h
-  rfl
+      @BFEquiv L M iM N iN α m a b := by aesop
 
 /-- `BFEquiv` at the tuples of a one-step extension is `BFEquiv` at the extended tuples. -/
 private theorem bfEquiv_append_singleton_iff {c d : StructureSpace L} {α : Ordinal.{0}}
-    (s : List ℕ) (x : ℕ) :
+    s x :
     @BFEquiv L ℕ c.toStructure ℕ d.toStructure α (s ++ [x]).length (bfLeft (s ++ [x]))
       (bfRight (s ++ [x])) ↔
     @BFEquiv L ℕ c.toStructure ℕ d.toStructure α (s.length + 1)
@@ -414,13 +386,12 @@ equivalent, the node has rank at least `α`, with no offset.  Each tree step is 
 even length the forth property answers the next left element, at odd length the back property
 answers the next right element. -/
 theorem le_rank_bfTree_of_bfEquiv {c d : StructureSpace L} [WellFounded (extBelow (bfTree c d))]
-    {α : Ordinal.{0}} {s : List ℕ} (hs : s ∈ bfTree c d)
+    {α} {s} hs
     (h : @BFEquiv L ℕ c.toStructure ℕ d.toStructure α s.length (bfLeft s) (bfRight s)) :
     α ≤ WellFounded.rank (extBelow (bfTree c d)) ⟨s, hs⟩ := by
   induction α using Ordinal.limitRecOn generalizing s with
   | zero => exact zero_le
   | add_one β ih =>
-    rw [← Order.succ_eq_add_one] at h ⊢
     have hex : ∃ x, @BFEquiv L ℕ c.toStructure ℕ d.toStructure β (s ++ [x]).length
         (bfLeft (s ++ [x])) (bfRight (s ++ [x])) := by
       by_cases hk : s.length % 2 = 0
@@ -431,7 +402,7 @@ theorem le_rank_bfTree_of_bfEquiv {c d : StructureSpace L} [WellFounded (extBelo
           @BFEquiv.back L ℕ c.toStructure ℕ d.toStructure _ _ _ _ h (s.length / 2)
         exact ⟨y, (bfEquiv_append_singleton_iff s y).mpr (by simpa [hk] using hy)⟩
     obtain ⟨x, hx⟩ := hex
-    have hmem : s ++ [x] ∈ bfTree c d := mem_bfTree_of_bfEquiv hx
+    have hmem := mem_bfTree_of_bfEquiv hx
     have hrel : extBelow (bfTree c d) ⟨s ++ [x], hmem⟩ ⟨s, hs⟩ :=
       ⟨List.prefix_append s [x], fun he ↦ by simpa using congrArg List.length he⟩
     exact Order.succ_le_of_lt ((ih hmem hx).trans_lt (WellFounded.rank_lt_of_rel hrel))
@@ -446,15 +417,15 @@ theorem le_rank_bfTree_of_bfEquiv {c d : StructureSpace L} [WellFounded (extBelo
 tuples (`nil_mem_bfTree_iff`), not assumed; the strict inequality is the `succ` in
 `treeHeight`. -/
 theorem lt_treeHeight_bfTree_of_codeBFEquiv {c d : StructureSpace L}
-    [WellFounded (extBelow (bfTree c d))] {α : Ordinal.{0}} (h : CodeBFEquiv α c d) :
+    [WellFounded (extBelow (bfTree c d))] {α} (h : CodeBFEquiv α c d) :
     α < treeHeight (bfTree c d) := by
-  have hnil : [] ∈ bfTree c d := nil_mem_bfTree_iff.mpr
+  have hnil := nil_mem_bfTree_iff.mpr
     (@BFEquiv.monotone L ℕ c.toStructure ℕ d.toStructure _ _ _ zero_le _ _ h)
   have hle := le_rank_bfTree_of_bfEquiv hnil (codeBFEquiv_iff_root.mp h)
   calc α < Order.succ (WellFounded.rank (extBelow (bfTree c d)) ⟨[], hnil⟩) :=
         Order.lt_succ_of_le hle
     _ ≤ treeHeight (bfTree c d) :=
-        Ordinal.le_iSup (fun x : ↥(bfTree c d) ↦
+        Ordinal.le_iSup (fun x ↦
           Order.succ (WellFounded.rank (extBelow (bfTree c d)) x)) ⟨[], hnil⟩
 
 end FirstOrder.Language

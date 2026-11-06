@@ -110,8 +110,8 @@ end Below
 /-- Every domain on `Fin (n+1)` has a labelling respecting its rows (no stage bound): the row
 of a full-grade cell `Σ ∈ D^{A,|A|}`, which respects `E⟨A,|A|⟩ = E` by consistency
 (the untruncated half of Prop. 4.3.24, `StageType.ofScheme`). -/
-theorem SemScheme.exists_respectsSemantics {n : ℕ} (D : SemScheme (n + 1)) :
-    ∃ q : Cell D.scheme → ExtOrd, RespectsSemantics D.rows q :=
+theorem SemScheme.exists_respectsSemantics {n} (D : SemScheme (n + 1)) :
+    ∃ q, RespectsSemantics D.rows q :=
   -- Existence alone needs neither a full-grade owner nor consistency.
   ⟨_, RespectsSemantics.bot _⟩
 
@@ -121,24 +121,19 @@ variable {α : Ordinal.{0}} {n : ℕ}
 
 /-! ### The stage type of a respecting labelling -/
 
+section
+variable (hα : Order.IsSuccLimit α)
+
 /-- The stage type at a limit stage `α` on the domain `D` obtained by reducing a labelling `q'`
 respecting the rows of `D` (no stage bound on `q'`): labels `truncExt α ∘ q'` (Def. 3.1.2),
 respect by `RespectsSemantics.truncate` (Lemma 3.1.3, reduction half).  `StageType.ofScheme`
 is the instance at the row of a full-grade cell. -/
-noncomputable def ofRespects (hα : Order.IsSuccLimit α) (D : SemScheme n)
+noncomputable def ofRespects (D : SemScheme n)
     (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') : S α n where
   scheme := D
   label d := truncExt α (q' d)
   label_bound _ := truncExt_bound α _
   respects := hq'.truncate hα
-
-@[simp] theorem ofRespects_scheme (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') :
-    (ofRespects hα D q' hq').scheme = D := rfl
-
-@[simp] theorem ofRespects_label (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') (d : Cell D.scheme) :
-    (ofRespects hα D q' hq').label d = truncExt α (q' d) := rfl
 
 /-- **Truncation does not disturb the face.**  If `q'` respects the rows of an extension domain
 `D` of `dom p` and extends `p.label` along the cell map of the initial face (`hD.cellOf`),
@@ -146,8 +141,8 @@ then the reduction of `q'` to stage `α` is a coface of `p`: its restriction to 
 face has the scheme `D⟨n,n⟩ = dom p` (`hD.restrict`) and the labels `truncExt α ∘ p.label =
 p.label`, since the labels of `p` are already strictly bounded at `α` (`truncExt_id_of_bound`).
 -/
-theorem isCoface_ofRespects (hα : Order.IsSuccLimit α) {p : S α n} {D : SemScheme (n + 1)}
-    (hD : ExtendsDomain p D) {q' : Cell D.scheme → ExtOrd} (hq' : RespectsSemantics D.rows q')
+theorem isCoface_ofRespects {p : S α n} {D : SemScheme (n + 1)}
+    (hD : ExtendsDomain p D) {q'} hq'
     (hext : ∀ d, q' (hD.cellOf d) = p.label d) : IsCoface p (ofRespects hα D q' hq') := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
@@ -160,10 +155,15 @@ theorem isCoface_ofRespects (hα : Order.IsSuccLimit α) {p : S α n} {D : SemSc
   have h := hext c
   change truncExt α (q' (toCell D.scheme Fin.castSuccEmb hvis c)) = pl c
   change q' (toCell D.scheme Fin.castSuccEmb hvis c) = pl c at h
-  rw [h]
+  simp_all
   exact truncExt_id_of_bound (pb c)
 
+end
+
 /-! ### The core: bountifulness across the initial face at a self-visible cutoff `γ` -/
+
+section
+variable {p : S α n} {D : SemScheme (n + 1)} (hD : ExtendsDomain p D)
 
 /-- **Capped bountifulness across the initial face** — the engine of this module (Def. 2.5.14,
 lifted to the `S`/`ExtendsDomain` API).  For `p : S α n`, `D` an extension domain of `dom p`,
@@ -178,11 +178,10 @@ face has no cells and `q'' = q'`.
 `exists_respects_extends` (B4) is the case `γ = ⊥`, where both premises are automatic;
 `exists_respects_extends_of_truncated` (`Knight/ReductModel.lean`, #101) is the case
 `γ = n + 1`, where the conclusion is `⊥`-pattern agreement. -/
-theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
-    (hD : ExtendsDomain p D) {q' : Cell D.scheme → ExtOrd} (hq' : RespectsSemantics D.rows q')
-    {γ : ExtOrd} (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ)
+theorem exists_respects_extends_capped {q'} (hq' : RespectsSemantics D.rows q')
+    {γ} (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ)
     (hcap : ∀ d, min (q' (hD.cellOf d)) γ = min (p.label d) γ) :
-    ∃ q'' : Cell D.scheme → ExtOrd, RespectsSemantics D.rows q'' ∧
+    ∃ q'', RespectsSemantics D.rows q'' ∧
       (∀ d, min (q'' d) γ = min (q' d) γ) ∧ ∀ d, q'' (hD.cellOf d) = p.label d := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
@@ -214,7 +213,7 @@ theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
     have hpC : RespectsSemanticsBelow D.rows CI pC :=
       (pr.toBelow (Finset.univ, m + 1)).of_restrictFace hpush
     -- the capped-agreement premise, transported to `D⟨C, m+1⟩`
-    have hcapC : ∀ d : D.scheme.below CI,
+    have hcapC : ∀ d,
         min (q' (CellScheme.below.mono hle d).1) γ = min (pC d) γ := by
       intro d
       have h := hcap ((belowEquiv D.scheme Fin.castSuccEmb hvis hpush).symm d).1
@@ -226,7 +225,7 @@ theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
     -- bountifulness at `γ`
     obtain ⟨q'', hq'', hq''γ, hq''p⟩ := D.bountiful CI BJ hCI hBJ hle hne pC (fun d => q' d.1) γ
       hpC (hq'.toBelow BJ) hγ hcapC
-    have hall : ∀ d : Cell D.scheme, GradedLe (D.scheme.cell d) BJ :=
+    have hall : ∀ d, GradedLe (D.scheme.cell d) BJ :=
       gradedLe_univ_succ D.scheme
     refine ⟨fun d => q'' ⟨d, hall d⟩, hq''.toRespects hall, fun d => hq''γ ⟨d, hall d⟩,
       fun c => ?_⟩
@@ -254,13 +253,15 @@ with `p.label` on the cells of the old face: take any respecting labelling `q₀
 premise is `extVisibilityReplace_bot` and the capped-agreement premise
 `(q₀ ∧ ⊥) ↾ D⟨C,m+1⟩ = p ∧ ⊥` is automatic (both sides are `⊥`); the conclusion
 `q' ∧ ⊥ = q₀ ∧ ⊥` is vacuous and is discarded, and `q' ↾ dom p = p` is literal agreement. -/
-theorem exists_respects_extends {p : S α n} {D : SemScheme (n + 1)} (hD : ExtendsDomain p D) :
+theorem exists_respects_extends  :
     ∃ q' : Cell D.scheme → ExtOrd,
       RespectsSemantics D.rows q' ∧ ∀ d, q' (hD.cellOf d) = p.label d := by
   obtain ⟨q₀, hq₀⟩ := D.exists_respectsSemantics
   obtain ⟨q', hq', -, hext⟩ := exists_respects_extends_capped hD hq₀
-    (extVisibilityReplace_bot _ _) (fun d => by rw [min_eq_right bot_le, min_eq_right bot_le])
+    (extVisibilityReplace_bot _ _) (fun d => by grind)
   exact ⟨q', hq', hext⟩
+
+end
 
 /-! ### Cofaces over a given extension domain, and the (a)-families -/
 
@@ -269,8 +270,8 @@ bountifulness alone): at a limit stage `α`, every extension domain `D` of `dom 
 (`ExtendsDomain p D`) carries a coface of `p`.  Built from `exists_respects_extends`
 (bountifulness at `γ = ⊥`) and `isCoface_ofRespects` (truncation to `α`). -/
 theorem exists_coface_of_extendsDomain (hα : Order.IsSuccLimit α) (p : S α n)
-    (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) :
-    ∃ q : S α (n + 1), q.scheme = D ∧ IsCoface p q := by
+    D (hD : ExtendsDomain p D) :
+    ∃ q, q.scheme = D ∧ IsCoface p q := by
   obtain ⟨q', hq', hext⟩ := exists_respects_extends hD
   exact ⟨ofRespects hα D q' hq', rfl, isCoface_ofRespects hα hD hq' hext⟩
 
@@ -280,8 +281,8 @@ of the initial face, the prescribed-`−∞`-pattern family `BottomPatternFamily
 coface of `p` — the reduction of `q'` itself: `truncExt α` preserves and reflects `⊥`
 (`truncExt_eq_bot_iff`), so the `−∞`-pattern on `D^{≤ n}` is that of `q'`, and it fixes `p`
 on the face (`isCoface_ofRespects`). -/
-theorem bottomPatternFamily_nonempty (hα : Order.IsSuccLimit α) {p : S α n}
-    {D : SemScheme (n + 1)} (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd)
+theorem bottomPatternFamily_nonempty (hα : Order.IsSuccLimit α) {p}
+    {D : SemScheme (n + 1)} (hD : ExtendsDomain p D) q'
     (hq' : RespectsSemantics D.rows q') (hext : ∀ d, q' (hD.cellOf d) = p.label d) :
     ∃ q ∈ BottomPatternFamily (α := α) D q', IsCoface p q :=
   ⟨ofRespects hα D q' hq', ⟨rfl, fun _ => truncExt_eq_bot_iff⟩, isCoface_ofRespects hα hD hq' hext⟩

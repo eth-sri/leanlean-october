@@ -64,13 +64,13 @@ theorem realize_falsum : (falsum : L.BoundedFormulaInf ι α n).Realize v xs ↔
   Iff.rfl
 
 @[simp]
-theorem realize_equal {t₁ t₂ : L.Term (α ⊕ Fin n)} :
+theorem realize_equal {t₁ t₂} :
     (equal t₁ t₂ : L.BoundedFormulaInf ι α n).Realize v xs ↔
       t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs) :=
   Iff.rfl
 
 @[simp]
-theorem realize_rel {l : ℕ} {R : L.Relations l} {ts : Fin l → L.Term (α ⊕ Fin n)} :
+theorem realize_rel {l} {R} {ts : Fin l → L.Term (α ⊕ Fin n)} :
     (rel R ts : L.BoundedFormulaInf ι α n).Realize v xs ↔
       Structure.RelMap R fun i ↦ (ts i).realize (Sum.elim v xs) :=
   Iff.rfl
@@ -82,22 +82,27 @@ theorem realize_imp {φ ψ : L.BoundedFormulaInf ι α n} :
 
 @[simp]
 theorem realize_all {φ : L.BoundedFormulaInf ι α (n + 1)} :
-    φ.all.Realize v xs ↔ ∀ y : M, φ.Realize v (Fin.snoc xs y) :=
+    φ.all.Realize v xs ↔ ∀ y, φ.Realize v (Fin.snoc xs y) :=
   Iff.rfl
+
+section
+variable {φs : ι → L.BoundedFormulaInf ι α n}
 
 /-- Realization of an infinitary disjunction: one equation, generic in the carrier and its
 universe. -/
 @[simp]
-theorem realize_iSup {φs : ι → L.BoundedFormulaInf ι α n} :
+theorem realize_iSup  :
     (iSup φs).Realize v xs ↔ ∃ i, (φs i).Realize v xs :=
   Iff.rfl
 
 /-- Realization of an infinitary conjunction: one equation, generic in the carrier and its
 universe. -/
 @[simp]
-theorem realize_iInf {φs : ι → L.BoundedFormulaInf ι α n} :
+theorem realize_iInf  :
     (iInf φs).Realize v xs ↔ ∀ i, (φs i).Realize v xs :=
   Iff.rfl
+
+end
 
 @[simp]
 theorem realize_not {φ : L.BoundedFormulaInf ι α n} :
@@ -114,34 +119,13 @@ theorem realize_bot : (⊥ : L.BoundedFormulaInf ι α n).Realize v xs ↔ False
 
 @[simp]
 theorem realize_ex {φ : L.BoundedFormulaInf ι α (n + 1)} :
-    φ.ex.Realize v xs ↔ ∃ y : M, φ.Realize v (Fin.snoc xs y) := by
+    φ.ex.Realize v xs ↔ ∃ y, φ.Realize v (Fin.snoc xs y) := by
   simp only [BoundedFormulaInf.ex, realize_not, realize_all, not_forall, not_not]
 
 end BoundedFormulaInf
 
-namespace BoundedFormula
-
-/-- The finitary embedding preserves realization, at every carrier. -/
-@[simp]
-theorem realize_toInf {M : Type w} [L.Structure M] :
-    ∀ {n} (φ : L.BoundedFormula α n) (v : α → M) (xs : Fin n → M),
-      (toInf (ι := ι) φ).Realize v xs ↔ φ.Realize v xs := by
-  intro n φ
-  induction φ with
-  | falsum | equal | rel => intro v xs; exact Iff.rfl
-  | imp φ ψ ihφ ihψ =>
-    intro v xs
-    simpa only [toInf, BoundedFormulaInf.realize_imp, BoundedFormula.realize_imp] using
-      imp_congr (ihφ v xs) (ihψ v xs)
-  | all φ ih =>
-    intro v xs
-    simpa only [toInf, BoundedFormulaInf.realize_all, BoundedFormula.realize_all] using
-      forall_congr' fun y ↦ ih v (Fin.snoc xs y)
-
-end BoundedFormula
-
 /-- Realization of an `L_{∞ω}` formula (no free bound variables). -/
-def FormulaInf.Realize {M : Type w} [L.Structure M] (φ : L.FormulaInf ι α) (v : α → M) : Prop :=
+def FormulaInf.Realize {M} [L.Structure M] (φ : L.FormulaInf ι α) (v : α → M) : Prop :=
   BoundedFormulaInf.Realize φ v default
 
 section AllsExs
@@ -156,18 +140,6 @@ theorem BoundedFormulaInf.realize_alls {φ : L.BoundedFormulaInf ι α n} {v : �
   | succ n ih =>
     simp only [BoundedFormulaInf.alls, ih, BoundedFormulaInf.realize_all]
     exact ⟨fun h xs => Fin.snoc_init_self xs ▸ h _ _, fun h xs x => h (Fin.snoc xs x)⟩
-
-@[simp]
-theorem BoundedFormulaInf.realize_exs {φ : L.BoundedFormulaInf ι α n} {v : α → M} :
-    φ.exs.Realize v ↔ ∃ xs : Fin n → M, φ.Realize v xs := by
-  induction n with
-  | zero => exact Unique.exists_iff.symm
-  | succ n ih =>
-    simp only [BoundedFormulaInf.exs, ih, BoundedFormulaInf.realize_ex]
-    constructor
-    · rintro ⟨xs, x, h⟩; exact ⟨_, h⟩
-    · rintro ⟨xs, h⟩
-      exact ⟨Fin.init xs, xs (Fin.last n), by rwa [Fin.snoc_init_self]⟩
 
 end AllsExs
 

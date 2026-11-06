@@ -18,7 +18,6 @@ the growth private fibre and the distinct pre-activation donor fibre.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd CappedDonor CanonicalPairedInverse
 open LadderScalarRendering SharpWitnessComposition
@@ -31,26 +30,27 @@ variable {n J r : ℕ} {P : SemScheme (n + 1)} {C : SemScheme J}
   (X : RelativeData C.scheme C.rows P.scheme P.rows)
   (R : RootAttachment F fP hvP hP fC hvC hC X)
 
-theorem anchor_visible_one (a : Catalogue X 1) (d : Field C.scheme P.scheme) :
+section
+variable (a : Catalogue X 1) (d : Field C.scheme P.scheme)
+
+theorem anchor_visible_one  :
     SelfVis 1 (a.val d) := by
   obtain ⟨S, hS, he⟩ := a.property.2
   rw [← he]
   exact hS.visible d
 
 /-- A positive visible canonical grade-one field is an actual grid endpoint. -/
-theorem anchor_grid_one (a : Catalogue X 1) (d : Field C.scheme P.scheme)
-    (hd : a.val d ≠ ⊥) : ∃ B, grid 1 B = a.val d := by
+theorem anchor_grid_one (hd : a.val d ≠ ⊥) : ∃ B, grid 1 B = a.val d := by
   rcases (ExtOrd.mem_codedAlphabet_iff.mp
     (CanonicalPairedProfiles.inventory_coded _ _ a.property.1 d)) with hz | ⟨b, i, _, _, he⟩
   · exact (hd hz).elim
   have hvis := anchor_visible_one X a d
   have hs := CanonicalPairedProfiles.inventory_short _ _ a.property.1 d
-  change SelfVis 1 (a.val d) at hvis
   rw [he, selfVis_ofOrd_iff] at hvis
   rw [he] at hs
   simp only [Short, ofOrd_ne_bot, ofOrd_ne_top, false_or, ofOrd_inj] at hs
   obtain ⟨_, rfl, hs⟩ := hs
-  have hf : finitePart (Ordinal.omega0 * b + i) = i := by
+  have hf := by
     simpa only [limitPart_omega0_mul] using
       finitePart_limitPart_add_nat (Ordinal.omega0 * b) i
   rw [hf] at hvis hs
@@ -58,6 +58,7 @@ theorem anchor_grid_one (a : Catalogue X 1) (d : Field C.scheme P.scheme)
   subst i
   exact ⟨b, he.symm⟩
 
+end
 
 local instance : Fintype (C.scheme.below (Finset.univ, 1)) := Fintype.ofFinite _
 

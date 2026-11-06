@@ -21,18 +21,19 @@ installation, bountifulness, or maximal coatom supply.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SourcePrefixRows
 
 open Transform Value ExtOrd
 
-variable {X Y Q : Type*}
+variable {X : Type*}
 
 def Agree (a b : X → ExtOrd) (h : ExtOrd) : Prop :=
   ∀ x, min (a x) h = min (b x) h
 
-theorem Agree.mono {a b : X → ExtOrd} {h c : ExtOrd}
+section
+variable {a b : X → ExtOrd}
+
+theorem Agree.mono {h c : ExtOrd}
     (hab : Agree a b h) (hc : c ≤ h) : Agree a b c := by
   intro x
   have hh := congrArg (fun z => min z c) (hab x)
@@ -43,7 +44,7 @@ The comparison is needed only at actual common source values strictly below
 their agreement cut. Values at or above the cut are handled by monotonicity.
 This consumes, but does not assert existence of, the right-filled decoder
 comparison required by the coupled construction. -/
-theorem Agree.decode {a b : X → ExtOrd} {s h : ExtOrd} {ν μ : ExtOrd → ExtOrd}
+theorem Agree.decode {s h : ExtOrd} {ν μ}
     (hab : Agree a b s) (hν : Monotone ν) (hμ : Monotone μ)
     (hsν : h ≤ ν s) (hsμ : h ≤ μ s)
     (hcompare : ∀ d, a d < s → min (ν (a d)) h = min (μ (a d)) h) :
@@ -67,23 +68,28 @@ theorem Agree.decode {a b : X → ExtOrd} {s h : ExtOrd} {ν μ : ExtOrd → Ext
       exact he.trans_le (min_le_left _ _)
     rw [min_eq_right (hsν.trans (hν ha)), min_eq_right (hsμ.trans (hμ hb))]
 
+end
+
 open Classical in
 noncomputable def cut (G : Finset ExtOrd) (a b : X → ExtOrd) : ExtOrd :=
   (G.filter (Agree a b)).sup id
 
-theorem cut_le {G : Finset ExtOrd} {H : ExtOrd}
+section
+variable {G : Finset ExtOrd}
+
+theorem cut_le {H : ExtOrd}
     (hG : ∀ h ∈ G, h ≤ H) (a b : X → ExtOrd) : cut G a b ≤ H := by
   classical
   apply Finset.sup_le
   intro h hh
   exact hG h (Finset.mem_filter.mp hh).1
 
-theorem le_cut {G : Finset ExtOrd} {a b : X → ExtOrd} {h : ExtOrd}
+theorem le_cut {a b : X → ExtOrd} {h : ExtOrd}
     (hh : h ∈ G) (ha : Agree a b h) : h ≤ cut G a b := by
   classical
   exact Finset.le_sup (f := id) (Finset.mem_filter.mpr ⟨hh, ha⟩)
 
-theorem cut_mem {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
+theorem cut_mem (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
     cut G a b ∈ G := by
   classical
   have hn : (G.filter (Agree a b)).Nonempty :=
@@ -92,7 +98,7 @@ theorem cut_mem {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
   change h = cut G a b at he
   exact he ▸ (Finset.mem_filter.mp hh).1
 
-theorem agree_cut {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
+theorem agree_cut (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
     Agree a b (cut G a b) := by
   classical
   have hn : (G.filter (Agree a b)).Nonempty :=
@@ -101,18 +107,18 @@ theorem agree_cut {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
   change h = cut G a b at he
   exact he ▸ (Finset.mem_filter.mp hh).2
 
-theorem cut_symm {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
+theorem cut_symm (hbot : ⊥ ∈ G) (a b : X → ExtOrd) :
     cut G a b = cut G b a := by
   apply le_antisymm
   · exact le_cut (cut_mem hbot a b) (fun x => (agree_cut hbot a b x).symm)
   · exact le_cut (cut_mem hbot b a) (fun x => (agree_cut hbot b a x).symm)
 
-theorem cut_refl {G : Finset ExtOrd} {H : ExtOrd}
+theorem cut_refl {H : ExtOrd}
     (hH : H ∈ G) (hG : ∀ h ∈ G, h ≤ H) (a : X → ExtOrd) :
     cut G a a = H :=
   le_antisymm (cut_le hG a a) (le_cut hH (fun _ => rfl))
 
-theorem cut_triangle {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → ExtOrd) :
+theorem cut_triangle (hbot : ⊥ ∈ G) (a b c : X → ExtOrd) :
     min (cut G a b) (cut G b c) ≤ cut G a c := by
   have hm : min (cut G a b) (cut G b c) ∈ G := by
     rcases le_total (cut G a b) (cut G b c) with h | h
@@ -123,7 +129,7 @@ theorem cut_triangle {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → ExtOr
   exact ((agree_cut hbot a b).mono (min_le_left _ _) x).trans
     ((agree_cut hbot b c).mono (min_le_right _ _) x)
 
-theorem cross_agreement {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → ExtOrd) :
+theorem cross_agreement (hbot : ⊥ ∈ G) (a b c : X → ExtOrd) :
     min (cut G a c) (cut G a b) = min (cut G b c) (cut G a b) := by
   apply le_antisymm
   · apply le_min _ (min_le_right _ _)
@@ -133,18 +139,7 @@ theorem cross_agreement {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → Ex
   · apply le_min _ (min_le_right _ _)
     simpa only [min_comm] using cut_triangle hbot a b c
 
-/-- Proper cells, existing full lower controllers, and the new controllers
-remain distinct occurrences. -/
-abbrev Occ (X Y Q : Type*) := (X ⊕ Y) ⊕ Q
-
-def grade (gx : X → ℕ) (gy : Y → ℕ) (k : ℕ) : Occ X Y Q → ℕ :=
-  Sum.elim (Sum.elim gx gy) (fun _ => k)
-
-noncomputable def row (G : Finset ExtOrd) (a : Q → X → ExtOrd)
-    (lower : Q → Y → ExtOrd) (q : Q) : Occ X Y Q → ExtOrd
-  | .inl (.inl x) => a q x
-  | .inl (.inr y) => lower q y
-  | .inr p => cut G (a q) (a p)
+end
 
 /-! ## Boundary-orbit support and hidden prefixes
 

@@ -19,7 +19,6 @@ This is the auxiliary part only, not a theorem of whole extension lawfulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationAuxExtension
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier ScopeReplicationSemantics
 noncomputable section
@@ -28,19 +27,19 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
   (sem : Semantics D)
 
-def replica {U : Finset ι} {j : ℕ} (hU : U ∈ D.plan)
+def replica {U} {j} (hU : U ∈ D.plan)
     (hm : U = A ∨ Mixed B C U) (hj : j ≤ U.card)
-    (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ j) :
+    c (hc : D.scope c = A) (hg : D.grade c ≤ j) :
     (scheme D B C).below (U, j) :=
   ⟨atScope D B C U hU hm c hc (hg.trans hj),
     (atScope_index D B C U hU hm c hc (hg.trans hj)) ▸ ⟨le_rfl, hg⟩⟩
 
-theorem replica_index {U j} (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U) (hj : j ≤ U.card)
+theorem replica_index {U j} hU hm (hj : j ≤ U.card)
     (c) (hc) (hg) :
     (scheme D B C).cell (replica D B C hU hm hj c hc hg).1 = (U, D.grade c) :=
   atScope_index D B C U hU hm c hc (hg.trans hj)
 
-theorem erase_replica {U j} (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U) (hj : j ≤ U.card)
+theorem erase_replica {U j} hU (hm : U = A ∨ Mixed B C U) (hj : j ≤ U.card)
     (c) (hc) (hg) : erase D B C (replica D B C hU hm hj c hc hg).1 = c :=
   erase_atScope D B C U hU hm c hc (hg.trans hj)
 
@@ -54,10 +53,10 @@ def value (p : (scheme D B C).below (U, j) → ExtOrd)
 
 /-- Any auxiliary under the target equals its own target-scope copy, in an
 arbitrary lawful target-local section. -/
-theorem eq_target_copy (hV : V ∈ D.plan) (hmV : V = A ∨ Mixed B C V) (hjV : j ≤ V.card)
+theorem eq_target_copy hV hmV hjV
     {q : (scheme D B C).below (V, j) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows D B C hcover sem) (V, j) q)
-    (z : (scheme D B C).below (V, j)) (hz : D.scope (erase D B C z.1) = A) :
+    z (hz : D.scope (erase D B C z.1) = A) :
     q z = q (replica D B C hV hmV hjV (erase D B C z.1) hz
       ((erase_grade D B C z.1).le.trans z.2.2)) :=
   copy_eq D B C hcover sem hq z _
@@ -70,11 +69,11 @@ theorem eq_target_copy (hV : V ∈ D.plan) (hmV : V = A ∨ Mixed B C V) (hjV : 
 Only the actual prescription's cap equations and target lawfulness are used. -/
 theorem cap (hV : V ∈ D.plan) (hmV : V = A ∨ Mixed B C V) (hjV : j ≤ V.card)
     (hUV : U ⊆ V) (p : (scheme D B C).below (U, j) → ExtOrd)
-    {q : (scheme D B C).below (V, j) → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow (rows D B C hcover sem) (V, j) q)
-    {γ : ExtOrd} (hag : ∀ d, min (q (CellScheme.below.mono
+    {γ} (hag : ∀ d, min (q (CellScheme.below.mono
       (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) d)) γ = min (p d) γ)
-    (z : (scheme D B C).below (V, j)) (hz : D.scope (erase D B C z.1) = A) :
+    z hz :
     min (value D B C hU hmU hjU p z hz) γ = min (q z) γ := by
   let u := replica D B C hU hmU hjU (erase D B C z.1) hz
     ((erase_grade D B C z.1).le.trans z.2.2)

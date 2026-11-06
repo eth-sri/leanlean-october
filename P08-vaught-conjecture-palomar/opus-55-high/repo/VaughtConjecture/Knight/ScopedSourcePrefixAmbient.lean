@@ -20,8 +20,6 @@ replacement-section or prescribed-owner alignment theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ScopedSourcePrefixAmbient
 
 open Transform Value ExtOrd SourcePrefixLayer ScopedSourcePrefixLayer
@@ -34,13 +32,13 @@ def occurrence (a : Controller D k) : D.below (A, k) :=
   ⟨a.1, by rw [a.2]; exact GradedLe.refl _⟩
 
 theorem exists_active_source (seed : Controller D k)
-    {q : D.below (A, k) → ExtOrd} (hq : RespectsSemanticsBelow F.rows (A, k) q)
-    (d : D.below (A, k)) (hd : D.grade d.1 = k)
-    {γ : ExtOrd} (hγ : SelfVis k γ) (hactive : γ ≤ q d) :
-    ∃ (a : Controller D k) (τ : ExtOrd → ExtOrd),
+    {q} (hq : RespectsSemanticsBelow F.rows (A, k) q)
+    d (hd : D.grade d.1 = k)
+    {γ} (hγ : SelfVis k γ) (hactive : γ ≤ q d) :
+    ∃ a τ,
       γ ≤ q (occurrence a) ∧ Witness (gTop k) τ ∧
       (∀ x, τ x ≤ γ) ∧ τ F.ceiling = γ ∧
-      (∀ x : D.below (A, k), τ (F.profile a x.1) = min (q x) γ) := by
+      (∀ x, τ (F.profile a x.1) = min (q x) γ) := by
   obtain ⟨C⟩ := AmbientGradeCharts.exists_chart hq
     ⟨occurrence seed, seed.2⟩
   have hc : γ ≤ q C.owner := hactive.trans (C.dominates d hd)
@@ -60,9 +58,9 @@ theorem exists_active_source (seed : Controller D k)
 /-- The first grid cut reaching the output cap is constructed from the finite
 grid. Minimality is only among GRID cuts; unused points inside a strip need not
 lie strictly below the output cap. -/
-theorem exists_first_cut {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop k) τ)
-    {γ : ExtOrd} (hb : γ ≠ ⊥) (hbound : ∀ x, τ x ≤ γ) (hC : τ F.ceiling = γ) :
-    ∃ h : ExtOrd, h ∈ F.grid ∧ SelfVis k h ∧ ⊥ < h ∧ h ≤ F.ceiling ∧
+theorem exists_first_cut {τ} (hτ : Witness (gTop k) τ)
+    {γ} (hb : γ ≠ ⊥) (hbound : ∀ x, τ x ≤ γ) (hC : τ F.ceiling = γ) :
+    ∃ h, h ∈ F.grid ∧ SelfVis k h ∧ ⊥ < h ∧ h ≤ F.ceiling ∧
       τ h = γ ∧ ∀ z ∈ F.grid, z < h → τ z < γ := by
   classical
   let S := F.grid.filter (fun h => γ ≤ τ h)

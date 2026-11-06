@@ -45,11 +45,11 @@ open TypeTower StageType KnightRealization Value ExtOrd Transform
 
 /-! ## Replacement at a larger grade is larger -/
 
-theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
+theorem evr_self_le_evr_self x {k k'} (h : k ≤ k') :
     extVisibilityReplace x k k ≤ extVisibilityReplace x k' k' := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot, extVisibilityReplace_bot]
-  · rw [extVisibilityReplace_top, extVisibilityReplace_top]
+  · simp_all
+  · simp_all
   · by_cases h' : k' ≤ finitePart a
     · rw [extVisibilityReplace_of_le_finitePart h',
         extVisibilityReplace_of_le_finitePart (h.trans h')]
@@ -64,11 +64,11 @@ theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
 
 /-- A value strictly below its own replacement is a proper value with finite part below the
 grade. -/
-theorem exists_finitePart_lt_of_lt_evr {x : ExtOrd} {k : ℕ}
-    (h : x < extVisibilityReplace x k k) : ∃ a : Ordinal.{0}, x = ofOrd a ∧ finitePart a < k := by
+theorem exists_finitePart_lt_of_lt_evr {x} {k}
+    (h : x < extVisibilityReplace x k k) : ∃ a, x = ofOrd a ∧ finitePart a < k := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot] at h; exact absurd h (lt_irrefl _)
-  · rw [extVisibilityReplace_top] at h; exact absurd h (lt_irrefl _)
+  · simp_all
+  · simp_all
   · refine ⟨a, rfl, ?_⟩
     by_contra hk
     rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hk)] at h
@@ -80,11 +80,13 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
 /-! ## The band forced by an anchor -/
 
+section
+variable {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} {Xi : Cell p.scheme.scheme} {K' : ℕ}
+
 /-- **In a cover whose top grade exceeds the threshold, an anchor reads a band below the
 threshold.** -/
-theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    {Xi : Cell p.scheme.scheme} {K' : ℕ} (h : R.IsInfinityAnchor t p Xi K') {m : ℕ}
-    {s : Fin m ↪ M} {f : Fin n ↪ Fin m} {q : S α.1 m} (hfs : f.trans s = t)
+theorem someProvisionalValue_lt_of_anchor (h : R.IsInfinityAnchor t p Xi K') {m}
+    {s} {f} {q : S α.1 m} (hfs : f.trans s = t)
     (hq : R.eval s = some q) (hpq : typeMap f q = some p) (hN : K' < q.topGrade) :
     ∃ j < K', q.someProvisionalValue (mapCell hpq Xi) = ofOrd (α.1 + j) := by
   classical
@@ -119,9 +121,8 @@ theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
   rw [ite_eq_left htop', ite_eq_right hcap, dite_eq_left hex]
 
 /-- **The provisional value of an anchor is at most `α + K'` in every cover.** -/
-theorem someProvisionalValue_le_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    {Xi : Cell p.scheme.scheme} {K' : ℕ} (h : R.IsInfinityAnchor t p Xi K') {m : ℕ}
-    {s : Fin m ↪ M} {f : Fin n ↪ Fin m} {q : S α.1 m} (hfs : f.trans s = t)
+theorem someProvisionalValue_le_of_anchor (h : R.IsInfinityAnchor t p Xi K') {m}
+    {s} {f} {q : S α.1 m} (hfs : f.trans s = t)
     (hq : R.eval s = some q) (hpq : typeMap f q = some p) :
     q.someProvisionalValue (mapCell hpq Xi) ≤ ofOrd (α.1 + K') := by
   by_cases hN : K' < q.topGrade
@@ -129,8 +130,9 @@ theorem someProvisionalValue_le_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
     rw [hval, ofOrd_le_ofOrd]
     exact add_le_add_right (Nat.cast_le.mpr hj.le) _
   · refine (someProvisionalValue_le q _).trans ?_
-    rw [ofOrd_le_ofOrd]
-    exact add_le_add_right (Nat.cast_le.mpr (not_lt.mp hN)) _
+    simp_all
+
+end
 
 /-! ## Stabilization from a uniform bound -/
 
@@ -140,9 +142,9 @@ rooted covers of `x` are a bounded monotone natural-valued observation
 (`RootedCover.offset_mono`), so `RootedCover.exists_stabilizesTo_of_bddAbove` supplies the
 stabilization; the bound `K` is inherited by the attained offset. -/
 theorem exists_stabilizesTo_of_bounded (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (x : R.LabelledExt) {Xi : Cell x.type.scheme.scheme}
+    (hcov : R.IsInitialSegmentCovering) (x : R.LabelledExt) {Xi}
     (htop : x.type.label Xi = ⊤) (K : ℕ)
-    (hB : ∀ (y : R.LabelledExt) (f : Fin x.arity ↪ Fin y.arity), f.trans y.tuple = x.tuple →
+    (hB : ∀ (y : R.LabelledExt) f, f.trans y.tuple = x.tuple →
       ∀ hpq : typeMap f y.type = some x.type,
         y.type.someProvisionalValue (mapCell hpq Xi) ≤ ofOrd (α.1 + K)) :
     ∃ j ≤ K, R.StabilizesTo x.tuple x.type Xi (ofOrd (α.1 + j)) := by
@@ -157,15 +159,14 @@ theorem exists_stabilizesTo_of_bounded (hcons : R.IsExactParentConsistent)
 
 /-- **An anchor at threshold `K'` has stable value `α + j` for some `j ≤ K'`.** -/
 theorem exists_stableValue_of_anchor (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    (hpt : R.eval t = some p) {Xi : Cell p.scheme.scheme} {K' : ℕ}
+    (hpt : R.eval t = some p) {Xi} {K' : ℕ}
     (h : R.IsInfinityAnchor t p Xi K') :
     ∃ j ≤ K', R.stableValue t p Xi = ofOrd (α.1 + j) := by
   obtain ⟨j, hj, hs⟩ := exists_stabilizesTo_of_bounded hM.consistent hM.covering
     ⟨n, t, p, hpt⟩ h.1 K'
     (fun y f hf hpq => someProvisionalValue_le_of_anchor h hf y.eval_eq hpq)
   refine ⟨j, hj, stableValue_of_stabilizesTo hM.consistent hM.covering hpt ?_ hs⟩
-  rw [ofOrd_lt_ofOrd]
-  exact (add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 j)
+  simp_all
 
 /-! ## The equivalences -/
 

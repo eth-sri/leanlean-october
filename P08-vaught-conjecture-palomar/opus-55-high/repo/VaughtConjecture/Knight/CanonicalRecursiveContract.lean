@@ -16,17 +16,21 @@ invariant, not a hypothesis of future completion or bountifulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveContract
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
 open SharpWitnessComposition
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
-abbrev carrier (sem : Semantics D) (n : ℕ) (hA : n + 3 ≤ A.card) :=
+section
+variable (sem : Semantics D) (n : ℕ) (hA : n + 3 ≤ A.card)
+
+abbrev carrier  :=
   CanonicalRecursiveInventory.scheme sem (n + 3) hA
-abbrev boundary (sem : Semantics D) (n : ℕ) (hA : n + 3 ≤ A.card) :=
+abbrev boundary  :=
   CanonicalRecursiveInventory.boundary sem (n + 3) hA
+
+end
 
 structure State (sem : Semantics D) (n : ℕ) (hA : n + 3 ≤ A.card) where
   rows : Semantics (carrier sem n hA)

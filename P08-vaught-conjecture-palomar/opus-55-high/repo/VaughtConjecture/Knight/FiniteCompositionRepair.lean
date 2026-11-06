@@ -44,9 +44,11 @@ theorem bot_on_strip {a : Ordinal.{0}} (ha : f (ofOrd (limitPart a)) = ⊥)
     ha, extVisibilityReplace_bot] at he
   exact he
 
+section
+variable (s : Finset ExtOrd)
+
 /-- Only the original sources need testing: added low strip slots are automatic. -/
-theorem floor_check_on_strip (s : Finset ExtOrd)
-    (hfloor : ∀ x ∈ s, f (blockFloor x) = ⊥ → f x = ⊥) :
+theorem floor_check_on_strip (hfloor : ∀ x ∈ s, f (blockFloor x) = ⊥ → f x = ⊥) :
     ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥ := by
   intro x hx hb
   rcases Finset.mem_union.mp hx with hx | hx
@@ -61,8 +63,7 @@ theorem floor_check_on_strip (s : Finset ExtOrd)
 
 /-- On a finite full-strip table, the floor-support check is the missing
 higher-threshold obligation. The existing bridge builds the witness explicitly. -/
-theorem finite_witness (s : Finset ExtOrd)
-    (hfloor : ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥) :
+theorem finite_witness (hfloor : ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥) :
     Witness (gTop m) (finiteLowerEnvelope (stripDomain m s) f) := by
   let t := stripDomain m s
   have hmono : ∀ a ∈ t, ∀ b ∈ t, a ≤ b → f a ≤ f b :=
@@ -92,9 +93,11 @@ theorem finite_witness (s : Finset ExtOrd)
       horbit hbridge x k i hi hact⟩
 
 /-- Every original table value is retained, not just its value below some cap. -/
-theorem finite_read (s : Finset ExtOrd) {x : ExtOrd} (hx : x ∈ s) :
+theorem finite_read {x : ExtOrd} (hx : x ∈ s) :
     finiteLowerEnvelope (stripDomain m s) f x = f x :=
   finiteLowerEnvelope_source _ _ (fun _ _ _ _ h => hf.mono h) (subset_stripDomain m s hx)
+
+end
 
 end BoundedMap
 
@@ -116,7 +119,7 @@ structure LocalCharts (sem : Semantics D) (BJ : Finset ι × ℕ)
 theorem exists_localCharts (hr : RespectsSemanticsBelow sem BJ r) :
     Nonempty (LocalCharts sem BJ r) := by
   have h (c : D.below BJ) : ∃ σ, Witness (gTop (D.grade c.1)) σ ∧
-      ∀ d : D.below (D.cell c.1),
+      ∀ d,
         σ (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c) := by
     obtain ⟨σ, hw, _, he⟩ := exists_bounded_exact_capped_witness
       (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))

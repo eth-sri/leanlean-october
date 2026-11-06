@@ -21,8 +21,6 @@ new owners; it is not packaged as a legal receiving scheme.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrderedFaceBoundarySemantics
 
 open AmalgamationPlan OrderedFaceBoundary OrderedFaceBoundaryRows
@@ -68,7 +66,7 @@ theorem coded (hd : semD.IsCoded) (he : semE.IsCoded) : (sem).IsCoded := by
 
 /-- There are no additional cross-face lawfulness conditions on the proper
 boundary: every locality and availability target is inherited. -/
-theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
+theorem respects_iff p : RespectsSemantics sem p ↔
     RespectsSemantics semD (p ∘ l) ∧ RespectsSemantics semE (p ∘ r) := by
   constructor
   · intro hp
@@ -98,19 +96,23 @@ theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
 noncomputable def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g p q ∘ (enumeration D E w).symm
 
-theorem paste_left (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) (d : Cell D) :
+section
+variable (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
+
+theorem paste_left d :
     paste D E w R hR hD hE p q (l d) = p d := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.left w.g d))) = p d
   rw [Equiv.symm_apply_apply]
   rfl
 
-theorem paste_right (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
-    (h : ∀ i, p (w.f i) = q (w.g i)) (e : Cell E) :
+theorem paste_right (h : ∀ i, p (w.f i) = q (w.g i)) e :
     paste D E w R hR hD hE p q (r e) = q e := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.right w.f w.g e))) = q e
   rw [Equiv.symm_apply_apply]
   exact ProfileFaceUnion.paste_right w.f w.g h e
+
+end
 
 end VaughtConjecture.Knight.OrderedFaceBoundarySemantics

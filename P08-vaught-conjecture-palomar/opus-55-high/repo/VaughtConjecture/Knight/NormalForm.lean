@@ -92,59 +92,76 @@ namespace Value
 
 /-- Self-visibility at `k` fixes every replacement value, not just `k`:
 if `γ = γ ⊔⁺_k k` then `γ = γ ⊔⁺_k i` for every `i`. -/
-theorem extVisReplace_eq_self_of_selfVis {v : ExtOrd} {k : ℕ}
-    (h : extVisibilityReplace v k k = v) (i : ℕ) : extVisibilityReplace v k i = v := by
+theorem extVisReplace_eq_self_of_selfVis {v} {k}
+    (h : extVisibilityReplace v k k = v) i : extVisibilityReplace v k i = v := by
   rcases (extVisibilityReplace_self_iff v k).mp h with rfl | rfl | ⟨α, rfl, hfp⟩
   · rfl
   · rfl
   · rw [extVisibilityReplace_ofOrd, visibilityReplace, ite_eq_right (not_lt.mpr hfp)]
 
+section
+variable (n : ℕ)
+
 /-- The finite part of a natural number is itself. -/
-theorem finitePart_natCast (n : ℕ) : finitePart (n : Ordinal.{0}) = n := by
+theorem finitePart_natCast  : finitePart (n : Ordinal.{0}) = n := by
   have h := finitePart_spec (n : Ordinal.{0})
   rw [Ordinal.mod_eq_of_lt (Ordinal.natCast_lt_omega0 n)] at h
   exact_mod_cast h.symm
 
 /-- The limit part of a natural number is zero. -/
-theorem limitPart_natCast (n : ℕ) : limitPart (n : Ordinal.{0}) = 0 := by
+theorem limitPart_natCast  : limitPart (n : Ordinal.{0}) = 0 := by
   unfold limitPart
   rw [Ordinal.div_eq_zero_of_lt (Ordinal.natCast_lt_omega0 n), mul_zero]
 
+end
+
+section
+variable (u : Ordinal.{0})
+
 /-- `ω * u` is its own limit part. -/
-theorem limitPart_omega0_mul (u : Ordinal.{0}) :
+theorem limitPart_omega0_mul  :
     limitPart (Ordinal.omega0 * u) = Ordinal.omega0 * u := by
   unfold limitPart
   rw [Ordinal.mul_div_cancel u Ordinal.omega0_ne_zero]
 
+section
+variable (m : ℕ)
+
 /-- The limit part of the code `ω * u + m` is `ω * u`. -/
-theorem limitPart_code (u : Ordinal.{0}) (m : ℕ) :
+theorem limitPart_code  :
     limitPart (Ordinal.omega0 * u + m) = Ordinal.omega0 * u := by
   conv_lhs => rw [← limitPart_omega0_mul u]
   rw [limitPart_limitPart_add_nat, limitPart_omega0_mul]
 
 /-- The finite part of the code `ω * u + m` is `m`. -/
-theorem finitePart_code (u : Ordinal.{0}) (m : ℕ) :
+theorem finitePart_code  :
     finitePart (Ordinal.omega0 * u + m) = m := by
   conv_lhs => rw [← limitPart_omega0_mul u]
   rw [finitePart_limitPart_add_nat]
 
+end
+
+end
+
 /-- An ordinal with finite part `0` is its own limit part. -/
-theorem eq_limitPart_of_finitePart_eq_zero {β : Ordinal.{0}} (h : finitePart β = 0) :
+theorem eq_limitPart_of_finitePart_eq_zero {β} (h : finitePart β = 0) :
     limitPart β = β := by
   have := decomposition β
   rwa [h, Nat.cast_zero, add_zero] at this
 
 /-- A block member `x` lies below the next block level: `x < limitPart x + ω`. -/
-theorem lt_limitPart_add_omega0 (x : Ordinal.{0}) : x < limitPart x + Ordinal.omega0 := by
+theorem lt_limitPart_add_omega0 x : x < limitPart x + Ordinal.omega0 := by
   conv_lhs => rw [← decomposition x]
   exact add_lt_add_right (Ordinal.natCast_lt_omega0 _) _
 
+section
+variable {x y : Ordinal.{0}}
+
 /-- Distinct limit parts are at least a block apart:
 if `limitPart x < limitPart y` then `limitPart x + ω ≤ limitPart y`. -/
-theorem limitPart_add_omega0_le {x y : Ordinal.{0}} (h : limitPart x < limitPart y) :
+theorem limitPart_add_omega0_le (h : limitPart x < limitPart y) :
     limitPart x + Ordinal.omega0 ≤ limitPart y := by
-  unfold limitPart at *
-  have hdiv : x / Ordinal.omega0 < y / Ordinal.omega0 :=
+  have hdiv :=
     (Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono.lt_iff_lt.mp h
   calc Ordinal.omega0 * (x / Ordinal.omega0) + Ordinal.omega0
       = Ordinal.omega0 * Order.succ (x / Ordinal.omega0) := (Ordinal.mul_succ _ _).symm
@@ -154,28 +171,34 @@ theorem limitPart_add_omega0_le {x y : Ordinal.{0}} (h : limitPart x < limitPart
 
 /-- Strict block comparison: a member of an earlier block is below every member of a later
 block. -/
-theorem lt_of_limitPart_lt {x y : Ordinal.{0}} (h : limitPart x < limitPart y) : x < y :=
+theorem lt_of_limitPart_lt (h : limitPart x < limitPart y) : x < y :=
   lt_of_lt_of_le ((lt_limitPart_add_omega0 x).trans_le (limitPart_add_omega0_le h))
     ((limitPart_le y).trans le_rfl)
 
+end
+
+section
+variable {u v : Ordinal.{0}}
+
 /-- Code comparison, strict, across blocks: `ω·u + m < ω·v + n` when `u < v`. -/
-theorem code_lt_code_of_lt {u v : Ordinal.{0}} (h : u < v) (m n : ℕ) :
+theorem code_lt_code_of_lt (h : u < v) (m n : ℕ) :
     Ordinal.omega0 * u + m < Ordinal.omega0 * v + n := by
   apply lt_of_limitPart_lt
   rw [limitPart_code, limitPart_code]
   exact (Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono h
 
 /-- Code comparison, non-strict: `ω·u + m ≤ ω·v + n` when `u ≤ v` and `m ≤ n`. -/
-theorem code_le_code {u v : Ordinal.{0}} (h : u ≤ v) {m n : ℕ} (hmn : m ≤ n) :
+theorem code_le_code (h : u ≤ v) {m n : ℕ} (hmn : m ≤ n) :
     Ordinal.omega0 * u + m ≤ Ordinal.omega0 * v + n :=
   add_le_add ((Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono.monotone h)
     (Nat.cast_le.mpr hmn : ((m : ℕ) : Ordinal) ≤ _)
 
+end
+
 /-- `min` preserves self-visibility (a `min` of two self-visible labels is one of them). -/
-theorem extVisReplace_min_self {x y : ExtOrd} {k : ℕ}
+theorem extVisReplace_min_self {x y} {k}
     (hx : extVisibilityReplace x k k = x) (hy : extVisibilityReplace y k k = y) :
-    extVisibilityReplace (min x y) k k = min x y := by
-  rcases min_cases x y with ⟨hm, -⟩ | ⟨hm, -⟩ <;> rw [hm] <;> assumption
+    extVisibilityReplace (min x y) k k = min x y := by grind
 
 end Value
 
@@ -186,27 +209,37 @@ namespace Transform
 /-- The **step suppressor** `g_K` (note §3): `⊤` at thresholds `≤ K`, `⊥` above. -/
 def stepSuppressor (K : ℕ) : ℕ → ExtOrd := fun k => if k ≤ K then ⊤ else ⊥
 
-@[simp] theorem stepSuppressor_of_le {K k : ℕ} (h : k ≤ K) : stepSuppressor K k = ⊤ :=
+section
+variable {K k : ℕ}
+
+@[simp] theorem stepSuppressor_of_le (h : k ≤ K) : stepSuppressor K k = ⊤ :=
   ite_eq_left h
 
-@[simp] theorem stepSuppressor_of_gt {K k : ℕ} (h : K < k) : stepSuppressor K k = ⊥ :=
+@[simp] theorem stepSuppressor_of_gt (h : K < k) : stepSuppressor K k = ⊥ :=
   ite_eq_right (not_le.mpr h)
 
-theorem stepSuppressor_antitone (K : ℕ) :
-    ∀ n m : ℕ, n < m → stepSuppressor K m ≤ stepSuppressor K n := by
+end
+
+section
+variable (K : ℕ)
+
+theorem stepSuppressor_antitone  :
+    ∀ n m, n < m → stepSuppressor K m ≤ stepSuppressor K n := by
   intro n m hnm
   unfold stepSuppressor
   split_ifs with hm hn hn
-  · exact le_rfl
-  · exact absurd ((hnm.le).trans hm) hn
+  · grind
+  · grind
   · exact bot_le
   · exact le_rfl
 
-theorem stepSuppressor_selfVis (K : ℕ) :
-    ∀ n : ℕ, stepSuppressor K n = extVisibilityReplace (stepSuppressor K n) n n := by
+theorem stepSuppressor_selfVis  :
+    ∀ n, stepSuppressor K n = extVisibilityReplace (stepSuppressor K n) n n := by
   intro n
   unfold stepSuppressor
   split_ifs <;> rfl
+
+end
 
 /-- A **`K`-step shifter** (the legality pattern of the note's §3, shared by the canonical
 normalizer and decoder): a label map `σ` that fixes `⊥`, is monotone, preserves
@@ -239,8 +272,8 @@ clause 5 of Def. 2.3.9 for the step suppressor `g_K`.  For `k ≤ K` the commuta
 on the sub-`K` part of a block, affine pieces commute with `⊔⁺_k i` and constants are
 `⊔⁺_k`-fixed.  For `k > K` the guard `σ α ≤ g_K k = ⊥` pins `σ α = ⊥`, and the
 `⊔⁺_k`-orbit of `α` stays in `α`'s block, hence in the `⊥`-fiber (block closure). -/
-theorem IsStepShifter.clause5 {K : ℕ} {σ : ExtOrd → ExtOrd} (h : IsStepShifter K σ) :
-    ∀ (α : ExtOrd) (k : ℕ), σ α ≤ stepSuppressor K k → ∀ i : ℕ, i ≤ k →
+theorem IsStepShifter.clause5 {K} {σ} (h : IsStepShifter K σ) :
+    ∀ α k, σ α ≤ stepSuppressor K k → ∀ i, i ≤ k →
       σ (extVisibilityReplace α k i) = extVisibilityReplace (σ α) k i := by
   intro α k hguard i hi
   by_cases hk : k ≤ K
@@ -283,15 +316,18 @@ theorem IsStepShifter.clause5 {K : ℕ} {σ : ExtOrd → ExtOrd} (h : IsStepShif
       · exact h.bot_blocks ξ _ (limitPart_limitPart_add_nat ξ i).symm hbot
       · exact hbot
 
+section
+variable {D : Type*} {grade : D → ℕ}
+
 /-- Every `K`-step shifter is a legal transform witness with the step suppressor, on any
 family of grades `≤ K`: `p ⇒ σ ∘ p` for **every** labelling `p` (note §3; no hypotheses on
 `p`). -/
-theorem IsStepShifter.transformsTo {D : Type*} {grade : D → ℕ} {K : ℕ} {σ : ExtOrd → ExtOrd}
-    (h : IsStepShifter K σ) (hK : ∀ d, grade d ≤ K) (p : D → ExtOrd) :
+theorem IsStepShifter.transformsTo {K} {σ}
+    (h : IsStepShifter K σ) (hK : ∀ d, grade d ≤ K) p :
     TransformsTo grade p (fun d => σ (p d)) :=
   ⟨stepSuppressor K, σ, stepSuppressor_antitone K, stepSuppressor_selfVis K, h.map_bot,
     h.mono, h.clause5,
-    fun d => by rw [stepSuppressor_of_le (hK d), min_top_right]⟩
+    fun d => by simp_all⟩
 
 /-! ### The Cap Lemma -/
 
@@ -304,7 +340,7 @@ family, then `p ⇒ q ∧ γ`, with the direct witness `(g', σ)` where `g' k = 
 `g' k ≤ g k` everywhere.  (The note prints the untruncated witness `min (g, γ)`, whose
 self-visibility can fail at thresholds `> K`; the truncation to `⊥` there is the faithful
 repair and changes no row value, since every grade is `≤ K`.) -/
-theorem TransformsTo.cap {D : Type*} {grade : D → ℕ} {p q : D → ExtOrd} {K : ℕ} {γ : ExtOrd}
+theorem TransformsTo.cap {p q} {K} {γ}
     (h : TransformsTo grade p q) (hK : ∀ d, grade d ≤ K)
     (hγ : extVisibilityReplace γ K K = γ) :
     TransformsTo grade p (fun d => min (q d) γ) := by
@@ -336,6 +372,8 @@ theorem TransformsTo.cap {D : Type*} {grade : D → ℕ} {p q : D → ExtOrd} {K
     intro d
     dsimp only
     rw [ite_eq_left (hK d), ← min_assoc, ← hσ_eq d]
+
+end
 
 end Transform
 
@@ -373,33 +411,28 @@ theorem RespectsSemanticsBelow.cap {ι : Type*} [DecidableEq ι] {A : Finset ι}
 
 namespace Value
 
+section
+variable (x : Ordinal.{0})
+
 /-- The limit part has finite part `0`. -/
-theorem finitePart_limitPart (x : Ordinal.{0}) : finitePart (limitPart x) = 0 := by
+theorem finitePart_limitPart  : finitePart (limitPart x) = 0 := by
   have h := finitePart_limitPart_add_nat x 0
   rwa [Nat.cast_zero, add_zero] at h
 
 /-- The limit part is idempotent. -/
-theorem limitPart_idem (x : Ordinal.{0}) : limitPart (limitPart x) = limitPart x :=
+theorem limitPart_idem  : limitPart (limitPart x) = limitPart x :=
   eq_limitPart_of_finitePart_eq_zero (finitePart_limitPart x)
 
+end
+
 /-- `ω * u` has finite part `0`. -/
-theorem finitePart_omega0_mul (u : Ordinal.{0}) :
+theorem finitePart_omega0_mul u :
     finitePart (Ordinal.omega0 * u) = 0 := by
   conv_lhs => rw [← limitPart_omega0_mul u]
   exact finitePart_limitPart _
 
-@[simp] theorem limitPart_omega0 : limitPart Ordinal.omega0 = Ordinal.omega0 := by
-  have := limitPart_omega0_mul 1
-  rwa [mul_one] at this
-
-@[simp] theorem finitePart_omega0 : finitePart Ordinal.omega0 = 0 := by
-  have := finitePart_omega0_mul 1
-  rwa [mul_one] at this
-
 /-- Adding a natural number is inflationary. -/
-theorem self_le_add_nat (x : Ordinal.{0}) (i : ℕ) : x ≤ x + i := by
-  conv_lhs => rw [← add_zero x]
-  exact add_le_add_right (by exact_mod_cast Nat.zero_le i) _
+theorem self_le_add_nat (x : Ordinal.{0}) (i : ℕ) : x ≤ x + i := by simp_all
 
 /-- A code with a smaller block index is below the larger block level: `ω·u + m < ω·v` for
 `u < v`. -/
@@ -414,21 +447,20 @@ theorem code_add_lt_mul {u v : Ordinal.{0}} (h : u < v) (m : ℕ) :
           (Order.succ_le_of_lt h)
 
 /-- Within a block, order is finite-part order. -/
-theorem finitePart_le_of_le {x y : Ordinal.{0}} (hlim : limitPart x = limitPart y)
+theorem finitePart_le_of_le {x y} (hlim : limitPart x = limitPart y)
     (hxy : x ≤ y) : finitePart x ≤ finitePart y := by
   have h1 : limitPart y + (finitePart x : Ordinal) = x := by rw [← hlim]; exact decomposition x
-  have h2 : limitPart y + (finitePart y : Ordinal) = y := decomposition y
-  have h3 : limitPart y + (finitePart x : Ordinal) ≤ limitPart y + (finitePart y : Ordinal) := by
-    rw [h1, h2]; exact hxy
+  have h2 := decomposition y
+  have h3 : limitPart y + (finitePart x : Ordinal) ≤ limitPart y + (finitePart y : Ordinal) := by grind
   exact_mod_cast (add_le_add_iff_left (limitPart y)).mp h3
 
 /-- An ordinal in the half-open block `[limitPart x, limitPart x + ω)` has limit part
 `limitPart x`. -/
-theorem limitPart_eq_of_mem_block {x q : Ordinal.{0}} (h1 : limitPart x ≤ q)
+theorem limitPart_eq_of_mem_block {x q} (h1 : limitPart x ≤ q)
     (h2 : q < limitPart x + Ordinal.omega0) : limitPart q = limitPart x := by
   refine le_antisymm ?_ ?_
   · by_contra hlt
-    rw [not_le] at hlt
+    simp_all
     exact absurd ((limitPart_add_omega0_le hlt).trans (limitPart_le q)) (not_le.mpr h2)
   · calc limitPart x = limitPart (limitPart x) := (limitPart_idem x).symm
       _ ≤ limitPart q := limitPart_mono h1
@@ -450,13 +482,18 @@ noncomputable def items (S : Finset Ordinal.{0}) (K : ℕ) : Finset Ordinal.{0} 
 
 variable {S : Finset Ordinal.{0}} {K : ℕ}
 
-theorem limitPart_mem_items {s : Ordinal.{0}} (hs : s ∈ S) (hfp : finitePart s ≤ K) :
+section
+variable {s : Ordinal.{0}}
+
+theorem limitPart_mem_items (hs : s ∈ S) (hfp : finitePart s ≤ K) :
     limitPart s ∈ items S K :=
   Finset.mem_union_left _ (Finset.mem_image_of_mem _ (Finset.mem_filter.mpr ⟨hs, hfp⟩))
 
-theorem mem_items_of_high {s : Ordinal.{0}} (hs : s ∈ S) (hfp : K + 1 ≤ finitePart s) :
+theorem mem_items_of_high (hs : s ∈ S) (hfp : K + 1 ≤ finitePart s) :
     s ∈ items S K :=
   Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hs, hfp⟩)
+
+end
 
 /-- Items are block starts or high singletons. -/
 theorem items_fp {p : Ordinal.{0}} (hp : p ∈ items S K) :
@@ -464,7 +501,7 @@ theorem items_fp {p : Ordinal.{0}} (hp : p ∈ items S K) :
   rcases Finset.mem_union.mp hp with h | h
   · obtain ⟨s, -, rfl⟩ := Finset.mem_image.mp h
     exact Or.inl (finitePart_limitPart s)
-  · exact Or.inr (Finset.mem_filter.mp h).2
+  · grind
 
 /-- The item count is at most `S.card` (one interval item per touched block, one singleton
 item per high element). -/
@@ -505,8 +542,7 @@ theorem rank_pos_of_item {p x : Ordinal.{0}} (hp : p ∈ items S K) (hpx : p ≤
 theorem rank_eq_of_forall {x y : Ordinal.{0}} (hxy : x ≤ y)
     (h : ∀ p ∈ items S K, p ≤ y → p ≤ x) : rank S K x = rank S K y := by
   refine le_antisymm (rank_mono hxy) (Finset.card_le_card fun q hq => ?_)
-  rw [Finset.mem_filter] at hq ⊢
-  exact ⟨hq.1, h q hq.1 hq.2⟩
+  grind
 
 /-- A new item strictly between `x` and `y` raises the rank. -/
 theorem rank_lt_rank_of_item {x y p : Ordinal.{0}} (hxy : x ≤ y) (hp : p ∈ items S K)
@@ -519,7 +555,7 @@ theorem rank_lt_rank_of_item {x y p : Ordinal.{0}} (hxy : x ≤ y) (hp : p ∈ i
 
 /-- No item lies strictly inside the sub-`K` part of a block: an item `≤ limitPart x + i`
 (`i ≤ K`) is already `≤ limitPart x`. -/
-theorem item_le_block_of_le {x p : Ordinal.{0}} {i : ℕ} (hp : p ∈ items S K) (hi : i ≤ K)
+theorem item_le_block_of_le {x p : Ordinal.{0}} {i} (hp : p ∈ items S K) (hi : i ≤ K)
     (hpy : p ≤ limitPart x + i) : p ≤ limitPart x := by
   by_contra hpx
   rw [not_le] at hpx
@@ -533,8 +569,7 @@ theorem item_le_block_of_le {x p : Ordinal.{0}} {i : ℕ} (hp : p ∈ items S K)
       rw [hblock]
     have hlt : limitPart x + (i : Ordinal) < limitPart x + (finitePart p : Ordinal) :=
       add_lt_add_right (Nat.cast_lt.mpr (lt_of_le_of_lt hi (Nat.lt_of_succ_le hhigh))) _
-    rw [← hpe] at hlt
-    exact absurd hpy (not_le.mpr hlt)
+    grind
 
 /-! ### The canonical normalizer -/
 
@@ -584,17 +619,19 @@ theorem canonicalNormalizer_ofOrd (x : Ordinal.{0}) :
       else if rank S K x = 0 then ⊥
       else ofOrd (Ordinal.omega0 * (rank S K x - 1 : ℕ) + ((K + 1 : ℕ) : Ordinal)) := rfl
 
+section
+variable {x : Ordinal.{0}}
+
 /-- The **`3b` branch** (below-first-item region of a block with items): constant
 `ω·rank + K`. -/
-theorem canonicalNormalizer_3b {x : Ordinal.{0}}
-    (h1 : ∃ p ∈ items S K, limitPart p = limitPart x)
+theorem canonicalNormalizer_3b (h1 : ∃ p ∈ items S K, limitPart p = limitPart x)
     (h2 : ∀ p ∈ items S K, limitPart p = limitPart x → x < p) :
     canonicalNormalizer S K (ofOrd x) = ofOrd (Ordinal.omega0 * rank S K x + K) := by
   rw [canonicalNormalizer_ofOrd, ite_eq_left ⟨h1, h2⟩]
 
 /-- The **affine branch**: on the sub-`K` part of an interval-item block, `ν` shifts the
 block affinely to code block `rank − 1`. -/
-theorem canonicalNormalizer_affine {x : Ordinal.{0}} (hmem : limitPart x ∈ items S K)
+theorem canonicalNormalizer_affine (hmem : limitPart x ∈ items S K)
     (hfp : finitePart x ≤ K) :
     canonicalNormalizer S K (ofOrd x)
       = ofOrd (Ordinal.omega0 * (rank S K x - 1 : ℕ) + finitePart x) := by
@@ -605,8 +642,7 @@ theorem canonicalNormalizer_affine {x : Ordinal.{0}} (hmem : limitPart x ∈ ite
   rw [canonicalNormalizer_ofOrd, ite_eq_right hno3b, ite_eq_left ⟨hmem, hfp⟩]
 
 /-- The **plateau branch**: the code of the greatest item `≤ x`, at offset `K+1`. -/
-theorem canonicalNormalizer_plateau {x : Ordinal.{0}}
-    (h3b : ¬ ((∃ p ∈ items S K, limitPart p = limitPart x) ∧
+theorem canonicalNormalizer_plateau (h3b : ¬ ((∃ p ∈ items S K, limitPart p = limitPart x) ∧
         ∀ p ∈ items S K, limitPart p = limitPart x → x < p))
     (haff : ¬ (limitPart x ∈ items S K ∧ finitePart x ≤ K)) (h0 : rank S K x ≠ 0) :
     canonicalNormalizer S K (ofOrd x)
@@ -614,8 +650,7 @@ theorem canonicalNormalizer_plateau {x : Ordinal.{0}}
   rw [canonicalNormalizer_ofOrd, ite_eq_right h3b, ite_eq_right haff, ite_eq_right h0]
 
 /-- The **`⊥` branch**: blocks entirely below every item. -/
-theorem canonicalNormalizer_of_rank_zero {x : Ordinal.{0}}
-    (hb : ¬ ∃ p ∈ items S K, limitPart p = limitPart x) (h0 : rank S K x = 0) :
+theorem canonicalNormalizer_of_rank_zero (hb : ¬ ∃ p ∈ items S K, limitPart p = limitPart x) (h0 : rank S K x = 0) :
     canonicalNormalizer S K (ofOrd x) = ⊥ := by
   have haff : ¬ (limitPart x ∈ items S K ∧ finitePart x ≤ K) := by
     rintro ⟨hm, -⟩
@@ -626,7 +661,7 @@ theorem canonicalNormalizer_of_rank_zero {x : Ordinal.{0}}
 /-- **`⊥`-fiber characterization**: `ν` sends an ordinal to `⊥` exactly when no item is
 `≤ x` and no item shares `x`'s block.  In particular the `⊥`-fiber is a downward-closed
 union of whole blocks. -/
-theorem canonicalNormalizer_eq_bot_iff {x : Ordinal.{0}} :
+theorem canonicalNormalizer_eq_bot_iff  :
     canonicalNormalizer S K (ofOrd x) = ⊥ ↔
       rank S K x = 0 ∧ ¬ ∃ p ∈ items S K, limitPart p = limitPart x := by
   constructor
@@ -653,30 +688,34 @@ theorem canonicalNormalizer_eq_bot_iff {x : Ordinal.{0}} :
   · rintro ⟨h0, hb⟩
     exact canonicalNormalizer_of_rank_zero hb h0
 
+end
+
+section
+variable (x : ExtOrd)
+
 /-- **The block bound** (note §3): the block indices of `ν_{S,K}` form an initial segment of
 length at most `(items S K).card + 1 ≤ S.card + 1`. -/
-theorem canonicalNormalizer_blockIdx_le (x : ExtOrd) :
+theorem canonicalNormalizer_blockIdx_le  :
     canonicalNormalizer S K x = ⊥ ∨ ∃ u m : ℕ, u ≤ (items S K).card ∧ m ≤ K + 1 ∧
       canonicalNormalizer S K x = ofOrd (Ordinal.omega0 * u + m) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
-  · exact Or.inl rfl
-  · exact Or.inr ⟨(items S K).card, K + 1, le_rfl, le_rfl, rfl⟩
+  · simp_all
+  · aesop
   · rw [canonicalNormalizer_ofOrd]
     split_ifs with h1 h2 h3
     · exact Or.inr ⟨rank S K ξ, K, rank_le_card ξ, Nat.le_succ K, rfl⟩
     · exact Or.inr ⟨rank S K ξ - 1, finitePart ξ,
         le_trans (Nat.sub_le _ 1) (rank_le_card ξ), le_trans h2.2 (Nat.le_succ K), rfl⟩
-    · exact Or.inl rfl
+    · grind
     · exact Or.inr ⟨rank S K ξ - 1, K + 1,
         le_trans (Nat.sub_le _ 1) (rank_le_card ξ), le_rfl, rfl⟩
 
 /-- Every value of `ν_{S,K}` is at most the top code (the value of `⊤`). -/
-theorem canonicalNormalizer_le_top (x : ExtOrd) :
+theorem canonicalNormalizer_le_top  :
     canonicalNormalizer S K x ≤ canonicalNormalizer S K ⊤ := by
-  rw [canonicalNormalizer_top]
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
-  · exact bot_le
-  · exact le_rfl
+  · simp_all
+  · grind
   · rw [canonicalNormalizer_ofOrd]
     split_ifs with h1 h2 h3
     · have h : ((rank S K ξ : ℕ) : Ordinal) ≤ ((items S K).card : Ordinal) :=
@@ -685,15 +724,17 @@ theorem canonicalNormalizer_le_top (x : ExtOrd) :
     · have h : ((rank S K ξ - 1 : ℕ) : Ordinal) ≤ ((items S K).card : Ordinal) :=
         Nat.cast_le.mpr (le_trans (Nat.sub_le _ 1) (rank_le_card ξ))
       exact ofOrd_le_ofOrd.mpr (code_le_code h (le_trans h2.2 (Nat.le_succ K)))
-    · exact bot_le
+    · simp_all
     · have h : ((rank S K ξ - 1 : ℕ) : Ordinal) ≤ ((items S K).card : Ordinal) :=
         Nat.cast_le.mpr (le_trans (Nat.sub_le _ 1) (rank_le_card ξ))
       exact ofOrd_le_ofOrd.mpr (code_le_code h le_rfl)
 
+end
+
 /-! ### Monotonicity of the canonical normalizer -/
 
 /-- A member of an earlier block is below every later block level and its members. -/
-private theorem item_le_of_block_lt {p x y : Ordinal.{0}} (hplim : limitPart p = limitPart x)
+private theorem item_le_of_block_lt {p x y} (hplim : limitPart p = limitPart x)
     (hlxy : limitPart x < limitPart y) : p ≤ y :=
   le_of_lt (lt_of_lt_of_le (lt_of_lt_of_le (hplim ▸ lt_limitPart_add_omega0 p)
     (limitPart_add_omega0_le hlxy)) (limitPart_le y))
@@ -714,7 +755,10 @@ private theorem le_canonicalNormalizer_ofOrd {y : Ordinal.{0}} (h0 : rank S K y 
     · rw [canonicalNormalizer_plateau h1 h2 h0]
       exact ofOrd_le_ofOrd.mpr (self_le_add_nat _ _)
 
-private theorem mono_3b {x y : Ordinal.{0}} (hxy : x ≤ y)
+section
+variable {x y : Ordinal.{0}}
+
+private theorem mono_3b (hxy : x ≤ y)
     (h1 : ∃ p ∈ items S K, limitPart p = limitPart x)
     (h2 : ∀ p ∈ items S K, limitPart p = limitPart x → x < p) :
     canonicalNormalizer S K (ofOrd x) ≤ canonicalNormalizer S K (ofOrd y) := by
@@ -791,7 +835,7 @@ private theorem mono_3b {x y : Ordinal.{0}} (hxy : x ≤ y)
           exact ofOrd_le_ofOrd.mpr
             (code_le_code (Nat.cast_le.mpr (by omega)) (Nat.le_succ K))
 
-private theorem mono_affine {x y : Ordinal.{0}} (hxy : x ≤ y)
+private theorem mono_affine (hxy : x ≤ y)
     (hmem : limitPart x ∈ items S K) (hfp : finitePart x ≤ K) :
     canonicalNormalizer S K (ofOrd x) ≤ canonicalNormalizer S K (ofOrd y) := by
   rw [canonicalNormalizer_affine hmem hfp]
@@ -866,7 +910,7 @@ private theorem mono_affine {x y : Ordinal.{0}} (hxy : x ≤ y)
           exact ofOrd_le_ofOrd.mpr (code_le_code (Nat.cast_le.mpr (by omega))
             (hfp.trans (Nat.le_succ K)))
 
-private theorem mono_plateau {x y : Ordinal.{0}} (hxy : x ≤ y)
+private theorem mono_plateau (hxy : x ≤ y)
     (h3b : ¬ ((∃ p ∈ items S K, limitPart p = limitPart x) ∧
         ∀ p ∈ items S K, limitPart p = limitPart x → x < p))
     (haff : ¬ (limitPart x ∈ items S K ∧ finitePart x ≤ K)) (h0 : rank S K x ≠ 0) :
@@ -913,6 +957,8 @@ private theorem mono_plateau {x y : Ordinal.{0}} (hxy : x ≤ y)
           omega
       · rw [canonicalNormalizer_plateau h3by haffy h0y]
         exact ofOrd_le_ofOrd.mpr (code_le_code (Nat.cast_le.mpr (by omega)) le_rfl)
+
+end
 
 /-- **The canonical normalizer is monotone** (clause 4 of Def. 2.3.9 for `ν_{S,K}`). -/
 theorem canonicalNormalizer_mono : Monotone (canonicalNormalizer S K) := by
@@ -963,23 +1009,26 @@ theorem idx_lt_card {p : Ordinal.{0}} (hp : p ∈ items S K) :
   Finset.card_lt_card ⟨Finset.filter_subset _ _, fun hsub =>
     absurd (Finset.mem_filter.mp (hsub hp)).2 (lt_irrefl p)⟩
 
-theorem idx_lt_idx {p q : Ordinal.{0}} (hp : p ∈ items S K) (hpq : p < q) :
+section
+variable {p q : Ordinal.{0}}
+
+theorem idx_lt_idx (hp : p ∈ items S K) (hpq : p < q) :
     idx S K p < idx S K q := by
   apply Finset.card_lt_card
   constructor
-  · intro r hr
-    rw [Finset.mem_filter] at hr ⊢
-    exact ⟨hr.1, lt_trans hr.2 hpq⟩
+  · grind
   · intro hsub
     exact absurd (Finset.mem_filter.mp (hsub (Finset.mem_filter.mpr ⟨hp, hpq⟩))).2
       (lt_irrefl p)
 
-theorem item_eq_of_idx_eq {p q : Ordinal.{0}} (hp : p ∈ items S K) (hq : q ∈ items S K)
+theorem item_eq_of_idx_eq (hp : p ∈ items S K) (hq : q ∈ items S K)
     (h : idx S K p = idx S K q) : p = q := by
   rcases lt_trichotomy p q with hlt | heq | hgt
   · exact absurd h (Nat.ne_of_lt (idx_lt_idx hp hlt))
-  · exact heq
+  · grind
   · exact absurd h.symm (Nat.ne_of_lt (idx_lt_idx hq hgt))
+
+end
 
 /-- The rank of an item is its index plus one. -/
 theorem rank_item {p : Ordinal.{0}} (hp : p ∈ items S K) :
@@ -987,30 +1036,22 @@ theorem rank_item {p : Ordinal.{0}} (hp : p ∈ items S K) :
   rw [rank, idx]
   have hins : ((items S K).filter fun q => q ≤ p) =
       insert p ((items S K).filter fun q => q < p) := by
-    ext q
-    simp only [Finset.mem_filter, Finset.mem_insert]
-    constructor
-    · rintro ⟨hq, hqp⟩
-      rcases lt_or_eq_of_le hqp with h | h
-      · exact Or.inr ⟨hq, h⟩
-      · exact Or.inl h
-    · rintro (rfl | ⟨hq, hqp⟩)
-      · exact ⟨hp, le_rfl⟩
-      · exact ⟨hq, le_of_lt hqp⟩
-  rw [hins]
-  exact Finset.card_insert_of_notMem fun hmem =>
-    absurd (Finset.mem_filter.mp hmem).2 (lt_irrefl p)
+    grind
+  grind
 
 /-- The `u`-th item in increasing order (junk `0` beyond the item count). -/
 noncomputable def itemOfIdx (S : Finset Ordinal.{0}) (K : ℕ) (u : ℕ) : Ordinal.{0} :=
   if h : u < (items S K).card then (items S K).orderEmbOfFin rfl ⟨u, h⟩ else 0
 
-theorem itemOfIdx_mem {u : ℕ} (h : u < (items S K).card) : itemOfIdx S K u ∈ items S K := by
+section
+variable {u : ℕ}
+
+theorem itemOfIdx_mem (h : u < (items S K).card) : itemOfIdx S K u ∈ items S K := by
   rw [itemOfIdx, dite_eq_left h]
   exact Finset.orderEmbOfFin_mem _ _ _
 
 /-- The enumeration inverts the index: the `u`-th item has index `u`. -/
-theorem idx_itemOfIdx {u : ℕ} (h : u < (items S K).card) :
+theorem idx_itemOfIdx (h : u < (items S K).card) :
     idx S K (itemOfIdx S K u) = u := by
   rw [itemOfIdx, dite_eq_left h]
   set e := (items S K).orderEmbOfFin rfl with he
@@ -1027,11 +1068,10 @@ theorem idx_itemOfIdx {u : ℕ} (h : u < (items S K).card) :
       obtain ⟨j, rfl⟩ := hqr
       exact Finset.mem_image.mpr
         ⟨j, Finset.mem_Iio.mpr (e.strictMono.lt_iff_lt.mp hlt), rfl⟩
-    · intro hq'
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hq'
-      rw [Finset.mem_Iio] at hj
-      exact Finset.mem_filter.mpr ⟨Finset.orderEmbOfFin_mem _ _ _, e.strictMono hj⟩
+    · aesop
   rw [idx, himg, Finset.card_image_of_injective _ e.injective, Fin.card_Iio]
+
+end
 
 /-- The index inverts the enumeration on items. -/
 theorem itemOfIdx_idx {p : Ordinal.{0}} (hp : p ∈ items S K) :
@@ -1052,15 +1092,13 @@ theorem le_decoderLow_left (p : Ordinal.{0}) :
 theorem item_le_decoderLow {q p : Ordinal.{0}} (hq : q ∈ items S K) (hqp : q < p) :
     q ≤ decoderLow S K p := by
   refine le_trans ?_ (le_max_right _ _)
-  have hmem : q ∈ (items S K).filter fun r => r < p := by
-    rw [Finset.mem_filter]
-    exact ⟨hq, hqp⟩
+  have hmem : q ∈ (items S K).filter fun r => r < p := by grind
   exact Finset.le_sup (f := id) hmem
 
 theorem decoderLow_lt {p : Ordinal.{0}} (hp : K + 1 ≤ finitePart p) :
     decoderLow S K p < p := by
   have hp0 : (0 : Ordinal.{0}) < p := by
-    have h0 : finitePart (0 : Ordinal.{0}) = 0 := by
+    have h0 := by
       have := finitePart_natCast 0
       rwa [Nat.cast_zero] at this
     refine lt_of_le_of_ne (by rw [← Ordinal.bot_eq_zero]; exact bot_le) fun h => ?_
@@ -1070,9 +1108,7 @@ theorem decoderLow_lt {p : Ordinal.{0}} (hp : K + 1 ≤ finitePart p) :
   constructor
   · conv_rhs => rw [← decomposition p]
     exact add_lt_add_right (Nat.cast_lt.mpr (Nat.lt_of_succ_le hp)) _
-  · rw [Finset.sup_lt_iff (by rw [Ordinal.bot_eq_zero]; exact hp0)]
-    intro q hq
-    exact (Finset.mem_filter.mp hq).2
+  · simp_all
 
 theorem le_finitePart_decoderLow (p : Ordinal.{0}) :
     K ≤ finitePart (decoderLow S K p) := by
@@ -1099,10 +1135,7 @@ theorem le_finitePart_decoderLow (p : Ordinal.{0}) :
     rcases items_fp hqmem.1 with h0 | hhigh
     · exfalso
       have hq_eq : q = limitPart p := (eq_limitPart_of_finitePart_eq_zero h0).symm.trans hqlim
-      have hle : q ≤ limitPart p + (K : Ordinal) := by
-        rw [hq_eq]
-        exact self_le_add_nat _ K
-      exact absurd hqgt (not_lt.mpr hle)
+      simp_all
     · omega
 
 /-- The item owning the code block of `y`. -/
@@ -1139,27 +1172,28 @@ theorem canonicalDecoder_ofOrd (y : Ordinal.{0}) :
         else ofOrd (blockItem S K y)
       else ⊤ := rfl
 
-theorem canonicalDecoder_topRegion {y : Ordinal.{0}}
-    (hy : ¬ y < Ordinal.omega0 * (items S K).card) :
+section
+variable {y : Ordinal.{0}}
+
+theorem canonicalDecoder_topRegion (hy : ¬ y < Ordinal.omega0 * (items S K).card) :
     canonicalDecoder S K (ofOrd y) = ⊤ := by
   rw [canonicalDecoder_ofOrd, ite_eq_right hy]
 
-theorem canonicalDecoder_interval {y : Ordinal.{0}}
-    (hy : y < Ordinal.omega0 * (items S K).card) (h0 : finitePart (blockItem S K y) = 0) :
+theorem canonicalDecoder_interval (hy : y < Ordinal.omega0 * (items S K).card) (h0 : finitePart (blockItem S K y) = 0) :
     canonicalDecoder S K (ofOrd y) = ofOrd (blockItem S K y + min (finitePart y) K) := by
   rw [canonicalDecoder_ofOrd, ite_eq_left hy, ite_eq_left h0]
 
-theorem canonicalDecoder_singLow {y : Ordinal.{0}}
-    (hy : y < Ordinal.omega0 * (items S K).card) (h0 : ¬ finitePart (blockItem S K y) = 0)
+theorem canonicalDecoder_singLow (hy : y < Ordinal.omega0 * (items S K).card) (h0 : ¬ finitePart (blockItem S K y) = 0)
     (hfp : finitePart y ≤ K) :
     canonicalDecoder S K (ofOrd y) = ofOrd (decoderLow S K (blockItem S K y)) := by
   rw [canonicalDecoder_ofOrd, ite_eq_left hy, ite_eq_right h0, ite_eq_left hfp]
 
-theorem canonicalDecoder_singHigh {y : Ordinal.{0}}
-    (hy : y < Ordinal.omega0 * (items S K).card) (h0 : ¬ finitePart (blockItem S K y) = 0)
+theorem canonicalDecoder_singHigh (hy : y < Ordinal.omega0 * (items S K).card) (h0 : ¬ finitePart (blockItem S K y) = 0)
     (hfp : ¬ finitePart y ≤ K) :
     canonicalDecoder S K (ofOrd y) = ofOrd (blockItem S K y) := by
   rw [canonicalDecoder_ofOrd, ite_eq_left hy, ite_eq_right h0, ite_eq_right hfp]
+
+end
 
 /-- The code division computation: `(ω·u + m) / ω = u`. -/
 theorem code_div_omega0 (u : Ordinal.{0}) (m : ℕ) :
@@ -1176,15 +1210,14 @@ theorem code_div_omega0 (u : Ordinal.{0}) (m : ℕ) :
 theorem blockIdx_lt {y : Ordinal.{0}} (hy : y < Ordinal.omega0 * (items S K).card) :
     ordToNat (y / Ordinal.omega0) < (items S K).card ∧
       limitPart y = Ordinal.omega0 * (ordToNat (y / Ordinal.omega0) : ℕ) := by
-  have hdiv : y / Ordinal.omega0 < ((items S K).card : Ordinal) :=
+  have hdiv :=
     (Ordinal.lt_mul_iff_div_lt Ordinal.omega0_ne_zero).mp hy
-  have hcast : ((ordToNat (y / Ordinal.omega0) : ℕ) : Ordinal) = y / Ordinal.omega0 :=
+  have hcast :=
     ordToNat_cast_eq (lt_trans hdiv (Ordinal.natCast_lt_omega0 _))
   constructor
   · rw [← hcast] at hdiv
     exact_mod_cast hdiv
-  · rw [hcast]
-    rfl
+  · aesop
 
 /-! ### The canonical normalizer is a step shifter -/
 
@@ -1223,10 +1256,8 @@ theorem isStepShifter_canonicalNormalizer :
       have hlim : limitPart (limitPart ξ + (i : ℕ)) = limitPart ξ :=
         limitPart_limitPart_add_nat ξ i
       have hfpi : finitePart (limitPart ξ + (i : ℕ)) = i := finitePart_limitPart_add_nat ξ i
-      have hmem' : limitPart (limitPart ξ + (i : ℕ)) ∈ items S K := by
-        rw [hlim]
-        exact hmem
-      rw [canonicalNormalizer_affine hmem' (by rw [hfpi]; exact hi)]
+      have hmem' : limitPart (limitPart ξ + (i : ℕ)) ∈ items S K := by grind
+      rw [canonicalNormalizer_affine hmem' (by grind)]
       have hrk : rank S K (limitPart ξ) = rank S K (limitPart ξ + (i : ℕ)) :=
         rank_eq_of_forall (self_le_add_nat _ i) fun q hq hqy => item_le_block_of_le hq hi hqy
       rw [← hrk, hfpi]
@@ -1255,7 +1286,7 @@ theorem isStepShifter_canonicalNormalizer :
               rw [hql]
             rw [hq_eq]
             exact add_lt_add_right (Nat.cast_lt.mpr (by omega)) _
-        rw [canonicalNormalizer_3b ⟨p, hp, by rw [hlim]; exact hplim⟩ h2]
+        rw [canonicalNormalizer_3b ⟨p, hp, by grind⟩ h2]
         have hrk : rank S K (limitPart ξ) = rank S K (limitPart ξ + (i : ℕ)) :=
           rank_eq_of_forall (self_le_add_nat _ i) fun q hq hqy => item_le_block_of_le hq hi hqy
         rw [← hrk]
@@ -1269,7 +1300,7 @@ theorem isStepShifter_canonicalNormalizer :
           have hrk : rank S K (limitPart ξ) = rank S K (limitPart ξ + (i : ℕ)) :=
             rank_eq_of_forall (self_le_add_nat _ i) fun q hq hqy =>
               item_le_block_of_le hq hi hqy
-          refine canonicalNormalizer_of_rank_zero ?_ (by rw [← hrk]; exact h0)
+          refine canonicalNormalizer_of_rank_zero ?_ (by grind)
           rintro ⟨q, hq, hql⟩
           exact hblock ⟨q, hq, hql.trans hlim⟩
         · -- item-free block above some item: constant plateau
@@ -1314,7 +1345,6 @@ theorem itemOfIdx_lt {u v : ℕ} (hv : v < (items S K).card) (huv : u < v) :
 
 theorem div_omega0_eq_of_limitPart_eq {x y : Ordinal.{0}} (h : limitPart x = limitPart y) :
     x / Ordinal.omega0 = y / Ordinal.omega0 := by
-  unfold limitPart at h
   exact (Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono.injective h
 
 /-- **The canonical decoder is monotone** (clause 4 of Def. 2.3.9 for `τ_{S,K}`). -/
@@ -1506,7 +1536,7 @@ theorem isStepShifter_canonicalDecoder :
         refine ⟨blockItem S K (limitPart ξ), h0, ?_⟩
         intro i hi
         have hfpi : finitePart (limitPart ξ + (i : ℕ)) = i := finitePart_limitPart_add_nat ξ i
-        rw [canonicalDecoder_interval (hyi i) (by rw [hblockItem i]; exact h0),
+        rw [canonicalDecoder_interval (hyi i) (by grind),
           hblockItem i, hfpi, min_eq_left hi]
       · right
         refine ⟨ofOrd (decoderLow S K (blockItem S K (limitPart ξ))), ?_, ?_⟩
@@ -1514,8 +1544,8 @@ theorem isStepShifter_canonicalDecoder :
             (Or.inr (Or.inr ⟨_, rfl, le_finitePart_decoderLow _⟩))
         · intro i hi
           have hfpi : finitePart (limitPart ξ + (i : ℕ)) = i := finitePart_limitPart_add_nat ξ i
-          rw [canonicalDecoder_singLow (hyi i) (by rw [hblockItem i]; exact h0)
-            (by rw [hfpi]; exact hi), hblockItem i]
+          rw [canonicalDecoder_singLow (hyi i) (by grind)
+            (by grind), hblockItem i]
   bot_blocks := by
     intro ξ ζ _hlim hbot
     exfalso
@@ -1609,29 +1639,26 @@ noncomputable def codedAlphabet (t K : ℕ) : Finset ExtOrd :=
   insert ⊥ ((Finset.range (t + 1) ×ˢ Finset.range (K + 2)).image
     fun um => ofOrd (Ordinal.omega0 * um.1 + um.2))
 
-theorem mem_codedAlphabet_iff {t K : ℕ} {x : ExtOrd} :
+theorem mem_codedAlphabet_iff {t K} {x} :
     x ∈ codedAlphabet t K ↔
-      x = ⊥ ∨ ∃ u m : ℕ, u ≤ t ∧ m ≤ K + 1 ∧ x = ofOrd (Ordinal.omega0 * u + m) := by
+      x = ⊥ ∨ ∃ u m, u ≤ t ∧ m ≤ K + 1 ∧ x = ofOrd (Ordinal.omega0 * u + m) := by
   simp only [codedAlphabet, Finset.mem_insert, Finset.mem_image, Finset.mem_product,
     Finset.mem_range]
   constructor
-  · rintro (h | ⟨⟨u, m⟩, ⟨hu, hm⟩, rfl⟩)
-    · exact Or.inl h
-    · exact Or.inr ⟨u, m, by omega, by omega, rfl⟩
+  · grind
   · rintro (h | ⟨u, m, hu, hm, rfl⟩)
-    · exact Or.inl h
+    · grind
     · exact Or.inr ⟨⟨u, m⟩, ⟨by omega, by omega⟩, rfl⟩
 
 /-- **The finite inventory at the combinatorial level** (note §4; the counting content of
 Lemmas 4.3.4/4.3.9/4.3.11): over a finite family, the labellings with values in the coded
 alphabet form a finite set. -/
-theorem codedLabellings_finite (D : Type*) [Finite D] (t K : ℕ) :
+theorem codedLabellings_finite (D : Type*) [Finite D] t K :
     {F : D → ExtOrd | ∀ d, F d ∈ codedAlphabet t K}.Finite := by
   have h : {F : D → ExtOrd | ∀ d, F d ∈ codedAlphabet t K} =
-      Set.pi Set.univ fun _ : D => (codedAlphabet t K : Set ExtOrd) := by
-    ext F
-    simp [Set.mem_pi]
-  rw [h]
+      Set.pi Set.univ fun _ => (codedAlphabet t K : Set ExtOrd) := by
+    grind
+  simp_all
   exact Set.Finite.pi fun _ => (codedAlphabet t K).finite_toSet
 
 end ExtOrd
@@ -1642,22 +1669,12 @@ variable {S : Finset Ordinal.{0}} {K : ℕ}
 
 /-- Canonical forms take values in the coded alphabet at block bound `≥ S.card` (note §4):
 the inventory of canonical forms is finite. -/
-theorem canonicalNormalizer_mem_codedAlphabet {t : ℕ} (ht : S.card ≤ t) (x : ExtOrd) :
+theorem canonicalNormalizer_mem_codedAlphabet {t} (ht : S.card ≤ t) x :
     canonicalNormalizer S K x ∈ ExtOrd.codedAlphabet t K := by
   rw [ExtOrd.mem_codedAlphabet_iff]
   rcases canonicalNormalizer_blockIdx_le x with h | ⟨u, m, hu, hm, h⟩
-  · exact Or.inl h
+  · aesop
   · exact Or.inr ⟨u, m, le_trans hu (le_trans items_card_le ht), hm, h⟩
-
-end Transform
-
-namespace Transform
-
-/-! ### Compiled refutations (note §3 and §6) -/
-
-section Refutations
-
-end Refutations
 
 end Transform
 

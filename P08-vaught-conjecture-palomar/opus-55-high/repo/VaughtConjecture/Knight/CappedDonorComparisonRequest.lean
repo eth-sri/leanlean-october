@@ -45,7 +45,7 @@ threshold exceeds both `Nmin` and the donor arity, with `J = N`, the block map, 
 representatives and offsets, the **literal common-face identification** (`HEq Rf.face
 (commonFace …)`), and `δ < β < H`. -/
 theorem exists_ref_above_cut_min (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t = some p)
-    (q : S α.1 (n + 1)) (hq : IsCoface p q) (ν : Ordinal.{0}) (hν : ν < α.1) (Nmin : ℕ) :
+    q (hq : IsCoface p q) ν (hν : ν < α.1) Nmin :
     ∃ (C : ReferenceContext R t (⟨limitPart ν, finitePart ν⟩ :: donorRequests q))
       (F : C.FullController)
       (Rf : Ref ↥(blocksOf (⟨limitPart ν, finitePart ν⟩ :: donorRequests q)) n C.N C.m

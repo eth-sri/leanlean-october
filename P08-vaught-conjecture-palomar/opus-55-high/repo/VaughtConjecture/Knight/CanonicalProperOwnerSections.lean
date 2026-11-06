@@ -5,8 +5,12 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CanonicalProperOwnerLift
-public import VaughtConjecture.Knight.CanonicalProperOwnerLower
+public import VaughtConjecture.Knight.CanonicalProperOwnerLayer
+public import VaughtConjecture.Knight.SourcePrefixAmbient
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.CanonicalOwnerBoundary
+public import VaughtConjecture.Knight.RetunedCutDecoding
+public import VaughtConjecture.Knight.HighLayerBountiful
 
 /-! # Independent section supply through the three canonical layers
 
@@ -17,7 +21,6 @@ old boundary, including top, without any positive-cap lifting assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalProperOwnerSections
 open Transform Value ExtOrd CanonicalProperOwnerLayer
 open SharpWitnessComposition CoatomBoundaryExtension PairedSlotEncoding
@@ -25,9 +28,9 @@ noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (k : ℕ) (h2k : 2 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ k)
+variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 
-theorem lower_full_short (c : Cell (lowerScheme sem k h2k hkA))
+theorem lower_full_short c
     (hc : (lowerScheme sem k h2k hkA).scope c = A)
     (d : (lowerScheme sem k h2k hkA).below ((lowerScheme sem k h2k hkA).cell c)) :
     Short ((lowerScheme sem k h2k hkA).grade c) ((lowerSem sem k h2k hkA hp).E c d) := by

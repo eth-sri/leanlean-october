@@ -19,14 +19,19 @@ open TypeTower Value
 
 /-! ### The canonical block schedule -/
 
+section
+variable (ξ : Ordinal.{0})
+
 /-- The canonical block levels as limit stages: `blockStage ξ := ⟨blockLevel ξ, _⟩` with
 `blockLevel ξ = ω + ω·ξ` (`Knight/Value.lean`).  The stage schedule of the Knight stopping rank:
 block `ξ` runs from its terminal level `blockStage ξ` to its failed target `blockStage (ξ + 1)`. -/
-noncomputable def blockStage (ξ : Ordinal.{0}) : LimitStage :=
+noncomputable def blockStage  : LimitStage :=
   ⟨blockLevel ξ, isSuccLimit_blockLevel ξ⟩
 
-@[simp] theorem blockStage_toOrdinal (ξ : Ordinal.{0}) :
+@[simp] theorem blockStage_toOrdinal  :
     (blockStage ξ).toOrdinal = blockLevel ξ := rfl
+
+end
 
 theorem blockStage_strictMono : StrictMono blockStage :=
   fun _ _ h => Subtype.mk_lt_mk.mpr (blockLevel_strictMono h)
@@ -38,19 +43,24 @@ theorem blockStage_zero : blockStage 0 = ⟨Ordinal.omega0, Ordinal.isSuccLimit_
   Subtype.ext blockLevel_zero
 
 /-- The failed target of block `ξ` is one `ω`-block above its terminal level. -/
-theorem blockStage_succ_toOrdinal (ξ : Ordinal.{0}) :
+theorem blockStage_succ_toOrdinal ξ :
     (blockStage (ξ + 1)).toOrdinal = blockLevel ξ + Ordinal.omega0 := by
   rw [blockStage_toOrdinal, ← Order.succ_eq_add_one, blockLevel_succ]
 
 namespace KnightRealization
 
+section
+variable (ξ : Ordinal.{0})
+
 /-- The base-source stage bound. -/
-theorem blockStage_zero_le (ξ : Ordinal.{0}) : blockStage 0 ≤ blockStage ξ :=
+theorem blockStage_zero_le  : blockStage 0 ≤ blockStage ξ :=
   blockStage_mono (zero_le : (0 : Ordinal.{0}) ≤ ξ)
 
 /-- Terminal stage to failed target of the same block. -/
-theorem blockStage_le_succ (ξ : Ordinal.{0}) : blockStage ξ ≤ blockStage (ξ + 1) :=
+theorem blockStage_le_succ  : blockStage ξ ≤ blockStage (ξ + 1) :=
   blockStage_mono (le_self_add : ξ ≤ ξ + 1)
+
+end
 
 end KnightRealization
 

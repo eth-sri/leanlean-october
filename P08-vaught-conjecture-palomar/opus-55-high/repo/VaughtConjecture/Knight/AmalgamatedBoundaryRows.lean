@@ -17,8 +17,6 @@ Only equality of the shared source rows is required for row installation.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.AmalgamatedBoundaryRows
 
 open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary
@@ -32,14 +30,17 @@ noncomputable def total {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
     (c d : Cell D) : ExtOrd :=
   if h : GradedLe (D.cell d) (D.cell c) then sem.E c ⟨d, h⟩ else ⊥
 
-theorem total_below {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
-    (c : Cell D) (d : D.below (D.cell c)) : total sem c d.1 = sem.E c d := by
+section
+variable {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
+
+theorem total_below (c : Cell D) (d : D.below (D.cell c)) : total sem c d.1 = sem.E c d := by
   rw [total, dite_eq_left d.2]
   exact congrArg (sem.E c) (Subtype.ext rfl)
 
-theorem total_outside {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
-    (c d : Cell D) (h : ¬ GradedLe (D.cell d) (D.cell c)) : total sem c d = ⊥ := by
+theorem total_outside (c d : Cell D) (h : ¬ GradedLe (D.cell d) (D.cell c)) : total sem c d = ⊥ := by
   simp only [total, dite_eq_right h]
+
+end
 
 section Push
 variable {B C : Finset ι} {D : CellScheme B} {K : CellScheme C}
@@ -56,7 +57,6 @@ theorem pushRow_at (c d : Cell D) : pushRow f sem c (f d) = total sem c d :=
 include hf hi in
 theorem pushRow_outside (c : Cell D) (z : Cell K)
     (hz : ¬ GradedLe (K.cell z) (D.cell c)) : pushRow f sem c z = ⊥ := by
-  classical
   by_cases h : ∃ d, f d = z
   · obtain ⟨d, rfl⟩ := h
     rw [pushRow_at f hf]
@@ -79,10 +79,10 @@ local notation "r" => rightCell s D E w hD hE
 def Compatible : Prop :=
   ∀ i j, total semD (w.f i) (w.f j) = total semE (w.g i) (w.g j)
 
-theorem shared_cell (i : Fin k) : l (w.f i) = r (w.g i) :=
+theorem shared_cell i : l (w.f i) = r (w.g i) :=
   (overlap s D E w hD hE _ _).mpr ⟨i, rfl, rfl⟩
 
-theorem covered (c : Cell K) : (∃ d, l d = c) ∨ ∃ e, r e = c := by
+theorem covered c : (∃ d, l d = c) ∨ ∃ e, r e = c := by
   rcases ProfileFaceUnion.covered w.f w.g ((enumeration D E w).symm c) with
     ⟨d, hd⟩ | ⟨e, he⟩
   · exact Or.inl ⟨d, (congrArg (enumeration D E w) hd).trans
@@ -101,8 +101,7 @@ theorem pushRow_shared (hc : Compatible s D E w semD semE) (i : Fin k) :
     have he : l d.1 = z := congrArg Subtype.val hd
     have hdc : D.scope d.1 ⊆ A.erase s.b := by
       have hs := d.2.1
-      change D.scope d.1 ⊆ (D.cell (w.f i)).1 at hs
-      have hs' : (D.cell (w.f i)).1 ⊆ (E.cell (w.g i)).1 :=
+      have hs' :=
         subset_of_eq (congrArg Prod.fst (w.shared i))
       exact hs.trans (hs'.trans (E.isPlan.subset_of_mem (E.scope_mem_plan _)))
     obtain ⟨j, hj⟩ := w.left_exhaustive d.1 hdc
@@ -124,7 +123,7 @@ theorem table_left (c d : Cell D) : table s D E w hD hE semD semE (l c) (l d) =
   change ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.left w.g c))) (l d) = _
-  rw [Equiv.symm_apply_apply]
+  simp_all
   exact pushRow_at l (left_order s D E w hD hE).injective semD c d
 
 theorem table_right (hc : Compatible s D E w semD semE) (c d : Cell E) :

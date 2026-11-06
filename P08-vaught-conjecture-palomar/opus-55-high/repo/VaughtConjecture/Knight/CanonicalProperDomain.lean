@@ -15,7 +15,6 @@ transport all rows and lawful target-local ambients, not only chosen sections.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalProperDomain
 open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension
 noncomputable section
@@ -26,14 +25,17 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
 variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
 variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
-def equiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
+def equiv BJ (hB : ¬ A ⊆ BJ.1) :
     D.below BJ ≃ (scheme sem j hj hjA k hk hkA).below BJ :=
   (GradeCutLayerCarrier.properEquiv D (CanonicalGradeCutSections.Profiles sem j)
     j hj hjA BJ hB).trans
     (GradeCutLayerCarrier.properEquiv (lowerScheme sem j hj hjA)
       (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA BJ hB)
 
-theorem equiv_cell (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) (d : D.below BJ) :
+section
+variable (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1)
+
+theorem equiv_cell d :
     (scheme sem j hj hjA k hk hkA).cell (equiv sem j hj hjA k hk hkA BJ hB d).1 =
       D.cell d.1 := by
   change (SourceLayerCarrier.scheme _ _ _ _ _).cell
@@ -41,7 +43,7 @@ theorem equiv_cell (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) (d : D.below BJ)
       (SourceLayerCarrier.toCell _ _ _ _ _ (.inl d.1)))) = _
   simp only [SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index]
 
-theorem respects_iff (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) (p : D.below BJ → ExtOrd) :
+theorem respects_iff p :
     RespectsSemanticsBelow sem BJ p ↔
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ
         (p ∘ (equiv sem j hj hjA k hk hkA BJ hB).symm) := by
@@ -52,15 +54,17 @@ theorem respects_iff (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) (p : D.below B
     simp only [CellScheme.scope, equiv_cell]
   · exact (original_row sem j hj hjA hproper k hg hk hkA hjk b.1 d).symm
 
-theorem pullback_respects {BJ : Finset ι × ℕ} (hB : ¬ A ⊆ BJ.1)
-    {q : (scheme sem j hj hjA k hk hkA).below BJ → ExtOrd}
+end
+
+theorem pullback_respects {BJ} hB
+    {q}
     (hq : RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ q) :
     RespectsSemanticsBelow sem BJ (q ∘ equiv sem j hj hjA k hk hkA BJ hB) := by
   apply (respects_iff sem j hj hjA hproper k hg hk hkA hjk BJ hB _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
 
 /-- Every proper-target lifting clause is exactly an old clause. -/
-theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hB : ¬ A ⊆ J.1)
+theorem lift {I J} (h : GradedLe I J) (hB : ¬ A ⊆ J.1)
     (hlift : CappedLift sem h) :
     CappedLift (rows sem j hj hjA hproper k hg hk hkA hjk) h := by
   intro p q γ hp hq hγ hag

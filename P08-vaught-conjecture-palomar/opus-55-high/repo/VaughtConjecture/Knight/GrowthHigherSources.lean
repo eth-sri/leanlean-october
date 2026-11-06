@@ -18,7 +18,6 @@ never to admit a source at a higher cutoff.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherSources
 open Transform Value ExtOrd Growth GrowthOrderedBase
 noncomputable section
@@ -31,53 +30,66 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
 
 instance (j : ℕ) : Fintype (Catalogue X j) := Fintype.ofFinite _
 
-abbrev fields (j : ℕ) (a : Catalogue X j) : Field DA DQ → ExtOrd := a.val
+abbrev fields j (a : Catalogue X j) : Field DA DQ → ExtOrd := a.val
 
-theorem anchor_proper {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
+section
+variable {j : ℕ} (a : Catalogue X j) (f : Field DA DQ)
+
+theorem anchor_proper  :
     fields X j a f ≠ ⊤ := a.property.1.2 f
 
-theorem anchor_bound {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
+theorem anchor_bound  :
     fields X j a f ≤ CanonicalFieldLayer.ceiling j (Field DA DQ) := by
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 f).trans
   exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
 
-theorem anchor_short {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
+theorem anchor_short  :
     SharpWitnessComposition.Short j (fields X j a f) :=
   CanonicalPairedProfiles.inventory_short _ _ a.property.1 f
 
-theorem anchor_visible_one {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
+theorem anchor_visible_one  :
     SelfVis 1 (fields X j a f) := by
   obtain ⟨S, hs, he⟩ := a.property.2
   change SelfVis 1 (a.val f)
   rw [← he]
   exact hs.visible f
 
-/-- The state is admitted at its own cutoff. No upward admission is used. -/
-def state {j : ℕ} (a : Catalogue X j) : State DA DQ := State.ofProfile a.val
+end
 
-theorem state_admitted {j : ℕ} (a : Catalogue X j) :
+/-- The state is admitted at its own cutoff. No upward admission is used. -/
+def state {j} (a : Catalogue X j) : State DA DQ := State.ofProfile a.val
+
+section
+variable {j : ℕ} (a : Catalogue X j)
+
+theorem state_admitted  :
     Admitted X j (state X a) := by
   obtain ⟨S, hS, he⟩ := a.property.2
   have hs : state X a = S := State.profile_injective
     ((State.profile_ofProfile a.val).trans he.symm)
   exact hs.symm ▸ hS
 
-theorem state_profile {j : ℕ} (a : Catalogue X j) :
+theorem state_profile  :
     (state X a).profile = fields X j a := State.profile_ofProfile a.val
 
-theorem state_proper {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
+theorem state_proper (f : Field DA DQ) :
     (state X a).profile f ≠ ⊤ := by
   rw [state_profile]
   exact anchor_proper X a f
 
-def normalized {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
-    (S : State DA DQ) (hs : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤) :
+end
+
+section
+variable {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j) (S : State DA DQ) (hs : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤)
+
+def normalized  :
     Catalogue X i := normalizedMember X hi (hs.down X hij) hp
 
-theorem normalized_fields {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
-    (S : State DA DQ) (hs : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤) :
+theorem normalized_fields  :
     fields X i (normalized X hi hij S hs hp) = PairedSlotEncoding.normalize i S.profile :=
   funext (State.profile_normalize i S)
+
+end
 
 end Catalogue
 

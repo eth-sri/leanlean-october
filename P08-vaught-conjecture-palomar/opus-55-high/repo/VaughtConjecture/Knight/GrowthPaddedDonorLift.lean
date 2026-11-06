@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthPaddedDonorRepair
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Active positive-cap donor lifting on the unchanged padded successor
 
@@ -18,7 +20,6 @@ are growth theorems, not LOW-family substitutions.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedDonorLift
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedSuccessor GrowthPaddedDecode GrowthPaddedCharts GrowthPaddedDonorRepair
@@ -37,11 +38,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 Every lower auxiliary retains its owner cap; every upper locality target stays
 unchanged. This is a proved restoration, not an input to the final endpoint. -/
 theorem restore (hN : 1 < X.req.N)
-    {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {u : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) p)
     (hu : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) u)
-    {M : ExtOrd} (hM : SelfVis 2 M)
+    {M} (hM : SelfVis 2 M)
     (hread : ∀ d, u (donorAt I X T hA hB hC d) = min (p d) M)
     (hbound : ∀ d, u d ≤ M)
     (hmax : ∀ d, I.left.scheme.grade d.1 = 2 → p d ≤ M) :
@@ -103,11 +104,11 @@ prescription, admitted repair, and lower restoration are all constructed.
 Every physical auxiliary has its own original-cap receipt, including unused
 rungs and the long tips. Literal top is not excluded. -/
 theorem active_donor_lift (hN : 2 < X.req.N)
-    {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
     (hactive : ∃ d, I.left.scheme.grade d.1 = 2 ∧ γ < p d)
     (hag : ∀ d, min (q (donorAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧

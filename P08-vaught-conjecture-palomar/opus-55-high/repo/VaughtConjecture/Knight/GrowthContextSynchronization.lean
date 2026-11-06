@@ -22,7 +22,6 @@ of the proposed hollow-growth receiver, not the receiver itself.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthContextSynchronization
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section
@@ -32,7 +31,7 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 /-- Growth first, synchronization second: the final cover retains both the
 high top grade and the synchronization receipts for the original exact root. -/
 theorem exists_sync_growth (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p) (K L : ℕ) :
+    {n} t (p : S α.1 n) (hp : W.eval t = some p) (K L : ℕ) :
     ∃ (y : W.LabelledExt) (f : Fin n ↪ Fin y.arity) (_hf : f.trans y.tuple = t)
       (hpy : typeMap f y.type = some p), K < y.type.topGrade ∧
         ∀ d : Cell p.scheme.scheme,
@@ -62,7 +61,7 @@ theorem exists_sync_growth (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
 maximal-grade top owner, and every root top lies provisionally above the
 requested cutoff. Proper root labels are retained literally. -/
 theorem exists_hollow_context (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
+    (hh : W.IsHollow) {n} t (p : S α.1 n)
     (hp : W.eval t = some p) (K L : ℕ) :
     ∃ (y : W.LabelledExt) (f : Fin n ↪ Fin y.arity) (_hf : f.trans y.tuple = t)
       (hpy : typeMap f y.type = some p) (c : Cell y.type.scheme.scheme),

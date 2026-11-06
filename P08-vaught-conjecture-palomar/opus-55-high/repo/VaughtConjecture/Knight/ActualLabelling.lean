@@ -16,7 +16,6 @@ realizing a legal scheme in that realization does not realize chosen labels.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open TypeTower StageType Value ExtOrd
 universe w

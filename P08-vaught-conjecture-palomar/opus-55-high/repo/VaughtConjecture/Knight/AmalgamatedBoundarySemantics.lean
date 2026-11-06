@@ -19,8 +19,6 @@ full-scope profile rows are not supplied by this module.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.AmalgamatedBoundarySemantics
 
 open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary AmalgamatedBoundaryRows
@@ -63,7 +61,7 @@ theorem coded (hd : semD.IsCoded) (he : semE.IsCoded) : (sem).IsCoded := by
 
 /-- There are no additional cross-face lawfulness conditions on the proper
 boundary: every locality and availability target is inherited. -/
-theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
+theorem respects_iff p : RespectsSemantics sem p ↔
     RespectsSemantics semD (p ∘ l) ∧ RespectsSemantics semE (p ∘ r) := by
   constructor
   · intro hp
@@ -93,23 +91,28 @@ theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
 noncomputable def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g p q ∘ (enumeration D E w).symm
 
-theorem paste_left (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) (d : Cell D) :
+section
+variable (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
+
+theorem paste_left d :
     paste s D E w hD hE p q (l d) = p d := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.left w.g d))) = p d
-  rw [Equiv.symm_apply_apply]
-  rfl
+  aesop
 
-theorem paste_right (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
-    (h : ∀ i, p (w.f i) = q (w.g i)) (e : Cell E) :
+theorem paste_right (h : ∀ i, p (w.f i) = q (w.g i)) e :
     paste s D E w hD hE p q (r e) = q e := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.right w.f w.g e))) = q e
-  rw [Equiv.symm_apply_apply]
+  simp_all
   exact ProfileFaceUnion.paste_right w.f w.g h e
 
-theorem paste_respects {p : Cell D → ExtOrd} {q : Cell E → ExtOrd}
-    (hp : RespectsSemantics semD p) (hq : RespectsSemantics semE q)
+end
+
+section
+variable {p : Cell D → ExtOrd} {q : Cell E → ExtOrd}
+
+theorem paste_respects (hp : RespectsSemantics semD p) (hq : RespectsSemantics semE q)
     (h : ∀ i, p (w.f i) = q (w.g i)) :
     RespectsSemantics sem (paste s D E w hD hE p q) := by
   apply (respects_iff s D E w hD hE semD semE hc _).mpr
@@ -119,8 +122,7 @@ theorem paste_respects {p : Cell D → ExtOrd} {q : Cell E → ExtOrd}
 
 /-- Two whole faces have a lawful simultaneous boundary section exactly
 when every shared label agrees. No common whole completion is assumed. -/
-theorem section_iff {p : Cell D → ExtOrd} {q : Cell E → ExtOrd}
-    (hp : RespectsSemantics semD p) (hq : RespectsSemantics semE q) :
+theorem section_iff (hp : RespectsSemantics semD p) (hq : RespectsSemantics semE q) :
     (∃ t, RespectsSemantics sem t ∧ (∀ d, t (l d) = p d) ∧ ∀ e, t (r e) = q e) ↔
       ∀ i, p (w.f i) = q (w.g i) := by
   constructor
@@ -131,12 +133,14 @@ theorem section_iff {p : Cell D → ExtOrd} {q : Cell E → ExtOrd}
       paste_respects s D E w hD hE semD semE hc hp hq h,
       paste_left s D E w hD hE p q, paste_right s D E w hD hE p q h⟩
 
+end
+
 /-- All proper-upper lifting clauses are discharged by the inherited
 bountifulness, retaining every auxiliary and the original ambient cap. -/
 theorem proper_lift (hd : semD.IsBountiful) (he : semE.IsBountiful)
-    {CI BJ : Finset ι × ℕ} (hCI : CI ∈ Plan.gradedPlan (K).plan)
-    (hBJ : BJ ∈ Plan.gradedPlan (K).plan) (h : GradedLe CI BJ) (hne : CI ≠ BJ)
-    (hB : BJ.1 ≠ A) (p : (K).below CI → ExtOrd) (q : (K).below BJ → ExtOrd) (γ : ExtOrd)
+    {CI BJ} (hCI : CI ∈ Plan.gradedPlan (K).plan)
+    (hBJ : BJ ∈ Plan.gradedPlan (K).plan) h (hne : CI ≠ BJ)
+    (hB : BJ.1 ≠ A) p q γ
     (hp : RespectsSemanticsBelow sem CI p) (hq : RespectsSemanticsBelow sem BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :

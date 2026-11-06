@@ -54,8 +54,11 @@ variable
 
 include absorb
 
+section
+variable (s : S)
+
 /-- Finitely many absorptions decide all coordinates of a root, not its visibility. -/
-theorem absorb_finset (s : S) (F : Finset M) :
+theorem absorb_finset (F : Finset M) :
     ∃ t, master s ≤ master t ∧ ∀ x ∈ F, x ∈ Set.range (master t).tuple := by
   classical
   induction F using Finset.induction_on with
@@ -66,21 +69,23 @@ theorem absorb_finset (s : S) (F : Finset M) :
     refine ⟨r, hst.trans htr, ?_⟩
     intro y hy
     rcases Finset.mem_insert.mp hy with rfl | hy
-    · exact hr
+    · grind
     · exact htr.range_mono (ht y hy)
 
-theorem resolve (s : S) (r : RootedTask T α M)
+theorem resolve (r : RootedTask T α M)
     (serve : ∀ s, (master s).chart.eval r.root = some r.base →
       ∃ t, master s ≤ master t ∧ r.Served (master t).chart) :
     ∃ t, master s ≤ master t ∧ Resolved master r t := by
   classical
   obtain ⟨t, hst, ht⟩ := absorb_finset master absorb s (Finset.univ.image r.root)
-  have hsupp : (master t).Supported r.root :=
+  have hsupp :=
     ((master t).supported_iff r.root).mpr fun i => ht _ (Finset.mem_image.mpr ⟨i, by simp, rfl⟩)
   by_cases hp : (master t).chart.eval r.root = some r.base
   · obtain ⟨q, htq, hq⟩ := serve t hp
     exact ⟨q, hst.trans htq, htq.supported hsupp, Or.inr hq⟩
   · exact ⟨t, hst, hsupp, Or.inl hp⟩
+
+end
 
 /-- Countable dense-set scheduling. Each request is resolved once; all points are absorbed. -/
 theorem exists_chain {I : Type z'} [Countable I] [Countable M]
@@ -91,7 +96,6 @@ theorem exists_chain {I : Type z'} [Countable I] [Countable M]
     ∃ A : ℕ → S, A 0 = seed ∧ Monotone (master ∘ A) ∧
       (∀ x, ∃ k, x ∈ Set.range (master (A k)).tuple) ∧
       ∀ i, ∃ k, Resolved master (task i) (A k) := by
-  classical
   let : Preorder S := Preorder.lift master
   let : Encodable (I ⊕ M) := Encodable.ofCountable _
   let D : I ⊕ M → Order.Cofinal S
@@ -110,11 +114,11 @@ theorem exists_chain {I : Type z'} [Countable I] [Countable M]
 
 omit absorb in
 /-- The countable union of a master chain retains whole options on every old support. -/
-theorem union_eval_supported {A : ℕ → S} (hA : Monotone (master ∘ A)) (k : ℕ)
-    {n : ℕ} (t : Fin n ↪ M) (ht : (master (A k)).Supported t) :
+theorem union_eval_supported {A} (hA : Monotone (master ∘ A)) k
+    {n} (t : Fin n ↪ M) (ht : (master (A k)).Supported t) :
     (Realization.chainUnion fun k => (master (A k)).chart).eval t =
       (master (A k)).chart.eval t := by
-  have hchain : ∀ k, (master (A k)).chart.Extends (master (A (k + 1))).chart :=
+  have hchain :=
     fun k => ((master (A k)).extends_iff _).mp (hA (Nat.le_succ k))
   have hc := Realization.chainUnion_consistent hchain (fun k => (master (A k)).consistent)
   obtain ⟨f, rfl⟩ := ht
@@ -135,7 +139,7 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
         ∃ s, (master s).chart.eval t = some p := by
   classical
   obtain ⟨A, hzero, hA, hpoints, htasks⟩ := exists_chain master absorb task serve seed
-  have hchain : ∀ k, (master (A k)).chart.Extends (master (A (k + 1))).chart :=
+  have hchain :=
     fun k => ((master (A k)).extends_iff _).mp (hA (Nat.le_succ k))
   refine ⟨Realization.chainUnion (fun k => (master (A k)).chart),
     Realization.chainUnion_consistent hchain (fun k => (master (A k)).consistent), ?_,

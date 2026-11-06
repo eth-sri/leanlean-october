@@ -18,7 +18,6 @@ there is no assertion that an earlier source survives later activation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
 noncomputable section
@@ -27,20 +26,28 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {semA : Semantics DA} {semQ : Semantics DQ}
 
 namespace State
-def encoder (j : ℕ) (S : State DA DQ) : ExtOrd → ExtOrd :=
+section
+variable (j : ℕ) (S : State DA DQ)
+
+def encoder  : ExtOrd → ExtOrd :=
   PairedSlotIncoming.encoder j (PairedSlotEncoding.values S.profile)
 
-def normalize (j : ℕ) (S : State DA DQ) : State DA DQ := S.map (S.encoder j)
+def normalize  : State DA DQ := S.map (S.encoder j)
 
-theorem profile_normalize (j : ℕ) (S : State DA DQ) (f : Field DA DQ) :
+theorem profile_normalize f :
     (S.normalize j).profile f = PairedSlotEncoding.normalize j S.profile f := by
   rw [normalize, profile_map]
   exact PairedSlotIncoming.encoder_profile j S.profile f
+
+end
 end State
 
 variable (X : RelativeData DA semA DQ semQ)
 
-theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
+section
+variable {j : ℕ}
+
+theorem Admitted.map {S : State DA DQ} (hS : Admitted X j S)
     {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
     (hbot : ∀ x, σ x = ⊥ → x = ⊥) : Admitted X j (S.map σ) where
   private_lawful := map_respects_of_bottom_reflecting hS.private_lawful
@@ -82,12 +89,17 @@ theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
         ← hσ.mono.map_min]
       exact hσ.mono (ht y hT)
 
-theorem normalize_admitted {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
+theorem normalize_admitted (hj : 1 ≤ j) {S}
     (hS : Admitted X j S) : Admitted X j (S.normalize j) :=
   hS.map X (PairedSlotIncoming.encoder_witness j _) hj
     (PairedSlotIncoming.encoder_reflects_bottom j _)
 
-theorem normalize_inventory (j : ℕ) {S : State DA DQ} (hp : ∀ f, S.profile f ≠ ⊤) :
+end
+
+section
+variable (j : ℕ)
+
+theorem normalize_inventory {S : State DA DQ} (hp : ∀ f, S.profile f ≠ ⊤) :
     (S.normalize j).profile ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j := by
   rw [show (S.normalize j).profile = PairedSlotEncoding.normalize j S.profile from
     funext (State.profile_normalize j S)]
@@ -95,12 +107,12 @@ theorem normalize_inventory (j : ℕ) {S : State DA DQ} (hp : ∀ f, S.profile f
 
 /-- The fixed catalogue is the whole canonical admitted family, before any
 lifting request. It does not depend on a proposed replacement. -/
-def Catalogue (j : ℕ) :=
+def Catalogue  :=
   {a : Field DA DQ → ExtOrd //
     a ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j ∧
     ∃ S : State DA DQ, Admitted X j S ∧ S.profile = a}
 
-instance catalogueFinite (j : ℕ) : Finite (Catalogue X j) := by
+instance catalogueFinite  : Finite (Catalogue X j) := by
   classical
   let := (CanonicalPairedProfiles.inventory_finite (Field DA DQ) j).fintype
   apply Finite.of_injective (fun a : Catalogue X j => (⟨a.1, a.2.1⟩ :
@@ -109,13 +121,15 @@ instance catalogueFinite (j : ℕ) : Finite (Catalogue X j) := by
   apply Subtype.ext
   exact congrArg (fun z : ↥(CanonicalPairedProfiles.inventory (Field DA DQ) j) => z.1) h
 
-def normalizedMember {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
+end
+
+def normalizedMember {j} (hj : 1 ≤ j) {S}
     (hS : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤) : Catalogue X j :=
   ⟨(S.normalize j).profile, normalize_inventory j hp,
     S.normalize j, normalize_admitted X hj hS, rfl⟩
 
 /-- A catalogue seed obtained directly from the admitted zero state. -/
-def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
+def zeroMember j (hj : 1 ≤ j) : Catalogue X j :=
   normalizedMember X hj (zero_admitted X j) (fun f => by cases f <;> exact bot_ne_top)
 
 end

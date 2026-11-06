@@ -23,10 +23,13 @@ noncomputable section
 
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
+section
+variable {j : ℕ} {S : State P C}
+
 /-- Private-prescribed repair on the complete inventory at every permitted cap. -/
-theorem private_lift {j : ℕ} {S : State P C} (hS : F.Admissible j S)
-    {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+theorem private_lift (hS : F.Admissible j S)
+    {v}
+    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ}
     (hγ : SelfVis (effC n j).2 γ)
     (hag : ∀ d, min (v d) γ = min (S.lowerC j d) γ) :
     ∃ S', F.Admissible j S' ∧ S'.lowerC j = v ∧ S.CapEq γ S' ∧ S.FutureEq j S' := by
@@ -40,9 +43,9 @@ theorem private_lift {j : ℕ} {S : State P C} (hS : F.Admissible j S)
     (le_min (min_le_left _ _) ((min_le_right _ _).trans F.gap.K_le)))
 
 /-- Donor-prescribed repair; no exchange-symmetry of LOW is used. -/
-theorem donor_lift {j : ℕ} {S : State P C} (hS : F.Admissible j S)
-    {u : P.scheme.below (effC n j) → ExtOrd}
-    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ : ExtOrd}
+theorem donor_lift (hS : F.Admissible j S)
+    {u}
+    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ}
     (hγ : SelfVis (effC n j).2 γ)
     (hag : ∀ d, min (u d) γ = min (S.lowerP j d) γ) :
     ∃ S', F.Admissible j S' ∧ S'.lowerP j = u ∧ S.CapEq γ S' ∧ S.FutureEq j S' := by
@@ -55,6 +58,8 @@ theorem donor_lift {j : ℕ} {S : State P C} (hS : F.Admissible j S)
   exact selfVis_min hS.cutoff (hγ.mono
     (le_min (min_le_left _ _) ((min_le_right _ _).trans F.gap.K_le)))
 
+end
+
 def zero : State P C := ⟨fun _ => ⊥, fun _ => ⊥, ⊥⟩
 
 theorem zero_admissible (j : ℕ) : F.Admissible j (zero : State P C) where
@@ -66,11 +71,14 @@ theorem zero_admissible (j : ℕ) : F.Admissible j (zero : State P C) where
   cutoff := selfVis_bot _
   low _ h := (not_lt_bot h).elim
 
+section
+variable {j : ℕ}
+
 /-- Independent private section supply, including literal-top prescriptions.
 The opposite old face is extended at bottom using its own bountifulness. -/
-theorem private_bottom_supply {j : ℕ} {v : C.scheme.below (effC n j) → ExtOrd}
+theorem private_bottom_supply {v}
     (hv : RespectsSemanticsBelow C.rows (effC n j) v) :
-    ∃ S : State P C, F.Admissible j S ∧ S.lowerC j = v ∧ S.b = ⊥ ∧
+    ∃ S, F.Admissible j S ∧ S.lowerC j = v ∧ S.b = ⊥ ∧
       (zero : State P C).FutureEq j S := by
   obtain ⟨u, hQ, -⟩ := (F.zero_admissible j).toSource.install_private F hv
     (selfVis_bot _) (fun _ => by simp only [min_bot_right])
@@ -81,9 +89,9 @@ theorem private_bottom_supply {j : ℕ} {v : C.scheme.below (effC n j) → ExtOr
     exact (not_lt_bot hm).elim
 
 /-- Independent donor section supply with the free cutoff switched off. -/
-theorem donor_bottom_supply {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
+theorem donor_bottom_supply {u}
     (hu : RespectsSemanticsBelow P.rows (effC n j) u) :
-    ∃ S : State P C, F.Admissible j S ∧ S.lowerP j = u ∧ S.b = ⊥ ∧
+    ∃ S, F.Admissible j S ∧ S.lowerP j = u ∧ S.b = ⊥ ∧
       (zero : State P C).FutureEq j S := by
   obtain ⟨v, hQ, -⟩ := (F.zero_admissible j).toSource.install_donor F hu
     (selfVis_bot _) (fun _ => by simp only [min_bot_right])
@@ -92,6 +100,8 @@ theorem donor_bottom_supply {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
   · exact hQ
   · intro _ hm
     exact (not_lt_bot hm).elim
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnly.Family

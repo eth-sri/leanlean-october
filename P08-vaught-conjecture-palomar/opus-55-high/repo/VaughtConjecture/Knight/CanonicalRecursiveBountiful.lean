@@ -19,7 +19,6 @@ old-face lifting remain explicit, separate from ordered installation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveCutPrefix CanonicalRecursiveActiveLift
@@ -48,8 +47,7 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A)
     (hcover _ (D.scope_mem_plan _) (hp (occurrence (D := D) n d))).imp
       (fun h => ⟨h, GradeCutBoundary.grade_bound D _ d⟩)
       (fun h => ⟨h, GradeCutBoundary.grade_bound D _ d⟩)
-  have left : CappedLift (cutRows sem n)
-      (show GradedLe (C, n + 4) (L, n + 4) from ⟨hCL, le_rfl⟩) :=
+  have left :=
     (GradeCutLifting.lift_iff sem (n + 4) _ le_rfl).mpr
       (hold (C, n + 4) (L, n + 4) (Plan.mem_gradedPlan.mpr ⟨hC, by omega, hCc⟩)
         (Plan.mem_gradedPlan.mpr ⟨hL, by omega, hLc⟩) hLA ⟨hCL, le_rfl⟩)

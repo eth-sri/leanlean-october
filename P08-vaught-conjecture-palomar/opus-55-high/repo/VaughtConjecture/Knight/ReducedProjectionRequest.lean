@@ -5,8 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReductReferenceContext
-public import VaughtConjecture.Knight.EntailmentDomainCashout
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.ReductModel
+public import VaughtConjecture.Knight.OnePointRootedExtension
+public import VaughtConjecture.Knight.ActualOccurrence
 
 /-! # One requested reduced projection over the actual context: what the request forces
 
@@ -88,24 +90,21 @@ universe w
 
 /-! ## Exact below `β`, at least `β` above -/
 
-section LabelSplit
-
-variable {β : Ordinal.{0}}
-
-end LabelSplit
-
 /-! ## The required domain and visible face -/
 
 section RequiredFace
 
 variable {γ : Ordinal.{0}} {k m : ℕ}
 
+section
+variable (f : Fin k ↪ Fin m)
+
 /-- **The requested projection forces the domain**: a projection along `f` to `P` exists only if
 the face `univ.image f` is visible in the domain and the domain (with its rows) restricts to
 `P`'s domain there. -/
-theorem face_of_typeMap_eq_some (f : Fin k ↪ Fin m) {q : S γ m} {P : S γ k}
+theorem face_of_typeMap_eq_some {q} {P : S γ k}
     (h : typeMap f q = some P) :
-    ∃ hv : Finset.univ.image f ∈ q.scheme.scheme.plan, q.scheme.restrictFace f hv = P.scheme := by
+    ∃ hv, q.scheme.restrictFace f hv = P.scheme := by
   have hv : Finset.univ.image f ∈ q.scheme.scheme.plan :=
     (typeMap_isSome_iff f q).mp (by rw [h]; rfl)
   refine ⟨hv, ?_⟩
@@ -115,9 +114,9 @@ theorem face_of_typeMap_eq_some (f : Fin k ↪ Fin m) {q : S γ m} {P : S γ k}
 /-- **Projected correctness, cellwise**: once the face is visible and the domains match,
 `typeMap f q = some P` says exactly that every cell of the face reads `P`'s label at the
 corresponding cell. -/
-theorem typeMap_eq_some_iff_labels (f : Fin k ↪ Fin m) (q : S γ m) (P : S γ k)
-    (hv : Finset.univ.image f ∈ q.scheme.scheme.plan)
-    (hs : q.scheme.restrictFace f hv = P.scheme) :
+theorem typeMap_eq_some_iff_labels q (P : S γ k)
+    hv
+    hs :
     typeMap f q = some P ↔
       ∀ i : Cell (q.scheme.restrictFace f hv).scheme,
         q.label (toCell q.scheme.scheme f hv i) = P.label (SemScheme.castCell hs i) := by
@@ -131,16 +130,11 @@ theorem typeMap_eq_some_iff_labels (f : Fin k ↪ Fin m) (q : S γ m) (P : S γ 
     subst hs
     exact StageType.ext rfl (heq_of_eq (funext fun i => h i))
 
+end
+
 end RequiredFace
 
 /-! ## The root part of every projection is the realized reduced root -/
-
-section RootPart
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end RootPart
 
 /-! ## Geometry: the request face forces a pivot of the context's plan outside the root -/
 

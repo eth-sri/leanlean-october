@@ -16,8 +16,6 @@ proofs remain in the historical namespace for compatibility.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthReplicatedReadback
 
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthHigherMixed
@@ -52,38 +50,43 @@ theorem donor_cell (d : Cell I.left.scheme) :
       ((I.left.scheme.scope d).image I.placeLeft, I.left.scheme.grade d) :=
   I.leftFace.index d
 
-theorem private_scope_le (d : Cell I.right.scheme) :
+theorem private_scope_le d :
     (I.right.scheme.scope d).image I.placeRight ⊆ C := by
   exact (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageRight)
 
-theorem donor_scope_le (d : Cell I.left.scheme) :
+theorem donor_scope_le d :
     (I.left.scheme.scope d).image I.placeLeft ⊆ B := by
   exact (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageLeft)
 
 variable (U : Finset ι) (j : ℕ)
 
+section
+variable (d : Cell I.boundary) (hd : GradedLe (I.boundary.cell d) (U, j))
+
 /-- An original boundary cell as an occurrence of the observed section: the inherited cell
 of the replicated carrier, not a copy. -/
-def originalAt (d : Cell I.boundary) (hd : GradedLe (I.boundary.cell d) (U, j)) :
+def originalAt  :
     CellScheme.below (carrier I X T hA hB hC t ht) (U, j) :=
   ScopeReplicationCarrier.oldBelow (P).carrier B C (U, j)
     ⟨original I X T hA hB hC t ht d, by rw [original_index]; exact hd⟩
 
-theorem erase_originalAt (d : Cell I.boundary) (hd : GradedLe (I.boundary.cell d) (U, j)) :
+theorem erase_originalAt  :
     erase I X T hA hB hC t ht (originalAt I X T hA hB hC t ht U j d hd).1 =
       original I X T hA hB hC t ht d :=
   ScopeReplicationCarrier.erase_old (P).carrier B C _
 
+end
+
 variable (hBU : B ⊆ U) (hCU : C ⊆ U)
 
 /-- The occurrence of a private original of grade at most `j`. -/
-def privateAt (d : Cell I.right.scheme) (hd : I.right.scheme.grade d ≤ j) :
+def privateAt d (hd : I.right.scheme.grade d ≤ j) :
     CellScheme.below (carrier I X T hA hB hC t ht) (U, j) :=
   originalAt I X T hA hB hC t ht U j (I.rightFace.map d)
     (by rw [private_cell]; exact ⟨(private_scope_le I d).trans hCU, hd⟩)
 
 /-- The occurrence of a donor original of grade at most `j`. -/
-def donorAt (d : Cell I.left.scheme) (hd : I.left.scheme.grade d ≤ j) :
+def donorAt d (hd : I.left.scheme.grade d ≤ j) :
     CellScheme.below (carrier I X T hA hB hC t ht) (U, j) :=
   originalAt I X T hA hB hC t ht U j (I.leftFace.map d)
     (by rw [donor_cell]; exact ⟨(donor_scope_le I d).trans hBU, hd⟩)
@@ -129,7 +132,7 @@ include hN in
 theorem cap_grade_le : I.right.scheme.grade X.req.C ≤ j := X.grade_C.trans_le hN
 
 /-- Every donor cell has grade at most the activation grade. -/
-theorem donor_grade_le (d : Cell I.left.scheme) : I.left.scheme.grade d ≤ X.req.N :=
+theorem donor_grade_le d : I.left.scheme.grade d ≤ X.req.N :=
   (X.below_top d).2.trans X.top_le_N
 
 /-- The grade bound of a private cell below the cap. -/
@@ -154,14 +157,14 @@ theorem threshold_le_card : X.req.N ≤ A.card := by
   omega
 
 /-- The installed private occurrence map is the inherited original occurrence. -/
-theorem privateFace_map (d : Cell I.right.scheme) (hd : I.right.scheme.grade d ≤ A.card) :
+theorem privateFace_map d (hd : I.right.scheme.grade d ≤ A.card) :
     (GrowthReplicatedRows.privateFace I X T hA hB hC t ht).map d =
       (privateAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hC).1 d hd).1 := by
   exact congrArg (ScopeReplicationCarrier.old (P).carrier B C)
     (GrowthPaddedInstallation.face_map I X T hA hB hC I.rightFace hC.not_ge t ht d)
 
 /-- The installed donor occurrence map is the inherited original occurrence. -/
-theorem donorFace_map (d : Cell I.left.scheme) (hd : I.left.scheme.grade d ≤ A.card) :
+theorem donorFace_map d (hd : I.left.scheme.grade d ≤ A.card) :
     (GrowthReplicatedRows.donorFace I X T hA hB hC t ht).map d =
       (donorAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hB).1 d hd).1 := by
   exact congrArg (ScopeReplicationCarrier.old (P).carrier B C)

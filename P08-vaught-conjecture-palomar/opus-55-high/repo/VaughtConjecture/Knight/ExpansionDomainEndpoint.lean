@@ -10,7 +10,27 @@ public import VaughtConjecture.Knight.BFBoundednessThinness
 public import VaughtConjecture.Knight.ConstructedTerminalCountability
 public import VaughtConjecture.Knight.ConstructedTerminalLoss
 public import VaughtConjecture.Knight.ExpansionDomainCertificate
-public import VaughtConjecture.Spectrum.Thinness
+public import InfinitaryLogic.Descriptive.PerfectAntichain
+public import InfinitaryLogic.OrdinalUtil
+public import Architect
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import InfinitaryLogic.Descriptive.Polish
+public import InfinitaryLogic.Descriptive.SatisfactionBorelOn
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
+public import Mathlib.SetTheory.Cardinal.Aleph
+public import InfinitaryLogic.Lomega1omega.Theory
+public import InfinitaryLogic.Scott.Formula
+public import InfinitaryLogic.Lomega1omega.QuantifierRank
+public import InfinitaryLogic.Karp.CarrierTheorem
+public import InfinitaryLogic.Scott.Sentence
+public import InfinitaryLogic.Scott.RefinementCount
+public import Mathlib.SetTheory.Cardinal.Regular
+public import InfinitaryLogic.Karp.PotentialIso
+public import Mathlib.SetTheory.Cardinal.Continuum
+public import InfinitaryLogic.Descriptive.StructureSpace
+public import Mathlib.GroupTheory.Perm.Basic
+public import VaughtConjecture.Spectrum.Sentence
 
 /-! # Spectrum and thinness without global termination
 

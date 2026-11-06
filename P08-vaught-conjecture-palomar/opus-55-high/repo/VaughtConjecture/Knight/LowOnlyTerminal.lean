@@ -31,17 +31,20 @@ namespace State
 def freshFloor (S : State P C) (h : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * ((insert h (PairedSlotEncoding.values S.profile)).sup id + 1)
 
-theorem freshFloor_limit (S : State P C) (h : Ordinal.{0}) :
+section
+variable (S : State P C) (h : Ordinal.{0})
+
+theorem freshFloor_limit  :
     limitPart (S.freshFloor h) = S.freshFloor h := limitPart_omega0_mul _
 
-theorem lt_freshFloor (S : State P C) (h : Ordinal.{0}) {a : Ordinal.{0}}
+theorem lt_freshFloor {a : Ordinal.{0}}
     (ha : a ∈ insert h (PairedSlotEncoding.values S.profile)) : a < S.freshFloor h := by
   unfold freshFloor
   set m := (insert h (PairedSlotEncoding.values S.profile)).sup id
   exact (Order.lt_add_one_iff.mpr (Finset.le_sup (f := id) ha)).trans_le
     (Ordinal.le_mul_right (m + 1) Ordinal.omega0_pos)
 
-theorem profile_lt_freshFloor (S : State P C) (h : Ordinal.{0}) (d : Field P C) :
+theorem profile_lt_freshFloor (d : Field P C) :
     S.profile d < ofOrd (S.freshFloor h) ∨ S.profile d = ⊤ := by
   rcases ExtOrd.cases (S.profile d) with hb | ht | ⟨a, ha⟩
   · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
@@ -50,6 +53,8 @@ theorem profile_lt_freshFloor (S : State P C) (h : Ordinal.{0}) (d : Field P C) 
     rw [ha, ofOrd_lt_ofOrd]
     exact S.lt_freshFloor h (Finset.mem_insert_of_mem
       (PairedSlotEncoding.mem_values.mpr ⟨d, ha⟩))
+
+end
 
 end State
 
@@ -60,12 +65,12 @@ variable (F : Family P C K)
 /-- Every admitted complete vector, including literal top, has an admitted proper
 canonical representative and an exact outgoing decoder. Properization preserves
 the prescribed raw prefix; no unused physical-grid fixation is claimed. -/
-theorem terminal_insertion {j : ℕ} (hj : 1 ≤ j) {S : State P C}
-    (hS : F.Admissible j S) (h : Ordinal.{0}) :
-    ∃ S₀ Q : State P C, F.Admissible j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
+theorem terminal_insertion {j} (hj : 1 ≤ j) {S}
+    (hS : F.Admissible j S) h :
+    ∃ S₀ Q, F.Admissible j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
       S.CapEq (ofOrd h) S₀ ∧ Q = S₀.normalize j ∧ F.Admissible j Q ∧
       Q.profile ∈ CanonicalPairedProfiles.inventory (Field P C) j ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧ ∀ d, δ (Q.profile d) = S.profile d := by
+      ∃ δ, Witness (gTop j) δ ∧ ∀ d, δ (Q.profile d) = S.profile d := by
   let l := S.freshFloor h
   have hlim : limitPart l = l := S.freshFloor_limit h
   let β : ExtOrd := ofOrd (l + j)

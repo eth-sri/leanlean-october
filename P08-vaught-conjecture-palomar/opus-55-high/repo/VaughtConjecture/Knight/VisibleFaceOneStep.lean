@@ -21,8 +21,8 @@ namespace VaughtConjecture.AmalgamationPlan.Plan
 variable {alpha : Type*} [DecidableEq alpha]
 
 theorem IsPlan.exists_visible_card_succ_superface
-    {A : Finset alpha} {P : Finset (Finset alpha)}
-    (hP : IsPlan A P) {B : Finset alpha} (hB : B ∈ P) (hne : B ≠ A) :
+    {A} {P}
+    (hP : IsPlan A P) {B} (hB : B ∈ P) (hne : B ≠ A) :
     ∃ C : Finset alpha, C ∈ P ∧ B ⊂ C ∧ C.card = B.card + 1 := by
   induction hP generalizing B with
   | empty =>

@@ -18,7 +18,6 @@ No LOW symmetry, replacement admission, or output lawfulness is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedLadder
 open Transform Value ExtOrd CappedDonor LowOnly RelativeLadderLayer
 noncomputable section

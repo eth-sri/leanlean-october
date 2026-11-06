@@ -25,7 +25,6 @@ scope predecessor or assert bountifulness for the whole request plan.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalPrivateLift
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref CoatomBoundaryExtension
 open OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
@@ -142,8 +141,7 @@ theorem private_lift
     obtain ⟨b, δ, -, hv, hread, -⟩ := OrdinaryFinalBottom.exists_private_display R F
       hfields hgate hgridShort hsupport howners E.map hpriv hpn
     refine ⟨fun d => δ (F.source b d.1), hv, ?_, ?_⟩
-    · intro d
-      simp only [hbot, min_eq_right bot_le]
+    · grind
     · intro d
       obtain ⟨x, rfl⟩ := e.surjective d
       exact hread x

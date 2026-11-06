@@ -54,16 +54,18 @@ variable {α : LimitStage} {M : Type w}
 
 /-- **The core-rooted extension property** (Prop. 7.3.3 shape): over every evaluated tuple
 containing the core, every admissible rooted extension of the realized label is realized. -/
-def RootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : Fin c ↪ M)
+def RootedExtensionOver (W : KnightRealization α M) {c} (core : Fin c ↪ M)
     (Adm : RootedAdmissibility α) : Prop :=
   ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (∃ e : Fin c ↪ Fin n, e.trans t = core) →
     W.eval t = some p →
     ∀ {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N), typeMap f P = some p → Adm f p P →
       ∃ u : Fin N ↪ M, f.trans u = t ∧ W.eval u = some P
 
+section
+variable {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t} {s : Fin (n + 1 + k) ↪ M}
+
 /-- The rooted embedding of a chart into a covering of its one-point extension. -/
-theorem trans_snoc_cover {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
-    {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
+theorem trans_snoc_cover (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
     (Fin.castSuccEmb.trans (Fin.castAddEmb k)).trans s = t := by
   ext i
   have h := DFunLike.congr_fun hst (Fin.castSucc i)
@@ -72,13 +74,14 @@ theorem trans_snoc_cover {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.r
   rw [h]
   exact snoc_apply_castSucc t x hx i
 
-theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
-    {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
+theorem cover_mem_range (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
     ∃ i, s i = x := by
   refine ⟨Fin.castAdd k (Fin.last n), ?_⟩
   have h := DFunLike.congr_fun hst (Fin.last n)
   simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
   rw [h]
   exact snoc_apply_last t x hx
+
+end
 
 end VaughtConjecture.Knight

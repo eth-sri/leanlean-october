@@ -18,7 +18,6 @@ No future completion or output bountifulness is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveFullLift
 open Transform Value ExtOrd CoatomBoundaryExtension
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveCutPrefix CanonicalRecursiveActiveLift

@@ -18,7 +18,6 @@ is assumed. The face identification below is purely an occurrence equation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingSources
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
 open OrdinaryFinalCatalogue SourcePrefixRows OrbitPrefixSupport
@@ -27,7 +26,10 @@ noncomputable section
 variable {I : Type*} [Fintype I] {nP N : ℕ}
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
-theorem private_lawful (a : OrdinaryFinalCatalogue.Member R) :
+section
+variable (a : OrdinaryFinalCatalogue.Member R)
+
+theorem private_lawful  :
     RespectsSemantics C.rows (fun d => a.val (.priv d)) := by
   obtain ⟨st, hs, -, -, he⟩ := a.property.2
   have h := hs.v_respects.toRespects (fun d => (present_priv_iff N d).mpr (gradeC_le d))
@@ -36,7 +38,7 @@ theorem private_lawful (a : OrdinaryFinalCatalogue.Member R) :
   rw [← he, profile_present]
   rfl
 
-theorem request_lawful (a : OrdinaryFinalCatalogue.Member R) :
+theorem request_lawful  :
     RespectsSemantics P.rows (fun d => a.val (.req d)) := by
   obtain ⟨st, hs, -, -, he⟩ := a.property.2
   have h := hs.u_respects.toRespects (fun d => (present_req_iff N d).mpr (req_grade_le R d))
@@ -45,11 +47,13 @@ theorem request_lawful (a : OrdinaryFinalCatalogue.Member R) :
   rw [← he, profile_present]
   rfl
 
-theorem face_agreement (a : OrdinaryFinalCatalogue.Member R) (d : P.scheme.below (R.A, R.KA)) :
+theorem face_agreement d :
     a.val (.priv (R.face d).1) = a.val (.req d.1) := by
   obtain ⟨st, hs, -, -, he⟩ := a.property.2
   rw [← he, profile_present, profile_present]
   exact (hs.face d (req_grade_le R d.1)).symm
+
+end
 
 variable {ι : Type*} [DecidableEq ι] {A B T : Finset ι} {plan : Finset (Finset ι)}
 variable (W : WholeDonorBoundary.Input A B T plan nP N (nP + 1))
@@ -65,12 +69,17 @@ theorem shared (a : OrdinaryFinalCatalogue.Member R) (i : Cell W.common.scheme) 
   rw [← hd, ← he]
   exact face_agreement R a d
 
-def boundary (a : OrdinaryFinalCatalogue.Member R) : Cell W.boundary → ExtOrd :=
+section
+variable (a : OrdinaryFinalCatalogue.Member R)
+
+def boundary  : Cell W.boundary → ExtOrd :=
   W.paste (fun d => a.val (.priv d)) (fun d => a.val (.req d))
 
-theorem boundary_private (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.left.scheme) :
+theorem boundary_private (d : Cell W.left.scheme) :
     boundary W R a (W.leftFace.map d) = a.val (.priv d) :=
   W.paste_left _ _ d
+
+end
 
 include hface in
 theorem boundary_request (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.right.scheme) :

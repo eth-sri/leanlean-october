@@ -16,7 +16,6 @@ that an arbitrary lower ambient extends to the whole output.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalLowerDomain
 open Transform Value ExtOrd CanonicalMixedGradeLayers
 noncomputable section
@@ -27,7 +26,7 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
 variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
 variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
-def upperEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
+def upperEquiv BJ (hBJ : BJ.2 ≤ j) :
     (lowerScheme sem j hj hjA).below BJ ≃ (scheme sem j hj hjA k hk hkA).below BJ :=
   Equiv.ofBijective (fun d => ⟨oldCell sem j hj hjA k hk hkA d.1, by
     simpa only [oldCell, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index] using d.2⟩)
@@ -49,15 +48,16 @@ def upperEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
         exact hm
       exact ⟨⟨e, hem⟩, Subtype.ext he.symm⟩⟩
 
-theorem upperEquiv_cell (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
-    (d : (lowerScheme sem j hj hjA).below BJ) :
+section
+variable (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
+
+theorem upperEquiv_cell d :
     (scheme sem j hj hjA k hk hkA).cell
       (upperEquiv sem j hj hjA k hk hkA hjk BJ hBJ d).1 =
       (lowerScheme sem j hj hjA).cell d.1 :=
   SourceLayerCarrier.cell_toCell _ _ _ _ _ (.inl d.1)
 
-theorem upper_respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
-    (p : (lowerScheme sem j hj hjA).below BJ → ExtOrd) :
+theorem upper_respects_iff (p : (lowerScheme sem j hj hjA).below BJ → ExtOrd) :
     RespectsSemanticsBelow (lowerSem sem j hj hjA hproper) BJ p ↔
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ
         (p ∘ (upperEquiv sem j hj hjA k hk hkA hjk BJ hBJ).symm) := by
@@ -69,14 +69,18 @@ theorem upper_respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
     simp only [CellScheme.scope, upperEquiv_cell]
   · exact (inherited_row sem j hj hjA hproper k hg hk hkA hjk b.1 d).symm
 
-def equiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
+end
+
+section
+variable (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
+
+def equiv  :
     (CanonicalGradeCutSections.lower sem j hj hjA).below BJ ≃
       (scheme sem j hj hjA k hk hkA).below BJ :=
   (GradeCutLayerCarrier.belowEquiv D (CanonicalGradeCutSections.Profiles sem j)
     j hj hjA BJ hBJ).trans (upperEquiv sem j hj hjA k hk hkA hjk BJ hBJ)
 
-theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
-    (p : (CanonicalGradeCutSections.lower sem j hj hjA).below BJ → ExtOrd) :
+theorem respects_iff (p : (CanonicalGradeCutSections.lower sem j hj hjA).below BJ → ExtOrd) :
     RespectsSemanticsBelow (CanonicalGradeCutSections.lowerRows sem j hj hjA hproper) BJ p ↔
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ
         (p ∘ (equiv sem j hj hjA k hk hkA hjk BJ hBJ).symm) := by
@@ -85,8 +89,10 @@ theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
     (CanonicalGradeCutSections.overlap sem j hj hjA hproper) BJ hBJ p).trans
     (upper_respects_iff sem j hj hjA hproper k hg hk hkA hjk BJ hBJ _)
 
-theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.2 ≤ j)
-    {q : (scheme sem j hj hjA k hk hkA).below BJ → ExtOrd}
+end
+
+theorem pullback_respects {BJ} hBJ
+    {q}
     (hq : RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ q) :
     RespectsSemanticsBelow (CanonicalGradeCutSections.lowerRows sem j hj hjA hproper) BJ
       (q ∘ equiv sem j hj hjA k hk hkA hjk BJ hBJ) := by

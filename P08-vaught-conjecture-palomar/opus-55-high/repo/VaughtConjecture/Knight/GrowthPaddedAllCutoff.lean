@@ -17,7 +17,6 @@ No mixed-prescription lifting or whole-carrier bountifulness is asserted.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedAllCutoff
 open Transform Value ExtOrd Growth
 open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedLayerFaces
@@ -46,8 +45,7 @@ theorem native_private (hl : GrowthPaddedStepPrivateLift.PrivateLowerLift P) :
   refine ⟨r, hr, hcap, ?_⟩
   intro d
   obtain ⟨x, rfl⟩ := e.surjective d
-  rw [hid]
-  exact hread x
+  simp_all
 
 theorem native_donor (hl : GrowthPaddedStepDonorLift.DonorLowerLift P) :
     CappedLift P.rows (show GradedLe (B, k) (A, k) from ⟨hB.subset, le_rfl⟩) := by
@@ -62,8 +60,7 @@ theorem native_donor (hl : GrowthPaddedStepDonorLift.DonorLowerLift P) :
   refine ⟨r, hr, hcap, ?_⟩
   intro d
   obtain ⟨x, rfl⟩ := e.surjective d
-  rw [hid]
-  exact hread x
+  simp_all
 
 /-- Every installed layer has exactly the checked padded grade-one lift. -/
 theorem private_one :
@@ -79,8 +76,7 @@ theorem private_one :
     ((full_respects_iff I.right I.placeRight I.imageRight (privateFace P) 1 p).mp hp)
     hq' hγ (fun d => hag (e d))
   refine ⟨r ∘ b.symm, (GrowthPaddedCutTransport.base_respects_iff P r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (b.symm d)
+  · simp_all
   · intro d
     obtain ⟨x, rfl⟩ := e.surjective d
     have hid : CellScheme.below.mono
@@ -102,8 +98,7 @@ theorem donor_one (hsmall : n + 1 < X.req.N) :
     ((full_respects_iff I.left I.placeLeft I.imageLeft (donorFace P) 1 p).mp hp)
     hq' hγ (fun d => hag (e d))
   refine ⟨r ∘ b.symm, (GrowthPaddedCutTransport.base_respects_iff P r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (b.symm d)
+  · simp_all
   · intro d
     obtain ⟨x, rfl⟩ := e.surjective d
     have hid : CellScheme.below.mono
@@ -122,8 +117,8 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
 /-- Every positive cutoff on one fixed built carrier; all external caps. -/
-theorem private_clause (t : ℕ) (ht : t + 2 ≤ A.card)
-    (j : ℕ) (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
+theorem private_clause t ht
+    j (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
     CappedLift (build I X T hA hB hC t ht).rows
       (show GradedLe (C, j) (A, j) from ⟨hC.subset, le_rfl⟩) := by
   induction t with
@@ -140,8 +135,8 @@ theorem private_clause (t : ℕ) (ht : t + 2 ≤ A.card)
         (by omega) (by omega) _ (by omega) (ih (by omega) (by omega))
 
 /-- Strict donor arity suffices at every cutoff, including activated heights. -/
-theorem donor_clause (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card)
-    (j : ℕ) (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
+theorem donor_clause (hsmall : n + 1 < X.req.N) t ht
+    j (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
     CappedLift (build I X T hA hB hC t ht).rows
       (show GradedLe (B, j) (A, j) from ⟨hB.subset, le_rfl⟩) := by
   induction t with
@@ -161,8 +156,8 @@ theorem donor_clause (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card
 
 /-- A private-contained subface is extended inside the original legal scheme
 against the restricted actual ambient before the full private lift is used. -/
-theorem private_subface (t : ℕ) (ht : t + 2 ≤ A.card)
-    {S : Finset ι} {i j : ℕ} (hS : (S, i) ∈ Plan.gradedPlan R)
+theorem private_subface t ht
+    {S} {i j} (hS : (S, i) ∈ Plan.gradedPlan R)
     (hSC : S ⊆ C) (hij : i ≤ j) (hj : j ≤ t + 2) :
     CappedLift (build I X T hA hB hC t ht).rows
       (show GradedLe (S, i) (A, j) from ⟨hSC.trans hC.subset, hij⟩) := by
@@ -177,8 +172,8 @@ theorem private_subface (t : ℕ) (ht : t + 2 ≤ A.card)
 
 /-- The donor direction uses its own constructed lifts; the asymmetric
 growth admission is not exchanged with the private family. -/
-theorem donor_subface (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card)
-    {S : Finset ι} {i j : ℕ} (hS : (S, i) ∈ Plan.gradedPlan R)
+theorem donor_subface (hsmall : n + 1 < X.req.N) t ht
+    {S} {i j} (hS : (S, i) ∈ Plan.gradedPlan R)
     (hSB : S ⊆ B) (hij : i ≤ j) (hj : j ≤ t + 2) :
     CappedLift (build I X T hA hB hC t ht).rows
       (show GradedLe (S, i) (A, j) from ⟨hSB.trans hB.subset, hij⟩) := by

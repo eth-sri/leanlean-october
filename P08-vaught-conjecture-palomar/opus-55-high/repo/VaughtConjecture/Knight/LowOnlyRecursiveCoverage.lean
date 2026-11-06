@@ -22,7 +22,6 @@ not asserted here. No upward admission or cross-grade rendering equality is used
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCoverage
 open Transform Value ExtOrd CappedDonor LowOnly
 open PairedSlotEncoding PairedSlotComparison RecursiveRungRendering
@@ -30,9 +29,12 @@ open LowOnlyRecursiveCharts
 noncomputable section
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
+section
+variable {i j : ℕ}
+
 /-- The same complete state is admitted at every lower cutoff. Crossing fields
 are one-visible by their old lawfulness, not by a new source-family assumption. -/
-theorem admissible_down {i j : ℕ} (hj : 1 ≤ j) (hij : i ≤ j)
+theorem admissible_down (hj : 1 ≤ j) (hij : i ≤ j)
     {S : State P C} (hS : F.Admissible j S) : F.Admissible i S where
   lawfulP := hS.lawfulP.mono (CappedDonor.Ref.effC_mono hij)
   lawfulC := hS.lawfulC.mono (CappedDonor.Ref.effC_mono hij)
@@ -42,16 +44,21 @@ theorem admissible_down {i j : ℕ} (hj : 1 ≤ j) (hij : i ≤ j)
   cutoff := selfVis_mono hS.cutoff (min_le_min_right K hij)
   low hKi hm d hd := hS.low (hKi.trans hij) hm d hd
 
+section
+variable (hi : 1 ≤ i) (hij : i ≤ j) {S : State P C} (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤)
+
 /-- Canonical normalization at a lower grade lands in the existing catalogue. -/
-def normalizedAnchor {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
-    {S : State P C} (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) : F.Anchor i :=
+def normalizedAnchor  : F.Anchor i :=
   ⟨(S.normalize i).profile, LowOnly.Family.normalize_inventory i hp,
     S.normalize i, F.normalize_admissible hi (admissible_down F (hi.trans hij) hij hS), rfl⟩
 
-theorem normalizedAnchor_fields {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
-    {S : State P C} (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) :
+theorem normalizedAnchor_fields  :
     F.fields i (normalizedAnchor F hi hij hS hp) = normalize i S.profile :=
   funext (State.profile_normalize i S)
+
+end
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyRecursiveCoverage

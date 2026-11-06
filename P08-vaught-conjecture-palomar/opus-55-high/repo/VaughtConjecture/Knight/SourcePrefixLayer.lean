@@ -21,8 +21,6 @@ no full source-prefix extension or bountifulness theorem is claimed here.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SourcePrefixLayer
 
 open Transform Value ExtOrd SourcePrefixRows
@@ -33,8 +31,8 @@ abbrev Controller (D : CellScheme A) (k : ℕ) := {c : Cell D // D.cell c = (A, 
 
 /-- An old owner's entire lower domain is old. In particular no full-scope
 controller at grade `k` has been smuggled into a proper face. -/
-theorem below_old (hmax : ∀ d : Cell D, D.grade d ≤ k)
-    {c : Cell D} (hc : D.cell c ≠ (A, k)) (d : D.below (D.cell c)) :
+theorem below_old (hmax : ∀ d, D.grade d ≤ k)
+    {c} (hc : D.cell c ≠ (A, k)) (d : D.below (D.cell c)) :
     D.cell d.1 ≠ (A, k) := by
   intro hd
   apply hc
@@ -72,29 +70,40 @@ namespace Data
 
 variable (F : Data D k X)
 
-noncomputable def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
+section
+variable (q : Controller D k)
+
+noncomputable def profile (d : Cell D) : ExtOrd :=
   if hd : D.cell d = (A, k) then cut F.grid (F.boundary q) (F.boundary ⟨d, hd⟩)
   else F.lower q d
 
-theorem profile_old (q : Controller D k) {d : Cell D} (hd : D.cell d ≠ (A, k)) :
+theorem profile_old {d} (hd : D.cell d ≠ (A, k)) :
     F.profile q d = F.lower q d := by simp only [profile, hd, ↓reduceDIte]
 
-theorem profile_new (q p : Controller D k) :
+end
+
+theorem profile_new q p :
     F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by
   simp only [profile, p.2, ↓reduceDIte]
 
-theorem profile_diagonal (q : Controller D k) : F.profile q q.1 = F.ceiling := by
+section
+variable (q : Controller D k)
+
+theorem profile_diagonal  : F.profile q q.1 = F.ceiling := by
   rw [F.profile_new]
   exact cut_refl F.ceiling_mem F.grid_bound _
 
-theorem profile_bound (q : Controller D k) (d : Cell D) : F.profile q d ≤ F.ceiling := by
+section
+variable (d : Cell D)
+
+theorem profile_bound  : F.profile q d ≤ F.ceiling := by
   by_cases hd : D.cell d = (A, k)
   · rw [show d = (⟨d, hd⟩ : Controller D k).1 from rfl, F.profile_new]
     exact cut_le F.grid_bound _ _
   · rw [F.profile_old q hd]
     exact F.lower_bound q d hd
 
-theorem profile_visible (q : Controller D k) (d : Cell D) :
+theorem profile_visible  :
     SelfVis (D.grade d) (F.profile q d) := by
   by_cases hd : D.cell d = (A, k)
   · have hg : D.grade d = k := congrArg Prod.snd hd
@@ -103,7 +112,11 @@ theorem profile_visible (q : Controller D k) (d : Cell D) :
   · rw [F.profile_old q hd]
     exact ((F.lower_lawful q d hd).orderly ⟨d, GradedLe.refl _⟩).symm
 
-theorem profile_agreement (q p : Controller D k) :
+end
+
+end
+
+theorem profile_agreement q p :
     Agree (F.profile q) (F.profile p) (cut F.grid (F.boundary q) (F.boundary p)) := by
   intro d
   by_cases hd : D.cell d = (A, k)
@@ -112,7 +125,7 @@ theorem profile_agreement (q p : Controller D k) :
   · rw [F.profile_old q hd, F.profile_old p hd]
     exact F.grid_agreement q p _ (cut_mem F.bot_mem _ _) (agree_cut F.bot_mem _ _) d hd
 
-theorem profile_prefix {p q : Controller D k} {h : ExtOrd}
+theorem profile_prefix {p q} {h}
     (hh : h ∈ F.grid) (hpq : Agree (F.boundary p) (F.boundary q) h) :
     Agree (F.profile p) (F.profile q) h :=
   (F.profile_agreement p q).mono (le_cut hh hpq)
@@ -122,7 +135,7 @@ locality assumption. Only the selected old part and source grid are inputs. -/
 theorem profile_short
     (hgrid : ∀ h ∈ F.grid, SharpWitnessComposition.Short k h)
     (hlower : ∀ q d, D.cell d ≠ (A, k) →
-      SharpWitnessComposition.Short k (F.lower q d)) (q : Controller D k) :
+      SharpWitnessComposition.Short k (F.lower q d)) q :
     ∀ d, SharpWitnessComposition.Short k (F.profile q d) := by
   intro d
   by_cases hd : D.cell d = (A, k)
@@ -139,11 +152,10 @@ noncomputable def rows : Semantics D where
     · exact (F.profile_visible ⟨c, hc⟩ d.1).symm
     · exact F.base.orderly c d
 
-theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
-  funext d
+theorem row_old {c} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
   simp only [rows, hc, ↓reduceDIte]
 
-theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
+theorem row_new q d :
     F.rows.E q.1 d = F.profile q d.1 := by
   simp only [rows, q.2, ↓reduceDIte]
 
@@ -152,9 +164,9 @@ theorem full_source_short
     (hgrid : ∀ h ∈ F.grid, SharpWitnessComposition.Short k h)
     (hlower : ∀ q d, D.cell d ≠ (A, k) →
       SharpWitnessComposition.Short k (F.lower q d))
-    (hbase : ∀ c : Cell D, D.scope c = A → D.cell c ≠ (A, k) →
-      ∀ d : D.below (D.cell c), SharpWitnessComposition.Short (D.grade c) (F.base.E c d)) :
-    ∀ c : Cell D, D.scope c = A → ∀ d : D.below (D.cell c),
+    (hbase : ∀ c, D.scope c = A → D.cell c ≠ (A, k) →
+      ∀ d, SharpWitnessComposition.Short (D.grade c) (F.base.E c d)) :
+    ∀ c, D.scope c = A → ∀ d,
       SharpWitnessComposition.Short (D.grade c) (F.rows.E c d) := by
   intro c hs d
   by_cases hc : D.cell c = (A, k)
@@ -165,7 +177,7 @@ theorem full_source_short
     exact hbase c hs hc d
 
 /-- Respect on each old lower domain is literally unchanged. -/
-theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
+theorem old_respects_iff {c} (hc : D.cell c ≠ (A, k))
     {r : D.below (D.cell c) → ExtOrd} :
     RespectsSemanticsBelow F.rows (D.cell c) r ↔
       RespectsSemanticsBelow F.base (D.cell c) r := by
@@ -183,10 +195,10 @@ theorem new_locality (q p : Controller D k) :
     TransformsTo (fun d : D.below (D.cell p.1) => D.grade d.1)
       (F.rows.E p.1) (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
   have ht := (TransformsTo.refl
-    (grade := fun d : D.below (D.cell p.1) => D.grade d.1) (F.rows.E p.1)).cap
+    (grade := fun d => D.grade d.1) (F.rows.E p.1)).cap
     (fun d => F.max_grade d.1)
     (F.grid_visible _ (cut_mem F.bot_mem (F.boundary q) (F.boundary p)))
-  have he : (fun d : D.below (D.cell p.1) =>
+  have he : (fun d =>
       min (F.rows.E p.1 d) (cut F.grid (F.boundary q) (F.boundary p))) =
       (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
     funext d
@@ -227,7 +239,7 @@ theorem consistent
   by_cases hc : D.cell c = (A, k)
   · let q : Controller D k := ⟨c, hc⟩
     have hp := F.profile_respects q
-    have he : F.rows.E q.1 = fun d => F.profile q d.1 := funext (F.row_new q)
+    have he := funext (F.row_new q)
     change RespectsSemanticsBelow F.rows (D.cell q.1) (F.rows.E q.1)
     refine ⟨F.rows.orderly c, ?_, ?_⟩
     · intro d

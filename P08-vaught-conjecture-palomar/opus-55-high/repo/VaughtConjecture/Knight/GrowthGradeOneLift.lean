@@ -19,7 +19,6 @@ Caps are proved at every occurrence before positive-cap transport is applied.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthOrderedBase
 open Transform Value ExtOrd AmalgamationPlan Growth CanonicalPairedInverse
 open LadderScalarRendering SharpWitnessComposition RelativeLadderLayer
@@ -39,7 +38,7 @@ local notation "H" => rungs (X := Field I.right.scheme I.left.scheme)
 def source (a : Catalogue X 1) (d : Cell L) : ExtOrd :=
   image I.boundary hA (field I) (fields I X) a (SupportLadderRows.source H) d
 
-theorem source_eq (a : Catalogue X 1) (d : Cell L) :
+theorem source_eq a d :
     source I X hA a d = ladderRow I.boundary hA (field I) (fields I X)
       (SupportLadderRows.leaf (Nat.succ_pos _) a) d := rfl
 
@@ -55,8 +54,6 @@ variable {s : ℕ} (O : SemScheme s)
   (incl : O.scheme.below (Finset.univ, 1) → I.boundary.below (A, 1))
   (pick : Cell O.scheme → Field I.right.scheme I.left.scheme)
   (hfield : ∀ a : Catalogue X 1, ∀ d, a.val (field I (incl d).1) = a.val (pick d.1))
-
-local instance : Fintype (O.scheme.below (Finset.univ, 1)) := Fintype.ofFinite _
 
 include hfield in
 theorem source_face (a : Catalogue X 1) (d : O.scheme.below (Finset.univ, 1)) :
@@ -219,11 +216,11 @@ theorem private_lift
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := private_bottom_supply I X T hA hB hC hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by grind⟩
   by_cases hi : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hi d)),
-      fun _ => by rw [min_assoc, min_self]⟩
+      fun _ => by grind⟩
   obtain ⟨c, hc⟩ := not_forall.mp hi
   apply face_active_lift I X T hA hB hC I.right (privateIncl I) Sum.inl
     (fun a d => ?_) (exists_private_rank_repair X T) hp hq hγ
@@ -245,11 +242,11 @@ theorem donor_lift (hN : 1 < X.req.N)
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := donor_bottom_supply I X T hA hB hC hN hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by grind⟩
   by_cases hi : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hi d)),
-      fun _ => by rw [min_assoc, min_self]⟩
+      fun _ => by grind⟩
   obtain ⟨c, hc⟩ := not_forall.mp hi
   apply face_active_lift I X T hA hB hC I.left (donorIncl I) Sum.inr
     (fun a d => ?_) (exists_donor_rank_repair X T hN) hp hq hγ

@@ -16,7 +16,6 @@ This module treats N = n+4, using the initialized recursive seed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryGlobalPredecessor
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open SourcePrefixRows OrbitPrefixSupport OrdinaryProperPredecessor
@@ -35,11 +34,11 @@ abbrev old := CanonicalRecursiveInventory.boundary X.state.rows (n + 3) (height 
 def original : Cell I.boundary ↪o Cell (carrier I n X hcard) :=
   X.state.original.trans (old I n X hcard)
 
-theorem original_index (d : Cell I.boundary) :
+theorem original_index d :
     (carrier I n X hcard).cell (original I n X hcard d) = I.boundary.cell d :=
   (CanonicalRecursiveInventory.boundary_cell _ _ _ _).trans (X.state.index d)
 
-theorem original_row (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cell c)) :
+theorem original_row c d :
     (rows I n X hcard).E (original I n X hcard c) ⟨original I n X hcard d.1, by
       rw [original_index, original_index]; exact d.2⟩ = I.rows.E c d :=
   (CanonicalRecursiveLiteralRows.row X.state.rows (proper I X) n (height n hcard)
@@ -56,31 +55,33 @@ theorem consistent : (rows I n X hcard).IsConsistent :=
 theorem coded : (rows I n X hcard).IsCoded :=
   CanonicalRecursiveCoding.coded _ (proper I X) X.state.coded n (height n hcard)
 
+section
+variable (d : Cell (carrier I n X hcard))
+
 /-- The full scope is stopped below N. Proper grade-N cells are retained. -/
-theorem coverage (d : Cell (carrier I n X hcard)) :
+theorem coverage  :
     (∃ c, old I n X hcard c = d) ∨
       (carrier I n X hcard).scope d = A ∧ (carrier I n X hcard).grade d ≤ n + 3 := by
   rcases RecursiveSourceCarrier.classify X.state.carrier
     (CanonicalRecursiveInventory.Profile X.state.rows) (n + 3) (height n hcard) d with
     ⟨c, rfl⟩ | ⟨j, _, hj, he⟩
-  · exact Or.inl ⟨c, rfl⟩
-  · refine Or.inr ⟨congrArg Prod.fst he, ?_⟩
-    change ((carrier I n X hcard).cell d).2 ≤ _
-    rw [he]
-    exact hj
+  · grind
+  · simp_all
 
-theorem grade_bound (d : Cell (carrier I n X hcard)) : (carrier I n X hcard).grade d ≤ n + 4 := by
+theorem grade_bound  : (carrier I n X hcard).grade d ≤ n + 4 := by
   rcases coverage I n X hcard d with ⟨c, rfl⟩ | ⟨_, hg⟩
   · change ((carrier I n X hcard).cell (old I n X hcard c)).2 ≤ _
     rw [CanonicalRecursiveInventory.boundary_cell]
     have hs := Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr
       ⟨X.state.carrier.isPlan.subset_of_mem (X.state.carrier.scope_mem_plan c), proper I X c⟩)
     have hg := X.state.carrier.grade_le_card_scope c
-    change X.state.carrier.grade c ≤ _
+    simp_all
     omega
   · omega
 
-theorem complete {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R)
+end
+
+theorem complete {J} (hJ : J ∈ Plan.gradedPlan R)
     (hscope : J.1 ≠ A ∨ J.2 ≤ n + 3) : ∃ d, (carrier I n X hcard).cell d = J := by
   rcases hscope with hJA | hj
   · obtain ⟨d, hd⟩ := OrdinaryProperPredecessor.complete I X hJ hJA
@@ -89,7 +90,10 @@ theorem complete {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R)
       (height n hcard) (ready I X).complete J
       (by rwa [CanonicalRecursiveBoundaryTransport.plan_eq, X.state.plan]) hj
 
-theorem proper_lift {CI BJ : Finset ι × ℕ} (hCI : CI ∈ Plan.gradedPlan R)
+section
+variable {CI BJ : Finset ι × ℕ}
+
+theorem proper_lift (hCI : CI ∈ Plan.gradedPlan R)
     (hBJ : BJ ∈ Plan.gradedPlan R) (hJA : BJ.1 ≠ A) (h : GradedLe CI BJ) :
     CappedLift (rows I n X hcard) h := by
   apply CanonicalRecursiveBoundaryTransport.proper_lift _ (proper I X) n (height n hcard) h
@@ -99,13 +103,13 @@ theorem proper_lift {CI BJ : Finset ι × ℕ} (hCI : CI ∈ Plan.gradedPlan R)
 
 /-- The binary facets are derived from this completed raw plan. The small
 donor is not incorrectly used as the second tall facet. -/
-theorem lower_lift {CI BJ : Finset ι × ℕ} (hCI : CI ∈ Plan.gradedPlan R)
+theorem lower_lift (hCI : CI ∈ Plan.gradedPlan R)
     (hBJ : BJ ∈ Plan.gradedPlan R) (h : GradedLe CI BJ) (hj : BJ.2 ≤ n + 3) :
     CappedLift (rows I n X hcard) h := by
   obtain ⟨s, hs⟩ := AmalgamatedBoundaryPlan.exists_step X.state.carrier.isPlan
-    (by omega : 2 ≤ A.card)
-  have hL := OrdinaryPlanScopeStep.left_height s (k := n + 4) hcard
-  have hR := OrdinaryPlanScopeStep.right_height s (k := n + 4) hcard
+    (by grind)
+  have hL := OrdinaryPlanScopeStep.left_height s hcard
+  have hR := OrdinaryPlanScopeStep.right_height s hcard
   exact CanonicalRecursiveInitialized.lift X.state.rows (proper I X) X.state.consistent
     (lifts I X) (OrdinaryRawScope.left_mem s hs.symm) (OrdinaryRawScope.right_mem s hs.symm)
     (OrdinaryPlanScopeStep.left_proper s) (OrdinaryPlanScopeStep.right_proper s)
@@ -114,6 +118,8 @@ theorem lower_lift {CI BJ : Finset ι × ℕ} (hCI : CI ∈ Plan.gradedPlan R)
     (fun S hS hSA j hj hjS _ => (ready I X).complete (S, j)
       (Plan.mem_gradedPlan.mpr ⟨hS, hj, hjS⟩) hSA)
     (by rwa [X.state.plan]) (by rwa [X.state.plan]) h hj
+
+end
 
 def leftFace (hBA : B ≠ A) : ExactSemanticFace I.leftRows (rows I n X hcard) :=
   CanonicalRecursiveFace.face (OrdinaryProperPredecessor.leftFace I X)
@@ -133,7 +139,7 @@ theorem left_order (hBA : B ≠ A) : StrictMono (leftFace I n X hcard hBA).map :
 theorem right_order (hCA : C ≠ A) : StrictMono (rightFace I n X hcard hCA).map :=
   (old I n X hcard).strictMono.comp (OrdinaryProperPredecessor.right_order I X)
 
-theorem below_old (c : Cell X.state.carrier)
+theorem below_old c
     (d : (carrier I n X hcard).below ((carrier I n X hcard).cell (old I n X hcard c))) :
     ∃ e : X.state.carrier.below (X.state.carrier.cell c), old I n X hcard e.1 = d.1 := by
   rcases coverage I n X hcard d.1 with ⟨e, he⟩ | ⟨hs, _⟩
@@ -176,13 +182,13 @@ theorem classification : OrderedScopeRelocation.OwnerClassification
       (proper I X) n (height n hcard)).full_short z hs)
 
 theorem nonprivate_mute (hB : B.card = n + 4) (hC : C.card < n + 4)
-    (d : Cell (carrier I n X hcard)) (hg : (carrier I n X hcard).grade d = n + 4)
+    d (hg : (carrier I n X hcard).grade d = n + 4)
     (hd : (carrier I n X hcard).scope d ≠ B) :
     (rows I n X hcard).E d ⟨d, GradedLe.refl _⟩ = ⊥ := by
   rcases coverage I n X hcard d with ⟨c, rfl⟩ | ⟨_, hb⟩
   · have hc : X.state.carrier.grade c = n + 4 := by
       simpa only [CellScheme.grade, CanonicalRecursiveInventory.boundary_cell] using hg
-    have hscope : X.state.carrier.scope c ≠ B := by
+    have hscope := by
       simpa only [CellScheme.scope, CanonicalRecursiveInventory.boundary_cell] using hd
     exact (CanonicalRecursiveLiteralRows.row X.state.rows (proper I X) n (height n hcard)
       c ⟨c, GradedLe.refl _⟩).trans

@@ -80,7 +80,7 @@ theorem admissible_gradeTrunc {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
 
 /-- The support `H` is **full on the face `f`**: every top cell of the cover's type whose scope
 lies in the face is in `H`. -/
-def Full {m : ℕ} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n : ℕ} (f : Fin n ↪ Fin m) :
+def Full {m} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n} (f : Fin n ↪ Fin m) :
     Prop :=
   ∀ x : Cell Q.scheme.scheme, Q.scheme.scheme.scope x ⊆ Finset.univ.image f → Q.label x = ⊤ →
     x ∈ H
@@ -137,16 +137,15 @@ theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
   omega
 
 /-- The tops of a visible face of a type have grade at most the type's top grade. -/
-theorem face_top_grade_le {m n : ℕ} {Q : S α.1 m} {f : Fin n ↪ Fin m} {p : S α.1 n}
-    (h : typeMap f Q = some p) (d : Cell p.scheme.scheme) (hd : p.label d = ⊤) :
+theorem face_top_grade_le {m n} {Q} {f : Fin n ↪ Fin m} {p : S α.1 n}
+    (h : typeMap f Q = some p) d (hd : p.label d = ⊤) :
     p.scheme.scheme.grade d ≤ Q.topGrade := by
   have hv : Finset.univ.image f ∈ Q.scheme.scheme.plan :=
-    (typeMap_isSome_iff f Q).mp (by rw [h]; rfl)
+    (typeMap_isSome_iff f Q).mp (by grind)
   have hs : Q.scheme.restrictFace f hv = p.scheme :=
     congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some f Q hv).symm.trans h))
   have hl := (typeMap_eq_some_iff_labels f Q p hv hs).mp h (SemScheme.castCell hs.symm d)
-  have htop : Q.label (toCell Q.scheme.scheme f hv (SemScheme.castCell hs.symm d)) = ⊤ := by
-    rw [hl]; exact hd
+  have htop : Q.label (toCell Q.scheme.scheme f hv (SemScheme.castCell hs.symm d)) = ⊤ := by aesop
   have hg : (Q.scheme.restrictFace f hv).scheme.grade (SemScheme.castCell hs.symm d) ≤
       Q.topGrade := grade_le_topGrade_of_top htop
   rw [CappedDonor.castCell_grade hs.symm d] at hg
@@ -166,7 +165,7 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
     (hKpos : 0 < K)
     (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
     {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : R.eval t = some p) :
-    ∃ (m : ℕ) (C : Fin m ↪ M) (Q : S α.1 m), R.eval C = some Q ∧ Q.topGrade = K ∧
+    ∃ m C Q, R.eval C = some Q ∧ Q.topGrade = K ∧
       ∃ (k : ℕ) (g : Fin k ↪ Fin m) (c : Fin m) (hc : c ∉ Set.range g) (e : Fin n ↪ Fin k),
         (e.trans g).trans C = t ∧
         Finset.univ.image g ∈ Q.scheme.scheme.plan ∧
@@ -270,8 +269,8 @@ of `pR` restricting to `q` along `extendFace e`, all of whose tops have grade at
 pinned-coface consumer of the constructed coatom supplier enlarges the donor, and the uniform
 lowering at a cap visible at the enlarged arity removes the tops above `K`, the support of tops
 of grade at most `K` being admissible. -/
-theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) (p : S α.1 n)
-    (hep : typeMap e pR = some p) {K : ℕ}
+theorem exists_enlarged_donor {n k} pR e p
+    (hep : typeMap e pR = some p) {K}
     (hR : ∀ d, pR.label d = ⊤ → pR.scheme.scheme.grade d ≤ K)
     (q : S α.1 (n + 1)) (hq : IsCoface p q)
     (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :

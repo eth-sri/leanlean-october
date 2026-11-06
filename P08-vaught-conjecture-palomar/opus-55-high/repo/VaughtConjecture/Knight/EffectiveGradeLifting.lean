@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 public import VaughtConjecture.Knight.PartialSections
 
 /-! # Exhaustive lifting reduction at the actual grade ceiling
@@ -18,28 +18,32 @@ Same-scope grade changes then reduce the ledger to same-grade pairs.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.EffectiveGradeLifting
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable {sem : Semantics D} {K : ℕ} (hK : ∀ d : Cell D, D.grade d ≤ K)
 
-def cut (J : Finset ι × ℕ) : Finset ι × ℕ := (J.1, min J.2 K)
+section
+variable (J : Finset ι × ℕ)
 
-def equiv (J : Finset ι × ℕ) : D.below (cut (K := K) J) ≃ D.below J where
+def cut  : Finset ι × ℕ := (J.1, min J.2 K)
+
+def equiv  : D.below (cut (K := K) J) ≃ D.below J where
   toFun d := ⟨d.1, d.2.1, (le_min_iff.mp d.2.2).1⟩
   invFun d := ⟨d.1, d.2.1, le_min d.2.2 (hK d.1)⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
-theorem respects_iff (J : Finset ι × ℕ) (p : D.below (cut (K := K) J) → ExtOrd) :
+theorem respects_iff (p : D.below (cut (K := K) J) → ExtOrd) :
     RespectsSemanticsBelow sem (cut (K := K) J) p ↔
       RespectsSemanticsBelow sem J (p ∘ (equiv hK J).symm) :=
   respects_iff_of_equiv (equiv hK J) (fun _ => rfl) (fun _ _ => Iff.rfl)
     (fun _ _ _ => rfl) p
 
-theorem pullback_respects {J : Finset ι × ℕ} {q : D.below J → ExtOrd}
+end
+
+theorem pullback_respects {J} {q}
     (hq : RespectsSemanticsBelow sem J q) :
     RespectsSemanticsBelow sem (cut (K := K) J) (q ∘ equiv hK J) := by
   apply (respects_iff hK J _).mpr
@@ -63,7 +67,7 @@ theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J)
 /-- Every literal graded pair follows from same-grade pairs, without
 completeness or a hypothesis about an already extended ambient. -/
 theorem bountiful_of_same_grade
-    (hsame : ∀ (C B : Finset ι) (i : ℕ), (C, i) ∈ Plan.gradedPlan D.plan →
+    (hsame : ∀ C B i, (C, i) ∈ Plan.gradedPlan D.plan →
       (B, i) ∈ Plan.gradedPlan D.plan → (h : C ⊆ B) →
       CappedLift sem (show GradedLe (C, i) (B, i) from ⟨h, le_rfl⟩)) :
     sem.IsBountiful := by

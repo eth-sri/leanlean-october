@@ -17,8 +17,6 @@ carrier's, while every proper old owner's lower domain is exactly the old one.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GradeCutLayerCarrier
 
 open Transform Value ExtOrd
@@ -38,7 +36,7 @@ def embedOcc : Cell (GradeCutBoundary.scheme D j) ⊕ Q → Cell D ⊕ Q :=
 def embed (d : Cell (small D Q j hj hA)) : Cell (enlarged D Q j hj hA) :=
   toCell D Q j hj hA (embedOcc D Q j (toOcc (GradeCutBoundary.scheme D j) Q j hj hA d))
 
-theorem embed_toCell (x : Cell (GradeCutBoundary.scheme D j) ⊕ Q) :
+theorem embed_toCell x :
     embed D Q j hj hA (toCell (GradeCutBoundary.scheme D j) Q j hj hA x) =
       toCell D Q j hj hA (embedOcc D Q j x) := by
   simp only [embed, toOcc_toCell]
@@ -57,7 +55,7 @@ theorem embed_injective : Function.Injective (embed D Q j hj hA) := by
   exact (Sum.map_injective.mpr
     ⟨(GradeCutBoundary.toCell D j).injective, Function.injective_id⟩) he
 
-theorem exhaustive (d : Cell (enlarged D Q j hj hA))
+theorem exhaustive d
     (hd : (enlarged D Q j hj hA).grade d ≤ j) : ∃ c, embed D Q j hj hA c = d := by
   cases he : toOcc D Q j hj hA d with
   | inl c =>
@@ -74,7 +72,7 @@ theorem exhaustive (d : Cell (enlarged D Q j hj hA))
     change toCell D Q j hj hA (.inr q) = d
     rw [← he, toCell_toOcc]
 
-def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
+def belowEquiv BJ (hBJ : BJ.2 ≤ j) :
     (small D Q j hj hA).below BJ ≃ (enlarged D Q j hj hA).below BJ :=
   Equiv.ofBijective (fun d => ⟨embed D Q j hj hA d.1, by
     simpa only [embed_cell] using d.2⟩) ⟨by
@@ -89,7 +87,7 @@ abbrev ownerEquiv (hp : ∀ d : Cell D, D.scope d ≠ A) (c : Cell D) :=
   SeparatedSourceLayerCarrier.ownerEquiv D Q j hj hA
     (SeparatedSourceLayerCarrier.separated_of_proper D j hp) c
 
-def properEquiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
+def properEquiv BJ (hB : ¬ A ⊆ BJ.1) :
     D.below BJ ≃ (enlarged D Q j hj hA).below BJ :=
   Equiv.ofBijective (fun d => ⟨toCell D Q j hj hA (.inl d.1), by
     simpa only [cell_toCell, index] using d.2⟩) ⟨by

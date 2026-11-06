@@ -74,60 +74,50 @@ inductive IsPlan : Finset α → Finset (Finset α) → Prop
       (hP : P = Q ∪ R ∪ {A}) :
       IsPlan A P
 
+section
+variable (P : Finset (Finset α))
+
 /-- Restriction of a plan to a subset `B` of its domain (Knight, Def. 2.1.5): the visible
 faces contained in `B`. -/
-def restrictPlan (P : Finset (Finset α)) (B : Finset α) : Finset (Finset α) :=
+def restrictPlan (B : Finset α) : Finset (Finset α) :=
   P ∩ B.powerset
 
 /-- The graded plan `P̂` (Knight, Def. 2.1.8): the pairs `(B, j)` with `B` a visible face and
 grade `0 < j ≤ |B|`.  These index the cells of a cell scheme over `P`. -/
-def gradedPlan (P : Finset (Finset α)) : Finset (Finset α × ℕ) :=
+def gradedPlan  : Finset (Finset α × ℕ) :=
   P.biUnion (fun B =>
     (Finset.Ioc 0 B.card).image (fun j => (B, j))
   )
 
 /-- Membership in the graded plan, spelled out: the face is visible and the grade is positive
 and at most the size of the face. -/
-def MemGraded (P : Finset (Finset α)) (BJ : Finset α × ℕ) : Prop :=
+def MemGraded (BJ : Finset α × ℕ) : Prop :=
   BJ.1 ∈ P ∧ 0 < BJ.2 ∧ BJ.2 ≤ BJ.1.card
 
-theorem mem_gradedPlan {P : Finset (Finset α)} {BJ : Finset α × ℕ} :
+end
+
+theorem mem_gradedPlan {P} {BJ : Finset α × ℕ} :
     BJ ∈ gradedPlan P ↔ MemGraded P BJ := by
   unfold gradedPlan MemGraded
-  simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_Ioc]
-  constructor
-  · rintro ⟨B, hBP, j, ⟨hj0, hjcard⟩, hjB⟩
-    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp hjB
-    rw [← h1, ← h2]
-    exact ⟨hBP, hj0, hjcard⟩
-  · rintro ⟨hBP, hj0, hjcard⟩
-    exact ⟨BJ.1, hBP, BJ.2, ⟨hj0, hjcard⟩, rfl⟩
+  grind
 
 /-! ### Basic structure of a plan -/
 
+section
+variable {A : Finset α} {P : Finset (Finset α)}
+
 /-- Every visible face is a subset of the domain. -/
-theorem IsPlan.subset_of_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) {S : Finset α} (hS : S ∈ P) : S ⊆ A := by
+theorem IsPlan.subset_of_mem (hP : IsPlan A P) {S} (hS : S ∈ P) : S ⊆ A := by
   induction hP with
   | empty =>
-    simp only [Finset.mem_singleton] at hS
-    subst hS; exact Finset.empty_subset _
+    grind
   | singleton a =>
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hS
-    rcases hS with rfl | rfl
-    · exact Finset.empty_subset _
-    · exact Finset.Subset.refl _
+    grind
   | step ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    simp only [Finset.mem_union, Finset.mem_singleton] at hS
-    rcases hS with (hS | hS) | rfl
-    · exact (ihQ hS).trans (Finset.erase_subset _ _)
-    · exact (ihR hS).trans (Finset.erase_subset _ _)
-    · exact Finset.Subset.refl _
+    grind
 
 /-- The domain is a visible face. -/
-theorem IsPlan.domain_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : A ∈ P := by
+theorem IsPlan.domain_mem (hP : IsPlan A P) : A ∈ P := by
   induction hP with
   | empty => exact Finset.mem_singleton_self _
   | singleton a => simp
@@ -135,43 +125,19 @@ theorem IsPlan.domain_mem {A : Finset α} {P : Finset (Finset α)}
     subst hP; simp
 
 /-- The empty face is visible. -/
-theorem IsPlan.empty_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : ∅ ∈ P := by
+theorem IsPlan.empty_mem (hP : IsPlan A P) : ∅ ∈ P := by
   induction hP with
   | empty => exact Finset.mem_singleton_self _
   | singleton a => simp
   | step ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    simp only [Finset.mem_union, Finset.mem_singleton]
-    left; left; exact ihQ
-
-/-- Every singleton of the domain is a visible face: a plan never drops a one-point face.
-In the `step` case `P = Q ∪ R ∪ {A}`, the singleton `{x}` lives in `Q` when `x ≠ a` and in
-`R` when `x = a` (then `x ≠ b`). -/
-theorem IsPlan.singleton_mem {A : Finset α} {P : Finset (Finset α)} (hP : IsPlan A P)
-    {x : α} (hx : x ∈ A) : {x} ∈ P := by
-  induction hP with
-  | empty => exact absurd hx (Finset.notMem_empty x)
-  | singleton a =>
-    rw [Finset.mem_singleton] at hx
-    subst hx
-    simp
-  | @step A a b Q R P ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    by_cases hxa : x = a
-    · subst hxa
-      have hxR : {x} ∈ R := ihR (Finset.mem_erase.mpr ⟨hab, hx⟩)
-      simp [hxR]
-    · have hxQ : {x} ∈ Q := ihQ (Finset.mem_erase.mpr ⟨hxa, hx⟩)
-      simp [hxQ]
+    grind
 
 /-- **Pivot rigidity** (Knight-VC `PaperExactPlanTraceGlue`): for `2 ≤ |A|` the visible
 co-arity-one faces `A ∖ {z}` are exactly those at the two pivots `a ≠ b` of (any) step
 derivation of the plan, the double erasure `A ∖ {a, b}` is visible, and no visible face other
 than `A` contains both pivots.  So the pivot pair is determined by the plan, and every step
 decomposition uses it. -/
-theorem IsPlan.pivot_pair {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) (hA : 2 ≤ A.card) :
+theorem IsPlan.pivot_pair (hP : IsPlan A P) (hA : 2 ≤ A.card) :
     ∃ a b, a ∈ A ∧ b ∈ A ∧ a ≠ b ∧
       (∀ z ∈ A, A.erase z ∈ P ↔ (z = a ∨ z = b)) ∧
       (A.erase a).erase b ∈ P ∧
@@ -209,10 +175,12 @@ theorem IsPlan.pivot_pair {A : Finset α} {P : Finset (Finset α)}
         · exact absurd (hR.subset_of_mem hr hbM) (Finset.notMem_erase b A)
       · exact Finset.mem_singleton.mp h
 
+end
+
 /-! ### Restriction -/
 
 /-- Restriction of a plan to a visible face is again a plan (Def. 2.1.5). -/
-theorem restrict_isPlan {A B : Finset α} {P : Finset (Finset α)}
+theorem restrict_isPlan {A B} {P : Finset (Finset α)}
     (hP : IsPlan A P) (hB : B ∈ P) :
     IsPlan B (restrictPlan P B) := by
   induction hP with
@@ -251,14 +219,14 @@ theorem restrict_isPlan {A B : Finset α} {P : Finset (Finset α)}
     subst hP'
     simp only [Finset.mem_union, Finset.mem_singleton] at hB
     -- `S ⊆ A ∖ {a, b}` when `S ⊆ A ∖ {a}` and `S ⊆ A ∖ {b}`
-    have sub_erase_erase : ∀ S : Finset α, S ⊆ A.erase a → S ⊆ A.erase b →
+    have sub_erase_erase : ∀ S, S ⊆ A.erase a → S ⊆ A.erase b →
         S ⊆ (A.erase a).erase b := by
       intro S h1 h2 x hx
       rw [Finset.mem_erase]
       exact ⟨fun hxb => by rw [hxb] at hx; exact absurd (h2 hx) (Finset.notMem_erase b _),
              h1 hx⟩
     -- if `B ∈ Q` and `S ∈ R` with `S ⊆ B`, then `S ∈ Q`
-    have r_to_q : ∀ S : Finset α, S ∈ R → S ⊆ B → B ∈ Q → S ∈ Q := by
+    have r_to_q : ∀ S, S ∈ R → S ⊆ B → B ∈ Q → S ∈ Q := by
       intro S hSR hSB hBQ
       have hSa : S ⊆ A.erase a := hSB.trans (hQ.subset_of_mem hBQ)
       have hSb : S ⊆ A.erase b := hR.subset_of_mem hSR
@@ -267,7 +235,7 @@ theorem restrict_isPlan {A B : Finset α} {P : Finset (Finset α)}
       have hSmem' : S ∈ Q ∩ ((A.erase a).erase b).powerset :=
         h_restr_eq ▸ hSmem
       exact (Finset.mem_inter.mp hSmem').1
-    have q_to_r : ∀ S : Finset α, S ∈ Q → S ⊆ B → B ∈ R → S ∈ R := by
+    have q_to_r : ∀ S, S ∈ Q → S ⊆ B → B ∈ R → S ∈ R := by
       intro S hSQ hSB hBR
       have hSa : S ⊆ A.erase a := hQ.subset_of_mem hSQ
       have hSb : S ⊆ A.erase b := hSB.trans (hR.subset_of_mem hBR)
@@ -323,7 +291,7 @@ theorem restrict_isPlan {A B : Finset α} {P : Finset (Finset α)}
       exact IsPlan.step ha hb hab hQ hR h_inter_mem h_restr_eq rfl
 
 /-- In a step `P = Q ∪ R ∪ {A}` at pivots `a, b`, restricting to `A ∖ {a}` recovers `Q`. -/
-private theorem restrictPlan_step_erase {A : Finset α} {a b : α}
+private theorem restrictPlan_step_erase {A} {a b}
     {Q R : Finset (Finset α)}
     (ha : a ∈ A) (hQ : IsPlan (A.erase a) Q) (hR : IsPlan (A.erase b) R)
     (h_restr_eq : Q ∩ ((A.erase a).erase b).powerset =
@@ -337,11 +305,7 @@ private theorem restrictPlan_step_erase {A : Finset α} {a b : α}
     · exact hSQ
     · have hS_ea : S ⊆ A.erase a := hS_sub
       have hS_eb : S ⊆ A.erase b := hR.subset_of_mem hSR
-      have hS_eab : S ⊆ (A.erase a).erase b := by
-        intro x hx
-        rw [Finset.mem_erase]
-        exact ⟨fun hxb => by rw [hxb] at hx; exact absurd (hS_eb hx) (Finset.notMem_erase b _),
-               hS_ea hx⟩
+      have hS_eab : S ⊆ (A.erase a).erase b := by grind
       have : S ∈ R ∩ ((A.erase a).erase b).powerset :=
         Finset.mem_inter.mpr ⟨hSR, Finset.mem_powerset.mpr hS_eab⟩
       exact (Finset.mem_inter.mp (h_restr_eq ▸ this)).1
@@ -351,11 +315,13 @@ private theorem restrictPlan_step_erase {A : Finset α} {a b : α}
 
 /-! ### Transport along injections -/
 
+section
+variable {β : Type*} [DecidableEq β]
+
 /-- Preimage transport: if `Q` is a plan on `B = f[A]` for an injection `f`, then
 `{C ⊆ A | f[C] ∈ Q}` is a plan on `A`. -/
-theorem isPlan_comap {β : Type*} [DecidableEq β]
-    {B : Finset β} {Q : Finset (Finset β)}
-    (hQ : IsPlan B Q) (f : α ↪ β) {A : Finset α} (hAB : A.image f = B) :
+theorem isPlan_comap {B} {Q}
+    (hQ : IsPlan B Q) (f : α ↪ β) {A} (hAB : A.image f = B) :
     IsPlan A (A.powerset.filter (fun C => C.image f ∈ Q)) := by
   induction hQ generalizing A with
   | empty =>
@@ -460,8 +426,7 @@ theorem isPlan_comap {β : Type*} [DecidableEq β]
       restr_eq rfl
 
 /-- Image transport: the image of a plan on `A` under an injection `f` is a plan on `f[A]`. -/
-theorem isPlan_image {β : Type*} [DecidableEq β]
-    {A : Finset α} {P : Finset (Finset α)} (f : α ↪ β)
+theorem isPlan_image {A} {P : Finset (Finset α)} (f : α ↪ β)
     (hP : IsPlan A P) :
     IsPlan (A.image f) (P.image (Finset.image f)) := by
   induction hP with
@@ -520,11 +485,16 @@ theorem isPlan_image {β : Type*} [DecidableEq β]
     rw [img_P]
     exact IsPlan.step ha' hb' hab' ihQ ihR h_inter_mem' h_restr_eq' rfl
 
+end
+
 /-! ### `Fin`-indexed pullback -/
+
+section
+variable {n m : ℕ}
 
 /-- Pullback of a plan on `Fin n` along `f : Fin m ↪ Fin n` whose range is a visible face:
 `{C ⊆ Fin m | f[C] ∈ P}` is a plan on `Fin m`. -/
-theorem pullback_isPlan_fin {n m : ℕ} (f : Fin m ↪ Fin n)
+theorem pullback_isPlan_fin (f : Fin m ↪ Fin n)
     {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.univ P)
     (hr : Finset.univ.image f ∈ P) :
     IsPlan (Finset.univ : Finset (Fin m))
@@ -534,47 +504,46 @@ theorem pullback_isPlan_fin {n m : ℕ} (f : Fin m ↪ Fin n)
   have heq : (Finset.univ : Finset (Fin m)).powerset.filter (fun C => (C.image f) ∈ P) =
       (Finset.univ : Finset (Fin m)).powerset.filter
         (fun C => (C.image f) ∈ restrictPlan P (Finset.univ.image f)) := by
-    ext C
     simp only [Finset.mem_filter, Finset.mem_powerset, restrictPlan, Finset.mem_inter,
       Finset.mem_powerset]
-    constructor
-    · rintro ⟨hC, hCf⟩
-      exact ⟨hC, hCf, Finset.image_subset_image hC |>.trans
-        (Finset.subset_univ _ |> Finset.image_subset_image)⟩
-    · rintro ⟨hC, hCf, _⟩
-      exact ⟨hC, hCf⟩
-  rw [heq]
+    grind
+  simp_all
   exact isPlan_comap hres f (by simp)
 
 /-- Partial pullback of a plan along an embedding of index sets (the plan-level shadow of the
 `TypeTower` partial `pull`): for `f : Fin n ↪ Fin m` and `P` on `Fin m`, the pullback is
 `{C ⊆ Fin n | f[C] ∈ P}` when the range `f[Fin n]` is a visible face of `P`, and `none`
 otherwise. -/
-def pullbackPlan {n m : ℕ} (f : Fin n ↪ Fin m) (P : Finset (Finset (Fin m))) :
+def pullbackPlan (f : Fin n ↪ Fin m) (P : Finset (Finset (Fin m))) :
     Option (Finset (Finset (Fin n))) :=
   if _ : Finset.univ.image f ∈ P then
     some ((Finset.univ : Finset (Fin n)).powerset.filter (fun C => (C.image f) ∈ P))
   else
     none
 
-theorem pullbackPlan_eq_some {n m : ℕ} (f : Fin n ↪ Fin m) {P : Finset (Finset (Fin m))}
-    (hr : Finset.univ.image f ∈ P) :
+end
+
+section
+variable {n m : ℕ} (f : Fin n ↪ Fin m) {P : Finset (Finset (Fin m))}
+
+theorem pullbackPlan_eq_some (hr : Finset.univ.image f ∈ P) :
     pullbackPlan f P =
       some ((Finset.univ : Finset (Fin n)).powerset.filter (fun C => (C.image f) ∈ P)) :=
   dite_eq_left hr
 
-theorem pullbackPlan_eq_none {n m : ℕ} (f : Fin n ↪ Fin m) {P : Finset (Finset (Fin m))}
-    (hr : Finset.univ.image f ∉ P) :
+theorem pullbackPlan_eq_none (hr : Finset.univ.image f ∉ P) :
     pullbackPlan f P = none :=
   dite_eq_right hr
 
+end
+
 /-- Pullback along the identity is the identity on plans on `Fin n`. -/
-theorem pullbackPlan_refl {n : ℕ} {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.univ P) :
+theorem pullbackPlan_refl {n} {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.univ P) :
     pullbackPlan (Function.Embedding.refl (Fin n)) P = some P := by
   have hr : Finset.univ.image (Function.Embedding.refl (Fin n)) ∈ P := by
     simpa [Function.Embedding.coe_refl] using hP.domain_mem
   rw [pullbackPlan_eq_some _ hr]
-  congr 1
+  simp_all
   ext C
   simp only [Finset.mem_filter, Finset.mem_powerset, Finset.subset_univ, true_and,
     Function.Embedding.coe_refl, Finset.image_id]
@@ -584,8 +553,8 @@ intermediate pullback `pullbackPlan g P` is defined (i.e. the range of `g` is vi
 it back further along `f` agrees with the pullback along the composite `f.trans g` — including
 definedness.  Nothing is asserted when the intermediate face is invisible, which is exactly the
 conditional `pull_trans` law of `TypeTower`.  Holds for an arbitrary family `P`. -/
-theorem pullbackPlan_trans {ℓ m n : ℕ} (f : Fin ℓ ↪ Fin m) (g : Fin m ↪ Fin n)
-    {P : Finset (Finset (Fin n))} {Q : Finset (Finset (Fin m))}
+theorem pullbackPlan_trans {ℓ m n : ℕ} (f : Fin ℓ ↪ Fin m) g
+    {P : Finset (Finset (Fin n))} {Q}
     (hQ : pullbackPlan g P = some Q) :
     pullbackPlan f Q = pullbackPlan (f.trans g) P := by
   by_cases hg : Finset.univ.image g ∈ P
@@ -601,11 +570,7 @@ theorem pullbackPlan_trans {ℓ m n : ℕ} (f : Fin ℓ ↪ Fin m) (g : Fin m �
     by_cases hf : Finset.univ.image f ∈ (Finset.univ : Finset (Fin m)).powerset.filter
         (fun D => D.image g ∈ P)
     · rw [pullbackPlan_eq_some f hf, pullbackPlan_eq_some (f.trans g) ((key _).1 hf)]
-      congr 1
-      ext C
-      simp only [Finset.mem_filter, Finset.mem_powerset, Finset.subset_univ, true_and,
-        Finset.image_image]
-      rfl
+      aesop
     · rw [pullbackPlan_eq_none f hf, pullbackPlan_eq_none (f.trans g) (fun h => hf ((key _).2 h))]
   · rw [pullbackPlan_eq_none g hg] at hQ
     exact absurd hQ (by simp)
@@ -637,12 +602,12 @@ decreasing_by
       (Finset.mem_of_mem_erase (Finset.min'_mem (A.erase (A.min' hne)) hne'))]; omega
 
 /-- If the least element of `B` is not `b ∈ B`, it is also the least element of `B ∖ {b}`. -/
-private theorem min'_erase_of_ne {B : Finset α} (hne : B.Nonempty) {b : α}
+private theorem min'_erase_of_ne {B : Finset α} hne {b}
     (hab : B.min' hne ≠ b)
-    (hne_eb : (B.erase b).Nonempty) :
+    hne_eb :
     (B.erase b).min' hne_eb = B.min' hne := by
   set a := B.min' hne
-  have ha_in_eb : a ∈ B.erase b := Finset.mem_erase.mpr ⟨hab, Finset.min'_mem B hne⟩
+  have ha_in_eb := Finset.mem_erase.mpr ⟨hab, Finset.min'_mem B hne⟩
   apply le_antisymm
   · exact Finset.min'_le (s := B.erase b) a ha_in_eb
   · apply Finset.le_min'
@@ -655,7 +620,7 @@ private theorem isPlan_and_restrict_aux :
     ∀ n, ∀ (B : Finset α), B.card = n →
     IsPlan B (canonicalPlan B) ∧
     (B.card ≥ 2 →
-      ∀ (hne : B.Nonempty) (hne' : (B.erase (B.min' hne)).Nonempty),
+      ∀ hne hne',
         restrictPlan (canonicalPlan B) (B.erase (B.min' hne)) =
           canonicalPlan (B.erase (B.min' hne)) ∧
         restrictPlan (canonicalPlan B)
@@ -811,7 +776,7 @@ end CanonicalPlan
 /-- One-point extension: a plan `P` on `A` and a fresh point `x ∉ A` yield a plan `Q` on
 `A ∪ {x}` in which `A` is visible and whose restriction to `A` is `P`. -/
 theorem isPlan_extend_one
-    {A : Finset α} {P : Finset (Finset α)} {x : α}
+    {A} {P} {x}
     (hx : x ∉ A) (hP : IsPlan A P) :
     ∃ Q : Finset (Finset α),
       IsPlan (A ∪ {x}) Q ∧ A ∈ Q ∧ restrictPlan Q A = P := by

@@ -44,9 +44,9 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 
 /-- A witness fixing every grid endpoint below `B` fixes every source-grid value below the cut
 `grid N B` (bottom included). -/
-theorem fix_sourceGrid {κ : ExtOrd → ExtOrd} (hbot : κ ⊥ = ⊥) {B : ℕ}
+theorem fix_sourceGrid {κ : ExtOrd → ExtOrd} (hbot : κ ⊥ = ⊥) {B}
     (hfix : ∀ b < B, κ (CanonicalPairedInverse.grid N b) = CanonicalPairedInverse.grid N b)
-    (n : ℕ) : ∀ z ∈ PairedSlotComparison.sourceGrid N n, z < CanonicalPairedInverse.grid N B →
+    n : ∀ z ∈ PairedSlotComparison.sourceGrid N n, z < CanonicalPairedInverse.grid N B →
       κ z = z := by
   classical
   intro z hz hlt
@@ -60,19 +60,19 @@ theorem fix_sourceGrid {κ : ExtOrd → ExtOrd} (hbot : κ ⊥ = ⊥) {B : ℕ}
     exact ofOrd_le_ofOrd.mpr (add_le_add_left (omul_le_omul (not_lt.mp hle)) _)
 
 /-- **Positive-cap repair through normalization and the supported inverse.** -/
-theorem positive_cap_repair {a : Field P C → ExtOrd} (ha : a ∈ R.Catalogue)
-    {v₁ : C.scheme.below (effC J N) → ExtOrd} (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁)
-    (hv₁p : ∀ d, v₁ d ≠ ⊤) {B : ℕ}
+theorem positive_cap_repair {a} (ha : a ∈ R.Catalogue)
+    {v₁} (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁)
+    (hv₁p : ∀ d, v₁ d ≠ ⊤) {B}
     (hagree : ∀ d, min (v₁ d) (CanonicalPairedInverse.grid N B) =
       min (a (.priv d.1)) (CanonicalPairedInverse.grid N B)) :
-    ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
-      (∀ d : C.scheme.below (effC J N), b₀ (.priv d.1) = v₁ d) ∧
+    ∃ b₀, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
+      (∀ d, b₀ (.priv d.1) = v₁ d) ∧
       (∀ f, min (b₀ f) (CanonicalPairedInverse.grid N B) =
         min (a f) (CanonicalPairedInverse.grid N B)) ∧
       PairedSlotEncoding.normalize N b₀ ∈ R.Catalogue ∧
       (∀ f, min (PairedSlotEncoding.normalize N b₀ f) (CanonicalPairedInverse.grid N B) =
         min (a f) (CanonicalPairedInverse.grid N B)) ∧
-      ∃ κ : ExtOrd → ExtOrd, Witness (gTop N) κ ∧
+      ∃ κ, Witness (gTop N) κ ∧
         (∀ f, κ (PairedSlotEncoding.normalize N b₀ f) = b₀ f) ∧
         (∀ b < B, κ (CanonicalPairedInverse.grid N b) = CanonicalPairedInverse.grid N b) ∧
         CanonicalPairedInverse.grid N B ≤ κ (CanonicalPairedInverse.grid N B) ∧
@@ -94,18 +94,20 @@ theorem positive_cap_repair {a : Field P C → ExtOrd} (ha : a ∈ R.Catalogue)
   · exact CanonicalPairedProfiles.normalize_cap (Field P C) N hinv hag f
   · exact CanonicalPairedInverse.exists_supported_inverse hinv hprop hag
 
+section
+variable {v₁ : C.scheme.below (effC J N) → ExtOrd}
+
 /-- **Independent bottom-cap private supply, with a supported decoder.**  From the zero
 admitted state, an arbitrary lawful private prescription — literal top included — is installed
 with the gate off; terminal insertion gives a member of the catalogue with an exact decoder
 reading it back, every output of which is supported by the installed vector (bottom and top
 allowed). -/
-theorem bottom_supply' {v₁ : C.scheme.below (effC J N) → ExtOrd}
-    (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
-    ∃ a : Field P C → ExtOrd, R.Admitted a ∧
-      (∀ d : C.scheme.below (effC J N), a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
-      ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
+theorem bottom_supply' (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
+    ∃ a, R.Admitted a ∧
+      (∀ d, a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
+      ∃ b₀, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
         PairedSlotEncoding.normalize N b₀ ∈ R.Catalogue ∧
-        ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
+        ∃ δ, Witness (gTop N) δ ∧
           (∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f) ∧
           ∀ x, OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) a (δ x) := by
   obtain ⟨st₁, hst₁, hv, -, -, -⟩ := R.exists_private_lift (zeroState_admissible N) hv₁
@@ -125,16 +127,17 @@ theorem bottom_supply' {v₁ : C.scheme.below (effC J N) → ExtOrd}
     rfl
 
 /-- **Independent bottom-cap private supply** (the decoder's support conjunct dropped). -/
-theorem bottom_supply {v₁ : C.scheme.below (effC J N) → ExtOrd}
-    (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
-    ∃ a : Field P C → ExtOrd, R.Admitted a ∧
-      (∀ d : C.scheme.below (effC J N), a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
-      ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
+theorem bottom_supply (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
+    ∃ a, R.Admitted a ∧
+      (∀ d, a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
+      ∃ b₀, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
         PairedSlotEncoding.normalize N b₀ ∈ R.Catalogue ∧
-        ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
+        ∃ δ, Witness (gTop N) δ ∧
           ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
   obtain ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread, -⟩ := bottom_supply' (R := R) hv₁
   exact ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread⟩
+
+end
 
 end
 end VaughtConjecture.Knight.CappedDonor.Ref

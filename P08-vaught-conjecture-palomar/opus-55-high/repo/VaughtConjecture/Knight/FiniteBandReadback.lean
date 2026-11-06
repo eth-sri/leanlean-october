@@ -30,19 +30,24 @@ open TypeTower Value ExtOrd
 
 namespace Value
 
-theorem limitPart_of_succLimit {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) :
+section
+variable {α : Ordinal.{0}}
+
+theorem limitPart_of_succLimit (hα : Order.IsSuccLimit α) :
     limitPart α = α :=
   le_antisymm (limitPart_le α) (succLimit_le_limitPart hα le_rfl)
 
-theorem limitPart_succLimit_add_nat {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (i : ℕ) :
+theorem limitPart_succLimit_add_nat (hα : Order.IsSuccLimit α) (i : ℕ) :
     limitPart (α + i) = α := by
   have h := limitPart_limitPart_add_nat α i
   rwa [limitPart_of_succLimit hα] at h
 
-theorem finitePart_succLimit_add_nat {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (i : ℕ) :
+theorem finitePart_succLimit_add_nat (hα : Order.IsSuccLimit α) (i : ℕ) :
     finitePart (α + i) = i := by
   have h := finitePart_limitPart_add_nat α i
   rwa [limitPart_of_succLimit hα] at h
+
+end
 
 theorem exists_nat_of_lt_add_omega {α μ : Ordinal.{0}} (hle : α ≤ μ)
     (hlt : μ < α + Ordinal.omega0) : ∃ k : ℕ, μ = α + k := by
@@ -50,34 +55,34 @@ theorem exists_nat_of_lt_add_omega {α μ : Ordinal.{0}} (hle : α ≤ μ)
   exact ⟨k, by rw [← hk, Ordinal.add_sub_cancel_of_le hle]⟩
 
 /-- `visibilityReplace` below the threshold: `μ ⊔_K i = limitPart μ + i` when `fp μ < K`. -/
-theorem visibilityReplace_of_finitePart_lt {μ : Ordinal.{0}} {K i : ℕ} (h : finitePart μ < K) :
+theorem visibilityReplace_of_finitePart_lt {μ} {K i} (h : finitePart μ < K) :
     visibilityReplace μ K i = limitPart μ + i := by
   unfold visibilityReplace ordinalReplace
   rw [ite_eq_left h]
 
 /-- `limitPart μ + K ≤ μ ⊔_K K` always. -/
-theorem limitPart_add_le_visibilityReplace (μ : Ordinal.{0}) (K : ℕ) :
+theorem limitPart_add_le_visibilityReplace μ K :
     limitPart μ + K ≤ visibilityReplace μ K K := by
   unfold visibilityReplace ordinalReplace
   by_cases h : finitePart μ < K
-  · rw [ite_eq_left h]
+  · grind
   · rw [ite_eq_right h]
     calc limitPart μ + K ≤ limitPart μ + finitePart μ :=
-          add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr (not_lt.mp h))
+          add_le_add (le_refl _) ((Nat.cast_le).mpr (not_lt.mp h))
       _ = μ := decomposition μ
 
 end Value
 
 namespace ExtOrd
 
-theorem exists_nat_of_mem_band {α : Ordinal.{0}} {x : ExtOrd} (hle : ofOrd α ≤ x)
+theorem exists_nat_of_mem_band {α} {x} (hle : ofOrd α ≤ x)
     (hlt : x < ofOrd (α + Ordinal.omega0)) : ∃ k : ℕ, x = ofOrd (α + k) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨μ, rfl⟩
-  · exact absurd hle (not_le.mpr (bot_lt_ofOrd α))
-  · exact absurd hlt (not_lt.mpr le_top)
+  · simp_all
+  · simp_all
   · obtain ⟨k, hk⟩ := Value.exists_nat_of_lt_add_omega (ofOrd_le_ofOrd.mp hle)
       (ofOrd_lt_ofOrd.mp hlt)
-    exact ⟨k, by rw [hk]⟩
+    exact ⟨k, by grind⟩
 
 end ExtOrd
 
@@ -87,11 +92,10 @@ variable {α β : Ordinal.{0}} {n : ℕ}
 
 /-- **Orderliness pins the band of an `∞`-cell**: a label `≥ α` (`α` a limit) at a cell of
 grade `K` is `≥ α + K` (self-visibility at `K` means finite part `≥ K`). -/
-theorem label_ge_add_grade (hα : Order.IsSuccLimit α) {q : S β n} (Θ : Cell q.scheme.scheme)
+theorem label_ge_add_grade (hα : Order.IsSuccLimit α) {q : S β n} Θ
     (hge : ofOrd α ≤ q.label Θ) :
     ofOrd (α + q.scheme.scheme.grade Θ) ≤ q.label Θ := by
-  have hord : q.label Θ = extVisibilityReplace (q.label Θ) (q.scheme.scheme.grade Θ)
-      (q.scheme.scheme.grade Θ) := q.respects.orderly Θ
+  have hord := q.respects.orderly Θ
   rcases ExtOrd.cases (q.label Θ) with hb | ht | ⟨μ, hμ⟩
   · rw [hb] at hge
     exact absurd hge (not_le.mpr (bot_lt_ofOrd α))
@@ -102,39 +106,41 @@ theorem label_ge_add_grade (hα : Order.IsSuccLimit α) {q : S β n} (Θ : Cell 
     have hK := (visibilityReplace_self_iff μ _).mp hord.symm
     rw [ofOrd_le_ofOrd] at hge ⊢
     calc α + (q.scheme.scheme.grade Θ : Ordinal.{0}) ≤ limitPart μ + finitePart μ :=
-          add_le_add (succLimit_le_limitPart hα hge) ((Nat.cast_le (α := Ordinal.{0})).mpr hK)
+          add_le_add (succLimit_le_limitPart hα hge) ((Nat.cast_le).mpr hK)
       _ = μ := decomposition μ
 
+section
+variable {q : S β n} {Xi : Cell q.scheme.scheme}
+
 /-- The top witness: a full-scope `∞`-cell of grade `K^q` above any `∞`-cell. -/
-theorem exists_top_witness {q : S β n} {Xi : Cell q.scheme.scheme} (htop : q.label Xi = ⊤) :
-    ∃ Θ : Cell q.scheme.scheme, GradedLe (q.scheme.scheme.cell Xi) (q.scheme.scheme.cell Θ) ∧
+theorem exists_top_witness (htop : q.label Xi = ⊤) :
+    ∃ Θ, GradedLe (q.scheme.scheme.cell Xi) (q.scheme.scheme.cell Θ) ∧
       q.scheme.scheme.scope Θ = Finset.univ ∧ q.scheme.scheme.grade Θ = q.topGrade ∧
       q.label Θ = ⊤ := by
   have hmem := grade_mem_topGrades htop
   have hbdd := q.topGrades_bddAbove
   obtain ⟨Θ, hsc, hgr, hΘtop⟩ : q.topGrade ∈ q.topGrades := Nat.sSup_mem ⟨_, hmem⟩ hbdd
   refine ⟨Θ, ⟨?_, ?_⟩, hsc, hgr, hΘtop⟩
-  · change q.scheme.scheme.scope Xi ⊆ q.scheme.scheme.scope Θ
-    rw [hsc]
-    exact Finset.subset_univ _
+  · simp_all
   · change q.scheme.scheme.grade Xi ≤ q.scheme.scheme.grade Θ
-    rw [hgr]
+    simp_all
     exact le_csSup hbdd hmem
 
 /-- Any `∞`-cell has grade `≤ K^q`. -/
-theorem grade_le_topGrade_of_top {q : S β n} {Xi : Cell q.scheme.scheme}
-    (htop : q.label Xi = ⊤) : q.scheme.scheme.grade Xi ≤ q.topGrade :=
+theorem grade_le_topGrade_of_top (htop : q.label Xi = ⊤) : q.scheme.scheme.grade Xi ≤ q.topGrade :=
   le_csSup q.topGrades_bddAbove (grade_mem_topGrades htop)
+
+end
 
 /-! ### Reading the transform of the labelling at a top cell -/
 
 /-- The locality data of the labelling of `q` at `Θ` (Def. 2.5.4(1)), spelled out. -/
-theorem locality_label_data (q : S β n) (Θ : Cell q.scheme.scheme) :
+theorem locality_label_data (q : S β n) Θ :
     ∃ (g : ℕ → ExtOrd) (σ : ExtOrd → ExtOrd),
-      (∀ n m : ℕ, n < m → g m ≤ g n) ∧ σ ⊥ = ⊥ ∧ Monotone σ ∧
-      (∀ (a : ExtOrd) (k : ℕ), σ a ≤ g k → ∀ i : ℕ, i ≤ k →
+      (∀ n m, n < m → g m ≤ g n) ∧ σ ⊥ = ⊥ ∧ Monotone σ ∧
+      (∀ a k, σ a ≤ g k → ∀ i, i ≤ k →
         σ (extVisibilityReplace a k i) = extVisibilityReplace (σ a) k i) ∧
-      (∀ d : q.scheme.scheme.below (q.scheme.scheme.cell Θ),
+      (∀ d,
         min (q.label d.1) (q.label Θ) =
           min (σ (q.scheme.rows.E Θ d)) (g (q.scheme.scheme.grade d.1))) ∧
       q.label Θ ≤ g (q.scheme.scheme.grade Θ) := by
@@ -143,22 +149,17 @@ theorem locality_label_data (q : S β n) (Θ : Cell q.scheme.scheme) :
   have h : min (q.label Θ) (q.label Θ) =
       min (σ (q.scheme.rows.E Θ ⟨Θ, GradedLe.refl _⟩)) (g (q.scheme.scheme.grade Θ)) :=
     hloc ⟨Θ, GradedLe.refl _⟩
-  rw [min_self] at h
-  rw [h]
-  exact min_le_right _ _
+  grind
 
-theorem g_le_of_le {g : ℕ → ExtOrd} (hganti : ∀ n m : ℕ, n < m → g m ≤ g n) {k K : ℕ}
-    (h : k ≤ K) : g K ≤ g k := by
-  rcases h.lt_or_eq with hlt | heq
-  · exact hganti _ _ hlt
-  · rw [heq]
+theorem g_le_of_le {g : ℕ → ExtOrd} (hganti : ∀ n m, n < m → g m ≤ g n) {k K}
+    (h : k ≤ K) : g K ≤ g k := by grind
 
 /-- **Pinning**: below a top cell, the transform reproduces every label strictly below the
 label of the top cell: `σ (E(Θ)(d)) = q(d) ≤ g (grade Θ)`. -/
-theorem sigma_eq_of_lt_label {q : S β n} {Θ : Cell q.scheme.scheme} {g : ℕ → ExtOrd}
-    {σ : ExtOrd → ExtOrd} (hganti : ∀ n m : ℕ, n < m → g m ≤ g n)
+theorem sigma_eq_of_lt_label {q : S β n} {Θ} {g : ℕ → ExtOrd}
+    {σ : ExtOrd → ExtOrd} (hganti : ∀ n m, n < m → g m ≤ g n)
     (hΘg : q.label Θ ≤ g (q.scheme.scheme.grade Θ))
-    {d : q.scheme.scheme.below (q.scheme.scheme.cell Θ)}
+    {d}
     (hd : min (q.label d.1) (q.label Θ) =
       min (σ (q.scheme.rows.E Θ d)) (g (q.scheme.scheme.grade d.1)))
     (hlt : q.label d.1 < q.label Θ) :
@@ -166,21 +167,14 @@ theorem sigma_eq_of_lt_label {q : S β n} {Θ : Cell q.scheme.scheme} {g : ℕ �
       σ (q.scheme.rows.E Θ d) ≤ g (q.scheme.scheme.grade Θ) := by
   have hgd : g (q.scheme.scheme.grade Θ) ≤ g (q.scheme.scheme.grade d.1) :=
     g_le_of_le hganti d.2.2
-  rw [min_eq_left hlt.le] at hd
-  rcases le_total (σ (q.scheme.rows.E Θ d)) (g (q.scheme.scheme.grade d.1)) with hle | hle
-  · rw [min_eq_left hle] at hd
-    refine ⟨hd.symm, ?_⟩
-    rw [← hd]
-    exact hlt.le.trans hΘg
-  · rw [min_eq_right hle] at hd
-    exact absurd (lt_of_lt_of_le hlt (hΘg.trans hgd)) (not_lt.mpr hd.ge)
+  grind
 
 /-! ### The band case -/
 
 /-- **Lemma 5.5.2, band case**: if `N(Ξ) = α + i` with `i < K^q` (top grade of the reduct),
 then the reduct's provisional value at `Ξ` is `α + i`. -/
-theorem isProvisionalValue_band_of_expansion (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
-    {q : S β n} (Xi : Cell q.scheme.scheme) {i : ℕ} (hXi : q.label Xi = ofOrd (α + i))
+theorem isProvisionalValue_band_of_expansion (hα : Order.IsSuccLimit α) hαβ
+    {q : S β n} Xi {i : ℕ} (hXi : q.label Xi = ofOrd (α + i))
     (hK : i < (reduceType hα hαβ q).topGrade) :
     (reduceType hα hαβ q).IsProvisionalValue Xi (ofOrd (α + i)) := by
   set p := reduceType hα hαβ q with hp
@@ -190,9 +184,9 @@ theorem isProvisionalValue_band_of_expansion (hα : Order.IsSuccLimit α) (hαβ
     rw [hXi]
     exact truncExt_eq_top_of_ge hαi
   -- every `p`-`∞` cell has `q`-label `≥ α`; a full-scope grade-`K` one has `q`-label `≥ α + K`
-  have hge : ∀ Θ : Cell q.scheme.scheme, p.label Θ = ⊤ → ofOrd α ≤ q.label Θ := fun Θ h =>
+  have hge : ∀ Θ, p.label Θ = ⊤ → ofOrd α ≤ q.label Θ := fun Θ h =>
     truncExt_eq_top_iff.mp h
-  have hgeK : ∀ Θ : Cell q.scheme.scheme, q.scheme.scheme.grade Θ = p.topGrade → p.label Θ = ⊤ →
+  have hgeK : ∀ Θ, q.scheme.scheme.grade Θ = p.topGrade → p.label Θ = ⊤ →
       ofOrd (α + p.topGrade) ≤ q.label Θ := fun Θ hgr h => by
     have := label_ge_add_grade hα (q := q) Θ (hge Θ h)
     rwa [hgr] at this

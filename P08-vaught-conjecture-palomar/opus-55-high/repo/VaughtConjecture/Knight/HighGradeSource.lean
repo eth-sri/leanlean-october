@@ -34,7 +34,7 @@ noncomputable def sourceValues : Finset Ordinal := by
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   exact primRange p ∪ primRange (fun _ : Unit => N)
 
-theorem supported_old (d : D.below (A, k)) : SourceCode.Supported (sourceValues p N) (p d) := by
+theorem supported_old d : SourceCode.Supported (sourceValues p N) (p d) := by
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   intro v hv
   exact Finset.mem_union_left _ (mem_primRange_of_eq hv)
@@ -42,7 +42,7 @@ theorem supported_old (d : D.below (A, k)) : SourceCode.Supported (sourceValues 
 theorem supported_new : SourceCode.Supported (sourceValues p N) N := by
   intro v hv
   apply Finset.mem_union_right
-  exact mem_primRange_of_eq (target := fun _ : Unit => N) (d := ()) hv
+  exact mem_primRange_of_eq (d := ()) hv
 
 /-- The new high row is selected jointly with its selected labelling. -/
 noncomputable def adapted : Data D k where
@@ -56,17 +56,22 @@ noncomputable def adapted : Data D k where
   diagonal := SourceCode.encode (D.grade h) (sourceValues p N) N
   visible := SourceCode.encode_selfVis _ _ le_rfl hN
 
-def selected (d : Cell D) : ExtOrd :=
+section
+variable (d : Cell D)
+
+def selected  : ExtOrd :=
   if hd : D.grade d ≤ k then p (Data.oldCell d hd) else if d = h then N else ⊥
 
-theorem selected_old (d : Cell D) (hd : D.grade d ≤ k) :
+theorem selected_old hd :
     selected h p N d = p (Data.oldCell d hd) := by simp only [selected, hd, ↓reduceDIte]
+
+end
 
 include hh in
 theorem selected_high : selected h p N h = N := by
   simp only [selected, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
 
-theorem selected_other (d : Cell D) (hd : ¬D.grade d ≤ k) (he : d ≠ h) :
+theorem selected_other d (hd : ¬D.grade d ≤ k) (he : d ≠ h) :
     selected h p N d = ⊥ := by simp only [selected, hd, he, ↓reduceDIte, ↓reduceIte]
 
 include hh in
@@ -94,7 +99,7 @@ theorem selected_visible (d : Cell D) : SelfVis (D.grade d) (selected h p N d) :
     · rw [selected_other h p N d hd he]
       exact selfVis_bot _
 
-theorem source_read (d : D.below (D.cell h)) :
+theorem source_read d :
     (adapted base h hh hfull p hp N hN).rows.E h d =
       SourceCode.encode (D.grade h) (sourceValues p N) (selected h p N d.1) := by
   simp only [Data.rows, adapted, not_le_of_gt hh, ↓reduceIte]
@@ -145,13 +150,12 @@ theorem selected_respects :
       · refine ⟨d, ?_, le_rfl⟩
         rw [he]
         exact (adapted base h hh hfull p hp N hN).high_index
-          (by simpa only [adapted, he] using hs) (by simpa only [adapted, he] using hg)
+          (by simpa only [adapted, he] using hs) (by aesop)
       · exact ⟨e, rfl, by rw [selected_other h p N d hd he]; exact bot_le⟩
 
 theorem coded (hb : base.IsCoded) : (adapted base h hh hfull p hp N hN).rows.IsCoded := by
   intro c d
   let F := adapted base h hh hfull p hp N hN
-  change IsCodedLabel (D.grade c) (F.rows.E c d)
   by_cases hc : D.grade c ≤ k
   · rw [F.row_old hc]
     exact hb c d
@@ -177,7 +181,5 @@ theorem exists_extension (hk : 1 ≤ k) (hc : base.IsConsistent)
   intro d
   rw [selected_old h p N d.1 d.2.2]
   exact congrArg p (Subtype.ext rfl)
-
-variable {n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {k : ℕ}
 
 end VaughtConjecture.Knight.HighGradeExtension

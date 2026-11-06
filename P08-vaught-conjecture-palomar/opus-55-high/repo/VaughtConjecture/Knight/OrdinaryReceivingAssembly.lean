@@ -21,7 +21,6 @@ whose face is that same literal overlap. The final threshold is at least four.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingAssembly
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
 open SourcePrefixRows OrbitPrefixSupport SharpWitnessComposition
@@ -48,14 +47,13 @@ include W in
 theorem private_ne : B ≠ Finset.univ := by
   intro he
   have h := private_card W
-  rw [he, Finset.card_univ, Fintype.card_fin] at h
-  omega
+  simp_all
 
 include R in
 theorem request_ne : T ≠ Finset.univ := by
   intro he
   have h := request_card W
-  rw [he, Finset.card_univ, Fintype.card_fin] at h
+  simp_all
   have := R.arity_lt
   omega
 
@@ -79,19 +77,24 @@ abbrev lower (a : OrdinaryFinalCatalogue.Member R) : Cell (predecessor W R hunio
     (OrdinaryReceivingSources.boundary_lawful W R hface a)
     (OrdinaryReceivingSources.boundary_bound W R hface a)
 
-theorem lower_private (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.left.scheme) :
+section
+variable (a : OrdinaryFinalCatalogue.Member R)
+
+theorem lower_private (d : Cell W.left.scheme) :
     lower W R hunion hface a ((predecessor W R hunion).leftFace.map d) = a.val (.priv d) := by
   exact (congrArg (lower W R hunion hface a)
     ((predecessor W R hunion).left_map d)).trans
       (((predecessor W R hunion).readback _ _ _).trans
         (OrdinaryReceivingSources.boundary_private W R a d))
 
-theorem lower_request (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.right.scheme) :
+theorem lower_request (d : Cell W.right.scheme) :
     lower W R hunion hface a ((predecessor W R hunion).rightFace.map d) = a.val (.req d) := by
   exact (congrArg (lower W R hunion hface a)
     ((predecessor W R hunion).right_map d)).trans
       (((predecessor W R hunion).readback _ _ _).trans
         (OrdinaryReceivingSources.boundary_request W R hface a d))
+
+end
 
 /-- All final sources use the same fixed grid and ceiling on the same predecessor. -/
 def input : FinalGateLayer.Input (predecessor W R hunion).carrier (n + 4)
@@ -107,8 +110,10 @@ def input : FinalGateLayer.Input (predecessor W R hunion).carrier (n + 4)
     exact O.agreement _ _ _ _ hh (CanonicalFieldLayer.grid_bound _ _ hh)
       (OrdinaryReceivingSources.boundary_agreement W R hface hab) d
 
-theorem lower_support (a : OrdinaryFinalCatalogue.Member R)
-    (d : Cell (predecessor W R hunion).carrier) :
+section
+variable (a : OrdinaryFinalCatalogue.Member R)
+
+theorem lower_support d :
     Supported (n + 4) ((grid W) : Set ExtOrd) a.val (lower W R hunion hface a d) :=
   ((predecessor W R hunion).support _ _ d).substitute
     (fun _ hz => PairedSlotComparison.sourceGrid_visible hz)
@@ -116,15 +121,14 @@ theorem lower_support (a : OrdinaryFinalCatalogue.Member R)
 
 /-- New owners have own-grade short rows; every argument of any other owner
 is an original field. This derives the decoder's long-row alternative. -/
-theorem owners (a : OrdinaryFinalCatalogue.Member R)
-    (c : (predecessor W R hunion).carrier.below (Finset.univ, n + 4)) :
+theorem owners (c : (predecessor W R hunion).carrier.below (Finset.univ, n + 4)) :
     (∀ d, Short ((predecessor W R hunion).carrier.grade c.1)
       ((predecessor W R hunion).rows.E c.1 d)) ∨
     (∀ d : (predecessor W R hunion).carrier.below
         ((predecessor W R hunion).carrier.cell c.1),
-      ∃ f : Field W.right W.left, lower W R hunion hface a d.1 = a.val f) := by
+      ∃ f, lower W R hunion hface a d.1 = a.val f) := by
   rcases (predecessor W R hunion).classification c.1 with hs | ho
-  · exact Or.inl hs
+  · grind
   · right
     intro d
     obtain ⟨x, hx⟩ := ho d
@@ -132,6 +136,8 @@ theorem owners (a : OrdinaryFinalCatalogue.Member R)
     refine ⟨f, ?_⟩
     rw [← hx]
     exact ((predecessor W R hunion).readback _ _ x).trans hf
+
+end
 
 theorem predecessor_lift (CI BJ : Finset (Fin (n + 5)) × ℕ)
     (hi : CI ∈ Plan.gradedPlan (predecessor W R hunion).carrier.plan)
@@ -153,17 +159,13 @@ theorem bountiful : (input W R hunion hface).rows.IsBountiful :=
     (lower_private W R hunion hface) (Finset.card_fin _)
     (predecessor W R hunion).mute (predecessor_lift W R hunion)
 
-theorem complete_before_final (J : Finset (Fin (n + 5)) × ℕ)
+theorem complete_before_final J
     (hJ : J ∈ Plan.gradedPlan (predecessor W R hunion).carrier.plan)
     (hg : J.2 ≤ n + 4) (hne : J ≠ (Finset.univ, n + 4)) :
     ∃ d, (predecessor W R hunion).carrier.cell d = J := by
   apply (predecessor W R hunion).complete J
   · rwa [(predecessor W R hunion).plan] at hJ
-  · by_cases hs : J.1 = Finset.univ
-    · right
-      by_contra hn
-      exact hne (Prod.ext hs (by omega))
-    · exact Or.inl hs
+  · grind
 
 /-- The complete coded legal scheme, including its mute full-grade apex. -/
 def semScheme : SemScheme (n + 5) :=

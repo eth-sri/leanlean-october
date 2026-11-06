@@ -11,14 +11,13 @@ public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport
 open Transform Value ExtOrd CanonicalRecursiveContract
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D)
 
-theorem plan_eq (m : ℕ) (hm : m ≤ A.card) :
+theorem plan_eq m hm :
     (CanonicalRecursiveInventory.scheme sem m hm).plan = D.plan := by
   induction m with
   | zero => rfl
@@ -31,8 +30,8 @@ def properEquiv : (n : ℕ) → (hA : n + 3 ≤ A.card) →
     (properEquiv n (Nat.le_of_succ_le hA) J hJ).trans
       (CanonicalRecursiveSuccessorSections.equiv sem n hA J (fun h => hJ h.1))
 
-theorem properEquiv_val (n : ℕ) (hA : n + 3 ≤ A.card)
-    (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (d : D.below J) :
+theorem properEquiv_val n hA
+    J hJ d :
     (properEquiv sem n hA J hJ d).1 = boundary sem n hA d.1 := by
   induction n with
   | zero => rfl
@@ -40,9 +39,13 @@ theorem properEquiv_val (n : ℕ) (hA : n + 3 ≤ A.card)
     exact congrArg (CanonicalRecursiveSuccessorRows.old sem n hA)
       (ih (Nat.le_of_succ_le hA))
 
-theorem proper_respects_iff (hp : ∀ d : Cell D, D.scope d ≠ A)
-    (n : ℕ) (hA : n + 3 ≤ A.card) (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
-    (p : D.below J → ExtOrd) :
+section
+variable (hp : ∀ d : Cell D, D.scope d ≠ A) (n : ℕ) (hA : n + 3 ≤ A.card)
+
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
+
+theorem proper_respects_iff p :
     RespectsSemanticsBelow sem J p ↔
       RespectsSemanticsBelow (CanonicalRecursiveSemantics.rows sem hp n hA) J
         (p ∘ (properEquiv sem n hA J hJ).symm) := by
@@ -54,17 +57,16 @@ theorem proper_respects_iff (hp : ∀ d : Cell D, D.scope d ≠ A)
         (CanonicalRecursiveSemantics.state sem hp n (Nat.le_of_succ_le hA)) J
         (fun h => hJ h.1) _)
 
-theorem pullback_respects (hp : ∀ d : Cell D, D.scope d ≠ A)
-    (n : ℕ) (hA : n + 3 ≤ A.card) (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
-    {p : (carrier sem n hA).below J → ExtOrd}
+theorem pullback_respects {p}
     (hpr : RespectsSemanticsBelow (CanonicalRecursiveSemantics.rows sem hp n hA) J p) :
     RespectsSemanticsBelow sem J (p ∘ properEquiv sem n hA J hJ) := by
   apply (proper_respects_iff sem hp n hA J hJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hpr
 
+end
+
 /-- Proper targets retain all original rows and all original lifting clauses. -/
-theorem proper_lift (hp : ∀ d : Cell D, D.scope d ≠ A)
-    (n : ℕ) (hA : n + 3 ≤ A.card) {I J : Finset ι × ℕ}
+theorem proper_lift {I J}
     (h : GradedLe I J) (hJ : ¬ A ⊆ J.1)
     (hl : CoatomBoundaryExtension.CappedLift sem h) :
     CoatomBoundaryExtension.CappedLift (CanonicalRecursiveSemantics.rows sem hp n hA) h := by
@@ -91,6 +93,8 @@ theorem proper_lift (hp : ∀ d : Cell D, D.scope d ≠ A)
       rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
     rw [Function.comp_apply, hd, hread]
     exact congrArg p (eI.apply_symm_apply d)
+
+end
 
 end
 end VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport

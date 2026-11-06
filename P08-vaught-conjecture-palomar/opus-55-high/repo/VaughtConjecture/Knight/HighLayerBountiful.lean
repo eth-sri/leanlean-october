@@ -18,7 +18,6 @@ proper owners of the new grade, nor force positive upper continuation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan SourceLayerCarrier
 noncomputable section
@@ -28,9 +27,12 @@ variable (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA 
 
 abbrev old (d : Cell D) := toCell D Q l hl hlA (.inl d)
 
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, l) J)
+
 /-- Exact domains whenever the new index is absent: proper scopes and low
 full-scope cuts are handled by the same equivalence. -/
-def equiv (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, l) J) :
+def equiv  :
     D.below J ≃ (scheme D Q l hl hlA).below J :=
   Equiv.ofBijective (fun d => ⟨old D Q l hl hlA d.1, by
     simpa only [old, cell_toCell, index] using d.2⟩) ⟨by
@@ -47,9 +49,11 @@ def equiv (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, l) J) :
       | inr q => exact False.elim (hJ (by
           simpa only [cell_eq, he, index] using d.2))⟩
 
-theorem equiv_cell (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, l) J) (d : D.below J) :
+theorem equiv_cell d :
     (scheme D Q l hl hlA).cell (equiv D Q l hl hlA J hJ d).1 = D.cell d.1 :=
   cell_toCell _ _ _ _ _ (.inl d.1)
+
+end
 
 variable (K : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K) (hKl : K < l)
 
@@ -102,8 +106,7 @@ theorem transport_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
         CellScheme.below.mono h (eI.symm d) := by
       apply eJ.injective
       rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, hd, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+    grind
 
 end
 end VaughtConjecture.Knight.HighLayerBountiful
@@ -116,7 +119,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 /-- Proper-to-full lifting above an effective prescribed grade ceiling.
 The lower lift is an actual already-proved clause, not a new-output completion
 assumption. Every old prescribed value, including top, remains literal. -/
-theorem cappedLift_of_prescribed_grade_bound {C B : Finset ι} {i n : ℕ}
+theorem cappedLift_of_prescribed_grade_bound {C B} {i n}
     (hCB : C ⊆ B) (hin : i ≤ n)
     (hbound : ∀ d : D.below (C, n), D.grade d.1 ≤ i)
     (hlower : CappedLift sem (show GradedLe (C, i) (B, i) from ⟨hCB, le_rfl⟩)) :

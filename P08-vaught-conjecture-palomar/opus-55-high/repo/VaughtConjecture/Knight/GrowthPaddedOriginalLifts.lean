@@ -19,7 +19,6 @@ follows LowOnlyPaddedOriginalLifts, consuming growth repairs on growth rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOriginalLifts
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedSuccessor GrowthPaddedDecode
@@ -33,12 +32,13 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
+section
+variable {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd} {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
+
 theorem private_inactive
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
-    {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
+    {γ} (hγ : SelfVis 2 γ)
     (hinactive : ∀ d, I.right.scheme.grade d.1 = 2 → p d ≤ γ)
     (hag : ∀ d, min (q (privateAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
@@ -51,11 +51,9 @@ theorem private_inactive
 /-- All permitted original caps, including bottom and top. The prescription
 and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem private_lift
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
-    {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
+    {γ} (hγ : SelfVis 2 γ)
     (hag : ∀ d, min (q (privateAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
       (∀ d, r (privateAt I X T hA hB hC d) = p d) ∧
@@ -69,12 +67,14 @@ theorem private_lift
   · exact private_inactive I X T hA hB hC hp hq hγ
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
 
+end
+
 theorem donor_inactive (hN : 1 < X.req.N)
-    {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
+    {γ} (hγ : SelfVis 2 γ)
     (hinactive : ∀ d, I.left.scheme.grade d.1 = 2 → p d ≤ γ)
     (hag : ∀ d, min (q (donorAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
@@ -87,11 +87,11 @@ theorem donor_inactive (hN : 1 < X.req.N)
 /-- All permitted original caps, including bottom and top. The prescription
 and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem donor_lift (hN : 2 < X.req.N)
-    {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
+    {γ} (hγ : SelfVis 2 γ)
     (hag : ∀ d, min (q (donorAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
       (∀ d, r (donorAt I X T hA hB hC d) = p d) ∧

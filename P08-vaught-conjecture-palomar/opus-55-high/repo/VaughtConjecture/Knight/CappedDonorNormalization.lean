@@ -72,26 +72,39 @@ variable {I : Type*} [Fintype I] {N : ℕ} {R : Ref I nP N J P C}
 
 /-! ## The inventory and the canonical incoming encoder -/
 
+section
+variable {j : ℕ} (st : R.State j)
+
 /-- The receiving inventory of a state: the ordinal values of its source vector. -/
-noncomputable def State.inventory {j : ℕ} (st : R.State j) : Finset Ordinal.{0} :=
+noncomputable def State.inventory  : Finset Ordinal.{0} :=
   PairedSlotEncoding.values st.sourceProfile
 
 /-- The canonical incoming encoder of a state at its cutoff. -/
-noncomputable def State.encoder {j : ℕ} (st : R.State j) : ExtOrd → ExtOrd :=
+noncomputable def State.encoder  : ExtOrd → ExtOrd :=
   PairedSlotIncoming.encoder j st.inventory
 
-theorem State.encoder_witness {j : ℕ} (st : R.State j) : Witness (gTop j) st.encoder :=
+end
+
+section
+variable {j : ℕ} (st : R.State j)
+
+theorem State.encoder_witness  : Witness (gTop j) st.encoder :=
   PairedSlotIncoming.encoder_witness j st.inventory
 
-theorem State.encoder_reflects_bottom {j : ℕ} (st : R.State j) (x : ExtOrd)
+theorem State.encoder_reflects_bottom x
     (h : st.encoder x = ⊥) : x = ⊥ :=
   PairedSlotIncoming.encoder_reflects_bottom j st.inventory x h
 
+end
+
 /-- **Canonical normalization** of a state: the encoder applied to every field. -/
-noncomputable def normalizeState {j : ℕ} (st : R.State j) : R.State j := mapState st.encoder st
+noncomputable def normalizeState {j} (st : R.State j) : R.State j := mapState st.encoder st
+
+section
+variable {j : ℕ}
 
 /-- On the source vector, normalization is the paired-slot normalization. -/
-theorem sourceProfile_normalizeState {j : ℕ} (st : R.State j) (f : Field P C) :
+theorem sourceProfile_normalizeState (st : R.State j) f :
     (normalizeState st).sourceProfile f = PairedSlotEncoding.normalize j st.sourceProfile f := by
   rw [normalizeState, sourceProfile_map]
   exact PairedSlotIncoming.encoder_profile j st.sourceProfile f
@@ -99,14 +112,16 @@ theorem sourceProfile_normalizeState {j : ℕ} (st : R.State j) (f : Field P C) 
 /-! ## Preservation -/
 
 /-- Normalization preserves admissibility, at the current grade. -/
-theorem normalizeState_admissible {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
+theorem normalizeState_admissible (hj : 1 ≤ j) {st : R.State j}
     (hst : R.Admissible st) : R.Admissible (normalizeState st) :=
   hst.map st.encoder_witness (min_le_left j J) hj st.encoder_reflects_bottom
 
 /-- Normalization preserves synchronization. -/
-theorem normalizeState_synchronized {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
+theorem normalizeState_synchronized (hj : 1 ≤ j) {st : R.State j}
     (hs : Synchronized st) : Synchronized (normalizeState st) :=
   hs.map st.encoder_witness hj
+
+end
 
 /-! ## Coded, short, literal top -/
 

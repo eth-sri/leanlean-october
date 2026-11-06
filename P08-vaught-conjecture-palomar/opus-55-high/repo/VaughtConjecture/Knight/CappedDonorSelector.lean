@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReferenceOrbitIncoming
+public import VaughtConjecture.Knight.ReferenceOrbitRow
+public import VaughtConjecture.Knight.FiniteOrbitEmbedding
+public import VaughtConjecture.Knight.SourceBlockPadding
 public import VaughtConjecture.Knight.RelativeLiftData
 public import VaughtConjecture.Knight.MixedGradeInterpolation
 public import VaughtConjecture.Knight.RowReadback
@@ -73,8 +75,8 @@ namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan
 
-theorem Witness.comm_gTop {N : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ) (x : ExtOrd)
-    {i : ℕ} (hi : i ≤ N) :
+theorem Witness.comm_gTop {N} {τ} (hτ : Witness (gTop N) τ) x
+    {i} (hi : i ≤ N) :
     τ (extVisibilityReplace x N i) = extVisibilityReplace (τ x) N i :=
   hτ.clause5 x N (by rw [gTop_of_le le_rfl]; exact le_top) i hi
 
@@ -153,7 +155,7 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 
 theorem grade_cap : C.scheme.grade R.cap = N := congrArg Prod.snd R.cap_cell
 
-theorem gradeP_le (d : Cell P.scheme) : P.scheme.grade d ≤ nP + 1 :=
+theorem gradeP_le d : P.scheme.grade d ≤ nP + 1 :=
   (P.scheme.grade_le_card_scope d).trans (by simpa using Finset.card_le_univ (P.scheme.scope d))
 
 include R in
@@ -166,27 +168,29 @@ theorem KA_le : R.KA ≤ nP + 1 :=
 theorem KA_lt_N : R.KA < N := R.KA_le.trans_lt R.arity_lt
 
 /-- The graded lower sets of the face are in the graded plans (positive grades only). -/
-theorem face_mem {k : ℕ} (hk : 0 < k) (hkA : k ≤ R.KA) :
+theorem face_mem {k} (hk : 0 < k) (hkA : k ≤ R.KA) :
     (R.A, k) ∈ Plan.gradedPlan P.scheme.plan :=
   Plan.mem_gradedPlan.mpr ⟨R.A_mem, hk, hkA.trans R.KA_le_card⟩
 
-theorem face_symm_grade (b : C.scheme.below (R.A', R.KA)) :
+theorem face_symm_grade b :
     P.scheme.grade (R.face.symm b).1 = C.scheme.grade b.1 := by
   have h := R.face_grade (R.face.symm b)
-  rw [Equiv.apply_symm_apply] at h
-  exact h.symm
+  grind
+
+section
+variable {k : ℕ} (hk : k ≤ R.KA)
 
 /-- A face cell of grade at most `k ≤ KA` as a cell of the lower set `(A, k)`. -/
-def faceLift {k : ℕ} (hk : k ≤ R.KA) (a : P.scheme.below (R.A, k)) : P.scheme.below (R.A, R.KA) :=
+def faceLift (a : P.scheme.below (R.A, k)) : P.scheme.below (R.A, R.KA) :=
   ⟨a.1, a.2.trans ⟨Finset.Subset.refl _, hk⟩⟩
 
-def faceLift' {k : ℕ} (hk : k ≤ R.KA) (b : C.scheme.below (R.A', k)) :
+def faceLift' (b : C.scheme.below (R.A', k)) :
     C.scheme.below (R.A', R.KA) :=
   ⟨b.1, b.2.trans ⟨Finset.Subset.refl _, hk⟩⟩
 
 /-- **The identification at grade `k ≤ KA`**: the restriction of `face` to the lower sets
 `(A, k)`, `(A', k)` — a bijection because the identification preserves grades. -/
-def faceAt {k : ℕ} (hk : k ≤ R.KA) : P.scheme.below (R.A, k) ≃ C.scheme.below (R.A', k) where
+def faceAt  : P.scheme.below (R.A, k) ≃ C.scheme.below (R.A', k) where
   toFun a := ⟨(R.face (R.faceLift hk a)).1, ⟨(R.face (R.faceLift hk a)).2.1,
     (R.face_grade (R.faceLift hk a)).trans_le a.2.2⟩⟩
   invFun b := ⟨(R.face.symm (R.faceLift' hk b)).1, ⟨(R.face.symm (R.faceLift' hk b)).2.1,
@@ -207,27 +211,34 @@ def faceAt {k : ℕ} (hk : k ≤ R.KA) : P.scheme.below (R.A, k) ≃ C.scheme.be
     rfl
 
 /-- The face is literally common at every grade, through `faceAt`. -/
-theorem faceAt_respects {k : ℕ} (hk : k ≤ R.KA) (r : C.scheme.below (R.A', k) → ExtOrd) :
+theorem faceAt_respects (r : C.scheme.below (R.A', k) → ExtOrd) :
     RespectsSemanticsBelow C.rows (R.A', k) r ↔
       RespectsSemanticsBelow P.rows (R.A, k) (fun a => r (R.faceAt hk a)) :=
   R.face_respects k hk r
 
-theorem finitePart_μ_add (i : I) (k : ℕ) : finitePart (R.μ i + k) = k := by
+end
+
+section
+variable (i : I)
+
+theorem finitePart_μ_add (k : ℕ) : finitePart (R.μ i + k) = k := by
   have := finitePart_limitPart_add_nat (R.μ i) k
   rwa [R.μ_limit i] at this
 
 /-- The representatives have grade below `N`: their actual labels are `N`-invisible. -/
-theorem ref_grade_lt (i : I) : C.scheme.grade (R.ref i) < N := by
+theorem ref_grade_lt  : C.scheme.grade (R.ref i) < N := by
   have h : SelfVis (C.scheme.grade (R.ref i)) (R.vact (R.ref i)) :=
     (R.vact_respects.orderly (R.ref i)).symm
   rw [R.vact_ref i, selfVis_ofOrd_iff, R.finitePart_μ_add] at h
   exact h.trans_lt (R.off_lt i)
 
+end
+
 /-- The lower domain of the cap: the cells of the acquisition face of grade at most `N`. -/
 abbrev Low : Type := C.scheme.below (C.scheme.cell R.cap)
 
 /-- A cell of the acquisition face of grade at most `N` as a cell of the cap's lower domain. -/
-def lowOf (d : Cell C.scheme) (hs : C.scheme.scope d ⊆ R.C₀) (h : C.scheme.grade d ≤ N) :
+def lowOf d (hs : C.scheme.scope d ⊆ R.C₀) (h : C.scheme.grade d ≤ N) :
     R.Low :=
   ⟨d, by rw [R.cap_cell]; exact ⟨hs, h⟩⟩
 
@@ -244,7 +255,7 @@ def lowFace (a : P.scheme.below (R.A, R.KA)) : R.Low :=
 /-- The actual reference row. -/
 noncomputable abbrev srcE : R.Low → ExtOrd := C.rows.E R.cap
 
-theorem srcE_coded (d : R.Low) : IsCodedLabel N (R.srcE d) := by
+theorem srcE_coded d : IsCodedLabel N (R.srcE d) := by
   have := C.rows_coded R.cap d
   rwa [R.grade_cap] at this
 
@@ -256,20 +267,30 @@ theorem vactL_respects : RespectsSemanticsBelow C.rows (C.scheme.cell R.cap) R.v
 
 /-! ## The block and offset of a proper donor label -/
 
+section
+variable (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤)
+
 /-- The block of a proper donor label. -/
-noncomputable def blk (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) : I :=
+noncomputable def blk  : I :=
   (R.p_code d h.1 h.2).choose
 
 /-- The offset of a proper donor label. -/
-noncomputable def poff (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) : ℕ :=
+noncomputable def poff  : ℕ :=
   (R.p_code d h.1 h.2).choose_spec.choose
 
-theorem poff_lt (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) : R.poff d h < N :=
+end
+
+section
+variable (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤)
+
+theorem poff_lt  : R.poff d h < N :=
   (R.p_code d h.1 h.2).choose_spec.choose_spec.1
 
-theorem p_eq (d : Cell P.scheme) (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
+theorem p_eq  :
     R.p d = ofOrd (R.μ (R.blk d h) + R.poff d h) :=
   (R.p_code d h.1 h.2).choose_spec.choose_spec.2
+
+end
 
 /-! ## The selector -/
 
@@ -286,21 +307,26 @@ noncomputable def sel (v : R.Low → ExtOrd) (d : Cell P.scheme) : ExtOrd :=
 
 theorem cut_le_cap (v : R.Low → ExtOrd) : R.cut v ≤ v R.capL := min_le_left _ _
 
-theorem sel_of_bot {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d = ⊥) :
+section
+variable {v : R.Low → ExtOrd} {d : Cell P.scheme}
+
+theorem sel_of_bot (h : R.p d = ⊥) :
     R.sel v d = ⊥ := by
   unfold sel; rw [dite_eq_right (fun h' => h'.1 h), ite_eq_left h]
 
-theorem sel_of_top {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d = ⊤) :
+theorem sel_of_top (h : R.p d = ⊤) :
     R.sel v d = R.cut v := by
   unfold sel
-  rw [dite_eq_right (fun h' => h'.2 h), ite_eq_right (by rw [h]; exact top_ne_bot)]
+  rw [dite_eq_right (fun h' => h'.2 h), ite_eq_right (by simp_all)]
 
-theorem sel_of_proper {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
+theorem sel_of_proper (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
     R.sel v d =
       min (extVisibilityReplace (v (R.lowRef (R.blk d h))) N (R.poff d h)) (R.cut v) := by
   unfold sel; rw [dite_eq_left h]
 
-theorem sel_le_cut (v : R.Low → ExtOrd) (d : Cell P.scheme) : R.sel v d ≤ R.cut v := by
+end
+
+theorem sel_le_cut v d : R.sel v d ≤ R.cut v := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
   · rw [R.sel_of_proper h]; exact min_le_right _ _
   by_cases hb : R.p d = ⊥
@@ -308,7 +334,7 @@ theorem sel_le_cut (v : R.Low → ExtOrd) (d : Cell P.scheme) : R.sel v d ≤ R.
   · rw [R.sel_of_top (not_not.mp fun ht => h ⟨hb, ht⟩)]
 
 /-- With no requested block the selector is identically bottom. -/
-theorem sel_of_isEmpty [IsEmpty I] (v : R.Low → ExtOrd) (d : Cell P.scheme) : R.sel v d = ⊥ := by
+theorem sel_of_isEmpty [IsEmpty I] v d : R.sel v d = ⊥ := by
   have hcut : R.cut v = ⊥ := by
     unfold cut
     rw [Finset.univ_eq_empty, Finset.sup_empty, min_bot_right]
@@ -325,23 +351,26 @@ theorem selfVis_cut {v : R.Low → ExtOrd} (hv : SelfVis N (v R.capL)) : SelfVis
   induction (Finset.univ : Finset I) using Finset.induction_on with
   | empty => exact selfVis_bot N
   | insert i s _ ih =>
-    rw [Finset.sup_insert]
+    simp_all
     exact TopSupport.selfVis_max_of (TopSupport.selfVis_evr_self N _) ih
 
 /-! ### Cap naturality (8) -/
 
-theorem sup_min_eq {γ : ExtOrd} (f : I → ExtOrd) :
+section
+variable {γ : ExtOrd}
+
+theorem sup_min_eq (f : I → ExtOrd) :
     (Finset.univ.sup fun i => min (f i) γ) = min (Finset.univ.sup f) γ := by
   rw [min_comm, Finset.sup_inf_distrib_left]
   simp only [min_comm γ]
 
-theorem cut_min {γ : ExtOrd} (hγ : SelfVis N γ) (v : R.Low → ExtOrd) :
+theorem cut_min (hγ : SelfVis N γ) (v : R.Low → ExtOrd) :
     R.cut (fun d => min (v d) γ) = min (R.cut v) γ := by
   unfold cut
   simp only [evr_min_of_selfVis hγ le_rfl le_rfl]
   rw [sup_min_eq, min_min_min_comm, min_self]
 
-theorem sel_min {γ : ExtOrd} (hγ : SelfVis N γ) (v : R.Low → ExtOrd) (d : Cell P.scheme) :
+theorem sel_min (hγ : SelfVis N γ) v d :
     R.sel (fun d => min (v d) γ) d = min (R.sel v d) γ := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
   · rw [R.sel_of_proper h, R.sel_of_proper h, R.cut_min hγ,
@@ -351,15 +380,17 @@ theorem sel_min {γ : ExtOrd} (hγ : SelfVis N γ) (v : R.Low → ExtOrd) (d : C
   · have ht := not_not.mp fun ht => h ⟨hb, ht⟩
     rw [R.sel_of_top ht, R.sel_of_top ht, R.cut_min hγ]
 
+end
+
 /-! ### Clipping the cap coordinate -/
 
 /-! ## Exact witnesses at the cap -/
 
 /-- One exact bounded witness for any labelling of the cap's lower domain lawful there. -/
-theorem exists_witness {v : R.Low → ExtOrd}
+theorem exists_witness {v}
     (hv : RespectsSemanticsBelow C.rows (C.scheme.cell R.cap) v) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop N) τ ∧ (∀ x, τ x ≤ v R.capL) ∧
-      ∀ d : R.Low, τ (R.srcE d) = min (v d) (v R.capL) := by
+    ∃ τ, Witness (gTop N) τ ∧ (∀ x, τ x ≤ v R.capL) ∧
+      ∀ d, τ (R.srcE d) = min (v d) (v R.capL) := by
   have h := exists_bounded_exact_capped_witness (grade := fun d : R.Low => C.scheme.grade d.1)
     (c := R.capL) (p := v) (fun d => d.2.2) (hv.orderly R.capL).symm (hv.locality R.capL)
   have hg : C.scheme.grade R.capL.1 = N := R.grade_cap
@@ -368,8 +399,8 @@ theorem exists_witness {v : R.Low → ExtOrd}
 /-- Two ordinal sources with the same `N`-invisible image under a witness through `N` coincide
 (ported from the reviewer's private `sources_equal_at_invisible_output`, `ReferenceOrbitIncoming`,
 with attribution). -/
-theorem sources_eq_of_invisible_image {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ)
-    {a b t : Ordinal.{0}} (ha : τ (ofOrd a) = ofOrd t) (hb : τ (ofOrd b) = ofOrd t)
+theorem sources_eq_of_invisible_image {τ} (hτ : Witness (gTop N) τ)
+    {a b t} (ha : τ (ofOrd a) = ofOrd t) (hb : τ (ofOrd b) = ofOrd t)
     (ht : finitePart t < N) : a = b := by
   have hcomm : ∀ x i, i ≤ N →
       τ (extVisibilityReplace x N i) = extVisibilityReplace (τ x) N i :=
@@ -381,7 +412,7 @@ theorem sources_eq_of_invisible_image {τ : ExtOrd → ExtOrd} (hτ : Witness (g
     · have hv := selfVis_of_equal_images_separated_blocks hτ.mono
         (fun x => hcomm x N le_rfl) h (ha.trans hb.symm)
       exact False.elim (hnv (ha ▸ hv))
-    · exact h
+    · grind
     · have hv := selfVis_of_equal_images_separated_blocks hτ.mono
         (fun x => hcomm x N le_rfl) h (hb.trans ha.symm)
       exact False.elim (hnv (hb ▸ hv))
@@ -391,17 +422,20 @@ theorem sources_eq_of_invisible_image {τ : ExtOrd → ExtOrd} (hτ : Witness (g
 
 /-! ## The actual row: source blocks and the face equations (3), (4) -/
 
-theorem ref_lt_cap (i : I) : R.vact (R.ref i) < R.vact R.cap :=
+section
+variable (i : I)
+
+theorem ref_lt_cap  : R.vact (R.ref i) < R.vact R.cap :=
   (R.vact_ref i).symm ▸ ((ofOrd_lt_ofOrd.mpr ((add_lt_add_iff_left _).mpr
     (Nat.cast_lt.mpr (R.off_lt i)))).trans (R.margin i))
 
 /-- The representative's source is coded in some source block with the representative's
 offset. -/
-theorem exists_srcBlock (i : I) :
+theorem exists_srcBlock  :
     ∃ b : ℕ, R.srcE (R.lowRef i) = ofOrd (Ordinal.omega0 * b + R.off i) := by
   obtain ⟨τ, hτ, -, hread⟩ := R.exists_witness R.vactL_respects
   have hr : τ (R.srcE (R.lowRef i)) = ofOrd (R.μ i + R.off i) := by
-    rw [hread]
+    simp_all
     change min (R.vact (R.ref i)) (R.vact R.cap) = _
     rw [min_eq_left (R.ref_lt_cap i).le, R.vact_ref i]
   rcases R.srcE_coded (R.lowRef i) with hbot | ⟨b, j, -, hcode⟩
@@ -413,24 +447,31 @@ theorem exists_srcBlock (i : I) :
     rw [finitePart_mul_add, R.finitePart_μ_add] at hf
     rw [hcode, hf]
 
-/-- The source block of each representative. -/
-noncomputable def srcBlock (i : I) : ℕ := (R.exists_srcBlock i).choose
+end
 
-theorem srcE_ref (i : I) :
+section
+variable (i : I)
+
+/-- The source block of each representative. -/
+noncomputable def srcBlock  : ℕ := (R.exists_srcBlock i).choose
+
+theorem srcE_ref  :
     R.srcE (R.lowRef i) = ofOrd (Ordinal.omega0 * R.srcBlock i + R.off i) :=
   (R.exists_srcBlock i).choose_spec
 
+end
+
 /-- Any witness of any lawful `v` reads the replacement of a representative's source as the
 replacement of `v`'s reading, capped. -/
-theorem read_ref_rep {v : R.Low → ExtOrd} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ)
-    (hread : ∀ d : R.Low, τ (R.srcE d) = min (v d) (v R.capL)) (i : I) {k : ℕ} (hk : k ≤ N) :
+theorem read_ref_rep {v : R.Low → ExtOrd} {τ} (hτ : Witness (gTop N) τ)
+    (hread : ∀ d, τ (R.srcE d) = min (v d) (v R.capL)) i {k} (hk : k ≤ N) :
     τ (ofOrd (Ordinal.omega0 * R.srcBlock i + k)) =
       extVisibilityReplace (min (v (R.lowRef i)) (v R.capL)) N k := by
   rw [← hread (R.lowRef i), ← hτ.comm_gTop _ hk, R.srcE_ref i,
     extVisibilityReplace_rep (limitPart_mul_nat _) (R.off_lt i)]
 
 theorem read_ref_rep_actual {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ)
-    (hread : ∀ d : R.Low, τ (R.srcE d) = min (R.vactL d) (R.vactL R.capL)) (i : I) {k : ℕ}
+    (hread : ∀ d, τ (R.srcE d) = min (R.vactL d) (R.vactL R.capL)) i {k}
     (hk : k ≤ N) : τ (ofOrd (Ordinal.omega0 * R.srcBlock i + k)) = ofOrd (R.μ i + k) := by
   rw [R.read_ref_rep hτ hread i hk]
   change extVisibilityReplace (min (R.vact (R.ref i)) (R.vact R.cap)) N k = _
@@ -444,17 +485,18 @@ theorem srcBlock_strict {i j : I} (h : R.μ i < R.μ j) : R.srcBlock i < R.srcBl
   intro hle
   have hs : ofOrd (Ordinal.omega0 * R.srcBlock j + (0 : ℕ)) ≤
       ofOrd (Ordinal.omega0 * R.srcBlock i + (0 : ℕ)) :=
-    ofOrd_le_ofOrd.mpr (by
-      simp only [Nat.cast_zero, add_zero]
-      exact mul_le_mul_right (Nat.cast_le.mpr hle) _)
+    ofOrd_le_ofOrd.mpr (by simp_all)
   have hh := hτ.mono hs
   rw [R.read_ref_rep_actual hτ hread j (Nat.zero_le _),
     R.read_ref_rep_actual hτ hread i (Nat.zero_le _), ofOrd_le_ofOrd] at hh
-  simp only [Nat.cast_zero, add_zero] at hh
+  simp_all
   exact not_le_of_gt h hh
 
+section
+variable (a : P.scheme.below (R.A, R.KA))
+
 /-- The proper face cell's source is the replacement of its block representative's source (3). -/
-theorem srcE_face_proper (a : P.scheme.below (R.A, R.KA)) (h : R.p a.1 ≠ ⊥ ∧ R.p a.1 ≠ ⊤) :
+theorem srcE_face_proper (h : R.p a.1 ≠ ⊥ ∧ R.p a.1 ≠ ⊤) :
     R.srcE (R.lowFace a) =
       ofOrd (Ordinal.omega0 * R.srcBlock (R.blk a.1 h) + R.poff a.1 h) := by
   obtain ⟨τ, hτ, -, hread⟩ := R.exists_witness R.vactL_respects
@@ -462,7 +504,7 @@ theorem srcE_face_proper (a : P.scheme.below (R.A, R.KA)) (h : R.p a.1 ≠ ⊥ �
     (ofOrd_lt_ofOrd.mpr ((add_lt_add_iff_left _).mpr
       (Nat.cast_lt.mpr (R.poff_lt a.1 h)))).trans (R.margin _)
   have hface : τ (R.srcE (R.lowFace a)) = ofOrd (R.μ (R.blk a.1 h) + R.poff a.1 h) := by
-    rw [hread]
+    simp_all
     change min (R.vact (R.face a).1) (R.vact R.cap) = _
     rw [R.face_actual a, R.p_eq a.1 h, min_eq_left hlt.le]
   have hrep := R.read_ref_rep_actual hτ hread (R.blk a.1 h) (R.poff_lt a.1 h).le
@@ -474,11 +516,11 @@ theorem srcE_face_proper (a : P.scheme.below (R.A, R.KA)) (h : R.p a.1 ≠ ⊥ �
       (by rw [R.finitePart_μ_add]; exact R.poff_lt a.1 h)]
 
 /-- A donor-top face cell's source exceeds every representative's `N`-endpoint (4). -/
-theorem srcE_face_top (a : P.scheme.below (R.A, R.KA)) (ht : R.p a.1 = ⊤) (i : I) :
+theorem srcE_face_top (ht : R.p a.1 = ⊤) (i : I) :
     ofOrd (Ordinal.omega0 * R.srcBlock i + N) < R.srcE (R.lowFace a) := by
   obtain ⟨τ, hτ, -, hread⟩ := R.exists_witness R.vactL_respects
   have hface : τ (R.srcE (R.lowFace a)) = R.vact R.cap := by
-    rw [hread]
+    simp_all
     change min (R.vact (R.face a).1) (R.vact R.cap) = _
     rw [R.face_actual a, ht, min_eq_right le_top]
   apply lt_of_not_ge
@@ -487,13 +529,20 @@ theorem srcE_face_top (a : P.scheme.below (R.A, R.KA)) (ht : R.p a.1 = ⊤) (i :
   rw [hface, R.read_ref_rep_actual hτ hread i le_rfl] at hh
   exact not_le_of_gt (R.margin i) hh
 
+end
+
 /-! ## The coded labelling `e` -/
 
+section
+variable (i : I)
+
 /-- The padded source block of each requested block. -/
-noncomputable def padBlock (i : I) : Ordinal.{0} :=
+noncomputable def padBlock  : Ordinal.{0} :=
   Ordinal.omega0 * ((R.srcBlock i + 1 : ℕ) : Ordinal)
 
-theorem padBlock_limit (i : I) : limitPart (R.padBlock i) = R.padBlock i := limitPart_mul_nat _
+theorem padBlock_limit  : limitPart (R.padBlock i) = R.padBlock i := limitPart_mul_nat _
+
+end
 
 /-- The fixed source map: the bottom-reflecting block interpolation onto the padded source
 blocks. -/
@@ -506,19 +555,17 @@ theorem emb_bot : R.emb ⊥ = ⊥ := by
   change max ⊥ (Finset.univ.sup fun _ => (⊥ : ExtOrd)) = ⊥
   rw [Finset.sup_bot, max_self]
 
-theorem emb_eq_bot_iff (x : ExtOrd) : R.emb x = ⊥ ↔ x = ⊥ :=
+theorem emb_eq_bot_iff x : R.emb x = ⊥ ↔ x = ⊥ :=
   ⟨FiniteOrbitEmbedding.interpolate_reflects_bottom _ _ _ x, fun h => h ▸ R.emb_bot⟩
 
-theorem ray_top (K : ℕ) (μ ν : Ordinal.{0}) :
+theorem ray_top K μ ν :
     FiniteOrbitEmbedding.ray K μ ν ⊤ = ofOrd (ν + K) := rfl
 
 /-- The common endpoint `L` at donor-top cells. -/
 theorem emb_top : R.emb ⊤ =
-    max (ofOrd ((0 : Ordinal) + N)) (Finset.univ.sup fun i => ofOrd (R.padBlock i + N)) := by
-  unfold emb FiniteOrbitEmbedding.interpolate
-  simp only [ray_top]
+    max (ofOrd ((0 : Ordinal) + N)) (Finset.univ.sup fun i => ofOrd (R.padBlock i + N)) := rfl
 
-theorem emb_proper (i : I) {k : ℕ} (hk : k ≤ N) :
+theorem emb_proper i {k} (hk : k ≤ N) :
     R.emb (ofOrd (R.μ i + k)) = ofOrd (R.padBlock i + k) := by
   apply FiniteOrbitEmbedding.interpolate_at N R.μ R.padBlock R.μ_limit R.padBlock_limit
   · intro i j h
@@ -528,14 +575,19 @@ theorem emb_proper (i : I) {k : ℕ} (hk : k ≤ N) :
     rw [R.μ_inj h]
   · intro i _
     exact le_mul_of_one_le_right zero_le (Nat.one_le_cast.mpr (Nat.succ_pos _))
-  · exact hk
+  · grind
 
-theorem e_of_bot {d : Cell P.scheme} (h : R.p d = ⊥) : R.e d = ⊥ := by
+section
+variable {d : Cell P.scheme}
+
+theorem e_of_bot (h : R.p d = ⊥) : R.e d = ⊥ := by
   unfold e; rw [h, R.emb_bot]
 
-theorem e_of_proper {d : Cell P.scheme} (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
+theorem e_of_proper (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
     R.e d = ofOrd (R.padBlock (R.blk d h) + R.poff d h) := by
   unfold e; rw [R.p_eq d h, R.emb_proper _ (R.poff_lt d h).le]
+
+end
 
 theorem e_eq_bot_iff (d : Cell P.scheme) : R.e d = ⊥ ↔ R.p d = ⊥ := R.emb_eq_bot_iff _
 
@@ -550,12 +602,17 @@ theorem e_respects :
 /-- The outer map of a witness `τ` at the cap: `τ ∘ unpad`. -/
 noncomputable def read (τ : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd := τ (SourceBlockPadding.unpad x)
 
-theorem read_witness {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ) : Witness (gTop N) (read τ) :=
+section
+variable {τ : ExtOrd → ExtOrd}
+
+theorem read_witness (hτ : Witness (gTop N) τ) : Witness (gTop N) (read τ) :=
   SourceBlockPadding.witness_precompose_unpad hτ
 
-theorem read_boundedMap {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ) :
+theorem read_boundedMap (hτ : Witness (gTop N) τ) :
     BoundedMap N (read τ) :=
   boundedMap_of_witness (read_witness hτ)
+
+end
 
 theorem unpad_padBlock (i : I) (k : ℕ) :
     SourceBlockPadding.unpad (ofOrd (R.padBlock i + k)) =
@@ -598,7 +655,7 @@ theorem read_e_top (hτ : Witness (gTop N) τ)
   rw [min_comm, ← sup_min_eq]
   congr 1
   funext i
-  simp only [Function.comp_apply]
+  simp_all
   rw [R.unpad_padBlock, R.read_ref_rep hτ hread i le_rfl, evr_min_of_selfVis hvis le_rfl le_rfl]
 
 /-- **The selector is the readback of `e`** (notes32 §3): for any exact witness of `v` at the
@@ -629,7 +686,10 @@ theorem Active.selfVis_cap {v : R.Low → ExtOrd} (hv : R.Active v) : SelfVis N 
   have h : SelfVis (C.scheme.grade R.cap) (v R.capL) := (hv.respects.orderly R.capL).symm
   rwa [R.grade_cap] at h
 
-theorem Active.cut_ne_bot [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active v) :
+section
+variable [Nonempty I] {v : R.Low → ExtOrd}
+
+theorem Active.cut_ne_bot (hv : R.Active v) :
     R.cut v ≠ ⊥ := by
   obtain ⟨i⟩ := ‹Nonempty I›
   intro h
@@ -640,7 +700,7 @@ theorem Active.cut_ne_bot [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active v) 
         (Finset.mem_univ i)))
 
 /-- With at least one requested block, the selector has exactly the donor's bottom pattern. -/
-theorem Active.sel_eq_bot_iff [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active v)
+theorem Active.sel_eq_bot_iff (hv : R.Active v)
     (d : Cell P.scheme) : R.sel v d = ⊥ ↔ R.p d = ⊥ := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
   · simp only [R.sel_of_proper h, h.1, iff_false, min_eq_bot, not_or]
@@ -650,10 +710,15 @@ theorem Active.sel_eq_bot_iff [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active
   · simp only [R.sel_of_top (not_not.mp fun ht => h ⟨hb, ht⟩), hb, iff_false]
     exact Active.cut_ne_bot R hv
 
+end
+
+section
+variable {v : R.Low → ExtOrd}
+
 /-- **The capped-donor lemma, lawfulness**: for every active lawful private section `v`, the
 selector `sel v` is lawful on the unchanged request scheme `P`.  With no requested block the
 selector is identically bottom. -/
-theorem Active.sel_respects {v : R.Low → ExtOrd} (hv : R.Active v) :
+theorem Active.sel_respects (hv : R.Active v) :
     RespectsSemantics P.rows (R.sel v) := by
   rcases isEmpty_or_nonempty I with hI | hI
   · have hsel : R.sel v = fun _ => ⊥ := funext (R.sel_of_isEmpty v)
@@ -665,8 +730,7 @@ theorem Active.sel_respects {v : R.Low → ExtOrd} (hv : R.Active v) :
       fun d => read τ (R.e d.1) := by
     funext d
     exact R.sel_eq_read hτ hread hcap d.1
-  have hB : RespectsSemanticsBelow P.rows (Finset.univ, nP + 1)
-      (fun d : P.scheme.below (Finset.univ, nP + 1) => read τ (R.e d.1)) := by
+  have hB := by
     refine (map_respects_iff_rowBlockBottom R.e_respects (fun d => (R.gradeP_lt_N d.1).le)
       (read_boundedMap hτ)).mpr ?_
     refine rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects R.e_respects) ?_
@@ -677,7 +741,7 @@ theorem Active.sel_respects {v : R.Low → ExtOrd} (hv : R.Active v) :
 
 /-- **The capped-donor lemma, boundary** (7): on the common face the selector is the private
 section capped at the cut. -/
-theorem Active.sel_face {v : R.Low → ExtOrd} (hv : R.Active v)
+theorem Active.sel_face (hv : R.Active v)
     (a : P.scheme.below (R.A, R.KA)) : R.sel v a.1 = min (v (R.lowFace a)) (R.cut v) := by
   obtain ⟨τ, hτ, -, hread⟩ := R.exists_witness hv.respects
   have hcapvis := Active.selfVis_cap R hv
@@ -710,17 +774,9 @@ theorem Active.sel_face {v : R.Low → ExtOrd} (hv : R.Active v)
     rw [min_comm, ← sup_min_eq]
     exact Finset.sup_le fun i _ => hi i
 
-/-! ## The actual context (9) -/
+end
 
-theorem actual_active : R.Active R.vactL where
-  respects := R.vactL_respects
-  cap_pos := ne_bot_of_gt R.cap_pos
-  ref_pos i := by
-    change R.vact (R.ref i) ≠ ⊥
-    rw [R.vact_ref i]; exact ofOrd_ne_bot _
-  face_bot a h := by
-    change R.vact (R.face a).1 = ⊥
-    rw [R.face_actual a, h]
+/-! ## The actual context (9) -/
 
 theorem cut_actual : R.cut R.vactL = Finset.univ.sup fun i => ofOrd (R.μ i + N) := by
   unfold cut

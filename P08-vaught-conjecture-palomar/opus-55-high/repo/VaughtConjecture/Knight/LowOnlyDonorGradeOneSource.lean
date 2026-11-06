@@ -17,7 +17,6 @@ actual donor restriction, and the asymmetric step consumes
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CanonicalPairedInverse
 open LadderScalarRendering SharpWitnessComposition
@@ -28,15 +27,15 @@ local instance donorSourceFintype : Fintype (P.scheme.below (effC n 1)) := Finty
 
 /-- The chart, prescription and original cap determine a lawful encoded donor
 source and an actual member of the unchanged birth-grade catalogue. -/
-theorem exists_donor_rank_repair (a : F.Anchor 1) {σ : ExtOrd → ExtOrd}
+theorem exists_donor_rank_repair (a : F.Anchor 1) {σ}
     (hσ : Witness (gTop 1) σ)
-    {p : P.scheme.below (effC n 1) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow P.rows (effC n 1) p)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
     (hag : ∀ d, min (σ (SupportLadderRows.source (RelativeLadderLayer.rungs
         (X := Field P C)) (fieldRank a.val (.inl d.1)))) γ = min (p d) γ)
-    (c : P.scheme.below (effC n 1)) (hactive : γ < p c) :
-    ∃ b : F.Anchor 1, ∃ ν : ExtOrd → ExtOrd, ∃ B : ℕ,
+    c (hactive : γ < p c) :
+    ∃ b : F.Anchor 1, ∃ ν, ∃ B,
       BoundedMap 1 ν ∧
       (∀ f, a.val f < grid 1 B ↔
         σ (SupportLadderRows.source (RelativeLadderLayer.rungs (X := Field P C))

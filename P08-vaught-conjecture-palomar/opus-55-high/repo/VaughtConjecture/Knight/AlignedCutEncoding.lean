@@ -22,7 +22,7 @@ namespace VaughtConjecture.Knight.AlignedCutEncoding
 
 open Transform Value ExtOrd SharpWitnessComposition AlignedCutJoin
 
-private theorem tail_witness (S : Finset Ordinal.{0}) (K b : ℕ) :
+private theorem tail_witness S K b :
     Witness (gTop K) (PaddedSourceDecoder.encode S K b) := by
   induction b with
   | zero => exact (isStepShifter_canonicalNormalizer (S := S) (K := K)).normalizedWitness
@@ -34,16 +34,20 @@ section Finite
 
 variable {X : Type*} [Fintype X]
 
+section
+variable (s p : X → ExtOrd) (K b : ℕ) (a γ : ExtOrd)
+
 /-- Old low sources are retained; new high outputs receive separate codes. -/
-noncomputable def encode (s p : X → ExtOrd) (K b : ℕ) (a γ : ExtOrd) : X → ExtOrd :=
+noncomputable def encode  : X → ExtOrd :=
   AlignedCutJoin.paste s p a
     (above γ (PaddedSourceDecoder.encode (RelativePrefixEncoding.inventory p γ) K b))
 
-theorem encode_of_le (s p : X → ExtOrd) (K b : ℕ) (a γ : ExtOrd)
-    (d : X) (hd : p d ≤ γ) : encode s p K b a γ d = min (s d) a :=
+theorem encode_of_le d (hd : p d ≤ γ) : encode s p K b a γ d = min (s d) a :=
   paste_of_le (fun _ h => above_of_le h) d hd
 
-private theorem high_gap (p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
+end
+
+private theorem high_gap p {K b : ℕ} {a γ}
     (hroom : a < ofOrd (Ordinal.omega0 * b)) (d : X) (hd : γ < p d) :
     a < above γ (PaddedSourceDecoder.encode (RelativePrefixEncoding.inventory p γ) K b)
       (p d) := by
@@ -51,25 +55,25 @@ private theorem high_gap (p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
   exact hroom.trans_le (PaddedSourceDecoder.encode_ge_floor _
     (RelativePrefixEncoding.tracked_high p γ d hd) (ne_of_gt (bot_le.trans_lt hd)))
 
-theorem encode_of_gt (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
-    (hroom : a < ofOrd (Ordinal.omega0 * b)) (d : X) (hd : γ < p d) :
+section
+variable (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
+
+theorem encode_of_gt (hroom : a < ofOrd (Ordinal.omega0 * b)) (d : X) (hd : γ < p d) :
     encode s p K b a γ d =
       PaddedSourceDecoder.encode (RelativePrefixEncoding.inventory p γ) K b (p d) := by
   rw [encode, paste_of_gt (high_gap p hroom) d hd, above_of_gt hd]
 
 /-- Capped source agreement is derived from the alignment of raised outputs. -/
-theorem encode_cap (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
-    (hroom : a < ofOrd (Ordinal.omega0 * b))
+theorem encode_cap (hroom : a < ofOrd (Ordinal.omega0 * b))
     (halign : ∀ d, γ < p d → a ≤ s d) (d : X) :
     min (encode s p K b a γ d) a = min (s d) a :=
   AlignedCutJoin.paste_cap (fun _ h => above_of_le h) (high_gap p hroom) halign d
 
 /-- Literal readback uses no inverse or identity-prefix hypothesis on `σ`.
 Only the new high outputs are inserted into the decoder's finite inventory. -/
-theorem decode_encode (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
-    {σ : ExtOrd → ExtOrd} (hσ : Monotone σ)
+theorem decode_encode {σ} (hσ : Monotone σ)
     (hroom : a < ofOrd (Ordinal.omega0 * b)) (hactive : γ ≤ σ a)
-    (hread : ∀ d, min (σ (s d)) γ = min (p d) γ) (d : X) :
+    (hread : ∀ d, min (σ (s d)) γ = min (p d) γ) d :
     PaddedSourceDecoder.extend (RelativePrefixEncoding.inventory p γ) K b σ γ
       (encode s p K b a γ d) = p d := by
   by_cases hd : p d ≤ γ
@@ -80,14 +84,18 @@ theorem decode_encode (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
     exact PaddedSourceDecoder.extend_encode _
       (RelativePrefixEncoding.tracked_high p γ d (not_le.mp hd)) (not_le.mp hd).le
 
+end
+
 end Finite
+
+section
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 /-- The new codes form a lawful face on the original rows, not just a scalar
 solution of the prescribed equations. Source block repair supplies locality. -/
 theorem encode_respects
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} [Fintype (D.below BJ)]
-    {s p : D.below BJ → ExtOrd} {K b : ℕ} {a γ : ExtOrd}
+    [Fintype (D.below BJ)]
+    {s p} {K b : ℕ} {a γ}
     (hs : RespectsSemanticsBelow sem BJ s) (hp : RespectsSemanticsBelow sem BJ p)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (ha : SelfVis K a) (hab : a ≠ ⊥) (hγ : SelfVis K γ)
@@ -102,10 +110,9 @@ theorem encode_respects
 cut preserves every ambient output cap, and positive-cap transport proves
 respect of the output without assuming faithful transformations compose. -/
 theorem decode_lift
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {X : Type*} [Fintype X]
-    (s : D.below BJ → ExtOrd) (p : X → ExtOrd) (incl : X → D.below BJ)
-    {r q : D.below BJ → ExtOrd} {K b : ℕ} {a γ : ExtOrd} {σ : ExtOrd → ExtOrd}
+    {X} [Fintype X]
+    s p (incl : X → D.below BJ)
+    {r q} {K b : ℕ} {a γ} {σ}
     (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (hσ : Witness (gTop K) σ) (hγ : SelfVis K γ) (hγb : γ ≠ ⊥)
@@ -130,5 +137,7 @@ theorem decode_lift
   rw [hlit d]
   exact decode_encode (s ∘ incl) p hσ.mono hroom hactive
     (fun e => (hambient (incl e)).trans (hface e).symm) d
+
+end
 
 end VaughtConjecture.Knight.AlignedCutEncoding

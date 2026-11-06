@@ -19,7 +19,6 @@ fields of an assumed successor record. No grade-three layer is installed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingReady
 open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan
 open LowOnlyPaddedSuccessor LowOnlyPaddedRendering

@@ -16,7 +16,6 @@ lifts supply the boundary; no lift or completion of the output is assumed.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalOneCoatom
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 noncomputable section
@@ -26,11 +25,14 @@ variable (sem : Semantics D) (hA : 1 ≤ A.card)
 abbrev scheme := CanonicalFieldLayer.scheme sem 1 (Cell D) id (by decide) hA
 abbrev rows := CanonicalFieldLayer.rows sem 1 (Cell D) id (by decide) hA hp hg
 abbrev old := CanonicalFieldLayer.old sem 1 (Cell D) id (by decide) hA
-abbrev equiv (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) :=
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
+
+abbrev equiv  :=
   GradeCutLayerCarrier.properEquiv D (CanonicalFieldLayer.Profile sem 1 (Cell D) id)
     1 (by decide) hA J hJ
 
-theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (p : D.below J → ExtOrd) :
+theorem respects_iff p :
     RespectsSemanticsBelow sem J p ↔
       RespectsSemanticsBelow (rows sem hA hp hg) J (p ∘ (equiv sem hA J hJ).symm) := by
   apply respects_iff_of_equiv (equiv sem hA J hJ)
@@ -42,13 +44,15 @@ theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (p : D.below J �
       SourceLayerCarrier.index]
   · exact (CanonicalFieldLayer.inherited_row sem 1 (Cell D) id (by decide) hA hp hg c.1 d).symm
 
-theorem pullback {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1)
-    {q : (scheme sem hA).below J → ExtOrd} (hq : RespectsSemanticsBelow (rows sem hA hp hg) J q) :
+end
+
+theorem pullback {J} hJ
+    {q} (hq : RespectsSemanticsBelow (rows sem hA hp hg) J q) :
     RespectsSemanticsBelow sem J (q ∘ equiv sem hA J hJ) := by
   apply (respects_iff sem hA hp hg J hJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
 
-theorem proper_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : ¬ A ⊆ J.1)
+theorem proper_lift {I J} (h : GradedLe I J) (hJ : ¬ A ⊆ J.1)
     (hl : CappedLift sem h) : CappedLift (rows sem hA hp hg) h := by
   intro p q γ hpr hqr hγ hag
   have hI : ¬ A ⊆ I.1 := fun hi => hJ (hi.trans h.1)
@@ -59,8 +63,7 @@ theorem proper_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : ¬ A ⊆ J
   obtain ⟨r, hr, hc, he⟩ := hl (p ∘ eI) (q ∘ eJ) γ
     (pullback sem hA hp hg hI hpr) (pullback sem hA hp hg hJ hqr) hγ (fun d => hag (eI d))
   refine ⟨r ∘ eJ.symm, (respects_iff sem hA hp hg J hJ r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hc (eJ.symm d)
+  · grind
   · intro d
     have hd : eJ.symm (CellScheme.below.mono h d) = CellScheme.below.mono h (eI.symm d) := by
       apply eJ.injective
@@ -69,8 +72,8 @@ theorem proper_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : ¬ A ⊆ J
     exact congrArg p (eI.apply_symm_apply d)
 
 /-- Literal tops are decoded from proper representatives, not inserted into the catalogue. -/
-theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
-    ∃ r : Cell (scheme sem hA) → ExtOrd, RespectsSemantics (rows sem hA hp hg) r ∧
+theorem exists_whole {p} (hpr : RespectsSemantics sem p) :
+    ∃ r, RespectsSemantics (rows sem hA hp hg) r ∧
       ∀ d, r (old sem hA d) = p d := by
   let all (d : Cell D) : D.below (A, 1) :=
     ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hg d⟩

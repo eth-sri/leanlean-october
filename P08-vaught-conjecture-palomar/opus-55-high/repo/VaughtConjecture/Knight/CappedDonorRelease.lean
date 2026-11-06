@@ -64,17 +64,17 @@ noncomputable def releaseShifter (τ : ExtOrd → ExtOrd) (h γ : ExtOrd) (x : E
   if x ≤ h then min (τ x) γ else τ x
 
 omit L in
-theorem releaseShifter_of_le {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : x ≤ h) :
+theorem releaseShifter_of_le {τ : ExtOrd → ExtOrd} {h γ x} (hx : x ≤ h) :
     releaseShifter τ h γ x = min (τ x) γ := by
   unfold releaseShifter; rw [ite_eq_left hx]
 
 omit L in
-theorem releaseShifter_of_lt {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : h < x) :
+theorem releaseShifter_of_lt {τ : ExtOrd → ExtOrd} {h γ x} (hx : h < x) :
     releaseShifter τ h γ x = τ x := by
   unfold releaseShifter; rw [ite_eq_right (not_le.mpr hx)]
 
 omit L in
-theorem releaseShifter_eq_bot_iff {τ : ExtOrd → ExtOrd} {h γ : ExtOrd} (hγ : γ ≠ ⊥) (x : ExtOrd) :
+theorem releaseShifter_eq_bot_iff {τ : ExtOrd → ExtOrd} {h γ} (hγ : γ ≠ ⊥) x :
     releaseShifter τ h γ x = ⊥ ↔ τ x = ⊥ := by
   unfold releaseShifter
   split_ifs
@@ -82,7 +82,7 @@ theorem releaseShifter_eq_bot_iff {τ : ExtOrd → ExtOrd} {h γ : ExtOrd} (hγ 
   · exact Iff.rfl
 
 omit L in
-theorem releaseShifter_le {τ : ExtOrd → ExtOrd} (h γ x : ExtOrd) :
+theorem releaseShifter_le {τ : ExtOrd → ExtOrd} h γ x :
     releaseShifter τ h γ x ≤ τ x := by
   unfold releaseShifter
   split_ifs

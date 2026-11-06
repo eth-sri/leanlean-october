@@ -20,7 +20,6 @@ a maximal prescribed owner to obtain literal readback.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldOwnerLift
 open Transform Value ExtOrd SharpWitnessComposition CanonicalFieldLayer
 open CoatomBoundaryExtension SourcePrefixRows
@@ -33,18 +32,23 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.gra
 
 abbrev target := (scheme sem j X occ hj hA).below (A, j)
 
-abbrev oldTarget (d : Cell D) : target sem j X occ hj hA :=
+section
+variable (d : Cell D)
+
+abbrev oldTarget  : target sem j X occ hj hA :=
   SourcePrefixAmbient.occurrence (data sem j X occ hj hA hproper hg)
     (old sem j X occ hj hA d)
 
-theorem oldTarget_grade (d : Cell D) :
+theorem oldTarget_grade  :
     (scheme sem j X occ hj hA).grade (oldTarget sem j X occ hj hA hproper hg d).1 =
       D.grade d := by
   simp only [oldTarget, SourcePrefixAmbient.occurrence, old, CellScheme.grade,
     SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index]
 
-theorem source_short (a : Profile sem j X occ)
-    (d : Cell (scheme sem j X occ hj hA)) :
+end
+
+theorem source_short a
+    d :
     Short j (source sem j X occ hj hA hproper hg a d) := by
   let F := data sem j X occ hj hA hproper hg
   by_cases he : (scheme sem j X occ hj hA).cell d = (A, j)
@@ -61,13 +65,13 @@ theorem source_short (a : Profile sem j X occ)
 private def seed : Profile sem j X occ := encode sem j X occ hg
   (p := fun _ => ⊥) (RespectsSemantics.bot sem) (fun _ => bot_ne_top)
 
-theorem exists_capped_source {q : target sem j X occ hj hA → ExtOrd}
+theorem exists_capped_source {q}
     (hq : RespectsSemanticsBelow (rows sem j X occ hj hA hproper hg) (A, j) q)
-    (d : target sem j X occ hj hA) (hd : (scheme sem j X occ hj hA).grade d.1 = j)
-    {γ : ExtOrd} (hγ : SelfVis j γ) (hactive : γ ≤ q d) :
-    ∃ (a : Profile sem j X occ) (τ : ExtOrd → ExtOrd),
+    d (hd : (scheme sem j X occ hj hA).grade d.1 = j)
+    {γ} (hγ : SelfVis j γ) (hactive : γ ≤ q d) :
+    ∃ a τ,
       Witness (gTop j) τ ∧ (∀ x, τ x ≤ γ) ∧
-      ∀ x : target sem j X occ hj hA,
+      ∀ x,
         τ (source sem j X occ hj hA hproper hg a x.1) = min (q x) γ := by
   let F := data sem j X occ hj hA hproper hg
   obtain ⟨c, τ, _, hτ, hb, _, hr⟩ := SourcePrefixAmbient.exists_active_source F
@@ -77,29 +81,26 @@ theorem exists_capped_source {q : target sem j X occ hj hA → ExtOrd}
     (SeparatedSourceLayerCarrier.controllerEquiv D (Profile sem j X occ) j hj hA
       (SeparatedSourceLayerCarrier.separated_of_proper D j hproper)).apply_symm_apply c
   refine ⟨a, τ, hτ, hb, ?_⟩
-  intro x
-  change τ (F.profile (controller sem j X occ hj hA a) x.1) = _
-  rw [ha]
-  exact hr x
+  grind
 
 theorem exists_owner_capped_lift (hinj : Function.Injective occ)
-    (c : Cell D) (hc : D.grade c = j)
-    {p : D.below (D.cell c) → ExtOrd}
+    c (hc : D.grade c = j)
+    {p}
     (hp : RespectsSemanticsBelow sem (D.cell c) p)
-    {q : target sem j X occ hj hA → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow (rows sem j X occ hj hA hproper hg) (A, j) q)
-    {γ : ExtOrd} (hγ : SelfVis j γ) (hγb : γ ≠ ⊥)
-    (hag : ∀ e : D.below (D.cell c), min (p e) γ =
+    {γ} (hγ : SelfVis j γ) (hγb : γ ≠ ⊥)
+    (hag : ∀ e, min (p e) γ =
       min (q (oldTarget sem j X occ hj hA hproper hg e.1)) γ)
     (hpc : γ < p ⟨c, GradedLe.refl _⟩)
-    {U V O : Finset ι × ℕ}
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
+    {U V O}
+    (hcover : ∀ d, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hcU : GradedLe (D.cell c) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
-    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
+    (hinter : ∀ d, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hcU) (hright : CappedLift sem hOV)
     (hU : U.2 ≤ j) (hV : V.2 ≤ j) :
-    ∃ r : target sem j X occ hj hA → ExtOrd,
+    ∃ r,
       RespectsSemanticsBelow (rows sem j X occ hj hA hproper hg) (A, j) r ∧
       (∀ e : D.below (D.cell c), r (oldTarget sem j X occ hj hA hproper hg e.1) =
         min (p e) (p ⟨c, GradedLe.refl _⟩)) ∧

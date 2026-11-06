@@ -39,11 +39,16 @@ the grade bound, so its consumer repairs actual source blocks instead. -/
 noncomputable def above (γ : ExtOrd) (f : ExtOrd → ExtOrd) (y : ExtOrd) : ExtOrd :=
   if y ≤ γ then ⊥ else f y
 
-theorem above_of_le {γ y : ExtOrd} {f : ExtOrd → ExtOrd} (hy : y ≤ γ) :
+section
+variable {γ y : ExtOrd} {f : ExtOrd → ExtOrd}
+
+theorem above_of_le (hy : y ≤ γ) :
     above γ f y = ⊥ := ite_eq_left hy
 
-theorem above_of_gt {γ y : ExtOrd} {f : ExtOrd → ExtOrd} (hy : γ < y) :
+theorem above_of_gt (hy : γ < y) :
     above γ f y = f y := ite_eq_right (not_le.mpr hy)
+
+end
 
 theorem above_bounded {K : ℕ} {γ : ExtOrd} {f : ExtOrd → ExtOrd}
     (hf : BoundedMap K f) (hγ : SelfVis K γ) : BoundedMap K (above γ f) where
@@ -128,11 +133,11 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-- Convert bounded read equations into an actual faithful locality using
 only the block-bottom condition at the controller's actual source occurrences. -/
-theorem locality_of_bounded_read {q : D.below BJ → ExtOrd}
-    (hb : RowBlockBottom sem BJ q) (c : D.below BJ) {f : ExtOrd → ExtOrd}
+theorem locality_of_bounded_read {q}
+    (hb : RowBlockBottom sem BJ q) c {f}
     (hf : BoundedMap (D.grade c.1) f)
     (hread : ∀ d, f (sem.E c.1 d) = min (q (CellScheme.below.incl c d)) (q c)) :
-    TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1) (sem.E c.1)
+    TransformsTo (fun d => D.grade d.1) (sem.E c.1)
       (fun d => min (q (CellScheme.below.incl c d)) (q c)) := by
   classical
   let _ := Fintype.ofFinite (D.below (D.cell c.1))
@@ -153,7 +158,7 @@ theorem locality_of_bounded_read {q : D.below BJ → ExtOrd}
 
 /-- The pasted labelling is lawful on the original scheme. No shared
 availability selector, injective decoder, or pre-existing completion is assumed. -/
-theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
+theorem paste_respects {s p} {K : ℕ} {a γ}
     {v : ExtOrd → ExtOrd}
     (hs : RespectsSemanticsBelow sem BJ s) (hp : RespectsSemanticsBelow sem BJ p)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)

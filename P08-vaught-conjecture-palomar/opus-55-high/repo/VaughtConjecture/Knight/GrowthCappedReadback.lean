@@ -18,7 +18,6 @@ No top-cap or supplied-admission hypothesis is needed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherMixed
 noncomputable section
@@ -28,10 +27,12 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   (r : Requests DA DQ)
 
+section
+variable {s s' : DA.below (DA.cell r.C) → ExtOrd} {v v' : Cell DQ → ExtOrd}
+
 /-- Correctness depends only on the donor cap readings, active references and
 the marker when a high request is present. Internal source choices need not agree. -/
 theorem correct_of_observed_readings
-    {s s' : DA.below (DA.cell r.C) → ExtOrd} {v v' : Cell DQ → ExtOrd}
     (hobs : ∀ d, d ∈ r.Z ∨ d ∈ r.F ∨ d ∈ r.T →
       min (v d) (s r.capCell) = min (v' d) (s' r.capCell))
     (href : ∀ d ∈ r.F, r.tOf s d = r.tOf s' d)
@@ -52,7 +53,6 @@ theorem correct_of_observed_readings
 /-- Correctness reads only the private and donor vectors below its own
 visible cap. Agreement is required on the actual cap domain, not future cells. -/
 theorem correct_of_cap_agreement
-    {s s' : DA.below (DA.cell r.C) → ExtOrd} {v v' : Cell DQ → ExtOrd}
     (hoff : ∀ f ∈ r.F, r.off f ≤ r.N)
     (hvis : SelfVis r.N (s' r.capCell)) (hc : s r.capCell = s' r.capCell)
     (hs : ∀ d, min (s d) (s' r.capCell) = min (s' d) (s' r.capCell))
@@ -66,8 +66,10 @@ theorem correct_of_cap_agreement
     unfold dOf
     rw [hc, ← evr_min_of_selfVis hvis le_rfl r.R_lt_N.le, hs,
       evr_min_of_selfVis hvis le_rfl r.R_lt_N.le]
-  exact r.correct_of_observed_readings (fun d _ => by rw [hc]; exact hv d)
+  exact r.correct_of_observed_readings (fun d _ => by grind)
     href (fun _ => hmark) h
+
+end
 
 end Requests
 
@@ -104,7 +106,7 @@ include hU hm hj hj0 hjt hsmall in
 theorem cap_le_maximum (hp : RespectsSemanticsBelow Rows (U, j) p) :
     p (privateAt I X T hA hB hC t ht U j hCU X.req.C (cap_grade_le I X j hN)) ≤ H := by
   rw [private_readback I X T hA hB hC t ht U j hCU hU hm hj hj0 hjt hp,
-    X.grade_C, height, ite_eq_right (by omega : ¬ X.req.N ≤ 1), ite_eq_left hN]
+    X.grade_C, height, ite_eq_right (by grind), ite_eq_left hN]
   exact min_le_right _ _
 
 section State
@@ -218,8 +220,7 @@ theorem full_correct (hfull : A.card ≤ t + 2)
         ((donor_grade_le I X d).trans hN)).1) =
       fun d => v ((GrowthReplicatedRows.donorFace I X T hA hB hC t ht).map d) :=
     funext fun d => congrArg v (donorFace_map I X T hA hB hC t ht d _).symm
-  rw [hps, hds] at h
-  exact h
+  aesop
 
 end Full
 end GrowthCappedReadback

@@ -16,7 +16,6 @@ needs no repair and the conclusion is literal equality of stage types.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
 noncomputable section

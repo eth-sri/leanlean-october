@@ -8,7 +8,9 @@ module
 public import VaughtConjecture.Knight.OrdinaryAttachedReceiving
 public import VaughtConjecture.Knight.CappedDonorComparisonRequest
 public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ExtensionSets
+public import VaughtConjecture.Knight.ReductModel
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.ActualOccurrence
 public import VaughtConjecture.Knight.CapObservation
 
 /-! # Finite-cut receiving in a model
@@ -56,10 +58,13 @@ universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
+section
+variable {n : ℕ}
+
 /-- Two stage types with equal domains and labels agreeing through `castCell` are equal
 (the statement of `ReadbackReceiver`'s `StageType.ext_of_label`, restated here to keep that
 module's imports out of this one). -/
-theorem ext_of_label {n : ℕ} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.scheme)
+theorem ext_of_label {t₁ t₂ : S α.1 n} hs
     (hl : ∀ i, t₁.label i = t₂.label (SemScheme.castCell hs i)) : t₁ = t₂ := by
   obtain ⟨s₂, l₂, hb₂, hr₂⟩ := t₂
   dsimp only at hs
@@ -67,12 +72,14 @@ theorem ext_of_label {n : ℕ} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.s
   exact StageType.ext rfl (heq_of_eq (funext fun i => hl i))
 
 /-- Lawfulness transports along an equality of schemes. -/
-theorem respects_of_scheme_eq {n : ℕ} {X : SemScheme n} (t : S α.1 n) (h : t.scheme = X) :
+theorem respects_of_scheme_eq {X} (t : S α.1 n) (h : t.scheme = X) :
     RespectsSemantics X.rows (fun c => t.label (SemScheme.castCell h.symm c)) := by
   obtain ⟨s, l, hb, hr⟩ := t
   dsimp only at h
   subst h
   exact hr
+
+end
 
 /-- **Finite-cut receiving from acquired reference data.**  Over a realized root `t ↦ p`, a
 candidate `q` on `n + 1` points (its coface relation to `p` is carried by the face receipts and
@@ -80,10 +87,10 @@ is not assumed separately), and an actual private context `u ↦ p₀` of arity 
 the root along `e`, with ordinary reference data `Rf` for `q`'s scheme over `p₀`'s scheme and
 its literal receipts, every cutoff `δ` at most the actual cut is received: some actual coface of
 `p` on `q`'s scheme agrees with `q` below `δ`. -/
-theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
+theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t} {p : S α.1 n}
     (hp : R.eval t = some p) (q : S α.1 (n + 1))
-    {I : Type*} [Fintype I] {N J : ℕ} (hJ : J = N) (hN : 4 ≤ N)
-    {u : Fin J ↪ M} {p₀ : S α.1 J} (hu : R.eval u = some p₀)
+    {I} [Fintype I] {N J} (hJ : J = N) (hN : 4 ≤ N)
+    {u} {p₀ : S α.1 J} (hu : R.eval u = some p₀)
     (e : Fin n ↪ Fin J) (hut : e.trans u = t)
     (Rf : Ref I n N J q.scheme p₀.scheme) (hRp : Rf.p = q.label) (hRv : Rf.vact = p₀.label)
     (hK : Rf.KA = n) (hA' : Rf.A' = Finset.univ.image e)

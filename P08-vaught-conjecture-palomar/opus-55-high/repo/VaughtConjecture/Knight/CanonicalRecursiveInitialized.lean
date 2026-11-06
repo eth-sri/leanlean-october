@@ -18,7 +18,6 @@ iterates from this constructed base, within the explicit old-coatom bounds.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveInitialized
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 open CanonicalRecursiveRecurrence

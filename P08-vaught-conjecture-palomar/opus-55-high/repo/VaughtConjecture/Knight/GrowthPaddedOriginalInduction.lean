@@ -16,7 +16,6 @@ no activated donor fibre, mixed-scope lifting, or output bountifulness is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOriginalInduction
 open Transform Value ExtOrd Growth
 open GrowthPaddedContract GrowthPaddedIteration
@@ -67,7 +66,7 @@ end Successor
 
 /-- All-cap private lifting at every constructed height, with no supplied
 predecessor lifting or physical rendering premise. -/
-theorem build_private (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_private t ht :
     PrivateLowerLift (build I X T hA hB hC t ht) := by
   induction t with
   | zero => exact GrowthPaddedStepPrivateLift.initial_private I X T hA hB hC
@@ -77,7 +76,7 @@ theorem build_private (t : ℕ) (ht : t + 2 ≤ A.card) :
 
 /-- All-cap donor lifting at every constructed height, even at and above
 activation. Only the actual donor arity is restricted. -/
-theorem build_donor (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_donor (hsmall : n + 1 < X.req.N) t ht :
     DonorLowerLift (build I X T hA hB hC t ht) := by
   induction t with
   | zero => exact initial_donor I X T hA hB hC hsmall

@@ -16,7 +16,6 @@ prescription, including distinct lower values above the owner and literal top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepDonorLift
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -35,11 +34,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 theorem active_donor_lift
     (hplan : P.carrier.plan = R) (hprev : TargetGradeLifting.Through P.rows k)
-    {p : I.left.scheme.below (effC n (k + 1)) → ExtOrd}
-    {q : (carrier P hnext).below (A, (k + 1)) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.left.rows (effC n (k + 1)) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ)
     (hactive : ∃ d, I.left.scheme.grade d.1 = (k + 1) ∧ γ < p d)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) r ∧

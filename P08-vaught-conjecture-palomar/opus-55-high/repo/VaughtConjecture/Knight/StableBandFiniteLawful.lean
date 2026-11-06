@@ -23,8 +23,6 @@ receiving and successor modelhood remain separate. Face coherence is unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType
@@ -60,7 +58,7 @@ end RootedCover
 /-- Stable lawfulness by finite-vector synchronization and one jump. The
 statement matches the structural core's existing lawfulness interface. -/
 theorem stableLiftRespects_of_finiteJump (hc : R.IsExactParentConsistent)
-    (hv : R.IsInitialSegmentCovering) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
+    (hv : R.IsInitialSegmentCovering) {n} {t} {p : S α.1 n}
     (hp : R.eval t = some p) :
     RespectsSemantics p.scheme.rows (fun d => R.stableValue t p d) := by
   let x : R.LabelledExt := ⟨n, t, p, hp⟩

@@ -25,21 +25,21 @@ variable {n K : ℕ} {C : SemScheme n} (L : SourceGap C K)
 
 /-- A positive-cap frontier release on the unchanged private scheme. The root may have
 arbitrarily high grades; only its low part passes through the owner's cap. -/
-theorem exists_release {j : ℕ} (hj : K ≤ j)
-    {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+theorem exists_release {j} hj
+    {v}
+    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ}
     (hγ : SelfVis (effC n j).2 γ) (hγpos : γ ≠ ⊥) (he : γ < L.eC hj v)
-    {A : Finset (Fin n)} (hA : A ∈ C.scheme.plan) (hAc : A ⊆ C.scheme.scope L.c)
+    {A} (hA : A ∈ C.scheme.plan) (hAc : A ⊆ C.scheme.scope L.c)
     (T : Cell C.scheme → Prop)
     (htop : ∀ a : C.scheme.below (faceIndex A j), T a.1 → C.scheme.grade a.1 ≤ K)
     (hgap : ∀ (a : C.scheme.below (faceIndex A K))
-      (ha : GradedLe (C.scheme.cell a.1) (C.scheme.cell L.c)),
+      ha,
       T a.1 → L.h < C.rows.E L.c ⟨a.1, ha⟩)
-    (hshield : ∀ a : C.scheme.below (faceIndex A j), ¬ T a.1 →
+    (hshield : ∀ a, ¬ T a.1 →
       v (CellScheme.below.mono (faceIndex_le A j) a) < γ) :
-    ∃ v' : C.scheme.below (effC n j) → ExtOrd,
+    ∃ v',
       RespectsSemanticsBelow C.rows (effC n j) v' ∧
-      (∀ a : C.scheme.below (faceIndex A j),
+      (∀ a,
         v' (CellScheme.below.mono (faceIndex_le A j) a) =
           v (CellScheme.below.mono (faceIndex_le A j) a)) ∧
       (∀ d, min (v' d) γ = min (v d) γ) ∧
@@ -60,7 +60,7 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     rw [L.c_grade]; exact hLvis
   have ht : RespectsSemanticsBelow C.rows (C.scheme.cell L.c)
       (fun d => τ (C.rows.E L.c d)) := by
-    have heq : (fun d : L.Dom => τ (C.rows.E L.c d)) =
+    have heq : (fun d => τ (C.rows.E L.c d)) =
         fun d => min (w₀ d) (w₀ L.cL) := funext hread
     rw [heq]; exact hw₀.cap hcapL
   have hw : RespectsSemanticsBelow C.rows (C.scheme.cell L.c) w := by
@@ -83,7 +83,7 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     · rw [hread, min_assoc, min_eq_right hγL.le]
   have hfaceLe : GradedLe (faceIndex A K) (C.scheme.cell L.c) :=
     ⟨hAc, (min_le_right _ _).trans_eq L.c_grade.symm⟩
-  have hwface : ∀ a : C.scheme.below (faceIndex A K),
+  have hwface : ∀ a,
       w (CellScheme.below.mono hfaceLe a) =
         min (w₀ (CellScheme.below.mono hfaceLe a)) (w₀ L.cL) := by
     intro a
@@ -98,10 +98,10 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
       split_ifs
       · rw [hread, min_eq_left ((min_le_left _ _).trans hlt.le)]
       · rw [hread]
-  have hrest : ∃ w' : L.Dom → ExtOrd,
+  have hrest : ∃ w',
       RespectsSemanticsBelow C.rows (C.scheme.cell L.c) w' ∧
       (∀ d, min (w' d) (w₀ L.cL) = min (w d) (w₀ L.cL)) ∧
-      ∀ a : C.scheme.below (faceIndex A K),
+      ∀ a,
         w' (CellScheme.below.mono hfaceLe a) = w₀ (CellScheme.below.mono hfaceLe a) := by
     by_cases hk : 0 < min A.card K
     · apply C.bountiful.extend (faceIndex_mem hA hk) (C.scheme.cell_mem L.c)

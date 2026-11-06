@@ -27,7 +27,6 @@ this file does not build the predecessor or prove final-layer bountifulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalReadback
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref OrdinaryFinalCatalogue
 noncomputable section
@@ -38,7 +37,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- An inherited occurrence in the final active lower set. -/
-abbrev oldAt (d : Cell D) (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
+abbrev oldAt d (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
   ⟨F.old d, by
     rw [F.old_index]
     exact ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩⟩
@@ -59,11 +58,11 @@ theorem capped_readback
     (hfields : ∀ a f, F.fields a f = a.val f) (hgate : F.gate = .gate)
     (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
-    {v : F.carrier.below (A, N) → ExtOrd}
+    {v}
     (hv : RespectsSemanticsBelow F.rows (A, N) v)
     (hretain : ∀ d, v (privAt R F priv hprivGrade d) = R.vact d)
-    (b : OrdinaryFinalCatalogue.Member R) (hpositive : v (F.addedAt b true) ≠ ⊥)
-    (d : Cell P.scheme) :
+    b (hpositive : v (F.addedAt b true) ≠ ⊥)
+    d :
     min (v (reqAt R F req hreqGrade d)) (R.cut R.vactL) =
       min (R.p d) (R.cut R.vactL) := by
   let c := privAt R F priv hprivGrade R.cap

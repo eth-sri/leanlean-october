@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.ControllerOrderCover
-public import VaughtConjecture.Knight.WitnessAlgebra

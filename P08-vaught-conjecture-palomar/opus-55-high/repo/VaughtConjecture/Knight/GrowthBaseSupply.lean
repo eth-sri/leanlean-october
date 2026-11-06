@@ -17,7 +17,6 @@ lawfulness is proved directly, not by positive-cap transport at bottom.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd CappedDonor.Ref CanonicalPairedInverse
 open LadderScalarRendering ReceivingCatalogueRanks
@@ -27,7 +26,7 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {semA : Semantics DA} {semQ : Semantics DQ}
   (X : RelativeData DA semA DQ semQ)
 
-theorem exists_rank_anchor {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
+theorem exists_rank_anchor {j} (hj : 1 ≤ j) {S}
     (hs : Admitted X j S) :
     ∃ a : Catalogue X j, ∀ d, fieldRank a.val d = fieldRank S.profile d := by
   let l := S.freshFloor 0
@@ -94,14 +93,6 @@ def oldAt (d : I.boundary.below (A, 1)) : (scheme I X hA).below (A, 1) :=
   ⟨old I.boundary hA d.1, by rw [old_index]; exact d.2⟩
 abbrev privateAt (d : I.right.scheme.below (Finset.univ, 1)) := oldAt I X hA (privateIncl I d)
 abbrev donorAt (d : I.left.scheme.below (Finset.univ, 1)) := oldAt I X hA (donorIncl I d)
-
-def renderingAnchor (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) :
-    Catalogue X 1 := (exists_rank_anchor X (by decide : 1 ≤ 1) hs).choose
-
-/-- The ceiling-filled complete table, including spare and foreign rungs. -/
-def render (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) (β : ExtOrd) :
-    Cell (scheme I X hA) → ExtOrd :=
-  renderWith I.boundary hA (field I) (fields I X) (renderingAnchor I X S hs) S.profile β
 
 include T in
 theorem exists_physical_section {S : State I.right.scheme I.left.scheme}

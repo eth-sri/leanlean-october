@@ -18,7 +18,6 @@ cap histories. Truncation at a limit stage fixes every given face label.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveDisplay
 open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
 open Transform Value ExtOrd CoatomRecursiveInput
@@ -49,7 +48,7 @@ theorem extend_boundary {p : Cell I.boundary → ExtOrd} (hp : RespectsSemantics
   intro d
   exact he ⟨d, I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan d), oldGrade d⟩
 
-theorem joint_section {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem joint_section {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (ha : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
     ∃ r : Cell (scheme I) → ExtOrd, RespectsSemantics (rows I) r ∧
@@ -64,10 +63,13 @@ theorem joint_section {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.sche
   obtain ⟨r, hrr, he⟩ := extend_boundary I hu
   exact ⟨r, hrr, fun d => (he _).trans (hul d), fun d => (he _).trans (hur d)⟩
 
+section
+variable {α : Ordinal.{0}}
+
 /-- Stage bounding changes only newly supplied labels. Both complete input
 faces, including literal tops, remain unchanged. -/
-theorem joint_bounded {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
-    {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem joint_bounded (hα : Order.IsSuccLimit α)
+    {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (hpb : ∀ d, p d < ofOrd α ∨ p d = ⊤) (hqb : ∀ d, q d < ofOrd α ∨ q d = ⊤)
     (ha : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
@@ -85,11 +87,11 @@ theorem joint_bounded {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
     rw [hright]
     exact truncExt_id_of_bound (hqb d)
 
-private theorem faceMap_label {α : Ordinal.{0}} {a b : ℕ}
-    (p : S α b) (r : S α a) (f : Fin a ↪ Fin b)
-    (hv : Finset.univ.image f ∈ p.scheme.scheme.plan)
-    (hs : p.scheme.restrictFace f hv = r.scheme) (h : typeMap f p = some r)
-    (d : Cell r.scheme.scheme) :
+private theorem faceMap_label {a b}
+    p (r : S α a) (f : Fin a ↪ Fin b)
+    hv
+    hs (h : typeMap f p = some r)
+    d :
     p.label (SemSchemeBoundaryInput.faceMap p.scheme r.scheme f hv hs d) = r.label d := by
   have he : p.restrictFace f hv = r := Option.some.inj ((typeMap_eq_some f p hv).symm.trans h)
   subst r
@@ -97,7 +99,7 @@ private theorem faceMap_label {α : Ordinal.{0}} {a b : ℕ}
 
 /-- Compatibility of stage types supplies literal label agreement as well
 as the shared scheme. No extra overlap-label equation is requested. -/
-theorem compatible_labels {α : Ordinal.{0}} (C : CoatomPair (n + 2))
+theorem compatible_labels (C : CoatomPair (n + 2))
     {pa pb : S α (n + 3)} (h : C.Compatible pa pb) :
     let I := (CoatomBoundaryPresentation.of_compatible C h).input
     ∀ i, pa.label (I.shared.f i) = pb.label (I.shared.g i) := by
@@ -107,6 +109,8 @@ theorem compatible_labels {α : Ordinal.{0}} (C : CoatomPair (n + 2))
   have hl := (Classical.choose_spec h).1
   have hr := (Classical.choose_spec h).2
   exact (faceMap_label pa r C.g₁ _ _ hl i).trans (faceMap_label pb r C.g₂ _ _ hr i).symm
+
+end
 
 end
 end VaughtConjecture.Knight.CoatomRecursiveDisplay

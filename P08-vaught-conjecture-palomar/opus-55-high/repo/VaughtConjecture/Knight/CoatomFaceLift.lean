@@ -26,27 +26,30 @@ variable {α : Ordinal.{0}}
 
 /-! ### Face-embedding algebra -/
 
-theorem extendFace_trans {k n N : ℕ} (e : Fin k ↪ Fin n) (h : Fin n ↪ Fin N) :
+theorem extendFace_trans {k n N} (e : Fin k ↪ Fin n) (h : Fin n ↪ Fin N) :
     (extendFace e).trans (extendFace h) = extendFace (e.trans h) := by
   refine Function.Embedding.ext fun i => ?_
   induction i using Fin.lastCases with
   | last => simp
   | cast i => simp
 
-theorem castSuccEmb_trans_extendFace {n N : ℕ} (g : Fin n ↪ Fin N) :
+theorem castSuccEmb_trans_extendFace {n N} (g : Fin n ↪ Fin N) :
     (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)).trans (extendFace g) = g.trans Fin.castSuccEmb := by
   refine Function.Embedding.ext fun i => ?_
   simp [Fin.castSuccEmb_apply]
 
+section
+variable {n : ℕ}
+
 /-- The image of an embedding of `Fin n` into itself is everything. -/
-theorem image_univ_eq_univ_of_card {n : ℕ} (g : Fin n ↪ Fin n) :
+theorem image_univ_eq_univ_of_card (g : Fin n ↪ Fin n) :
     Finset.univ.image g = Finset.univ :=
   Finset.eq_univ_of_card _ (by rw [Finset.card_image_of_injective _ g.injective]; simp)
 
 /-- The coatom pair of one step of the chain: the second coatom is the initial face (the
 enlarged master face), the first is the one-point extension of the lower-face embedding `e`;
 the common lower face enters the first along `castSuccEmb` and the second along `e`. -/
-def _root_.VaughtConjecture.Knight.CoatomPair.step {n : ℕ} (e : Fin n ↪ Fin (n + 1)) :
+def _root_.VaughtConjecture.Knight.CoatomPair.step (e : Fin n ↪ Fin (n + 1)) :
     CoatomPair n where
   f₁ := extendFace e
   f₂ := Fin.castSuccEmb
@@ -61,12 +64,14 @@ def _root_.VaughtConjecture.Knight.CoatomPair.step {n : ℕ} (e : Fin n ↪ Fin 
     obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hl
     exact (Fin.castSucc_lt_last k).ne hk
 
+end
+
 /-! ### The zero-padded face lift -/
 
 /-- **The zero-padded face lift**, by induction on the codimension `m` of the face. -/
 theorem pinnedCofaceLift (H : MaximalCoatomAmalgamationSupply α) :
-    ∀ (m : ℕ) {N n : ℕ}, N = n + m → ∀ (P : S α N) (g : Fin n ↪ Fin N) (p : S α n),
-      typeMap g P = some p → ∀ q : S α (n + 1), IsCoface p q →
+    ∀ m {N n}, N = n + m → ∀ P (g : Fin n ↪ Fin N) p,
+      typeMap g P = some p → ∀ q, IsCoface p q →
         ∃ Q : S α (N + 1), IsCoface P Q ∧ typeMap (extendFace g) Q = some q := by
   intro m
   induction m with
@@ -153,9 +158,11 @@ theorem pinnedCofaceLift (H : MaximalCoatomAmalgamationSupply α) :
     rw [← hfactor, ← extendFace_trans, ← typeMap_trans _ _ Q Q' hQh]
     exact hQ'₁
 
+section
+variable {β : LimitStage}
+
 /-- **Rung 1 from the receiver**: the pinned coface supply. -/
-theorem pinnedCofaceSupply_of_supply {β : LimitStage}
-    (H : MaximalCoatomAmalgamationSupply β.1) : PinnedCofaceSupply β := by
+theorem pinnedCofaceSupply_of_supply (H : MaximalCoatomAmalgamationSupply β.1) : PinnedCofaceSupply β := by
   intro N n P g p hg q hq
   have hle : n ≤ N := by
     have := Fintype.card_le_of_injective g g.injective
@@ -165,8 +172,8 @@ theorem pinnedCofaceSupply_of_supply {β : LimitStage}
 /-! ### The band producer and the master supply -/
 
 /-- A uniformity coface of every base, from the receiver and the seed labelled `γ + 1`. -/
-theorem exists_uniformity_coface {β : LimitStage} (H : MaximalCoatomAmalgamationSupply β.1)
-    {n : ℕ} (p : S β.1 n) (γ : Ordinal.{0}) (_h1 : Value.IsNonSuccessor γ) (h2 : γ < β.1) :
+theorem exists_uniformity_coface (H : MaximalCoatomAmalgamationSupply β.1)
+    {n} (p : S β.1 n) γ (_h1 : Value.IsNonSuccessor γ) (h2 : γ < β.1) :
     ∃ q ∈ UniformityFamily (α := β.1) γ, IsCoface p q := by
   obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
   refine exists_uniformity_candidate H p r Sig ?_ ?_
@@ -175,12 +182,14 @@ theorem exists_uniformity_coface {β : LimitStage} (H : MaximalCoatomAmalgamatio
 
 /-- A high-grade-dominance coface of every base, from the receiver and the seed labelled
 `γ + 1`. -/
-theorem exists_highGrade_coface {β : LimitStage} (H : MaximalCoatomAmalgamationSupply β.1)
-    {n : ℕ} (p : S β.1 n) (γ : Ordinal.{0}) (h2 : γ < β.1) :
+theorem exists_highGrade_coface (H : MaximalCoatomAmalgamationSupply β.1)
+    {n} (p : S β.1 n) γ (h2 : γ < β.1) :
     ∃ q ∈ HighGradeDominanceFamily (α := β.1) γ, IsCoface p q := by
   obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
   refine exists_highGradeDominance_candidate H p r Sig ?_
   rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact Order.lt_succ γ
+
+end
 
 end FixedHeight
 end VaughtConjecture.Knight

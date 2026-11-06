@@ -18,24 +18,25 @@ The historical capping names are retained in their original namespace.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FiniteCutCapping
 open Value ExtOrd
 
 /-- Capping a respecting labelling of a whole finite scheme uses the existing lower-set
 cap theorem. No new transformation witness is needed. -/
-theorem respects_cap {n : ℕ} {D : SemScheme (n + 1)}
-    {q : Cell D.scheme → ExtOrd} (hq : RespectsSemantics D.rows q) {γ : ExtOrd}
+theorem respects_cap {n} {D : SemScheme (n + 1)}
+    {q} (hq : RespectsSemantics D.rows q) {γ}
     (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ) :
     RespectsSemantics D.rows (fun d => min (q d) γ) :=
   ((hq.toBelow (Finset.univ, n + 1)).cap hγ).toRespects
     (StageType.gradedLe_univ_succ D.scheme)
 
+section
+variable {I : Type*} [Finite I] (p : I → ExtOrd)
+
 /-- A finite family strictly below a nonzero limit has a nonbottom self-visible upper
 bound still below that limit. In particular, the cap obstruction needs no extra bound
 hypothesis when every old label is below a limit cut. -/
-theorem exists_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
-    {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β) (hp : ∀ d, p d < ofOrd β) (K : ℕ) :
+theorem exists_cap_below_limit {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β) (hp : ∀ d, p d < ofOrd β) (K : ℕ) :
     ∃ γ : ExtOrd, extVisibilityReplace γ K K = γ ∧ γ ≠ ⊥ ∧
       (∀ d, p d ≤ γ) ∧ γ < ofOrd β := by
   classical
@@ -61,8 +62,7 @@ theorem exists_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
 
 /-- A permitted ordinal cutoff strictly above a finite family and a requested floor.
 The family may be empty; bottom labels are allowed. -/
-theorem exists_ordinal_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
-    {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (hp : ∀ i, p i < ofOrd α)
+theorem exists_ordinal_cap_below_limit {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (hp : ∀ i, p i < ofOrd α)
     {δ : Ordinal.{0}} (hδ : δ < α) (K : ℕ) :
     ∃ b : Ordinal.{0}, b < α ∧ δ < b ∧ SelfVis K (ofOrd b) ∧
       ∀ i, p i < ofOrd b := by
@@ -111,15 +111,17 @@ theorem exists_ordinal_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
       rw [hμ, ordOf_ofOrd] at hi
       exact (hi.trans (le_max_right _ _)).trans_lt hab
 
+end
+
 end VaughtConjecture.Knight.FiniteCutCapping
 
 namespace VaughtConjecture.Knight.StageType
 open Value ExtOrd TypeTower
 
 /-- A lawful cutoff above every proper label of a stage type and a requested floor. -/
-theorem exists_lawful_cutoff {α : LimitStage} {n : ℕ} (p : S α.1 n)
-    {δ : Ordinal.{0}} (hδ : δ < α.1) (K : ℕ) :
-    ∃ b : Ordinal.{0}, b < α.1 ∧ δ < b ∧ SelfVis K (ofOrd b) ∧
+theorem exists_lawful_cutoff {α : LimitStage} {n} (p : S α.1 n)
+    {δ} (hδ : δ < α.1) K :
+    ∃ b, b < α.1 ∧ δ < b ∧ SelfVis K (ofOrd b) ∧
       ∀ d, p.label d ≠ ⊤ → p.label d < ofOrd b := by
   obtain ⟨b, hb, hδb, hvis, hp⟩ := FiniteCutCapping.exists_ordinal_cap_below_limit
     (fun d : {d : Cell p.scheme.scheme // p.label d ≠ ⊤} => p.label d.1)

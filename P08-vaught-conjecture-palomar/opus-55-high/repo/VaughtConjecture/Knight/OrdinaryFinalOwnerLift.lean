@@ -25,7 +25,6 @@ a separate predecessor-lifting step.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalOwnerLift
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
@@ -38,7 +37,7 @@ variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Membe
 variable (priv : Cell C.scheme ↪ Cell D)
 variable (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
 
-private theorem cap_of_prefix {ν : ExtOrd → ExtOrd} (hν : Monotone ν)
+private theorem cap_of_prefix {ν} (hν : Monotone ν)
     {δ γ x y : ExtOrd} (hr : γ ≤ ν δ) (he : min y δ = min x δ) :
     min (ν y) γ = min (ν x) γ := by
   have h (z) : min (ν (min z δ)) γ = min (ν z) γ := by
@@ -53,17 +52,17 @@ theorem exists_owner_capped_lift
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
-    (c : Cell C.scheme) (hc : C.scheme.grade c = N)
-    {p : C.scheme.below (effC N N) → ExtOrd}
+    c (hc : C.scheme.grade c = N)
+    {p}
     (hp : RespectsSemanticsBelow C.rows (effC N N) p)
-    {q : F.carrier.below (A, N) → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow F.rows (A, N) q)
-    {γ : ExtOrd} (hγ : SelfVis N γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis N γ) (hpos : ⊥ < γ)
     (hpc : γ < p (privateCell c))
     (hag : ∀ d, min (q (privAt R F priv hprivGrade d.1)) γ = min (p d) γ) :
-    ∃ w : F.carrier.below (A, N) → ExtOrd,
+    ∃ w,
       RespectsSemanticsBelow F.rows (A, N) w ∧
-      (∀ d : C.scheme.below (effC N N),
+      (∀ d,
         w (privAt R F priv hprivGrade d.1) = min (p d) (p (privateCell c))) ∧
       (∀ d, min (w d) γ = min (q d) γ) ∧
       ∀ d, w d ≤ p (privateCell c) := by

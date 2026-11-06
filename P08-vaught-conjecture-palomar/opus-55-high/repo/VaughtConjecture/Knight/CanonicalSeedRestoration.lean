@@ -19,7 +19,6 @@ lower labels, including top and upper-invisible values, remain literal.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedRestoration
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 open CanonicalRecursiveSeedRows

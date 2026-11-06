@@ -29,8 +29,6 @@ which is a proper label, not `⊤`.  Non-top source cells keep their literal lab
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType Filter
@@ -44,12 +42,17 @@ the completion point `⊤` is the label `⊤`. -/
 noncomputable def bandValue (β : Ordinal.{0}) (r : ℕ∞) : ExtOrd :=
   ENat.recTopCoe ⊤ (fun k : ℕ => ofOrd (β + k)) r
 
-@[simp] theorem bandValue_natCast (β : Ordinal.{0}) (k : ℕ) :
+section
+variable (β : Ordinal.{0})
+
+@[simp] theorem bandValue_natCast (k : ℕ) :
     bandValue β k = ofOrd (β + k) :=
   ENat.recTopCoe_natCast _ _ k
 
-@[simp] theorem bandValue_top (β : Ordinal.{0}) : bandValue β ⊤ = ⊤ :=
+@[simp] theorem bandValue_top  : bandValue β ⊤ = ⊤ :=
   ENat.recTopCoe_top _ _
+
+end
 
 end ExtOrd
 

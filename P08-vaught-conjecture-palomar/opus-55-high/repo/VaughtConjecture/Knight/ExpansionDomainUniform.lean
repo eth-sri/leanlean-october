@@ -23,8 +23,8 @@ open TypeTower FirstOrder Language KnightRealization StoppingRankFiltration
 
 /-- Membership in the expansion domain at `η` suffices for agreement on all
 sentences of quantifier rank at most `η`. -/
-theorem realizes_iff_of_mem_domain_uniform (φ : knightLang.Sentenceω)
-    {η : Ordinal.{0}} (hφ : φ.qrank ≤ η) {q s : Classes}
+theorem realizes_iff_of_mem_domain_uniform φ
+    {η} (hφ : φ.qrank ≤ η) {q s}
     (hq : q ∈ domain η) (hs : s ∈ domain η) : realizes φ q ↔ realizes φ s := by
   revert hq hs
   refine Quotient.inductionOn₂ q s fun R S hq hs => ?_

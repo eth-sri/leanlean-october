@@ -23,7 +23,6 @@ remain outside this module; no bountifulness of the output is assumed or proved.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
 noncomputable section
@@ -31,7 +30,7 @@ noncomputable section
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
 variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
 
-theorem master_eq_source (q : SourcePrefixLayer.Controller I.carrier N) (d : Cell I.carrier) :
+theorem master_eq_source q d :
     WeightedSourcePrefixLayer.master I.data I.weight q d = I.source (I.member q).1 d := by
   unfold source WeightedSourcePrefixLayer.master ScopedSourcePrefixLayer.Data.profile
   simp only [data, member_controller]

@@ -92,22 +92,21 @@ namespace StageType
 
 variable {α : Ordinal.{0}} {m n : ℕ}
 
+section
+variable {t₁ t₂ : S α n}
+
 /-- Extensionality: two stage types are equal when their domains and labellings agree (`label`
 depends on `scheme`, hence `HEq`); the `Prop` fields follow by proof irrelevance. -/
 @[ext]
-theorem ext {t₁ t₂ : S α n} (h_scheme : t₁.scheme = t₂.scheme)
+theorem ext (h_scheme : t₁.scheme = t₂.scheme)
     (h_label : HEq t₁.label t₂.label) : t₁ = t₂ := by
   obtain ⟨d₁, p₁, _, _⟩ := t₁
-  obtain ⟨d₂, p₂, _, _⟩ := t₂
-  subst h_scheme
-  obtain rfl := eq_of_heq h_label
-  rfl
+  aesop
 
 /-- Equality of stage types from their components, with the cells of `t₂` transported along
 `Fin.cast` (Knight-VC `typeSpace_eq_of_components`): this avoids `HEq` when the schemes are
 only propositionally equal.  The rows are components of the domain (`scheme.rows`). -/
-theorem ext_of_components {t₁ t₂ : S α n}
-    (h_plan : t₁.scheme.scheme.plan = t₂.scheme.scheme.plan)
+theorem ext_of_components (h_plan : t₁.scheme.scheme.plan = t₂.scheme.scheme.plan)
     (h_card : t₁.scheme.scheme.card = t₂.scheme.scheme.card)
     (h_cell : ∀ i, t₁.scheme.scheme.cell (Fin.cast h_card.symm i) = t₂.scheme.scheme.cell i)
     (h_label : ∀ i, t₁.label (Fin.cast h_card.symm i) = t₂.label i)
@@ -123,8 +122,9 @@ theorem ext_of_components {t₁ t₂ : S α n}
   subst h_plan h_card
   simp only [Fin.cast_eq_self] at h_cell h_label h_row
   obtain rfl := funext h_cell
-  obtain rfl : s₁ = s₂ := Semantics.ext (funext fun Sig => funext fun d => h_row Sig d)
-  exact ext rfl (heq_of_eq (funext h_label))
+  aesop
+
+end
 
 /-! ### The stage types on `0`-tuples -/
 
@@ -134,8 +134,7 @@ private theorem gradedPlan_fin0_eq_empty (P : Finset (Finset (Fin 0))) :
   ext ⟨B, j⟩
   simp only [Plan.mem_gradedPlan, Plan.MemGraded, Finset.notMem_empty, iff_false, not_and,
     not_le]
-  intro _ hj
-  simpa [Finset.eq_empty_of_forall_notMem (fun x : Fin 0 => x.elim0) (s := B)] using hj
+  simpa [Finset.eq_empty_of_forall_notMem (fun x : Fin 0 => x.elim0)] using hj
 
 /-- A scheme over `Fin 0` has no cells. -/
 private theorem card_eq_zero_of_fin0 (D : CellScheme (ι := Fin 0) Finset.univ) : D.card = 0 := by
@@ -149,9 +148,8 @@ private theorem plan_eq_of_fin0 {P : Finset (Finset (Fin 0))}
     (h : Plan.IsPlan (Finset.univ : Finset (Fin 0)) P) : P = {∅} := by
   have huniv : (Finset.univ : Finset (Fin 0)) = ∅ :=
     Finset.eq_empty_of_forall_notMem (fun x => x.elim0)
-  rw [huniv] at h
   ext B
-  simp only [Finset.mem_singleton]
+  simp_all
   exact ⟨fun hB => Finset.subset_empty.mp (h.subset_of_mem hB), fun hB => hB ▸ h.empty_mem⟩
 
 /-- There is at most one stage type on `0`-tuples at each stage: the scheme has no cells and
@@ -206,7 +204,7 @@ noncomputable def emptyType : S α 0 where
 domain with associated semantics — countably many (`SemScheme.countable`, Prop. 2.6.3(4), from
 countably many coded schemes) — together with finitely many labels in the countable set of
 labels strictly bounded at `α` (`ExtOrd.countable_bounded_lt`).  No row bound is involved. -/
-theorem countable_S (hα : α.card ≤ Cardinal.aleph0) (n : ℕ) : Countable (S α n) := by
+theorem countable_S (hα : α.card ≤ Cardinal.aleph0) n : Countable (S α n) := by
   have := ExtOrd.countable_bounded_lt hα
   let B := {x : ExtOrd // x < ExtOrd.ofOrd α ∨ x = ⊤}
   let g : S α n → Σ X : SemScheme n, (Cell X.scheme → B) :=
@@ -233,24 +231,6 @@ noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
 
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
-
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
-
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
-
 end StageType
 
 open StageType
@@ -263,40 +243,40 @@ a visible face of its plan.  This is the `pull` of the Knight `TypeTower` instan
 noncomputable def typeMap (f : Fin m ↪ Fin n) (t : S α n) : Option (S α m) :=
   if hr : Finset.univ.image f ∈ t.scheme.scheme.plan then some (t.restrictFace f hr) else none
 
-theorem typeMap_eq_some (f : Fin m ↪ Fin n) (t : S α n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
+section
+variable (f : Fin m ↪ Fin n) (t : S α n)
+
+theorem typeMap_eq_some (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
     typeMap f t = some (t.restrictFace f hr) :=
   dite_eq_left hr
 
-theorem typeMap_eq_none (f : Fin m ↪ Fin n) (t : S α n)
-    (hr : Finset.univ.image f ∉ t.scheme.scheme.plan) : typeMap f t = none :=
+theorem typeMap_eq_none (hr : Finset.univ.image f ∉ t.scheme.scheme.plan) : typeMap f t = none :=
   dite_eq_right hr
 
 /-- `typeMap f t` is defined exactly when the range of `f` is a visible face of the plan. -/
-theorem typeMap_isSome_iff (f : Fin m ↪ Fin n) (t : S α n) :
+theorem typeMap_isSome_iff  :
     (typeMap f t).isSome ↔ Finset.univ.image f ∈ t.scheme.scheme.plan := by
   by_cases hr : Finset.univ.image f ∈ t.scheme.scheme.plan
   · simp [typeMap_eq_some f t hr, hr]
   · simp [typeMap_eq_none f t hr, hr]
 
-theorem typeMap_isSome_of_mem (f : Fin m ↪ Fin n) (t : S α n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) : (typeMap f t).isSome :=
+theorem typeMap_isSome_of_mem (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) : (typeMap f t).isSome :=
   (typeMap_isSome_iff f t).mpr hr
 
 /-- The characterisation of restriction (Knight-VC `typeMap_eq_some_of_emb`): `q` is the
 `f`-restriction of `t` as soon as a strictly monotone `emb` enumerates exactly the `f`-visible
 cells of `t` and the plan, cells, labels and rows of `q` are those of `t` read through `emb`.
 The identity and composition laws below are instances. -/
-theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (emb : Cell q.scheme.scheme → Cell t.scheme.scheme) (emb_mono : StrictMono emb)
+theorem typeMap_eq_some_of_emb (q : S α m)
+    hr
+    emb (emb_mono : StrictMono emb)
     (emb_visible : ∀ c, t.scheme.scheme.scope (emb c) ⊆ Finset.univ.image f)
     (visible_emb : ∀ d, t.scheme.scheme.scope d ⊆ Finset.univ.image f → ∃ c, emb c = d)
     (hplan : (t.scheme.scheme.restrictFace f hr).plan = q.scheme.scheme.plan)
     (hcell : ∀ c, t.scheme.scheme.pullCell f (emb c) = q.scheme.scheme.cell c)
     (hlabel : ∀ c, t.label (emb c) = q.label c)
-    (hrow : ∀ (Sig : Cell q.scheme.scheme) (d : q.scheme.scheme.below (q.scheme.scheme.cell Sig))
-      (d' : t.scheme.scheme.below (t.scheme.scheme.cell (emb Sig))),
+    (hrow : ∀ Sig d
+      d',
       d'.1 = emb d.1 → t.scheme.rows.E (emb Sig) d' = q.scheme.rows.E Sig d) :
     typeMap f t = some q := by
   rw [typeMap_eq_some f t hr]
@@ -304,7 +284,7 @@ theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
   have hcard : (t.restrictFace f hr).scheme.scheme.card = q.scheme.scheme.card :=
     CellScheme.restrictFace.card_restrictFace_of_emb t.scheme.scheme f hr emb_mono emb_visible
       visible_emb
-  have hei : ∀ c, toCell t.scheme.scheme f hr (Fin.cast hcard.symm c) = emb c :=
+  have hei :=
     CellScheme.restrictFace.toCell_cast_eq_of_emb t.scheme.scheme f hr emb_mono emb_visible hcard
   refine ext_of_components hplan hcard (fun c => ?_) (fun c => ?_) (fun Sig d => ?_)
   · change t.scheme.scheme.pullCell f (toCell t.scheme.scheme f hr (Fin.cast hcard.symm c)) = _
@@ -313,18 +293,19 @@ theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
     rw [hei c]; exact hlabel c
   · have hgl : GradedLe (t.scheme.scheme.cell (emb d.1)) (t.scheme.scheme.cell (emb Sig)) :=
       (CellScheme.gradedLe_pullCell_iff t.scheme.scheme f (emb_visible d.1)).mp
-        (by rw [hcell d.1, hcell Sig]; exact d.2)
+        (by grind)
     exact (t.scheme.rows.E_congr (hei Sig) (hei d.1)).trans (hrow Sig d ⟨emb d.1, hgl⟩ rfl)
+
+end
 
 /-- The identity law of restriction (Knight-VC `typeMap_id`): every face of `Fin n` visible
 through the identity is visible, and the restriction along the identity is the type itself. -/
 theorem typeMap_refl (t : S α n) : typeMap (Function.Embedding.refl (Fin n)) t = some t := by
-  have hrng : Finset.univ.image (Function.Embedding.refl (Fin n)) = Finset.univ := by
-    simp [Function.Embedding.coe_refl]
+  have hrng : Finset.univ.image (Function.Embedding.refl (Fin n)) = Finset.univ := by aesop
   have hr : Finset.univ.image (Function.Embedding.refl (Fin n)) ∈ t.scheme.scheme.plan := by
     rw [hrng]; exact t.scheme.scheme.isPlan.domain_mem
   refine typeMap_eq_some_of_emb _ t t hr id strictMono_id
-    (fun c => by rw [hrng]; exact Finset.subset_univ _) (fun d _ => ⟨d, rfl⟩) ?_ ?_ (fun _ => rfl)
+    (fun c => by grind) (fun d _ => ⟨d, rfl⟩) ?_ ?_ (fun _ => rfl)
     (fun Sig d d' hd => congrArg _ (Subtype.ext hd))
   · exact Option.some_injective _
       ((CellScheme.pullbackPlan_eq_restrictFace_plan _ _ hr).symm.trans
@@ -339,7 +320,7 @@ style): if restricting `t` along `g` is defined and gives `u`, then restricting 
 along `f` agrees — including definedness — with restricting `t` along the composite
 `f.trans g`.  Nothing is asserted when the intermediate face is invisible; this is the
 `pull_trans` law of `TypeTower`. -/
-theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (u : S α m)
+theorem typeMap_trans (f : Fin k ↪ Fin m) g (t : S α n) u
     (hu : typeMap g t = some u) : typeMap f u = typeMap (f.trans g) t := by
   have hg : Finset.univ.image g ∈ t.scheme.scheme.plan :=
     (typeMap_isSome_iff g t).mp (by rw [hu]; rfl)

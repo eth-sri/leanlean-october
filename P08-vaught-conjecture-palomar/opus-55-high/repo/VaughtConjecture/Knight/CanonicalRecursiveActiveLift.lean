@@ -18,7 +18,6 @@ lower prescription, including distinct values above the owner and literal top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveActiveLift
 open Transform Value ExtOrd CoatomBoundaryExtension
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveCutPrefix
@@ -30,47 +29,54 @@ variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 abbrev predecessorState := CanonicalRecursiveSemantics.state sem hp n (Nat.le_of_succ_le hA)
 abbrev outputRows := rows sem n hA hp (predecessorState sem n hA hp)
 
-def faceEquiv (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4) :
+def faceEquiv J (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4) :
     (cut (D := D) n).below J ≃ (carrier sem n hA).below J :=
   (GradeCutBoundary.belowEquiv D (n + 4) J hj).trans
     (CanonicalRecursiveBoundaryTransport.properEquiv sem (n + 1) hA J hJ)
 
-theorem faceEquiv_val (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4)
-    (d : (cut (D := D) n).below J) :
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4)
+
+section
+variable (d : (cut (D := D) n).below J)
+
+theorem faceEquiv_val  :
     (faceEquiv sem n hA J hJ hj d).1 = (oldTarget sem n hA d.1).1 :=
   CanonicalRecursiveBoundaryTransport.properEquiv_val sem (n + 1) hA J hJ _
 
-theorem faceEquiv_cell (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4)
-    (d : (cut (D := D) n).below J) :
+theorem faceEquiv_cell  :
     (carrier sem n hA).cell (faceEquiv sem n hA J hJ hj d).1 =
       (cut (D := D) n).cell d.1 := by
   rw [faceEquiv_val, oldTarget_cell]
 
-theorem pullback_respects (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (hj : J.2 ≤ n + 4)
-    {p : (carrier sem n hA).below J → ExtOrd}
+end
+
+theorem pullback_respects {p}
     (hpr : RespectsSemanticsBelow (outputRows sem n hA hp) J p) :
     RespectsSemanticsBelow (cutRows sem n) J (p ∘ faceEquiv sem n hA J hJ hj) :=
   GradeCutBoundary.pullback_respects D (n + 4) sem hj
     (CanonicalRecursiveBoundaryTransport.pullback_respects sem hp (n + 1) hA J hJ hpr)
 
+end
+
 /-- Uniform active branch. Every auxiliary cap is retained. The only lifting
 inputs concern the actual predecessor and the two old boundary faces. -/
 theorem exists_lift
     (hb : CanonicalRecursiveRestoration.LowerBountiful sem n hA (predecessorState sem n hA hp))
-    {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : n + 4 ≤ C.card)
+    {C} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : n + 4 ≤ C.card)
     (hfull : ∃ c : (cut (D := D) n).below (C, n + 4),
       (cut (D := D) n).cell c.1 = (C, n + 4))
-    {p : (carrier sem n hA).below (C, n + 4) → ExtOrd}
+    {p}
     (hpr : RespectsSemanticsBelow (outputRows sem n hA hp) (C, n + 4) p)
     {q : CanonicalRecursiveAmbient.target sem n hA → ExtOrd}
     (hqr : RespectsSemanticsBelow (outputRows sem n hA hp) (A, n + 4) q)
-    {γ : ExtOrd} (hγ : SelfVis (n + 4) γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis (n + 4) γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e, min (p e) γ = min (q (CellScheme.below.mono
       (show GradedLe (C, n + 4) (A, n + 4) from
         ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) e)) γ)
     (hactive : ∃ d : (carrier sem n hA).below (C, n + 4),
       (carrier sem n hA).grade d.1 = n + 4 ∧ γ < p d)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell (cut (D := D) n),
       GradedLe ((cut (D := D) n).cell d) U ∨ GradedLe ((cut (D := D) n).cell d) V)
     (hCU : GradedLe (C, n + 4) U) (hOU : GradedLe O U) (hOV : GradedLe O V)

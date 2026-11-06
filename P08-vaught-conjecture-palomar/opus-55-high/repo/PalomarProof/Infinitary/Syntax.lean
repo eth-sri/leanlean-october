@@ -72,11 +72,16 @@ inductive BoundedFormulaInf (ι : Type uι) (α : Type u') : ℕ → Type (max u
 `BoundedFormulaInf`. Its universe is exactly that of the finitary `BoundedFormula`. -/
 abbrev BoundedFormulaω (α : Type u') (n : ℕ) := L.BoundedFormulaInf ℕ α n
 
+section
+variable (ι : Type uι)
+
 /-- An `L_{∞ω}` formula: a bounded formula with no free bound variables. -/
-abbrev FormulaInf (ι : Type uι) (α : Type u') := L.BoundedFormulaInf ι α 0
+abbrev FormulaInf (α : Type u') := L.BoundedFormulaInf ι α 0
 
 /-- An `L_{∞ω}` sentence: a formula with no free variables at all. -/
-abbrev SentenceInf (ι : Type uι) := L.FormulaInf ι Empty
+abbrev SentenceInf  := L.FormulaInf ι Empty
+
+end
 
 /-- An `L_{ω₁ω}` formula.
 
@@ -109,9 +114,6 @@ instance : Bot (L.BoundedFormulaInf ι α n) :=
 instance : Top (L.BoundedFormulaInf ι α n) :=
   ⟨BoundedFormulaInf.verum⟩
 
-instance : Inhabited (L.BoundedFormulaInf ι α n) :=
-  ⟨⊥⟩
-
 /-- Existential quantification over the last bound variable. -/
 @[match_pattern]
 protected def ex (φ : L.BoundedFormulaInf ι α (n + 1)) : L.BoundedFormulaInf ι α n :=
@@ -123,27 +125,7 @@ def alls : ∀ {n}, L.BoundedFormulaInf ι α n → L.FormulaInf ι α
   | 0, φ => φ
   | _ + 1, φ => φ.all.alls
 
-/-- Places existential quantifiers on all in-scope bound variables of an infinitary bounded
-formula (mirrors the finitary `BoundedFormula.exs`). -/
-def exs : ∀ {n}, L.BoundedFormulaInf ι α n → L.FormulaInf ι α
-  | 0, φ => φ
-  | _ + 1, φ => φ.ex.exs
-
 end BoundedFormulaInf
-
-namespace BoundedFormula
-
-/-- The embedding of finitary bounded formulas into the infinitary syntax. Since finitary
-formulas have no infinitary nodes, the target carrier is arbitrary: there is one embedding for
-all carriers and universes, rather than an embedding into `L_{ω₁ω}` followed by a lift. -/
-def toInf : ∀ {n}, L.BoundedFormula α n → L.BoundedFormulaInf ι α n
-  | _, .falsum => .falsum
-  | _, .equal t₁ t₂ => .equal t₁ t₂
-  | _, .rel R ts => .rel R ts
-  | _, .imp φ ψ => (toInf φ).imp (toInf ψ)
-  | _, .all φ => (toInf φ).all
-
-end BoundedFormula
 
 end Language
 

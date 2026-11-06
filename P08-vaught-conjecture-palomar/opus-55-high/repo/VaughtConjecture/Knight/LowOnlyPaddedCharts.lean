@@ -18,7 +18,6 @@ are short at grade two, including their readings at the retained long tips.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedCharts
 open Transform Value ExtOrd CappedDonor LowOnly
 open LowOnlyPaddedSuccessor LowOnlyPaddedDecode
@@ -32,7 +31,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem source_short (a : F.Anchor 2) (d : Cell (carrier I F hroot hA hB hC)) :
+theorem source_short a (d : Cell (carrier I F hroot hA hB hC)) :
     SharpWitnessComposition.Short 2 (source I F hroot hA hB hC a d) := by
   rcases source_supported I F hroot hA hB hC a d with hz | hg | ⟨f, i, hi, he⟩
   · exact Or.inl hz
@@ -50,7 +49,7 @@ The chart reads the complete physical vector, not just the original fields. -/
 theorem exists_chart
     {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q) :
-    ∃ a : F.Anchor 2, ∃ σ : ExtOrd → ExtOrd, ∃ M : ExtOrd,
+    ∃ a, ∃ σ, ∃ M,
       Witness (gTop 2) σ ∧
       (∀ d, (carrier I F hroot hA hB hC).grade d.1 = 2 → q d ≤ M) ∧
       ∀ d, σ (source I F hroot hA hB hC a d.1) = min (q d) M := by
@@ -68,8 +67,7 @@ theorem exists_chart
     have hr := H.read_capped d d.2.2
     have he : (rows I F hroot hA hB hC).E H.owner.1
         (H.occurrence d d.2.2) = source I F hroot hA hB hC a d.1 := by
-      have hr' : ∀ e : (carrier I F hroot hA hB hC).below
-          ((carrier I F hroot hA hB hC).cell H.owner.1),
+      have hr' : ∀ e,
           (rows I F hroot hA hB hC).E H.owner.1 e =
             source I F hroot hA hB hC a e.1 := by
         rw [ha]

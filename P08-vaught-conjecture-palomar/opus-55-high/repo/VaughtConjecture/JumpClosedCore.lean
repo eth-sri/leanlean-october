@@ -26,24 +26,27 @@ open Filter
 
 variable {I : Type*}
 
+section
+variable (K : ℕ)
+
 /-- The jump at `K` of a band vector: coordinates at most `K` stay, the others escape to `⊤`. -/
-def jump (K : ℕ) (u : I → ℕ∞) : I → ℕ∞ := fun i => if u i ≤ K then u i else ⊤
+def jump (u : I → ℕ∞) : I → ℕ∞ := fun i => if u i ≤ K then u i else ⊤
 
 /-- A vector is `K`-approximated by `u` when `u` agrees with it at its finite coordinates and
 strictly exceeds `K` at its infinite ones. -/
-def Approximates (K : ℕ) (u r : I → ℕ∞) : Prop :=
+def Approximates (u r : I → ℕ∞) : Prop :=
   ∀ i, (r i ≠ ⊤ → u i = r i) ∧ (r i = ⊤ → (K : ℕ∞) < u i)
+
+end
 
 /-- The jump at `K` of a `K`-approximation is the vector itself, once `K` bounds its finite
 coordinates. -/
-theorem jump_eq_of_approximates {K : ℕ} {u r : I → ℕ∞} (h : Approximates K u r)
+theorem jump_eq_of_approximates {K} {u r : I → ℕ∞} (h : Approximates K u r)
     (hK : ∀ i, r i ≠ ⊤ → r i ≤ K) : jump K u = r := by
   funext i
   obtain ⟨h1, h2⟩ := h i
   by_cases hr : r i = ⊤
   · exact (ite_eq_right (not_le.mpr (h2 hr))).trans hr.symm
   · exact (ite_eq_left ((h1 hr).symm ▸ hK i hr)).trans (h1 hr)
-
-variable [Finite I] {A : Set (I → ℕ∞)}
 
 end VaughtConjecture.JumpClosed

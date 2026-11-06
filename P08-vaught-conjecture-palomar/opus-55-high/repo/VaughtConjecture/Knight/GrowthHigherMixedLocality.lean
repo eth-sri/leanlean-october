@@ -17,7 +17,6 @@ constructed lower-ceiling bounds protecting the grade-dependent targets.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
@@ -56,7 +55,7 @@ theorem native_one_lawful (hp : RespectsSemanticsBelow Rows (U, j) p) :
       fun d => GrowthMixedGradeOne.layerSection I X T hA hB hC P a τ d.1 := by
     funext d
     obtain ⟨b, hb⟩ := GrowthMixedGradeOne.eq_baseMap_of_grade_le_one I X T hA hB hC P d.1 d.2.2
-    rcases RelativeLadderLayer.cell_cases I.boundary (by omega : 0 < A.card) b with
+    rcases RelativeLadderLayer.cell_cases I.boundary (by grind) b with
         ⟨e, rfl⟩ | ⟨v, rfl⟩
     · have hge : I.boundary.grade e ≤ 1 :=
         (congrArg Prod.snd (original_index I X T hA hB hC t ht e)).symm.le.trans
@@ -81,10 +80,10 @@ theorem native_one_lawful (hp : RespectsSemanticsBelow Rows (U, j) p) :
   exact he.symm ▸ hl
 
 theorem original_respects (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
-    (c : Cell I.boundary) (hc : I.boundary.grade c ≤ j) :
+    c (hc : I.boundary.grade c ≤ j) :
     RespectsSemanticsBelow (P).rows ((P).carrier.cell (original I X T hA hB hC t ht c))
       (fun d => nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p d.1) := by
-  apply ((P).base_respects (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) c)
+  apply ((P).base_respects (RelativeLadderLayer.old I.boundary (by grind) c)
     (nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p)).mpr
   apply (RelativeLadderLayer.old_respects_iff I.boundary I.rows (by omega : 0 < A.card)
     (GrowthOrderedBase.field I) (fields X 1) (GrowthOrderedBase.proper I hB hC) c _).mpr
@@ -98,18 +97,17 @@ theorem original_respects (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j �
     funext fun d => native_original I X T hA hB hC t ht U hU hm j hj hj0 p d.1
   change RespectsSemanticsBelow I.rows (I.boundary.cell c) (fun d =>
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p (original I X T hA hB hC t ht d.1))
-  rw [he]
-  exact hl
+  aesop
 
 theorem owner_le_height (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
-    (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
-    (hg : (P).carrier.grade c ≤ j) (hg2 : 2 ≤ (P).carrier.grade c)
-    (i : ℕ) (hi : i ≤ (P).carrier.grade c) :
+    c hc
+    hg (hg2 : 2 ≤ (P).carrier.grade c)
+    i (hi : i ≤ (P).carrier.grade c) :
     p (place I X T hA hB hC t ht U hU hm j hj c hc hg) ≤
       height I X T hA hB hC t ht U j p i := by
   unfold height
   by_cases hi1 : i ≤ 1
-  · rw [ite_eq_left hi1]; exact le_top
+  · simp_all
   rw [ite_eq_right hi1, ite_eq_left (hi.trans hg)]
   exact (le_gradeMax I X T hA hB hC t ht U j p _ _
     (congrArg Prod.snd (place_index I X T hA hB hC t ht U hU hm j hj c hc hg))).trans
@@ -117,9 +115,9 @@ theorem owner_le_height (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤
         (by omega) hg2 hi hg (hg.trans hjt))
 
 theorem higher_locality (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
-    (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
+    c (hc : (P).carrier.scope c = A)
     (hg : (P).carrier.grade c ≤ j) (hg2 : 2 ≤ (P).carrier.grade c) :
-    TransformsTo (fun d : (P).carrier.below ((P).carrier.cell c) => (P).carrier.grade d.1)
+    TransformsTo (fun d => (P).carrier.grade d.1)
       ((P).rows.E c) (fun d => min
         (nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p d.1)
         (nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p c)) := by
@@ -139,8 +137,7 @@ theorem higher_locality (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤
       min_eq_right (owner_le_height I X T hA hB hC t ht U hU hm j hj hp hjt
         c hc hg hg2 (I.boundary.grade e) hed.2)]
   · have hgd := d.2.2.trans hg
-    have hz : (D).grade (place I X T hA hB hC t ht U hU hm j hj d.1 hdf hgd).1 ≤
-        (P).carrier.grade c :=
+    have hz :=
       (congrArg Prod.snd (place_index I X T hA hB hC t ht U hU hm j hj d.1 hdf hgd)).le.trans d.2.2
     have he : (P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc
         (place I X T hA hB hC t ht U hU hm j hj d.1 hdf hgd) hz) = (P).rows.E c d :=

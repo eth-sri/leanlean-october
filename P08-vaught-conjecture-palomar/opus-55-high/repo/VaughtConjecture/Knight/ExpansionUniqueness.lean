@@ -8,7 +8,8 @@ module
 public import VaughtConjecture.Knight.ProvisionalRatchet
 public import VaughtConjecture.Knight.FiniteBandReadback
 public import VaughtConjecture.Knight.ReductModel
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 
 /-!
 # Direct successor-expansion uniqueness (Lemma 5.5.2: "target labels are source stable
@@ -65,18 +66,18 @@ variable {α β : Ordinal.{0}} {n m : ℕ}
 
 /-! ### Orderliness at `∞`-cells of the reduct -/
 
+section
+variable {q : S β n} {Θ : Cell q.scheme.scheme}
+
 /-- A cell of full grade has full scope. -/
-theorem scope_eq_univ_of_grade_eq {q : S β n} {Θ : Cell q.scheme.scheme}
-    (h : q.scheme.scheme.grade Θ = n) : q.scheme.scheme.scope Θ = Finset.univ := by
+theorem scope_eq_univ_of_grade_eq (h : q.scheme.scheme.grade Θ = n) : q.scheme.scheme.scope Θ = Finset.univ := by
   apply Finset.eq_univ_of_card
   refine le_antisymm (Finset.card_le_univ _) ?_
   have := q.scheme.scheme.grade_le_card_scope Θ
-  rw [h] at this
-  simpa using this
+  simp_all
 
 /-- A full-grade `∞`-cell makes the top grade the arity. -/
-theorem topGrade_eq_of_top_fullGrade {q : S β n} {Θ : Cell q.scheme.scheme}
-    (hgr : q.scheme.scheme.grade Θ = n) (htop : q.label Θ = ⊤) : q.topGrade = n := by
+theorem topGrade_eq_of_top_fullGrade (hgr : q.scheme.scheme.grade Θ = n) (htop : q.label Θ = ⊤) : q.topGrade = n := by
   have hmem : n ∈ q.topGrades := ⟨Θ, scope_eq_univ_of_grade_eq hgr, hgr, htop⟩
   have hbdd := q.topGrades_bddAbove
   refine le_antisymm ?_ (le_csSup hbdd hmem)
@@ -85,27 +86,31 @@ theorem topGrade_eq_of_top_fullGrade {q : S β n} {Θ : Cell q.scheme.scheme}
   refine (q.scheme.scheme.grade_le_card_scope Θ').trans ?_
   rw [hsc, Finset.card_univ, Fintype.card_fin]
 
+end
+
+section
+variable (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S β n} {p : S β m} {f : Fin m ↪ Fin n}
 
 /-- `mapCell` does not see the reduction (the schemes agree definitionally). -/
-theorem mapCell_reduceType (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S β n} {p : S β m}
-    {f : Fin m ↪ Fin n} (hpq : typeMap f q = some p)
+theorem mapCell_reduceType (hpq : typeMap f q = some p)
     (hpq' : typeMap f (reduceType hα h q) = some (reduceType hα h p))
     (Xi : Cell p.scheme.scheme) : mapCell hpq' Xi = mapCell hpq Xi := rfl
 
-theorem typeMap_reduceType_eq_some (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S β n}
-    {p : S β m} {f : Fin m ↪ Fin n} (hpq : typeMap f q = some p) :
+theorem typeMap_reduceType_eq_some (hpq : typeMap f q = some p) :
     typeMap f (reduceType hα h q) = some (reduceType hα h p) := by
   rw [typeMap_reduceType_comm, hpq, Option.map_some]
+
+end
 
 /-! ### The `∞` case -/
 
 /-- **Lemma 5.5.2, `∞` case**: if `N(Ξ) = ∞` and some cell `Σ` has `N(Σ) = α + i₀` with
 `i₀ < p.topGrade^q`, then the reduct's provisional value at `Ξ` is not `α + k` for any `k <
     p.topGrade^q`. -/
-theorem not_isProvisionalValue_of_expansion_top (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
-    {q : S β n} (Xi Sig : Cell q.scheme.scheme) (hXi : q.label Xi = ⊤) {i₀ : ℕ}
+theorem not_isProvisionalValue_of_expansion_top hα (hαβ : α ≤ β)
+    {q : S β n} Xi Sig (hXi : q.label Xi = ⊤) {i₀ : ℕ}
     (hSig : q.label Sig = ofOrd (α + i₀)) (hi₀ : i₀ < (reduceType hα hαβ q).topGrade)
-    {k : ℕ} (hk : k < (reduceType hα hαβ q).topGrade) :
+    {k} (hk : k < (reduceType hα hαβ q).topGrade) :
     ¬ (reduceType hα hαβ q).IsProvisionalValue Xi (ofOrd (α + k)) := by
   set p := reduceType hα hαβ q with hp
   have hptop : p.label Xi = ⊤ := by
@@ -115,7 +120,7 @@ theorem not_isProvisionalValue_of_expansion_top (hα : Order.IsSuccLimit α) (h�
     change truncExt α (q.label Sig) = ⊤
     rw [hSig]
     exact truncExt_eq_top_of_ge (ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le))
-  have hge : ∀ Θ : Cell q.scheme.scheme, p.label Θ = ⊤ → ofOrd α ≤ q.label Θ := fun Θ h =>
+  have hge : ∀ Θ, p.label Θ = ⊤ → ofOrd α ≤ q.label Θ := fun Θ h =>
     truncExt_eq_top_iff.mp h
   have hi₀K : ofOrd (α + i₀) < ofOrd (α + p.topGrade) :=
     ofOrd_lt_ofOrd.mpr ((add_lt_add_iff_left α).mpr (Nat.cast_lt.mpr hi₀))
@@ -237,15 +242,13 @@ open StageType
 variable {α β : LimitStage} {M : Type w}
 
 /-- The reduct labels what `N` labels. -/
-theorem reduct_eval_some (hαβ : α ≤ β) {N : KnightRealization β M} {n : ℕ} {t : Fin n ↪ M}
+theorem reduct_eval_some hαβ {N : KnightRealization β M} {n} {t}
     {p' : S β.1 n} (hp' : N.eval t = some p') :
-    (N.reduct hαβ).eval t = some (reduceType α.2 hαβ p') := by
-  rw [Realization.reduct_eval, hp']
-  rfl
+    (N.reduct hαβ).eval t = some (reduceType α.2 hαβ p') := by aesop
 
 /-- A labelled cover of `x` containing `s`, of arity `≥ k`. -/
 theorem IsModel.exists_labelledExt_le_arity {N : KnightRealization β M} (hN : N.IsModel)
-    (x : N.LabelledExt) (k : ℕ) {m : ℕ} (s : Fin m ↪ M) :
+    x k {m} s :
     ∃ y : N.LabelledExt, x ≤ y ∧ k ≤ y.arity ∧ ∃ g : Fin m ↪ Fin y.arity, g.trans y.tuple = s := by
   obtain ⟨y₁, hxy₁, g₁, hg₁⟩ := hN.exists_labelledExt_le x s
   have := hN.infinite_carrier
@@ -260,13 +263,13 @@ theorem IsModel.exists_labelledExt_le_arity {N : KnightRealization β M} (hN : N
 /-- A labelled cover of `x` containing `s`, of arity `> k`, with a full-grade cell labelled
 above `α` (high-grade dominance in `N` at `α < α + ω`). -/
 theorem IsModel.exists_cover_fullGrade (hβ : β.1 = α.1 + Ordinal.omega0)
-    {N : KnightRealization β M} (hN : N.IsModel) (x : N.LabelledExt) (k : ℕ) {m : ℕ}
-    (s : Fin m ↪ M) :
-    ∃ y : N.LabelledExt, x ≤ y ∧ k < y.arity ∧ (∃ g : Fin m ↪ Fin y.arity, g.trans y.tuple = s) ∧
-      ∃ Θ : Cell y.type.scheme.scheme, y.type.scheme.scheme.grade Θ = y.arity ∧
+    {N : KnightRealization β M} (hN : N.IsModel) (x : N.LabelledExt) k {m}
+    s :
+    ∃ y, x ≤ y ∧ k < y.arity ∧ (∃ g : Fin m ↪ Fin y.arity, g.trans y.tuple = s) ∧
+      ∃ Θ, y.type.scheme.scheme.grade Θ = y.arity ∧
         ofOrd α.1 < y.type.label Θ := by
   obtain ⟨y₂, hxy₂, hk, g, hg⟩ := hN.exists_labelledExt_le_arity x k s
-  have hlt : α.1 < β.1 := by rw [hβ]; exact lt_add_of_pos_right _ Ordinal.omega0_pos
+  have hlt : α.1 < β.1 := by simp_all
   obtain ⟨z, hz, q'', ⟨Θ, hgr, hlab⟩, hcof, heval⟩ :=
     hN.highGradeDominance y₂.tuple y₂.type y₂.eval_eq α.1 hlt
   let y : N.LabelledExt := LabelledExt.mk (y₂.arity + 1) (snoc y₂.tuple z hz) q'' heval
@@ -277,9 +280,12 @@ theorem IsModel.exists_cover_fullGrade (hβ : β.1 = α.1 + Ordinal.omega0)
 
 variable {N : KnightRealization β M}
 
+section
+variable (hαβ : α ≤ β)
+
 /-- **Case `N(Ξ) < α`**: the label is kept by every cover, so it stabilizes. -/
-theorem stabilizesTo_of_lt (hαβ : α ≤ β) (hN : N.IsModel) {n : ℕ} {t : Fin n ↪ M} {p' : S β.1 n}
-    (hp' : N.eval t = some p') (Xi : Cell p'.scheme.scheme) (hlt : p'.label Xi < ofOrd α.1) :
+theorem stabilizesTo_of_lt (hN : N.IsModel) {n} {t : Fin n ↪ M} {p' : S β.1 n}
+    (hp' : N.eval t = some p') Xi (hlt : p'.label Xi < ofOrd α.1) :
     KnightRealization.StabilizesTo (N.reduct hαβ) t (reduceType α.2 hαβ p') Xi (p'.label Xi) := by
   intro m s
   let x : KnightRealization.LabelledExt (N.reduct hαβ) := ⟨n, t, reduceType α.2 hαβ p',
@@ -296,28 +302,27 @@ theorem stabilizesTo_of_lt (hαβ : α ≤ β) (hN : N.IsModel) {n : ℕ} {t : F
     rw [truncExt_id_of_lt hlt]
 
 /-- **Case `N(Ξ) = α + i`**: covers of top grade `> i` compute the provisional value `α + i`. -/
-theorem stabilizesTo_of_band (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0) (hN : N.IsModel)
+theorem stabilizesTo_of_band (hβ : β.1 = α.1 + Ordinal.omega0) (hN : N.IsModel)
     {n : ℕ} {t : Fin n ↪ M} {p' : S β.1 n}
-    (hp' : N.eval t = some p') (Xi : Cell p'.scheme.scheme) {i : ℕ}
+    (hp' : N.eval t = some p') Xi {i : ℕ}
     (hXi : p'.label Xi = ofOrd (α.1 + i)) :
     KnightRealization.StabilizesTo (N.reduct hαβ) t (reduceType α.2 hαβ p') Xi (ofOrd (α.1 +
         i)) := by
   intro m s
   let x : N.LabelledExt := ⟨n, t, p', hp'⟩
   obtain ⟨y, ⟨f, hf, hpq'⟩, hk, ⟨g, hg⟩, Θ, hgr, hlab⟩ := hN.exists_cover_fullGrade hβ x i s
-  have hpq : typeMap f (reduceType α.2 hαβ y.type) = some (reduceType α.2 hαβ p') :=
+  have hpq :=
     typeMap_reduceType_eq_some α.2 hαβ hpq'
   refine ⟨y.arity, y.tuple, g, f, reduceType α.2 hαβ y.type, hpq, reduct_eval_some hαβ y.eval_eq,
     hg, hf, ?_⟩
-  rw [mapCell_reduceType α.2 hαβ hpq' hpq Xi]
-  have hK : (reduceType α.2 hαβ y.type).topGrade = y.arity :=
+  have hK :=
     topGrade_eq_of_top_fullGrade (q := reduceType α.2 hαβ y.type) hgr
       (truncExt_eq_top_of_ge hlab.le)
   refine isProvisionalValue_band_of_expansion α.2 hαβ (mapCell hpq' Xi) ?_ (by rw [hK]; exact hk)
   rw [label_mapCell hpq' Xi, hXi]
 
 /-- **Case `N(Ξ) = ∞`**: no value `< α + ω` stabilizes. -/
-theorem not_stabilizesTo_of_top (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
+theorem not_stabilizesTo_of_top (hβ : β.1 = α.1 + Ordinal.omega0)
     (hN : N.IsModel) {n : ℕ} {t : Fin n ↪ M} {p' : S β.1 n}
     (hp' : N.eval t = some p') (Xi : Cell p'.scheme.scheme) (hXi : p'.label Xi = ⊤)
     (δ : ExtOrd) (hδ : δ < ofOrd (α.1 + Ordinal.omega0)) :
@@ -384,8 +389,8 @@ theorem not_stabilizesTo_of_top (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal
 
 /-- **Lemma 5.5.2 (labels)**: every label of a model-valued expansion is the stabilized value
 of the source cell. -/
-theorem hasStableValue_of_expansion (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
-    (hN : N.IsModel) {n : ℕ} {t : Fin n ↪ M} {p' : S β.1 n}
+theorem hasStableValue_of_expansion (hβ : β.1 = α.1 + Ordinal.omega0)
+    (hN : N.IsModel) {n} {t} {p' : S β.1 n}
     (hp' : N.eval t = some p') (Xi : Cell p'.scheme.scheme) :
     KnightRealization.HasStableValue (N.reduct hαβ) t (reduceType α.2 hαβ p') Xi (p'.label Xi) := by
   rcases ExtOrd.cases (p'.label Xi) with hb | ht | ⟨μ, hμ⟩
@@ -415,6 +420,8 @@ theorem hasStableValue_of_expansion (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ord
       refine ⟨hi ▸ hbound', ?_⟩
       exact stabilizesTo_of_band hαβ hβ hN hp' Xi (hμ.trans hi)
 
+end
+
 end KnightRealization
 
 end VaughtConjecture.Knight
@@ -429,10 +436,13 @@ universe w
 
 variable {α β : LimitStage} {M : Type w}
 
+section
+variable (hαβ : α ≤ β)
+
 /-- `hasStableValue_of_expansion` with the reduct type as a free variable. -/
-theorem hasStableValue_of_expansion_of_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
-    {N : KnightRealization β M} (hN : N.IsModel) {n : ℕ} {t : Fin n ↪ M} {p' : S β.1 n}
-    (hp' : N.eval t = some p') {p : S α.1 n} (hp : reduceType α.2 hαβ p' = p)
+theorem hasStableValue_of_expansion_of_eq (hβ : β.1 = α.1 + Ordinal.omega0)
+    {N : KnightRealization β M} (hN : N.IsModel) {n} {t} {p' : S β.1 n}
+    (hp' : N.eval t = some p') {p} (hp : reduceType α.2 hαβ p' = p)
     (Xi : Cell p'.scheme.scheme) :
     KnightRealization.HasStableValue (N.reduct hαβ) t p
       (SemScheme.castCell (congrArg StageType.scheme hp) Xi) (p'.label Xi) := by
@@ -441,40 +451,36 @@ theorem hasStableValue_of_expansion_of_eq (hαβ : α ≤ β) (hβ : β.1 = α.1
 
 /-- **Lemma 5.5.2, label agreement**: two model-valued expansions of the same reduct agree on
 every label. -/
-theorem label_eq_of_expansions (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
+theorem label_eq_of_expansions (hβ : β.1 = α.1 + Ordinal.omega0)
     {N N' : KnightRealization β M} (hN : N.IsModel) (hN' : N'.IsModel)
-    (hred : N.reduct hαβ = N'.reduct hαβ) {n : ℕ} {t : Fin n ↪ M} {p' p'' : S β.1 n}
-    (hp' : N.eval t = some p') (hp'' : N'.eval t = some p'') (hsch : p'.scheme = p''.scheme)
-    (Xi : Cell p'.scheme.scheme) :
+    (hred : N.reduct hαβ = N'.reduct hαβ) {n} {t} {p' p'' : S β.1 n}
+    (hp' : N.eval t = some p') (hp'' : N'.eval t = some p'') hsch
+    Xi :
     p'.label Xi = p''.label (SemScheme.castCell hsch Xi) := by
   have hr : reduceType α.2 hαβ p' = reduceType α.2 hαβ p'' := by
     have h1 := reduct_eval_some hαβ hp'
     have h2 := reduct_eval_some hαβ hp''
-    rw [hred, h2] at h1
-    exact (Option.some_injective _ h1).symm
+    grind
   have H1 := hasStableValue_of_expansion hαβ hβ hN hp' Xi
   have H2 := hasStableValue_of_expansion_of_eq hαβ hβ hN' hp'' hr.symm
     (SemScheme.castCell hsch Xi)
   rw [← hred] at H2
-  have H2' : KnightRealization.HasStableValue (N.reduct hαβ) t (reduceType α.2 hαβ p') Xi
-      (p''.label (SemScheme.castCell hsch Xi)) := H2
+  have H2' := H2
   exact HasStableValue.unique (hN.consistent_reduct hαβ) (hN.covering_reduct hαβ)
     (reduct_eval_some hαβ hp') H1 H2'
 
 /-- **Successor-expansion uniqueness** (Lemma 5.5.2): two models of `S^{α+ω}` with the same
 reduct to `α` are equal. -/
-theorem eq_of_reduct_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
+theorem eq_of_reduct_eq (hβ : β.1 = α.1 + Ordinal.omega0)
     {N N' : KnightRealization β M} (hN : N.IsModel) (hN' : N'.IsModel)
     (hred : N.reduct hαβ = N'.reduct hαβ) : N = N' := by
   apply Realization.ext
   intro n t
   have hr : (N.eval t).map (knightTower.reduce hαβ) = (N'.eval t).map (knightTower.reduce hαβ) :=
-    congrArg (fun R : KnightRealization α M => R.eval t) hred
+    congrArg (fun R => R.eval t) hred
   rcases hp' : N.eval t with _ | p' <;> rcases hp'' : N'.eval t with _ | p''
   · rfl
-  · rw [hp', hp''] at hr
-    have : (none : Option (S α.1 n)) = some (reduceType α.2 hαβ p'') := hr
-    cases this
+  · grind
   · rw [hp', hp''] at hr
     have : some (reduceType α.2 hαβ p') = (none : Option (S α.1 n)) := hr
     cases this
@@ -483,7 +489,7 @@ theorem eq_of_reduct_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
       rw [hp', hp''] at hr
       have hr' : reduceType α.2 hαβ p' = reduceType α.2 hαβ p'' :=
         Option.some_injective _ hr
-      exact congrArg (fun q : S α.1 n => q.scheme) hr'
+      exact congrArg (fun q => q.scheme) hr'
     have hlab := label_eq_of_expansions hαβ hβ hN hN' hred hp' hp'' hsch
     obtain ⟨sc, lab, bnd, resp⟩ := p'
     obtain ⟨sc', lab', bnd', resp'⟩ := p''
@@ -492,6 +498,8 @@ theorem eq_of_reduct_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
     refine StageType.ext rfl (heq_of_eq (funext fun Xi => ?_))
     have := hlab Xi
     rwa [SemScheme.castCell_self] at this
+
+end
 
 /-- The block form: two models at block `ξ + 1` with the same reduct to block `ξ` are equal. -/
 theorem eq_of_reduct_eq_blockStage {ξ : Ordinal.{0}}

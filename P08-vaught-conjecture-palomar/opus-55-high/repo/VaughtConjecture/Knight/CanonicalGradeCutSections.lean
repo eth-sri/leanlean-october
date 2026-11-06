@@ -18,8 +18,6 @@ or lower completion is supplied as an input.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CanonicalGradeCutSections
 
 open Transform Value ExtOrd SourcePrefixRows
@@ -62,7 +60,7 @@ theorem consistent (hs : sem.IsConsistent) : (rows sem j hj hA hproper).IsConsis
       (GradeCutBoundary.proper D j hproper) (GradeCutBoundary.grade_bound D j)
       (GradeCutBoundary.consistent D j sem hs))
 
-theorem old_row (c : Cell D) (d : D.below (D.cell c)) :
+theorem old_row c d :
     (rows sem j hj hA hproper).E (old sem j hj hA c)
       (GradeCutLayerCarrier.ownerEquiv D (Profiles sem j) j hj hA hproper c d) = sem.E c d :=
   GradeCutLayerRows.old_row D (Profiles sem j) j hj hA hproper sem _ c d
@@ -79,19 +77,24 @@ theorem lower_row (c : Cell (lower sem j hj hA))
 variable {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
 variable (ht : ∀ d : Cell D, p d ≠ ⊤)
 
-def lowerSection (G : Finset ExtOrd) (C : ExtOrd) : Cell (lower sem j hj hA) → ExtOrd :=
+section
+variable (G : Finset ExtOrd) (C : ExtOrd)
+
+def lowerSection  : Cell (lower sem j hj hA) → ExtOrd :=
   CanonicalFieldLayer.sectionOf (boundaryRows sem j) j
     (Cell D) (GradeCutBoundary.toCell D j) hj hA
     (GradeCutBoundary.proper D j hproper) (GradeCutBoundary.grade_bound D j)
     (GradeCutBoundary.restrict_respects D j sem hp) ht G C
 
-def sectionOf (G : Finset ExtOrd) (C : ExtOrd) : Cell (scheme sem j hj hA) → ExtOrd :=
+def sectionOf  : Cell (scheme sem j hj hA) → ExtOrd :=
   GradeCutLayerRows.glue D (Profiles sem j) j hj hA p
     (lowerSection sem j hj hA hproper hp ht G C)
 
+end
+
 variable {G : Finset ExtOrd} {C : ExtOrd}
 
-theorem section_old (d : Cell D) :
+theorem section_old d :
     sectionOf sem j hj hA hproper hp ht G C (old sem j hj hA d) = p d :=
   GradeCutLayerRows.glue_old D (Profiles sem j) j hj hA p _ d
 
@@ -109,7 +112,7 @@ theorem section_lawful (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) :
       (GradeCutBoundary.restrict_respects D j sem hp) ht hG hC)
 
 theorem section_bound (hC : SelfVis j C) (hb : ∀ d, p d ≤ C)
-    (d : Cell (scheme sem j hj hA)) : sectionOf sem j hj hA hproper hp ht G C d ≤ C := by
+    d : sectionOf sem j hj hA hproper hp ht G C d ≤ C := by
   unfold sectionOf GradeCutLayerRows.glue
   cases SourceLayerCarrier.toOcc D (Profiles sem j) j hj hA d with
   | inl c => exact hb c
@@ -120,19 +123,22 @@ theorem section_bound (hC : SelfVis j C) (hb : ∀ d, p d ≤ C)
       (GradeCutBoundary.restrict_respects D j sem hp) ht hC
       hb _
 
-private theorem boundary_supported {K : ℕ} {H : Set ExtOrd} (d : Cell D) :
+section
+variable {K : ℕ}
+
+private theorem boundary_supported {H} d :
     OrbitPrefixSupport.Supported K H p (p d) := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl hb
-  · exact Or.inr (Or.inr ⟨d, K, le_rfl, by rw [ht, extVisibilityReplace_top]⟩)
+  · tauto
+  · exact Or.inr (Or.inr ⟨d, K, le_rfl, by simp_all⟩)
   · by_cases hk : finitePart a < K
     · exact Or.inr (Or.inr ⟨d, finitePart a, hk.le, by
         rw [ha, extVisibilityReplace_of_finitePart_lt hk, limitPart_add_finitePart]⟩)
     · exact Or.inr (Or.inr ⟨d, K, le_rfl, by
         rw [ha, extVisibilityReplace_of_le_finitePart (not_lt.mp hk)]⟩)
 
-theorem section_supported {K : ℕ} (hjK : j ≤ K) (hCG : C ∈ G)
-    (d : Cell (scheme sem j hj hA)) :
+theorem section_supported (hjK : j ≤ K) (hCG : C ∈ G)
+    d :
     OrbitPrefixSupport.Supported K (G : Set ExtOrd) p
       (sectionOf sem j hj hA hproper hp ht G C d) := by
   unfold sectionOf GradeCutLayerRows.glue
@@ -144,9 +150,11 @@ theorem section_supported {K : ℕ} (hjK : j ≤ K) (hCG : C ∈ G)
       (GradeCutBoundary.proper D j hproper) (GradeCutBoundary.grade_bound D j)
       (GradeCutBoundary.restrict_respects D j sem hp) ht hjK hCG _
 
-theorem section_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
-    (htq : ∀ d : Cell D, q d ≠ ⊤)
-    {h : ExtOrd} (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
+end
+
+theorem section_agreement {q} hq
+    (htq : ∀ d, q d ≠ ⊤)
+    {h} (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem j hj hA hproper hp ht G C)
       (sectionOf sem j hj hA hproper hq htq G C) h := by
@@ -157,9 +165,7 @@ theorem section_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
     (GradeCutBoundary.restrict_respects D j sem hq) htq hG hC hh hhC hag
   intro d
   unfold sectionOf GradeCutLayerRows.glue
-  cases SourceLayerCarrier.toOcc D (Profiles sem j) j hj hA d with
-  | inl c => exact hag c
-  | inr q => exact hl _
+  aesop
 
 end
 end VaughtConjecture.Knight.CanonicalGradeCutSections

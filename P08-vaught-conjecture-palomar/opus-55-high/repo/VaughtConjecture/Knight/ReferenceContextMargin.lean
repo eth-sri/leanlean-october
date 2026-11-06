@@ -33,7 +33,7 @@ universe w
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
 
 /-- The intermediate-context view of a reference context. -/
-def ReferenceContext.toCtx {reqs : List BlockRequest} (C : ReferenceContext R t reqs) : Ctx R t :=
+def ReferenceContext.toCtx {reqs} (C : ReferenceContext R t reqs) : Ctx R t :=
   ⟨C.m, C.ctx, C.proj, C.proj_ctx, C.p₀, C.eval_ctx⟩
 
 /-- A property of intermediate contexts preserved by every coface step. -/
@@ -43,8 +43,8 @@ def Ctx.StepClosed (Q : Ctx R t → Prop) : Prop :=
     Q C → Q (C.step y hy q heval)
 
 /-- `exists_ctx_hasCells`, carrying a step-closed property. -/
-theorem exists_ctx_hasCells_pres (hM : R.IsModel) {Q : Ctx R t → Prop} (hQ : Ctx.StepClosed Q)
-    (C : Ctx R t) (hC : Q C) (rs : List BlockRequest)
+theorem exists_ctx_hasCells_pres (hM : R.IsModel) {Q} (hQ : Ctx.StepClosed Q)
+    C (hC : Q C) rs
     (hrs : ∀ r ∈ rs, Value.IsNonSuccessor r.block ∧ r.block < α.1) :
     ∃ C' : Ctx R t, C'.HasCells rs ∧ Q C' := by
   induction rs generalizing C with
@@ -57,13 +57,13 @@ theorem exists_ctx_hasCells_pres (hM : R.IsModel) {Q : Ctx R t → Prop} (hQ : C
     obtain ⟨j, hj⟩ := exists_nat_of_band hlo hhi
     refine ⟨C₁.step y hy q heval, fun r' hr' => ?_, hQ C₁ y hy q hcof heval hQ₁⟩
     rcases List.mem_cons.mp hr' with rfl | hr'
-    · exact ⟨Sig, j, hj⟩
+    · aesop
     · exact (h₁.step hcof heval) r' hr'
 
 /-- `exists_ctx_pad`, carrying a step-closed property. -/
-theorem exists_ctx_pad_pres (hM : R.IsModel) {Q : Ctx R t → Prop} (hQ : Ctx.StepClosed Q)
-    (C : Ctx R t) (hC : Q C) (rs : List BlockRequest) (off : ∀ r, r ∈ rs → ℕ)
-    (h : C.HasCellsWith rs off) (k : ℕ) :
+theorem exists_ctx_pad_pres (hM : R.IsModel) {Q} (hQ : Ctx.StepClosed Q)
+    C (hC : Q C) rs off
+    (h : C.HasCellsWith rs off) k :
     ∃ C' : Ctx R t, C'.m = C.m + k ∧ C'.HasCellsWith rs off ∧ Q C' := by
   induction k with
   | zero => exact ⟨C, rfl, h, hC⟩
@@ -79,9 +79,9 @@ theorem exists_ctx_pad_pres (hM : R.IsModel) {Q : Ctx R t → Prop} (hQ : Ctx.St
 any step-closed property**: the construction of `exists_referenceContext_margin` started at `C₀`
 instead of the root, with the property `Q` of `C₀` retained by the final context, and the arity
 equation `C.m = C.N` (the context is padded to arity `N - 1` and takes one coface step). -/
-theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List BlockRequest)
-    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) (Nmin : ℕ)
-    {Q : Ctx R t → Prop} (hQ : Ctx.StepClosed Q) (C₀ : Ctx R t) (hQ₀ : Q C₀) :
+theorem exists_referenceContext_margin_from' (hM : R.IsModel) reqs
+    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) Nmin
+    {Q} (hQ : Ctx.StepClosed Q) C₀ (hQ₀ : Q C₀) :
     ∃ C : ReferenceContext R t reqs, Nmin < C.N ∧ ⊥ < C.p₀.label C.capBase ∧
       (∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase) ∧ Q C.toCtx ∧ C.m = C.N := by
   classical
@@ -177,9 +177,9 @@ theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List Block
 /-- **The reference context with the endpoint margin, from any intermediate context and carrying
 any step-closed property** (the arity equation of `exists_referenceContext_margin_from'`
 dropped). -/
-theorem exists_referenceContext_margin_from (hM : R.IsModel) (reqs : List BlockRequest)
-    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) (Nmin : ℕ)
-    {Q : Ctx R t → Prop} (hQ : Ctx.StepClosed Q) (C₀ : Ctx R t) (hQ₀ : Q C₀) :
+theorem exists_referenceContext_margin_from (hM : R.IsModel) reqs
+    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) Nmin
+    {Q} (hQ : Ctx.StepClosed Q) (C₀ : Ctx R t) (hQ₀ : Q C₀) :
     ∃ C : ReferenceContext R t reqs, Nmin < C.N ∧ ⊥ < C.p₀.label C.capBase ∧
       (∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase) ∧ Q C.toCtx := by
   obtain ⟨C, h1, h2, h3, h4, -⟩ := exists_referenceContext_margin_from' hM reqs hreqs Nmin hQ C₀ hQ₀
@@ -189,7 +189,7 @@ theorem exists_referenceContext_margin_from (hM : R.IsModel) (reqs : List BlockR
 construction pads to arity `N - 1` and takes one coface step carrying the cap, so the acquired
 context has exactly the threshold arity. -/
 theorem exists_referenceContext_margin' (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t = some p)
-    (reqs : List BlockRequest)
+    reqs
     (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) (Nmin : ℕ) :
     ∃ C : ReferenceContext R t reqs, Nmin < C.N ∧ ⊥ < C.p₀.label C.capBase ∧
       (∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase) ∧ C.m = C.N := by
@@ -200,8 +200,8 @@ theorem exists_referenceContext_margin' (hM : R.IsModel) (p : S α.1 n) (hp : R.
 /-- **The reference context with the endpoint margin**: `exists_referenceContext` with the
 threshold above `Nmin` and the cap strictly above every block endpoint `μ + N`. -/
 theorem exists_referenceContext_margin (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t = some p)
-    (reqs : List BlockRequest)
-    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) (Nmin : ℕ) :
+    reqs
+    (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1) Nmin :
     ∃ C : ReferenceContext R t reqs, Nmin < C.N ∧ ⊥ < C.p₀.label C.capBase ∧
       ∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase := by
   obtain ⟨C, h1, h2, h3, -⟩ := exists_referenceContext_margin_from hM reqs hreqs Nmin

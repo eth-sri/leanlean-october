@@ -19,7 +19,6 @@ source cut, not an arbitrary external ambient.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepDecode
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedStepRows
@@ -33,15 +32,23 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-def original (d : Cell I.boundary) : Cell (carrier P hnext) :=
+section
+variable (d : Cell I.boundary)
+
+def original  : Cell (carrier P hnext) :=
   old P hnext (P.baseMap (RelativeLadderLayer.old I.boundary (by omega) d))
 
-theorem original_index (d : Cell I.boundary) :
+theorem original_index  :
     (carrier P hnext).cell (original P hnext d) = I.boundary.cell d := by
   rw [original, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index,
     P.base_index, RelativeLadderLayer.old_index]
 
-theorem source_original (a : F.Anchor (k + 1)) (d : Cell I.boundary) :
+end
+
+section
+variable (a : F.Anchor (k + 1))
+
+theorem source_original d :
     source P hk hnext a (original P hnext d) = F.fields (k + 1) a (field I d) := by
   rw [original, source_old]
   exact (P.original_readback I F hroot hA hB hC (Nat.le_succ k)
@@ -52,15 +59,17 @@ theorem source_original (a : F.Anchor (k + 1)) (d : Cell I.boundary) :
     (fun f => by rw [state_profile]; exact LowOnlyRecursiveCharts.anchor_bound F a f) d).trans
     (congrFun (state_profile F a) (field I d))
 
-theorem leaf_row (a : F.Anchor (k + 1))
-    (d : (carrier P hnext).below ((carrier P hnext).cell (controller P hnext a).1)) :
+theorem leaf_row d :
     (rows P hk hnext).E (controller P hnext a).1 d = source P hk hnext a d.1 :=
   (data P hk hnext).row_new _ _
 
-theorem protected_caps {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.right}
-    (r : F.ProtectedRepair a.val S (k + 1) b)
-    (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
-    (d : Cell (carrier P hnext)) :
+end
+
+section
+variable {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.right} (r : F.ProtectedRepair a.val S (k + 1) b)
+
+theorem protected_caps (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
+    d :
     min (r.decoder (source P hk hnext r.anchor d)) (CanonicalPairedInverse.grid (k + 1) b) =
       min (source P hk hnext a d) (CanonicalPairedInverse.grid (k + 1) b) := by
   exact OrbitPrefixSupport.decode_agree r.witness (CanonicalPairedInverse.grid_visible _ _)
@@ -70,9 +79,7 @@ theorem protected_caps {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.righ
     (source_agreement P hk hnext r.anchor a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq) d
 
-theorem protected_lawful {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.right}
-    (r : F.ProtectedRepair a.val S (k + 1) b)
-    (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1) :
+theorem protected_lawful (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1) :
     RespectsSemanticsBelow (rows P hk hnext) (A, k + 1)
       (fun d => r.decoder (source P hk hnext r.anchor d.1)) := by
   exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
@@ -83,12 +90,13 @@ theorem protected_lawful {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.ri
     (fun d => source_agreement P hk hnext r.anchor a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq d.1)).1
 
-theorem original_decode {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.right}
-    (r : F.ProtectedRepair a.val S (k + 1) b) (d : Cell I.boundary) :
+theorem original_decode d :
     r.decoder (source P hk hnext r.anchor (original P hnext d)) =
       S.profile (field I d) := by
   rw [source_original]
   exact r.readback _
+
+end
 
 def privateAt (d : I.right.scheme.below (effC n (k + 1))) :
     (carrier P hnext).below (A, k + 1) :=
@@ -106,10 +114,10 @@ def donorAt (d : I.left.scheme.below (effC n (k + 1))) :
     have hg := congrArg Prod.snd (I.leftFace.index d.1)
     exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
 
-theorem private_source_repair {b : ℕ} {S : State I.left I.right}
-    (hS : F.Admissible (k + 1) S)
-    (hc : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) (k + 1))
-    (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
+section
+variable {b : ℕ} {S : State I.left I.right} (hS : F.Admissible (k + 1) S) (hc : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) (k + 1))
+
+theorem private_source_repair (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
     {v : I.right.scheme.below (effC n (k + 1)) → ExtOrd}
     (hv : RespectsSemanticsBelow I.right.rows (effC n (k + 1)) v)
     (hag : ∀ d, min (v d) (CanonicalPairedInverse.grid (k + 1) b) =
@@ -123,17 +131,13 @@ theorem private_source_repair {b : ℕ} {S : State I.left I.right}
   refine ⟨_, protected_lawful P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
     fun d => protected_caps P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source P hk hnext r.anchor (original P hnext (I.rightFace.map d.1))) = v d
   exact (original_decode P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r
     (I.rightFace.map d.1)).trans
     ((field_private I F hroot
       (LowOnlyRecursiveCoverage.admissible_down F (by omega) (by omega) hS') d.1).trans
       (congrFun he d))
 
-theorem donor_source_repair {b : ℕ} {S : State I.left I.right}
-    (hS : F.Admissible (k + 1) S)
-    (hc : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) (k + 1))
-    (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
+theorem donor_source_repair (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
     {u : I.left.scheme.below (effC n (k + 1)) → ExtOrd}
     (hu : RespectsSemanticsBelow I.left.rows (effC n (k + 1)) u)
     (hag : ∀ d, min (u d) (CanonicalPairedInverse.grid (k + 1) b) =
@@ -147,11 +151,12 @@ theorem donor_source_repair {b : ℕ} {S : State I.left I.right}
   refine ⟨_, protected_lawful P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
     fun d => protected_caps P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source P hk hnext r.anchor (original P hnext (I.leftFace.map d.1))) = u d
   exact (original_decode P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r
     (I.leftFace.map d.1)).trans
     ((field_read I S' (I.leftFace.map d.1)).trans
       ((I.paste_left S'.u S'.v d.1).trans (congrFun he d)))
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedStepDecode

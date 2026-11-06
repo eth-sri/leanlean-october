@@ -19,7 +19,6 @@ successor bountifulness remain separate from this constructed geometry.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveInventory
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding
 noncomputable section
@@ -39,17 +38,22 @@ def Profile : ℕ → Type 1
 instance (j : ℕ) : Fintype (Profile sem j) := by
   rcases j with _ | _ | _ | j <;> dsimp only [Profile] <;> infer_instance
 
-abbrev scheme (n : ℕ) (hn : n ≤ A.card) := RecursiveSourceCarrier.scheme D (Profile sem) n hn
-abbrev boundary (n : ℕ) (hn : n ≤ A.card) :=
+section
+variable (n : ℕ) (hn : n ≤ A.card)
+
+abbrev scheme  := RecursiveSourceCarrier.scheme D (Profile sem) n hn
+abbrev boundary  :=
   RecursiveSourceCarrier.boundary D (Profile sem) n hn
 
-theorem boundary_cell (n : ℕ) (hn : n ≤ A.card) (d : Cell D) :
+theorem boundary_cell d :
     (scheme sem n hn).cell (boundary sem n hn d) = D.cell d :=
   RecursiveSourceCarrier.boundary_cell D (Profile sem) n hn d
 
+end
+
 /-- Normalize from the actual current old lower domain; future fields are
 retained in the vector but are not required to be lawful at absent owners. -/
-def encode (n : ℕ) {p : Cell D → ExtOrd}
+def encode n {p : Cell D → ExtOrd}
     (hp : RespectsSemanticsBelow sem (A, n + 3) (fun d => p d.1)) (ht : ∀ d, p d ≠ ⊤) :
     Profile sem (n + 3) := by
   let j := n + 3
@@ -59,8 +63,8 @@ def encode (n : ℕ) {p : Cell D → ExtOrd}
   exact hr.toRespects (fun d =>
     ⟨D.isPlan.subset_of_mem (D.scope_mem_plan _), GradeCutBoundary.grade_bound D j d⟩)
 
-theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
-    (n : ℕ) (hn : n ≤ A.card) (d : Cell (scheme sem n hn)) :
+theorem separated (hp : ∀ d, D.scope d ≠ A)
+    n hn (d : Cell (scheme sem n hn)) :
     ¬ GradedLe (A, n + 1) ((scheme sem n hn).cell d) :=
   RecursiveSourceCarrier.separated D (Profile sem) hp n hn d
 

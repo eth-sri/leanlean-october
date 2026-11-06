@@ -37,8 +37,11 @@ noncomputable section
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
 
+section
+variable {j : ℕ} (hj : N ≤ j) {st : R.State j}
+
 /-- The source cap is positive once its image is the actual cap. -/
-theorem capC_ne_bot_of_read {j : ℕ} (hj : N ≤ j) {st : R.State j} {σ : ExtOrd → ExtOrd}
+theorem capC_ne_bot_of_read {σ : ExtOrd → ExtOrd}
     (hbot : σ ⊥ = ⊥) (hcap : σ (st.v (R.capC hj)) = R.vact R.cap) : st.v (R.capC hj) ≠ ⊥ := by
   intro hz
   rw [hz, hbot] at hcap
@@ -48,13 +51,13 @@ theorem capC_ne_bot_of_read {j : ℕ} (hj : N ≤ j) {st : R.State j} {σ : ExtO
 gate, a witness `σ` through `N` reading its donor section as `u` capped at `m ≥ vact cap`, and
 the actual cap and reference labels literally:
 `min (u d) (cut vactL) = min (p d) (cut vactL)` at every present donor cell. -/
-theorem capped_readback {j : ℕ} (hj : N ≤ j) {st : R.State j} (hst : R.Admissible st)
-    {Kσ : ℕ} (hK : N ≤ Kσ) {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop Kσ) σ)
-    {m : ExtOrd} (hm : R.vact R.cap ≤ m) {u : P.scheme.below (effP nP j) → ExtOrd}
+theorem capped_readback (hst : R.Admissible st)
+    {Kσ} (hK : N ≤ Kσ) {σ} (hσ : Witness (gTop Kσ) σ)
+    {m} (hm : R.vact R.cap ≤ m) {u : P.scheme.below (effP nP j) → ExtOrd}
     (hu : ∀ d, σ (st.u d) = min (u d) m)
     (hcap : σ (st.v (R.capC hj)) = R.vact R.cap)
     (href : ∀ i, σ (st.v (CellScheme.below.mono (R.capLe hj) (R.lowRef i))) = R.vact (R.ref i))
-    (hg : st.gate ≠ ⊥) (d : P.scheme.below (effP nP j)) :
+    (hg : st.gate ≠ ⊥) d :
     min (u d) (R.cut R.vactL) = min (R.p d.1) (R.cut R.vactL) := by
   have hvcap : st.v (R.capC hj) ≠ ⊥ := capC_ne_bot_of_read hj hσ.bot hcap
   have hrel := hst.relation hj hg hvcap d
@@ -70,6 +73,8 @@ theorem capped_readback {j : ℕ} (hj : N ≤ j) {st : R.State j} (hst : R.Admis
   rw [hσ.mono.map_min, hu, hcut, hsel] at h
   have hβm : R.cut R.vactL ≤ m := (cut_actual_lt_cap (R := R)).le.trans hm
   rwa [min_assoc, min_eq_right hβm] at h
+
+end
 
 end
 end VaughtConjecture.Knight.CappedDonor.Ref

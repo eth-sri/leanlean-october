@@ -18,7 +18,6 @@ lawful target-local ambient. Its chart reads every physical coordinate.
 and source sections here are exclusively the growth producers. -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepCharts
 open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
 open GrowthPaddedContract GrowthPaddedStepRows GrowthOrderedBase
@@ -35,9 +34,9 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 /-- Locality and availability choose an actual installed native leaf. -/
 theorem exists_chart
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q) :
-    ∃ a : Catalogue X (k + 1), ∃ σ : ExtOrd → ExtOrd, ∃ M : ExtOrd,
+    ∃ a, ∃ σ, ∃ M,
       Witness (gTop (k + 1)) σ ∧
       (∀ d, (carrier P hnext).grade d.1 = k + 1 → q d ≤ M) ∧
       ∀ d, σ (source P hk hnext a d.1) = min (q d) M := by

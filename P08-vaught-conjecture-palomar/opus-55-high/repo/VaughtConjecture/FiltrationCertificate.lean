@@ -46,7 +46,7 @@ variable {Q : Type 1} {O : Type u} {truth : O → Q → Prop}
 variable (c : FiltrationCertificate Q O truth)
 
 /-- Countable losses accumulate to countable complements below `ω₁`. -/
-theorem compl_countable {β : Ordinal.{0}} (hβ : β < (aleph 1).ord) :
+theorem compl_countable {β} (hβ : β < (aleph 1).ord) :
     (c.domain β)ᶜ.Countable :=
   CountableLoss.compl_countable_of_loss c.domain c.zero c.loss_countable c.limit β hβ
 

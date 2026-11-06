@@ -21,8 +21,6 @@ and the lawful prefix-preserving coded completion remains separate.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.RetunedCutDecoding
 
 open Transform Value ExtOrd SharpWitnessComposition
@@ -30,9 +28,9 @@ open Transform Value ExtOrd SharpWitnessComposition
 /-- No lawful intermediate ambient is supplied. It is constructed as sigma(s)
 using original-cap agreement, before consuming the existing aligned decoder. -/
 theorem decode_lift
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {X : Type*} [Fintype X]
-    (s : D.below BJ → ExtOrd) (p : X → ExtOrd) (incl : X → D.below BJ)
+    {ι : Type*} [DecidableEq ι] {A} {D : CellScheme A}
+    {sem} {BJ : Finset ι × ℕ} {X} [Fintype X]
+    s (p : X → ExtOrd) (incl : X → D.below BJ)
     {r q : D.below BJ → ExtOrd} {K b : ℕ} {a γ δ : ExtOrd} {σ : ExtOrd → ExtOrd}
     (hs : RespectsSemanticsBelow sem BJ s)
     (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)

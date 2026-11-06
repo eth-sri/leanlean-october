@@ -19,7 +19,6 @@ this source-level result; its ladder application is in `LowOnlyLadderRepair`.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
 open CanonicalPairedInverse
@@ -44,9 +43,9 @@ structure ProtectedRepair (a : Field P C → ExtOrd) (S : State P C) (j B : ℕ)
 
 /-- Properize above the cut, use the supported inverse, then collapse the whole
 terminal block. Literal top does not sacrifice any protected grid point. -/
-theorem exists_protected_repair (hj : 1 ≤ j) {a : Field P C → ExtOrd}
+theorem exists_protected_repair (hj : 1 ≤ j) {a}
     (ha : a ∈ CanonicalPairedProfiles.inventory (Field P C) j)
-    {S : State P C} (hS : F.Admissible j S)
+    {S} (hS : F.Admissible j S)
     (hag : ∀ d, min (a d) (grid j B) = min (S.profile d) (grid j B)) :
     Nonempty (F.ProtectedRepair a S j B) := by
   let h : Ordinal.{0} := Ordinal.omega0 * B + j
@@ -115,10 +114,10 @@ theorem exists_protected_repair (hj : 1 ≤ j) {a : Field P C → ExtOrd}
     exact (congrArg δ hqa).trans ((hδread d).trans hpa.symm)
 
 /-- The private fibre constructs admission and agreement before normalization. -/
-theorem private_protected_repair (hj : 1 ≤ j) {S : State P C}
+theorem private_protected_repair (hj : 1 ≤ j) {S}
     (hS : F.Admissible j S)
     (hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field P C) j)
-    {v : C.scheme.below (effC n j) → ExtOrd}
+    {v}
     (hv : RespectsSemanticsBelow C.rows (effC n j) v)
     (hag : ∀ d, min (v d) (grid j B) = min (S.lowerC j d) (grid j B)) :
     ∃ S', F.Admissible j S' ∧ S'.lowerC j = v ∧
@@ -130,10 +129,10 @@ theorem private_protected_repair (hj : 1 ≤ j) {S : State P C}
     (fun d => (State.capEq_iff_profile.mp hcap d).symm)⟩
 
 /-- Donor prescription uses the checked release fibre, not a face exchange. -/
-theorem donor_protected_repair (hj : 1 ≤ j) {S : State P C}
+theorem donor_protected_repair (hj : 1 ≤ j) {S}
     (hS : F.Admissible j S)
     (hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field P C) j)
-    {u : P.scheme.below (effC n j) → ExtOrd}
+    {u}
     (hu : RespectsSemanticsBelow P.rows (effC n j) u)
     (hag : ∀ d, min (u d) (grid j B) = min (S.lowerP j d) (grid j B)) :
     ∃ S', F.Admissible j S' ∧ S'.lowerP j = u ∧

@@ -39,8 +39,6 @@ transitivity of transformations enter.  Construction-private (not root-exported)
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Value ExtOrd
@@ -48,19 +46,19 @@ open Transform
 
 noncomputable section
 
+section
+variable {D : Type*} [Finite D] (grade : D → ℕ) (target : D → ExtOrd)
+
 /-- Greatest target label at a cell of grade at least `k`. -/
 def finiteTargetSuppressor
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (target : D → ExtOrd) (k : ℕ) : ExtOrd := by
+    (k : ℕ) : ExtOrd := by
   letI := Fintype.ofFinite D
   exact Finset.univ.sup fun d => if k ≤ grade d then target d else ⊥
 
 theorem finiteTargetSuppressor_antitone
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (target : D → ExtOrd) :
+     :
     ∀ n m, n < m → finiteTargetSuppressor grade target m ≤
       finiteTargetSuppressor grade target n := by
-  classical
   letI := Fintype.ofFinite D
   intro n m hnm
   apply Finset.sup_le
@@ -74,34 +72,22 @@ theorem finiteTargetSuppressor_antitone
   · simp only [finiteTargetSuppressor, hm, if_false]
     exact bot_le
 
-private theorem max_selfVis {a b : ExtOrd} {k : ℕ}
-    (ha : a = extVisibilityReplace a k k)
-    (hb : b = extVisibilityReplace b k k) :
-    max a b = extVisibilityReplace (max a b) k k := by
-  rcases le_total a b with hab | hba
-  · rw [max_eq_right hab]
-    exact hb
-  · rw [max_eq_left hba]
-    exact ha
+end
 
 private theorem finset_sup_selfVis
-    {A : Type*} (s : Finset A) (f : A → ExtOrd) (k : ℕ)
+    {A} (s : Finset A) f k
     (hf : ∀ a ∈ s, f a = extVisibilityReplace (f a) k k) :
     s.sup f = extVisibilityReplace (s.sup f) k k := by
   classical
   induction s using Finset.induction_on with
   | empty => rfl
   | @insert a s ha ih =>
-      rw [Finset.sup_insert]
-      apply max_selfVis
-      · exact hf a (Finset.mem_insert_self a s)
-      · apply ih
-        intro b hb
-        exact hf b (Finset.mem_insert_of_mem hb)
+      grind
+
+section
+variable {D : Type*} [Finite D] (grade : D → ℕ) (target : D → ExtOrd)
 
 theorem finiteTargetSuppressor_selfVis
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (target : D → ExtOrd)
     (hTarget : IsOrderly grade target) :
     ∀ k, finiteTargetSuppressor grade target k =
       extVisibilityReplace (finiteTargetSuppressor grade target k) k k := by
@@ -112,16 +98,14 @@ theorem finiteTargetSuppressor_selfVis
   intro d _hd
   by_cases hk : k ≤ grade d
   · simp only [hk, if_true]
-    have hd : extVisibilityReplace (target d) (grade d) (grade d) = target d :=
+    have hd :=
       (hTarget d).symm
     exact (selfVis_mono hd hk).symm
   · simp only [hk, if_false, extVisibilityReplace]
 
 theorem target_le_finiteTargetSuppressor
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (target : D → ExtOrd) (d : D) :
+    d :
     target d ≤ finiteTargetSuppressor grade target (grade d) := by
-  classical
   letI := Fintype.ofFinite D
   have hterm := Finset.le_sup
     (s := (Finset.univ : Finset D))
@@ -129,34 +113,21 @@ theorem target_le_finiteTargetSuppressor
     (Finset.mem_univ d)
   simpa only [finiteTargetSuppressor, le_refl, if_true] using hterm
 
-/-- Once the finite target is fixed, its suppressor can be chosen
-canonically and only the shifter remains. -/
-structure FiniteTargetShifterData
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (source target : D → ExtOrd) where
-  shifter : ExtOrd → ExtOrd
-  bot : shifter ⊥ = ⊥
-  mono : Monotone shifter
-  commutes : ∀ x k, shifter x ≤ finiteTargetSuppressor grade target k →
-    ∀ i, i ≤ k → shifter (extVisibilityReplace x k i) =
-      extVisibilityReplace (shifter x) k i
-  realizes : ∀ d, target d = min (shifter (source d))
-    (finiteTargetSuppressor grade target (grade d))
+end
 
-private theorem isNonSuccessor_limitPart (δ : Ordinal) :
+private theorem isNonSuccessor_limitPart δ :
     IsNonSuccessor (limitPart δ) := by
   by_cases h0 : limitPart δ = 0
-  · exact Or.inl h0
+  · tauto
   · refine Or.inr ?_
-    rw [Order.isSuccLimit_iff]
-    refine ⟨by simpa using h0, (Ordinal.isSuccPrelimit_iff_omega0_dvd).2 ?_⟩
+    refine ⟨by simp_all, (Ordinal.isSuccPrelimit_iff_omega0_dvd).2 ?_⟩
     exact ⟨δ / Ordinal.omega0, rfl⟩
 
 private theorem add_omega0_le_of_nonsucc
-    {μ ν : Ordinal} (hν : IsNonSuccessor ν) (hμν : μ < ν) :
+    {μ ν} (hν : IsNonSuccessor ν) (hμν : μ < ν) :
     μ + Ordinal.omega0 ≤ ν := by
   rcases hν with rfl | hLimit
-  · simp at hμν
+  · simp_all
   · have hFinite : ∀ k : ℕ, μ + (k : Ordinal) < ν := by
       intro k
       induction k with
@@ -166,7 +137,7 @@ private theorem add_omega0_le_of_nonsucc
               Order.succ (μ + (k : Ordinal)) := by
             push_cast
             rw [← add_assoc, ← Order.succ_eq_add_one]
-          rw [hStep]
+          simp_all
           exact hLimit.succ_lt ih
     rw [Ordinal.add_le_iff_of_isSuccLimit Ordinal.isSuccLimit_omega0]
     intro b hb
@@ -174,9 +145,9 @@ private theorem add_omega0_le_of_nonsucc
     exact (hFinite k).le
 
 /-- Visibility replacement is monotone in its label argument. -/
-theorem extVisibilityReplace_mono (k i : ℕ) (hi : i ≤ k) :
-    Monotone (fun x : ExtOrd => extVisibilityReplace x k i) := by
-  have hOrd : Monotone (fun δ : Ordinal => visibilityReplace δ k i) := by
+theorem extVisibilityReplace_mono k i (hi : i ≤ k) :
+    Monotone (fun x => extVisibilityReplace x k i) := by
+  have hOrd : Monotone (fun δ => visibilityReplace δ k i) := by
     intro γ δ hγδ
     by_cases hγ : finitePart γ < k
     · by_cases hδ : finitePart δ < k
@@ -235,8 +206,11 @@ def finiteLowerEnvelope
     (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd :=
   s.sup fun y => if y ≤ x then table y else ⊥
 
+section
+variable (s : Finset ExtOrd) (table : ExtOrd → ExtOrd)
+
 theorem finiteLowerEnvelope_mono
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) :
+     :
     Monotone (finiteLowerEnvelope s table) := by
   intro x y hxy
   apply Finset.sup_le
@@ -250,40 +224,33 @@ theorem finiteLowerEnvelope_mono
     exact bot_le
 
 theorem finiteLowerEnvelope_bot
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd)
     (hBot : ∀ y ∈ s, y = ⊥ → table y = ⊥) :
     finiteLowerEnvelope s table ⊥ = ⊥ := by
   apply le_antisymm
   · apply Finset.sup_le
-    intro y hy
-    by_cases hyBot : y ≤ (⊥ : ExtOrd)
-    · have hyEq : y = ⊥ := le_bot_iff.mp hyBot
-      simp only [finiteLowerEnvelope, hyBot, if_true, hBot y hy hyEq]
-      exact le_rfl
-    · simp only [finiteLowerEnvelope, hyBot, if_false]
-      exact le_rfl
-  · exact bot_le
+    grind
+  · simp_all
 
 theorem finiteLowerEnvelope_source
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd)
     (hMono : ∀ a ∈ s, ∀ b ∈ s, a ≤ b → table a ≤ table b)
     {x : ExtOrd} (hx : x ∈ s) :
     finiteLowerEnvelope s table x = table x := by
   apply le_antisymm
   · apply Finset.sup_le
-    intro y hy
-    by_cases hyx : y ≤ x
-    · simpa only [finiteLowerEnvelope, hyx, if_true] using hMono y hy x hx hyx
-    · simp only [finiteLowerEnvelope, hyx, if_false]
-      exact bot_le
+    grind
   · have hterm := Finset.le_sup
       (s := s) (f := fun y => if y ≤ x then table y else ⊥) hx
     simpa only [finiteLowerEnvelope, le_refl, if_true] using hterm
 
+end
+
+section
+variable (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
+
 /-- **The bottom-aware orbit law**: at an active table point, either the value is `⊥`, or its
 replacement is in the domain with the commuted value. -/
 def FiniteShifterWeakOrbit
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd) : Prop :=
+     : Prop :=
   ∀ x ∈ s, ∀ k i, i ≤ k → table x ≤ g k →
     table x = ⊥ ∨
       (extVisibilityReplace x k i ∈ s ∧
@@ -292,7 +259,7 @@ def FiniteShifterWeakOrbit
 /-- Every active point visible below a replaced input is controlled from
 an old point below the original input.  This is the exact block-gap repair. -/
 def FiniteShifterBlockBridge
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd) : Prop :=
+     : Prop :=
   ∀ x k, finiteLowerEnvelope s table x ≤ g k →
     ∀ i, i ≤ k → ∀ z ∈ s,
       z ≤ extVisibilityReplace x k i →
@@ -300,8 +267,12 @@ def FiniteShifterBlockBridge
           ∃ y ∈ s, y ≤ x ∧
             table z ≤ extVisibilityReplace (table y) k i
 
+end
+
+section
+variable (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
+
 theorem finiteLowerEnvelope_visibility_le
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
     (hOrbit : FiniteShifterWeakOrbit s table g)
     (x : ExtOrd) (k i : ℕ) (hi : i ≤ k)
     (hActive : finiteLowerEnvelope s table x ≤ g k) :
@@ -309,7 +280,7 @@ theorem finiteLowerEnvelope_visibility_le
       finiteLowerEnvelope s table (extVisibilityReplace x k i) := by
   unfold finiteLowerEnvelope
   rw [Finset.apply_sup_eq_sup_comp_of_linearOrder
-    (fun z : ExtOrd => extVisibilityReplace z k i)
+    (fun z => extVisibilityReplace z k i)
     (extVisibilityReplace_mono k i hi) rfl]
   apply Finset.sup_le
   intro y hy
@@ -319,8 +290,6 @@ theorem finiteLowerEnvelope_visibility_le
         (s := s) (f := fun z => if z ≤ x then table z else ⊥) hy
       simpa only [finiteLowerEnvelope, hyx, if_true] using hterm
     simp only [Function.comp_apply, hyx, if_true]
-    change extVisibilityReplace (table y) k i ≤
-      s.sup (fun z => if z ≤ extVisibilityReplace x k i then table z else ⊥)
     rcases hOrbit y hy k i hi (hfy.trans hActive) with hbot | ⟨hmem, hcomm⟩
     · rw [hbot, extVisibilityReplace_bot]
       exact bot_le
@@ -335,7 +304,6 @@ theorem finiteLowerEnvelope_visibility_le
     exact bot_le
 
 theorem finiteLowerEnvelope_le_visibility
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
     (hBridge : FiniteShifterBlockBridge s table g)
     (x : ExtOrd) (k i : ℕ) (hi : i ≤ k)
     (hActive : finiteLowerEnvelope s table x ≤ g k) :
@@ -347,11 +315,10 @@ theorem finiteLowerEnvelope_le_visibility
   by_cases hzNew : z ≤ extVisibilityReplace x k i
   · rcases hBridge x k hActive i hi z hz hzNew with
       hzBot | ⟨y, hy, hyx, hzy⟩
-    · simp only [hzNew, if_true, hzBot]
-      exact bot_le
+    · simp_all
     · have hterm := Finset.le_sup
         (s := s) (f := fun w => if w ≤ x then table w else ⊥) hy
-      have hfy : table y ≤ s.sup (fun w => if w ≤ x then table w else ⊥) := by
+      have hfy := by
         simpa only [hyx, if_true] using hterm
       simp only [hzNew, if_true]
       exact hzy.trans (extVisibilityReplace_mono k i hi hfy)
@@ -361,7 +328,6 @@ theorem finiteLowerEnvelope_le_visibility
 /-- **The envelope commutes with replacement at active inputs**, from the weak orbit law and
 the bridge. -/
 theorem finiteLowerEnvelope_visibility_eq
-    (s : Finset ExtOrd) (table : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
     (hOrbit : FiniteShifterWeakOrbit s table g)
     (hBridge : FiniteShifterBlockBridge s table g)
     (x : ExtOrd) (k i : ℕ) (hi : i ≤ k)
@@ -372,15 +338,15 @@ theorem finiteLowerEnvelope_visibility_eq
   · exact finiteLowerEnvelope_le_visibility s table g hBridge x k i hi hActive
   · exact finiteLowerEnvelope_visibility_le s table g hOrbit x k i hi hActive
 
+end
+
 /-- The canonical suppressor vanishes above every grade. -/
 theorem finiteTargetSuppressor_eq_bot_of_lt
-    {D : Type*} [Finite D] (grade : D → ℕ) (target : D → ExtOrd) {K k : ℕ}
+    {D} [Finite D] grade (target : D → ExtOrd) {K k}
     (hK : ∀ d, grade d ≤ K) (hk : K < k) : finiteTargetSuppressor grade target k = ⊥ := by
-  letI := Fintype.ofFinite D
   apply le_bot_iff.mp
   apply Finset.sup_le
-  intro d _
-  rw [if_neg (by have := hK d; omega)]
+  grind
 
 /-- **A finite certificate for a faithful transformation.**  It has no global range-normalization
 field: the orbit law is bottom-aware, and the bridge is the only condition on inputs outside the
@@ -405,7 +371,7 @@ structure FiniteBlockBridgeCertificate
 by the canonical suppressor and the lower envelope of the table. -/
 theorem FiniteBlockBridgeCertificate.transformsTo
     {D : Type*} [Finite D]
-    {grade : D → ℕ} {source target : D → ExtOrd}
+    {grade : D → ℕ} {source target}
     (C : FiniteBlockBridgeCertificate grade source target)
     (hTarget : IsOrderly grade target) :
     TransformsTo grade source target := by

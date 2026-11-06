@@ -23,17 +23,19 @@ namespace VaughtConjecture.Knight.SharpWitnessComposition
 open Transform Value ExtOrd
 
 /-- The bottom fibre of any faithful witness is constant on source blocks. -/
-theorem witness_bot_of_same_block {g : ℕ → ExtOrd} {τ : ExtOrd → ExtOrd}
-    (hτ : Witness g τ) {x y : ExtOrd} (hb : blockFloor x = blockFloor y)
+theorem witness_bot_of_same_block {g} {τ}
+    (hτ : Witness g τ) {x y} (hb : blockFloor x = blockFloor y)
     (hx : τ x = ⊥) : τ y = ⊥ := by
   apply bot_of_same_block (f := τ) _ hb hx
   intro z hz k i hi
   have h := hτ.clause5 z k (by rw [hz]; exact bot_le) i hi
   rwa [hz, extVisibilityReplace_bot] at h
 
+section
+variable {m k i : ℕ} {a x : ExtOrd}
+
 /-- Bounded replacements do not bring an input above a visible cut back to the prefix. -/
-theorem replace_gt_visible_cut {m k i : ℕ} {a x : ExtOrd}
-    (ha : SelfVis m a) (hk : k ≤ m) (hx : a < x) :
+theorem replace_gt_visible_cut (ha : SelfVis m a) (hk : k ≤ m) (hx : a < x) :
     a < extVisibilityReplace x k i := by
   rcases ExtOrd.cases a with rfl | rfl | ⟨b, rfl⟩
   · exact bot_lt_iff_ne_bot.mpr (extVisibilityReplace_ne_bot (ne_of_gt hx) k i)
@@ -45,8 +47,7 @@ theorem replace_gt_visible_cut {m k i : ℕ} {a x : ExtOrd}
       exact visReplace_gt_of_gt (hk.trans (selfVis_ofOrd_iff.mp ha)) (ofOrd_lt_ofOrd.mp hx)
 
 /-- The entire closed prefix is invariant under bounded replacements. -/
-theorem replace_le_visible_cut_iff {m k i : ℕ} {a x : ExtOrd}
-    (ha : SelfVis m a) (hk : k ≤ m) (hi : i ≤ k) :
+theorem replace_le_visible_cut_iff (ha : SelfVis m a) (hk : k ≤ m) (hi : i ≤ k) :
     extVisibilityReplace x k i ≤ a ↔ x ≤ a := by
   constructor
   · intro h
@@ -56,20 +57,6 @@ theorem replace_le_visible_cut_iff {m k i : ℕ} {a x : ExtOrd}
     exact (extVisibilityReplace_mono k i hi h).trans_eq
       (evr_eq_self_of_selfVis (selfVis_mono ha hk) i)
 
-open Classical in
-/-- Keep the old shifter through the cut, and the new one strictly above it. -/
-noncomputable def prefixSplice (a : ExtOrd) (σ τ : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd :=
-  if x ≤ a then σ x else τ x
-
-theorem prefixSplice_of_le {a x : ExtOrd} {σ τ : ExtOrd → ExtOrd} (hx : x ≤ a) :
-    prefixSplice a σ τ x = σ x := ite_eq_left hx
-
-namespace BoundedMap
-
-variable {m : ℕ} {f σ : ExtOrd → ExtOrd} (hf : BoundedMap m f)
-
-include hf
-
-end BoundedMap
+end
 
 end VaughtConjecture.Knight.SharpWitnessComposition

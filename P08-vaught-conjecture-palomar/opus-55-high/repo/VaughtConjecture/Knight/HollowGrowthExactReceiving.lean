@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.HollowGrowthReadback
+public import VaughtConjecture.Knight.GrowthAttachedCarrier
+public import VaughtConjecture.Knight.HollowGrowthAdmission
+public import VaughtConjecture.Knight.ActualOccurrence
+public import VaughtConjecture.Knight.GrowthCappedReadback
 public import VaughtConjecture.Knight.HollowGrowthPadding
 public import VaughtConjecture.Knight.TopSupportReceiving
 public import VaughtConjecture.Knight.GrowthCarrierEvaluation
@@ -21,7 +24,6 @@ the empty root included. No display or stage-bound premise is added.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 noncomputable section
@@ -55,9 +57,9 @@ end Input
 
 /-- Positive roots use the acquired input directly, without enlarging the donor. -/
 theorem receives_exactly_of_pos (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {n : ℕ} (hn : 0 < n) (t : Fin n ↪ M) (p : S α.1 n)
-    (hp : W.eval t = some p) (q : S α.1 (n + 1)) (hq : IsCoface p q) :
-    ∃ (y : M) (hy : y ∉ Set.range t), W.eval (snoc t y hy) = some q := by
+    (hh : W.IsHollow) {n : ℕ} (hn : 0 < n) t (p : S α.1 n)
+    (hp : W.eval t = some p) q (hq : IsCoface p q) :
+    ∃ y hy, W.eval (snoc t y hy) = some q := by
   obtain ⟨D, ⟨I⟩⟩ := acquire q hM hg hh hn hp hq 0
   obtain ⟨y, _, hy, heval⟩ := I.receives_exactly hM
   exact ⟨y, hy, heval⟩
@@ -65,9 +67,9 @@ theorem receives_exactly_of_pos (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
 /-- Exact one-point receiving over every actual root, with no root-arity
 restriction and no loss at donor tops. -/
 theorem receives_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    (q : S α.1 (n + 1)) (hq : IsCoface p q) :
-    ∃ (y : M) (hy : y ∉ Set.range t), W.eval (snoc t y hy) = some q := by
+    {n : ℕ} t (p : S α.1 n) (hp : W.eval t = some p)
+    q (hq : IsCoface p q) :
+    ∃ y hy, W.eval (snoc t y hy) = some q := by
   by_cases hn : 0 < n
   · exact receives_exactly_of_pos hM hg hh hn t p hp q hq
   obtain ⟨z, hz, pR, _, _, Q, _, hkeep, D, ⟨I⟩⟩ :=

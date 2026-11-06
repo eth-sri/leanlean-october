@@ -18,8 +18,6 @@ remain literal. This is a two-layer construction, not arbitrary-ambient lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PairedCoupledSections
 
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
@@ -27,7 +25,7 @@ open PairedSlotEncoding PairedSlotComparison
 
 noncomputable section
 
-theorem short_replace {k i : ℕ} {x : ExtOrd} (hx : Short k x) (hi : i ≤ k) :
+theorem short_replace {k i} {x} (hx : Short k x) (hi : i ≤ k) :
     Short k (extVisibilityReplace x k i) := by
   rcases hx with rfl | rfl | ⟨a, rfl, ha⟩
   · exact Or.inl (extVisibilityReplace_bot _ _)
@@ -38,21 +36,13 @@ theorem short_replace {k i : ℕ} {x : ExtOrd} (hx : Short k x) (hi : i ≤ k) :
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hk)]
       exact Or.inr (Or.inr ⟨a, rfl, ha⟩)
 
-theorem supported_short {X : Type*} {k : ℕ} {G : Finset ExtOrd} {p : X → ExtOrd}
+theorem supported_short {X} {k} {G : Finset ExtOrd} {p : X → ExtOrd}
     (hG : ∀ z ∈ G, Short k z) (hp : ∀ x, Short k (p x))
-    {v : ExtOrd} (hv : OrbitPrefixSupport.Supported k (G : Set ExtOrd) p v) : Short k v := by
+    {v} (hv : OrbitPrefixSupport.Supported k (G : Set ExtOrd) p v) : Short k v := by
   rcases hv with rfl | hv | ⟨d, i, hi, rfl⟩
   · exact Or.inl rfl
   · exact hG _ hv
   · exact short_replace (hp d) hi
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
-
-variable (k : ℕ) (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
-
-variable {G : Finset ExtOrd} {C : ExtOrd}
 
 end
 end VaughtConjecture.Knight.PairedCoupledSections

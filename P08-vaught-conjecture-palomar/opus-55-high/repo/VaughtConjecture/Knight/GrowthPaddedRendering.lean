@@ -23,7 +23,6 @@ The proof follows the checked padded LOW renderer on the growth catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedRendering
 open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
 open GrowthPaddedSuccessor SourcePrefixRows SharpWitnessComposition PairedSlotComparison
@@ -39,7 +38,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 /-- Native upper sources are short through two, even though the retained
 grade-one semantic rows include long tips. -/
-theorem source_short (a : Catalogue X 2) (d : Cell (carrier I X attach hA hB hC)) :
+theorem source_short a d :
     Short 2 (source I X attach hA hB hC a d) := by
   let J := input I X attach hA hB hC
   rcases GrowthPaddedSuccessor.cell_cases I X attach hA hB hC d with ⟨x, rfl⟩ | ⟨b, rfl⟩
@@ -47,7 +46,7 @@ theorem source_short (a : Catalogue X 2) (d : Cell (carrier I X attach hA hB hC)
     rw [J.source_old]
     rcases RelativeLadderLayer.renderWith_supported I.boundary J.one (field I)
         (fields X 1) (baseAnchor X a) (fields X 2 a) J.ceiling x with hz | ⟨f, hf⟩ | hh
-    · exact Or.inl hz
+    · tauto
     · exact (congrArg (Short 2) hf).mpr (anchor_short X a f)
     · exact (congrArg (Short 2) hh).mpr
         (CanonicalFieldLayer.grid_short 2 (Field I.right.scheme I.left.scheme)
@@ -66,7 +65,7 @@ theorem anchor_fields : fields X 2 (anchor I X hj S hS hp) =
     PairedSlotEncoding.normalize 2 S.profile :=
   GrowthHigherSources.normalized_fields X (by decide) hj S hS hp
 
-theorem birth_ranks (d : Field I.right.scheme I.left.scheme) :
+theorem birth_ranks d :
     RelativeLadderLayer.ranks (fields X 1) (baseAnchor X (anchor I X hj S hS hp)) d =
       LadderScalarRendering.fieldRank S.profile d := by
   rw [baseAnchor_ranks, anchor_fields]
@@ -83,7 +82,7 @@ def baseRender (H : ExtOrd) : Cell (input I X attach hA hB hC).lower → ExtOrd 
 variable {G : Finset ExtOrd} {H : ExtOrd}
 
 theorem render_old (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
-    (hb : ∀ d, S.profile d ≤ H) (d : Cell (input I X attach hA hB hC).lower) :
+    (hb : ∀ d, S.profile d ≤ H) d :
     render I X attach hA hB hC hj S hS hp G H (old I X attach hA hB hC d) =
       baseRender I X attach hA hB hC hj S hS hp H d := by
   let J := input I X attach hA hB hC
@@ -107,7 +106,7 @@ theorem baseRender_lawful (hH : SelfVis 2 H) (hb : ∀ d, S.profile d ≤ H) :
     (hH.mono (by decide)) (boundary_lawful_at I X attach hS)
 
 theorem render_below_old (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
-    (hb : ∀ d, S.profile d ≤ H) (c : Cell (input I X attach hA hB hC).lower)
+    (hb : ∀ d, S.profile d ≤ H) c
     (hc : GradedLe ((input I X attach hA hB hC).lower.cell c) (A, j)) :
     RespectsSemanticsBelow (rows I X attach hA hB hC)
       ((carrier I X attach hA hB hC).cell (old I X attach hA hB hC c))
@@ -116,7 +115,7 @@ theorem render_below_old (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
   apply (WeightedSourcePrefixLayer.old_respects_iff J.data J.weight J.weight_visible
     (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ J.separation c)).mpr
   apply (SeparatedSourceLayerCarrier.base_respects_iff J.lower
-    (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty))
+    (LadderWeightedSuccessor.Input.Node)
     2 (by decide) hA J.separation J.lowerRows c _).mpr
   have hl := (baseRender_lawful I X attach hA hB hC hj S hS hp hH hb).mono hc
   simpa only [Function.comp_def, SeparatedSourceLayerCarrier.ownerEquiv_val,
@@ -198,23 +197,23 @@ theorem render_lawful (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
       (render_lawful_two I X attach hA hB hC hj S hS hp hG hH hb)
 
 theorem render_bound (hH : SelfVis 2 H) (hb : ∀ d, S.profile d ≤ H)
-    (d : Cell (carrier I X attach hA hB hC)) :
+    d :
     render I X attach hA hB hC hj S hS hp G H d ≤ H := by
   apply PairedSlotDecoder.decode_le hH
   intro v hv
   obtain ⟨x, hx⟩ := PairedSlotEncoding.mem_values.mp hv
   simpa only [hx] using hb x
 
-theorem render_supported {l : ℕ} (hl : 2 ≤ l) (hH : H ∈ G)
-    (d : Cell (carrier I X attach hA hB hC)) :
+theorem render_supported {l} (hl : 2 ≤ l) (hH : H ∈ G)
+    d :
     OrbitPrefixSupport.Supported l (G : Set ExtOrd) S.profile
       (render I X attach hA hB hC hj S hS hp G H d) :=
   PairedSlotDecoder.decode_supported hl hH _
 
 /-- Whole-coordinate agreement at fixed outer parameters, not equality of
 independently rendered sections at different construction grades. -/
-theorem render_prefix {T : State I.right.scheme I.left.scheme} (hT : Admitted X j T)
-    (ht : ∀ d, T.profile d ≠ ⊤) {h : ExtOrd}
+theorem render_prefix {T} hT
+    ht {h}
     (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
     (hh : h ∈ G) (hhH : h ≤ H) (hag : Agree S.profile T.profile h) :
     Agree (render I X attach hA hB hC hj S hS hp G H)
@@ -240,7 +239,7 @@ theorem render_ceiling (hH : SelfVis 2 H) (hb : ∀ d, S.profile d ≤ H) :
 /-- The retained padded base has its own actual full-scope ceiling occurrence. -/
 theorem render_base_ceiling (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
     (hb : ∀ d, S.profile d ≤ H) :
-    ∃ c : Cell (carrier I X attach hA hB hC),
+    ∃ c,
       (carrier I X attach hA hB hC).cell c = (A, 1) ∧
       render I X attach hA hB hC hj S hS hp G H c = H := by
   let J := input I X attach hA hB hC

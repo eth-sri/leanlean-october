@@ -22,15 +22,14 @@ assert stage bounds, separator realization or an exact receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegal
 open Transform Value ExtOrd AmalgamationPlan LowOnly
 open LowOnlyPaddedIteration LowOnlyPaddedInstallation
 noncomputable section
 
 /-- An ordered exact face of a legal output is the literal semantic restriction. -/
-theorem restrict_eq_of_face {a b : ℕ} (D : SemScheme a) (E : SemScheme b)
-    (f : Fin a ↪ Fin b) {T : Finset (Fin b)} (hf : Finset.univ.image f = T)
+theorem restrict_eq_of_face {a b} D (E : SemScheme b)
+    (f : Fin a ↪ Fin b) {T} hf
     (G : ExactSemanticFace (PointImageSemantics.rows D.scheme f hf D.rows) E.rows)
     (hm : StrictMono G.map)
     (hp : Plan.restrictPlan E.scheme.plan T = D.scheme.plan.image (Finset.image f)) :
@@ -105,7 +104,7 @@ theorem restrict_private :
 theorem donor_occurrence (d : Cell I.left.scheme) :
     CellScheme.restrictFace.toCell (E).scheme I.placeLeft
       (donor_visible I F hroot hA hB hC hcover)
-      (Fin.cast (congrArg (fun D : SemScheme n => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_donor I F hroot hA hB hC hcover)).symm d) =
       (donor I F hroot hA hB hC hcover).map d :=
   OrderedFaceRestriction.toCell_eq I.left (E).scheme (E).rows I.placeLeft I.imageLeft
@@ -115,7 +114,7 @@ theorem donor_occurrence (d : Cell I.left.scheme) :
 theorem private_occurrence (d : Cell I.right.scheme) :
     CellScheme.restrictFace.toCell (E).scheme I.placeRight
       (private_visible I F hroot hA hB hC hcover)
-      (Fin.cast (congrArg (fun D : SemScheme n => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_private I F hroot hA hB hC hcover)).symm d) =
       (privateFace I F hroot hA hB hC hcover).map d :=
   OrderedFaceRestriction.toCell_eq I.right (E).scheme (E).rows I.placeRight I.imageRight

@@ -20,14 +20,13 @@ This is not ordered coatom installation or receiving-family realization.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveRecurrence
 open Transform Value ExtOrd
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
-def Ready (m : ℕ) (hm : m + 3 ≤ A.card) : Prop :=
+def Ready m (hm : m + 3 ≤ A.card) : Prop :=
   sem.IsConsistent ∧
     (GradeCutBoundary.rows (CanonicalRecursiveContract.carrier sem m hm) (m + 3)
       (CanonicalRecursiveSemantics.rows sem hp m hm)).IsBountiful

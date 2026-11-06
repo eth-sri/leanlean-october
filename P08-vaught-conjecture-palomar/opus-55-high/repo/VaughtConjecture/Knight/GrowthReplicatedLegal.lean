@@ -21,7 +21,6 @@ Stage-bounded selected displays and model receiving remain separate.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedLegal
 open Transform Value ExtOrd AmalgamationPlan Growth
 noncomputable section
@@ -90,7 +89,7 @@ theorem restrict_private :
 theorem donor_occurrence (d : Cell I.left.scheme) :
     CellScheme.restrictFace.toCell (E).scheme I.placeLeft
       (donor_visible I X T hA hB hC hsmall)
-      (Fin.cast (congrArg (fun D : SemScheme (n + 1) => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_donor I X T hA hB hC hsmall)).symm d) =
       (donor I X T hA hB hC hsmall).map d :=
   OrderedFaceRestriction.toCell_eq I.left (E).scheme (E).rows I.placeLeft I.imageLeft
@@ -100,7 +99,7 @@ theorem donor_occurrence (d : Cell I.left.scheme) :
 theorem private_occurrence (d : Cell I.right.scheme) :
     CellScheme.restrictFace.toCell (E).scheme I.placeRight
       (private_visible I X T hA hB hC hsmall)
-      (Fin.cast (congrArg (fun D : SemScheme J => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_private I X T hA hB hC hsmall)).symm d) =
       (privateFace I X T hA hB hC hsmall).map d :=
   OrderedFaceRestriction.toCell_eq I.right (E).scheme (E).rows I.placeRight I.imageRight

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.RequestFaceIdentification
-public import VaughtConjecture.Knight.CoupledRepair

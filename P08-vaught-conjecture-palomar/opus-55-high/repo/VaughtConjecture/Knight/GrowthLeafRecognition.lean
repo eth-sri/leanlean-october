@@ -43,8 +43,6 @@ here. -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthLeafRecognition
 
 open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor
@@ -52,7 +50,7 @@ open SupportLadderRows LadderScalarRendering SharpWitnessComposition
 
 noncomputable section
 
-theorem card_pos {ι : Type*} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card := by omega
+theorem card_pos {ι} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card := by omega
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -85,18 +83,18 @@ theorem rungs_pos : 0 < rungs := Nat.succ_pos _
 variable (p : CellScheme.below (carrier I X T hA hB hC) (A, 2) → ExtOrd)
 
 /-- Finite maxima commute with capping. -/
-theorem cap_sup {Y : Type*} [Fintype Y] (g : Y → ExtOrd) (h : ExtOrd) :
+theorem cap_sup {Y} [Fintype Y] (g : Y → ExtOrd) h :
     min (Finset.univ.sup g) h = Finset.univ.sup fun y => min (g y) h :=
   Finset.apply_sup_eq_sup_comp_of_linearOrder (fun x => min x h)
     (fun _ _ hxy => min_le_min_right _ hxy) (min_bot_left _)
 
 /-! ## The native rows on the padded base -/
 
-theorem rank_le_rungs (a : Catalogue X 1) (f : Fld) : ranks₁ a f ≤ rungs :=
+theorem rank_le_rungs a f : ranks₁ a f ≤ rungs :=
   (RelativeLadderLayer.rank_bound (fields X 1) a f).le
 
 /-- The birth anchor's own shadow of `f` is indexed by the rank of `f`. -/
-theorem index_shadow_self (a : Catalogue X 1) (f : Fld) :
+theorem index_shadow_self a f :
     SupportLadderRows.index (H := rungs) ranks₁ a (shadow a f) = ranks₁ a f := by
   change min (FiniteProfileControllers.cut rungs (ranks₁ a) (ranks₁ a)) (ranks₁ a f) = _
   rw [FiniteProfileControllers.cut_refl]
@@ -109,18 +107,10 @@ variable {p}
 /-! ## The maximal leaf chart -/
 
 /-- The catalogue is nonempty: the zero state is admitted and canonical. -/
-def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
+def zeroMember j (hj : 1 ≤ j) : Catalogue X j :=
   Growth.zeroMember X j hj
 
 /-! ## Recognition and finite bottom reflection -/
-
-section Chart
-
-variable {a : Catalogue X 2} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop 2) σ)
-
-include hσ
-
-end Chart
 
 end
 end VaughtConjecture.Knight.GrowthLeafRecognition

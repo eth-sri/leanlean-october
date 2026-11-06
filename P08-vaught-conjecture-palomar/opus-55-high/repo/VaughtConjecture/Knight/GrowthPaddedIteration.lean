@@ -18,7 +18,6 @@ construction, with separate donor/private arities and growth admission.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedIteration
 open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
 open GrowthPaddedContract
@@ -62,7 +61,7 @@ def build : (t : ℕ) → t + 2 ≤ A.card → Layer I X attach hA hB hC (t + 2)
   | 0, _ => initial I X attach hA hB hC
   | t + 1, ht => successor (build t (by omega)) (by omega) (by omega)
 
-theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_plan t ht :
     (build I X attach hA hB hC t ht).carrier.plan = I.boundary.plan := by
   induction t with
   | zero => rfl

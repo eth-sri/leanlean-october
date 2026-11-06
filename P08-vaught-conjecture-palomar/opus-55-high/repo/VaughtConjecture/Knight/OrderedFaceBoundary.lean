@@ -19,8 +19,6 @@ This is the ordered-boundary part of new25, not a receiving probe.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrderedFaceBoundary
 
 open AmalgamationPlan
@@ -35,26 +33,31 @@ abbrev Boundary := ProfileFaceUnion.Carrier (X := Cell D) w.g
 noncomputable def index : Boundary D E w → Finset ι × ℕ :=
   ProfileFaceUnion.paste w.g D.cell E.cell
 
-theorem index_right (e : Cell E) :
+theorem index_right e :
     index D E w (ProfileFaceUnion.right w.f w.g e) = E.cell e :=
   ProfileFaceUnion.paste_right w.f w.g w.shared e
 
-theorem inside_left (z : Boundary D E w) (hz : (index D E w z).1 ⊆ B) :
+section
+variable (z : Boundary D E w)
+
+theorem inside_left (hz : (index D E w z).1 ⊆ B) :
     ∃ d, ProfileFaceUnion.left w.g d = z := by
   rcases ProfileFaceUnion.covered w.f w.g z with ⟨d, rfl⟩ | ⟨e, rfl⟩
-  · exact ⟨d, rfl⟩
+  · grind
   · rw [index_right] at hz
     obtain ⟨i, rfl⟩ := w.right_exhaustive e hz
     exact ⟨w.f i, (ProfileFaceUnion.right_shared w.f w.g i).symm⟩
 
-theorem inside_right (z : Boundary D E w) (hz : (index D E w z).1 ⊆ C) :
+theorem inside_right (hz : (index D E w z).1 ⊆ C) :
     ∃ e, ProfileFaceUnion.right w.f w.g e = z := by
   rcases ProfileFaceUnion.covered w.f w.g z with ⟨d, rfl⟩ | ⟨e, rfl⟩
   · obtain ⟨i, rfl⟩ := w.left_exhaustive d hz
     exact ⟨w.g i, ProfileFaceUnion.right_shared w.f w.g i⟩
-  · exact ⟨e, rfl⟩
+  · grind
 
-theorem below_left (d : Cell D) (z : Boundary D E w) :
+end
+
+theorem below_left (d : Cell D) z :
     GradedLe (index D E w z) (D.cell d) ↔
       ∃ e : D.below (D.cell d), ProfileFaceUnion.left w.g e.1 = z := by
   constructor
@@ -65,7 +68,7 @@ theorem below_left (d : Cell D) (z : Boundary D E w) :
   · rintro ⟨e, rfl⟩
     exact e.2
 
-theorem below_right (d : Cell E) (z : Boundary D E w) :
+theorem below_right (d : Cell E) z :
     GradedLe (index D E w z) (E.cell d) ↔
       ∃ e : E.below (E.cell d), ProfileFaceUnion.right w.f w.g e.1 = z := by
   constructor
@@ -107,13 +110,12 @@ noncomputable def leftCell (d : Cell D) : Cell (scheme D E w R hR hD hE) :=
 noncomputable def rightCell (e : Cell E) : Cell (scheme D E w R hR hD hE) :=
   enumeration D E w (ProfileFaceUnion.right w.f w.g e)
 
-theorem left_index (d : Cell D) :
+theorem left_index d :
     (scheme D E w R hR hD hE).cell (leftCell D E w R hR hD hE d) = D.cell d := by
   change index D E w ((enumeration D E w).symm (enumeration D E w _)) = _
-  rw [Equiv.symm_apply_apply]
-  rfl
+  aesop
 
-theorem right_index (e : Cell E) :
+theorem right_index e :
     (scheme D E w R hR hD hE).cell (rightCell D E w R hR hD hE e) = E.cell e := by
   change index D E w ((enumeration D E w).symm (enumeration D E w _)) = _
   rw [Equiv.symm_apply_apply, index_right]
@@ -124,28 +126,34 @@ theorem left_order : StrictMono (leftCell D E w R hR hD hE) :=
 theorem right_order : StrictMono (rightCell D E w R hR hD hE) :=
   ProfileBoundaryOrder.enumeration_right w.f w.g w.f_mono w.g_mono
 
-theorem left_exhaustive (c : Cell (scheme D E w R hR hD hE))
-    (hc : (scheme D E w R hR hD hE).scope c ⊆ B) :
+section
+variable (c : Cell (scheme D E w R hR hD hE))
+
+theorem left_exhaustive (hc : (scheme D E w R hR hD hE).scope c ⊆ B) :
     ∃ d, leftCell D E w R hR hD hE d = c := by
   obtain ⟨d, hd⟩ := inside_left D E w ((enumeration D E w).symm c) hc
   exact ⟨d, (congrArg (enumeration D E w) hd).trans
     ((enumeration D E w).apply_symm_apply c)⟩
 
-theorem right_exhaustive (c : Cell (scheme D E w R hR hD hE))
-    (hc : (scheme D E w R hR hD hE).scope c ⊆ C) :
+theorem right_exhaustive (hc : (scheme D E w R hR hD hE).scope c ⊆ C) :
     ∃ e, rightCell D E w R hR hD hE e = c := by
   obtain ⟨e, he⟩ := inside_right D E w ((enumeration D E w).symm c) hc
   exact ⟨e, (congrArg (enumeration D E w) he).trans
     ((enumeration D E w).apply_symm_apply c)⟩
 
-theorem overlap (d : Cell D) (e : Cell E) :
+end
+
+section
+variable (d : Cell D)
+
+theorem overlap (e : Cell E) :
     leftCell D E w R hR hD hE d = rightCell D E w R hR hD hE e ↔
       ∃ i, w.f i = d ∧ w.g i = e := by
   change enumeration D E w _ = enumeration D E w _ ↔ _
-  rw [Equiv.apply_eq_iff_eq]
+  simp_all
   exact ProfileFaceUnion.overlap w.f w.g d e
 
-noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
+noncomputable def leftBelow  : D.below (D.cell d) ≃
     (scheme D E w R hR hD hE).below
       ((scheme D E w R hR hD hE).cell (leftCell D E w R hR hD hE d)) :=
   Equiv.ofBijective (fun e => ⟨leftCell D E w R hR hD hE e.1, by
@@ -161,6 +169,8 @@ noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
     obtain ⟨f, hf⟩ := (below_left D E w d ((enumeration D E w).symm e.1)).mp he
     exact ⟨f, Subtype.ext ((congrArg (enumeration D E w) hf).trans
       ((enumeration D E w).apply_symm_apply e.1))⟩⟩
+
+end
 
 noncomputable def rightBelow (d : Cell E) : E.below (E.cell d) ≃
     (scheme D E w R hR hD hE).below
@@ -181,7 +191,7 @@ noncomputable def rightBelow (d : Cell E) : E.below (E.cell d) ≃
 
 /-- Completeness at an old index is inherited; new mixed indices are not claimed complete. -/
 theorem complete_on_input (hDc : D.IsComplete) (hEc : E.IsComplete)
-    {BJ : Finset ι × ℕ}
+    {BJ}
     (hBJ : BJ ∈ Plan.gradedPlan D.plan ∨ BJ ∈ Plan.gradedPlan E.plan) :
     ∃ c, (scheme D E w R hR hD hE).cell c = BJ := by
   rcases hBJ with hl | hr

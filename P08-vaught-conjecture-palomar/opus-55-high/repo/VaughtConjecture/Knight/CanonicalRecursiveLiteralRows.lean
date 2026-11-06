@@ -10,14 +10,13 @@ public import VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport
 /-! # Literal boundary rows on the recursive inventory -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveLiteralRows
 open Transform Value ExtOrd CanonicalRecursiveContract
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
-theorem row (n : ℕ) (hA : n + 3 ≤ A.card) (c : Cell D) (d : D.below (D.cell c)) :
+theorem row n hA c d :
     (CanonicalRecursiveSemantics.rows sem hp n hA).E (boundary sem n hA c)
       ⟨boundary sem n hA d.1, by
         rw [CanonicalRecursiveInventory.boundary_cell, CanonicalRecursiveInventory.boundary_cell]

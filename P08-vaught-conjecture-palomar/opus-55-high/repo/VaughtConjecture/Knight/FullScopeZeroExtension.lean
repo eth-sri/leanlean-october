@@ -14,8 +14,6 @@ This is a grade extension, not an extension across a proper scope.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -29,19 +27,24 @@ noncomputable def zeroAbove (q : D.below (A, K) → ExtOrd) (d : Cell D) : ExtOr
   if hd : D.grade d ≤ K then
     q ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩ else ⊥
 
-theorem zeroAbove_low (q : D.below (A, K) → ExtOrd) (d : D.below (A, K)) :
+section
+variable (q : D.below (A, K) → ExtOrd)
+
+theorem zeroAbove_low (d : D.below (A, K)) :
     zeroAbove q d.1 = q d := by
   have hd : D.grade d.1 ≤ K := d.2.2
   rw [zeroAbove, dite_of_pos hd]
   rfl
 
-theorem zeroAbove_high (q : D.below (A, K) → ExtOrd) {d : Cell D} (hd : ¬ D.grade d ≤ K) :
+theorem zeroAbove_high {d : Cell D} (hd : ¬ D.grade d ≤ K) :
     zeroAbove q d = ⊥ := by rw [zeroAbove, dite_of_neg hd]
+
+end
 
 end CellScheme
 
 /-- Extending a respecting full-scope lower labelling by bottom preserves respect. -/
-theorem RespectsSemanticsBelow.zeroAbove {sem : Semantics D} {q : D.below (A, K) → ExtOrd}
+theorem RespectsSemanticsBelow.zeroAbove {sem : Semantics D} {q}
     (hq : RespectsSemanticsBelow sem (A, K) q) :
     RespectsSemantics sem (CellScheme.zeroAbove q) := by
   have mem (d : Cell D) (hd : D.grade d ≤ K) : GradedLe (D.cell d) (A, K) :=

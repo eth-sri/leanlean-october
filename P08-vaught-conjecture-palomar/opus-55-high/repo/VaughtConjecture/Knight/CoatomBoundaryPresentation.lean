@@ -19,8 +19,6 @@ This constructs the proper boundary, not full-scope rows or an amalgam type.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 
 open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
@@ -29,7 +27,10 @@ noncomputable section
 
 variable {n : ℕ}
 
-theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
+section
+variable (f : Fin (n + 1) ↪ Fin (n + 2))
+
+theorem exists_missing  :
     ∃ a, Finset.univ.image f = Finset.univ.erase a := by
   classical
   have hc : (Finset.univ \ Finset.univ.image f).card = 1 := by
@@ -44,12 +45,14 @@ theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
   simp only [Finset.mem_erase, Finset.mem_univ, and_true]
   tauto
 
-def missing (f : Fin (n + 1) ↪ Fin (n + 2)) : Fin (n + 2) :=
+def missing  : Fin (n + 2) :=
   Classical.choose (exists_missing f)
 
-theorem image_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
+theorem image_missing  :
     Finset.univ.image f = Finset.univ.erase (missing f) :=
   Classical.choose_spec (exists_missing f)
+
+end
 
 variable (C : CoatomPair n)
 
@@ -111,8 +114,8 @@ theorem common_plan :
     ← image_restrictFace_plan D.left.scheme C.g₁ D.visibleLeft]
   rw [common_image C, ← common_image_right (C := C), restrictPlan_image,
     ← image_restrictFace_plan D.right.scheme C.g₂ D.visibleRight]
-  have hl := congrArg (fun E : SemScheme n => E.scheme.plan) D.faceLeft
-  have hr := congrArg (fun E : SemScheme n => E.scheme.plan) D.faceRight
+  have hl := congrArg (fun E => E.scheme.plan) D.faceLeft
+  have hr := congrArg (fun E => E.scheme.plan) D.faceRight
   change (D.left.scheme.restrictFace C.g₁ D.visibleLeft).plan = _ at hl
   change (D.right.scheme.restrictFace C.g₂ D.visibleRight).plan = _ at hr
   rw [hl, hr, Finset.image_image, Finset.image_image]
@@ -162,7 +165,7 @@ end Data
 
 /-- Compatible stage types provide the raw input data, with their original schemes literal.
 The labels are not extended here. -/
-def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
+def of_compatible {α} {pa pb : S α (n + 1)}
     (h : C.Compatible pa pb) : Data C := by
   classical
   let r := Classical.choose h

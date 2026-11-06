@@ -55,10 +55,10 @@ open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 
 /-! ## The ordinal under a proper value -/
 
-theorem ofOrd_ordOf {x : ExtOrd} (hb : x ≠ ⊥) (ht : x ≠ ⊤) : ofOrd (ordOf x) = x := by
+theorem ofOrd_ordOf {x} (hb : x ≠ ⊥) (ht : x ≠ ⊤) : ofOrd (ordOf x) = x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · exact absurd rfl hb
-  · exact absurd rfl ht
+  · grind
+  · grind
   · rw [ordOf_ofOrd]
 
 /-! ## Reading-witness facts -/
@@ -209,17 +209,17 @@ whole actual private bottom-pattern class. -/
 theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     (grade_C : DA.grade req.C = req.N)
     (hrow : RespectsSemanticsBelow semA (DA.cell req.C) (semA.E req.C))
-    {u₀ : Cell DA → ExtOrd} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
+    {u₀} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
     (ha_top : u₀ req.a.1 = ⊤) (ha_ne_top : semA.E req.C req.a ≠ ⊤)
     (S : Finset Ordinal.{0}) (hS : ∀ μ ∈ S, limitPart μ = μ)
     (ref : Ordinal.{0} → DA.below (DA.cell req.C))
     (href : ∀ μ ∈ S, ∃ j < req.N, u₀ (ref μ).1 = ofOrd (μ + j))
-    {P : Cell DQ → ExtOrd} (hP : RespectsSemantics semQ P) {root top : Finset ιQ × ℕ}
+    {P} (hP : RespectsSemantics semQ P) {root top}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top) (top_le_R : top.2 ≤ req.R)
     (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
+    (hroot : ∀ s,
       RespectsSemanticsBelow semA (DA.cell req.C) s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful)

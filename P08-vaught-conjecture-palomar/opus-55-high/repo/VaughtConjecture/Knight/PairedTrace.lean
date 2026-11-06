@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 public import VaughtConjecture.Knight.Directedness
 public import VaughtConjecture.Knight.ChartLanguage
 
@@ -69,87 +70,14 @@ namespace KnightRealization
 /-- Exact parent consistency, `typeMap`-spelled (the tower's `pull` is `typeMap`,
 definitionally).  Re-proved from the mainline definition; the original one-liner is
 `PartialDensity.lean` on `origin/e7/high-candidate` (PR #194). -/
-theorem exactParent_typeMap {γ : LimitStage} {M : Type w} {B : KnightRealization γ M}
-    (hB : B.IsExactParentConsistent) {n k : ℕ} (t : Fin n ↪ M) (q : S γ.1 n)
+theorem exactParent_typeMap {γ} {M} {B : KnightRealization γ M}
+    (hB : B.IsExactParentConsistent) {n k} t (q : S γ.1 n)
     (f : Fin k ↪ Fin n) (hq : B.eval t = some q) : B.eval (f.trans t) = typeMap f q :=
   hB t q f hq
 
 /-! ### The paired node: two labelled covers with equal source reductions -/
 
-/-- **One node of the paired provenance trace**: a labelled cover of each witness at one
-common finite arity, whose labels have EQUAL source reductions — the single cross-model
-field, a carrier-free stage type at the base stage.  Target-stage labels are never compared
-(the witnesses may even sit at different stages); everything the chart projection consumes
-is the shared reduction.  Membership in the pairing relation is by construction
-(`PairedTrace`), never by `HasCommonChart` — the chart certificate is the PROJECTION
-`hasCommonChart_sources`. -/
-structure PairedCover {β₁ β₂ : LimitStage} {M₁ M₂ : Type w}
-    (hβ₁ : blockStage 0 ≤ β₁) (hβ₂ : blockStage 0 ≤ β₂)
-    (W₁ : KnightRealization β₁ M₁) (W₂ : KnightRealization β₂ M₂) where
-  /-- The common finite arity of the two covers. -/
-  arity : ℕ
-  /-- The left occurrence. -/
-  tuple₁ : Fin arity ↪ M₁
-  /-- The right occurrence. -/
-  tuple₂ : Fin arity ↪ M₂
-  /-- The left target-stage label. -/
-  type₁ : S β₁.1 arity
-  /-- The right target-stage label. -/
-  type₂ : S β₂.1 arity
-  /-- The left cover is actually evaluated in the left witness. -/
-  eval₁ : W₁.eval tuple₁ = some type₁
-  /-- The right cover is actually evaluated in the right witness. -/
-  eval₂ : W₂.eval tuple₂ = some type₂
-  /-- **The matching field**: the two labels have equal source reductions. -/
-  red_eq : reduceType (blockStage 0).2 hβ₁ type₁ = reduceType (blockStage 0).2 hβ₂ type₂
-
-namespace PairedCover
-
-variable {β₁ β₂ : LimitStage} {M₁ M₂ : Type w}
-variable {hβ₁ : blockStage 0 ≤ β₁} {hβ₂ : blockStage 0 ≤ β₂}
-variable {W₁ : KnightRealization β₁ M₁} {W₂ : KnightRealization β₂ M₂}
-variable {R₁ : KnightRealization (blockStage 0) M₁} {R₂ : KnightRealization (blockStage 0) M₂}
-
-/-- The shared source label of the node — the common reduction. -/
-noncomputable def sourceType (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : S (blockStage 0).1 nd.arity :=
-  reduceType (blockStage 0).2 hβ₁ nd.type₁
-
-/-- The mirrored node: back is symmetry. -/
-def swap (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : PairedCover hβ₂ hβ₁ W₂ W₁ :=
-  ⟨nd.arity, nd.tuple₂, nd.tuple₁, nd.type₂, nd.type₁, nd.eval₂, nd.eval₁, nd.red_eq.symm⟩
-
-@[simp] theorem swap_swap (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.swap = nd := rfl
-
-@[simp] theorem swap_arity (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.arity = nd.arity := rfl
-
-@[simp] theorem swap_tuple₁ (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.tuple₁ = nd.tuple₂ :=
-  rfl
-
-@[simp] theorem swap_tuple₂ (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.tuple₂ = nd.tuple₁ :=
-  rfl
-
-end PairedCover
-
 /-! ### The paired step and the provenance trace -/
-
-variable {β₁ β₂ : LimitStage} {M₁ M₂ : Type w}
-variable {hβ₁ : blockStage 0 ≤ β₁} {hβ₂ : blockStage 0 ≤ β₂}
-variable {W₁ : KnightRealization β₁ M₁} {W₂ : KnightRealization β₂ M₂}
-variable {R₁ : KnightRealization (blockStage 0) M₁} {R₂ : KnightRealization (blockStage 0) M₂}
-
-namespace PairedStep
-
-variable {nd nd' : PairedCover hβ₁ hβ₂ W₁ W₂}
-
-end PairedStep
-
-namespace PairedTrace
-
-variable {s : PairedCover hβ₁ hβ₂ W₁ W₂}
-
-end PairedTrace
-
-/-! ### Base-face pinning: the unconditional half of any transfer -/
 
 end KnightRealization
 end VaughtConjecture.Knight

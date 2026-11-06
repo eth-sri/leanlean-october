@@ -17,7 +17,6 @@ of this prescription.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveTopSections
 open Transform Value ExtOrd CanonicalRecursiveContract
 noncomputable section
@@ -32,9 +31,9 @@ def boundaryTarget (d : D.below (A, n + 3)) : (carrier sem n hA).below (A, n + 3
 
 /-- Arbitrary lawful current boundary values, including literal top, extend
 through every recursive controller. This is section supply, not cap lifting. -/
-theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
+theorem exists_section {p}
     (hpr : RespectsSemanticsBelow sem (A, n + 3) p) :
-    ∃ r : (carrier sem n hA).below (A, n + 3) → ExtOrd,
+    ∃ r,
       RespectsSemanticsBelow (CanonicalRecursiveSemantics.rows sem hp n hA) (A, n + 3) r ∧
       ∀ d, r (boundaryTarget sem n hA d) = p d := by
   classical

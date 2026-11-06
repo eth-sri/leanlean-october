@@ -54,70 +54,20 @@ section Generic
 
 variable (α : Type*) [Encodable α]
 
-noncomputable instance : Encodable (RelQueryOn L α) := Encodable.ofCountable _
-
 -- StructureSpaceOn is abbrev, so TC sees through it. These named instances
 -- ensure the results are available by name when needed.
-instance : CompactSpace (StructureSpaceOn L α) := inferInstance
-instance : TopologicalSpace.MetrizableSpace (StructureSpaceOn L α) := inferInstance
-instance : SecondCountableTopology (StructureSpaceOn L α) := inferInstance
+
 instance : TopologicalSpace.IsCompletelyMetrizableSpace (StructureSpaceOn L α) := inferInstance
-instance : PolishSpace (StructureSpaceOn L α) := PolishSpace.mk
-instance : BorelSpace (StructureSpaceOn L α) := inferInstance
-instance : StandardBorelSpace (StructureSpaceOn L α) := inferInstance
 
 -- Pair space instances
-instance : PolishSpace (StructurePairSpaceOn L α) := inferInstance
-instance : BorelSpace (StructurePairSpaceOn L α) := inferInstance
-instance : StandardBorelSpace (StructurePairSpaceOn L α) := inferInstance
 
 end Generic
-
-/-- `RelQuery L` is encodable when the language has countably many relation symbols.
-This is the key ingredient for all topological instances. -/
-noncomputable instance : Encodable (RelQuery L) :=
-  Encodable.ofCountable _
 
 -- Bridge instances: StructureSpace L is a def, so TC can't unfold it.
 -- We explicitly provide what Mathlib proves for `RelQuery L → Bool`.
 
-instance : CompactSpace (StructureSpace L) := by
-  unfold StructureSpace; infer_instance
-
-instance : TopologicalSpace.MetrizableSpace (StructureSpace L) := by
-  unfold StructureSpace; infer_instance
-
-instance : SecondCountableTopology (StructureSpace L) := by
-  unfold StructureSpace; infer_instance
-
 instance : TopologicalSpace.IsCompletelyMetrizableSpace (StructureSpace L) := by
   unfold StructureSpace; infer_instance
-
-/-- The structure space is Polish: second-countable and completely metrizable.
-This follows from `StructureSpace L = RelQuery L → Bool` being a countable product
-of finite discrete spaces, hence compact and metrizable. -/
-@[blueprint "thm:structure-space-polish"
-  (title := /-- Structure space is Polish -/)
-  (statement := /-- For a countable relational language, the structure space is a Polish space. -/)
-  (proof := /-- The structure space is a countable product of copies of $\{0,1\}$, which is compact and metrizable, hence Polish. -/)
-  (uses := ["def:structure-space"])]
-instance : PolishSpace (StructureSpace L) := PolishSpace.mk
-
-/-- The product σ-algebra on the structure space equals the Borel σ-algebra. -/
-instance : BorelSpace (StructureSpace L) := by
-  unfold StructureSpace at *; infer_instance
-
-/-- The structure space is standard Borel (Polish + Borel). -/
-instance : StandardBorelSpace (StructureSpace L) := inferInstance
-
-/-- The pair space `StructureSpace L × StructureSpace L` is Polish. -/
-instance : PolishSpace (StructureSpace L × StructureSpace L) := inferInstance
-
-/-- The pair space is Borel. -/
-instance : BorelSpace (StructureSpace L × StructureSpace L) := inferInstance
-
-/-- The pair space is standard Borel. -/
-instance : StandardBorelSpace (StructureSpace L × StructureSpace L) := inferInstance
 
 end Language
 

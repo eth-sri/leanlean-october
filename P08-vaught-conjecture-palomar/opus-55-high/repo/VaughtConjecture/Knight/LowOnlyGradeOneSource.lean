@@ -19,15 +19,14 @@ fixed receiving construction, without importing its LOW/HIGH family.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CanonicalPairedInverse
 open LadderScalarRendering SharpWitnessComposition
 noncomputable section
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
-theorem Admissible.profile_visible_one {S : State P C} (hS : F.Admissible 1 S)
-    (d : Field P C) : SelfVis 1 (S.profile d) := by
+theorem Admissible.profile_visible_one {S} (hS : F.Admissible 1 S)
+    d : SelfVis 1 (S.profile d) := by
   rcases d with d | d | d
   · by_cases hd : 1 < P.scheme.grade d
     · exact hS.futureP d hd
@@ -47,7 +46,10 @@ theorem Admissible.profile_visible_one {S : State P C} (hS : F.Admissible 1 S)
           omega⟩).symm
   · simpa only [State.profile, min_eq_left (Nat.succ_le_of_lt F.gap.K_pos)] using hS.cutoff
 
-theorem anchor_visible_one (a : F.Anchor 1) (d : Field P C) :
+section
+variable (a : F.Anchor 1) (d : Field P C)
+
+theorem anchor_visible_one  :
     SelfVis 1 (F.fields 1 a d) := by
   obtain ⟨S, hS, he⟩ := a.property.2
   change SelfVis 1 (a.val d)
@@ -55,8 +57,7 @@ theorem anchor_visible_one (a : F.Anchor 1) (d : Field P C) :
   exact hS.profile_visible_one F d
 
 /-- A positive visible canonical grade-one field is an actual grid endpoint. -/
-theorem anchor_grid_one (a : F.Anchor 1) (d : Field P C)
-    (hd : F.fields 1 a d ≠ ⊥) : ∃ B, grid 1 B = F.fields 1 a d := by
+theorem anchor_grid_one (hd : F.fields 1 a d ≠ ⊥) : ∃ B, grid 1 B = F.fields 1 a d := by
   rcases (ExtOrd.mem_codedAlphabet_iff.mp
     (CanonicalPairedProfiles.inventory_coded _ _ a.property.1 d)) with hz | ⟨b, i, _, _, he⟩
   · exact (hd hz).elim
@@ -67,7 +68,7 @@ theorem anchor_grid_one (a : F.Anchor 1) (d : Field P C)
   rw [he] at hs
   simp only [Short, ofOrd_ne_bot, ofOrd_ne_top, false_or, ofOrd_inj] at hs
   obtain ⟨_, rfl, hs⟩ := hs
-  have hf : finitePart (Ordinal.omega0 * b + i) = i := by
+  have hf := by
     simpa only [limitPart_omega0_mul] using
       finitePart_limitPart_add_nat (Ordinal.omega0 * b) i
   rw [hf] at hvis hs
@@ -75,19 +76,21 @@ theorem anchor_grid_one (a : F.Anchor 1) (d : Field P C)
   subst i
   exact ⟨b, he.symm⟩
 
+end
+
 local instance : Fintype (C.scheme.below (effC n 1)) := Fintype.ofFinite _
 
 /-- The chart, prescription and original cap determine a lawful encoded private
 source and an actual member of the unchanged birth-grade catalogue. -/
-theorem exists_private_rank_repair (a : F.Anchor 1) {σ : ExtOrd → ExtOrd}
+theorem exists_private_rank_repair (a : F.Anchor 1) {σ}
     (hσ : Witness (gTop 1) σ)
-    {p : C.scheme.below (effC n 1) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow C.rows (effC n 1) p)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
     (hag : ∀ d, min (σ (SupportLadderRows.source (RelativeLadderLayer.rungs
         (X := Field P C)) (fieldRank a.val (.inr (.inl d.1))))) γ = min (p d) γ)
-    (c : C.scheme.below (effC n 1)) (hactive : γ < p c) :
-    ∃ b : F.Anchor 1, ∃ ν : ExtOrd → ExtOrd, ∃ B : ℕ,
+    c (hactive : γ < p c) :
+    ∃ b : F.Anchor 1, ∃ ν, ∃ B,
       BoundedMap 1 ν ∧
       (∀ f, a.val f < grid 1 B ↔
         σ (SupportLadderRows.source (RelativeLadderLayer.rungs (X := Field P C))

@@ -45,23 +45,24 @@ open Transform Value ExtOrd
 noncomputable def constNonbot (c : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if x = ⊥ then ⊥ else c
 
-@[simp] theorem constNonbot_bot (c : ExtOrd) : constNonbot c ⊥ = ⊥ := by
+section
+variable (c : ExtOrd)
+
+@[simp] theorem constNonbot_bot  : constNonbot c ⊥ = ⊥ := by
   simp [constNonbot]
 
-@[simp] theorem constNonbot_ofOrd (c : ExtOrd) (x : Ordinal) :
+@[simp] theorem constNonbot_ofOrd (x : Ordinal) :
     constNonbot c (ofOrd x) = c := by
   simp [constNonbot]
 
-theorem monotone_constNonbot (c : ExtOrd) : Monotone (constNonbot c) := by
+theorem monotone_constNonbot  : Monotone (constNonbot c) := by
   intro x y hxy
   by_cases hx : x = ⊥
-  · rw [hx, constNonbot_bot]
-    exact bot_le
-  have hy : y ≠ ⊥ := by
-    intro hy
-    apply hx
-    exact le_bot_iff.mp (hy ▸ hxy)
+  · simp_all
+  have hy : y ≠ ⊥ := by grind
   simp [constNonbot, hx, hy]
+
+end
 
 /-- `constNonbot c` is a `K`-step shifter whenever `c ≠ ⊥` is self-visible at `K`: it is
 constant on every block, and its `⊥`-fiber is `{⊥}`. -/
@@ -76,14 +77,15 @@ theorem isStepShifter_constNonbot {K : ℕ} {c : ExtOrd}
     rw [show constNonbot c x = c by simp [constNonbot, hx]]
     exact extVisReplace_self_of_le hc hk
   blockwise _ := Or.inr ⟨c, hc, fun i _ => by simp⟩
-  bot_blocks _ _ _ hbot := by
-    rw [constNonbot_ofOrd] at hbot
-    exact absurd hbot hc0
+  bot_blocks _ _ _ hbot := by simp_all
 
 /-! ### Arity one: every cell has grade `1`, and there is one graded pair -/
 
+section
+variable (D : CellScheme (ι := Fin 1) Finset.univ)
+
 /-- On a scheme over `Fin 1` every cell has grade `1`. -/
-theorem grade_eq_one_of_fin_one (D : CellScheme (ι := Fin 1) Finset.univ) (d : Cell D) :
+theorem grade_eq_one_of_fin_one d :
     D.grade d = 1 := by
   have hpos := D.grade_pos d
   have hscope := D.grade_le_card_scope d
@@ -92,8 +94,7 @@ theorem grade_eq_one_of_fin_one (D : CellScheme (ι := Fin 1) Finset.univ) (d : 
 
 /-- The graded plan of a plan on `Fin 1` has a single member, `(univ, 1)`. -/
 theorem gradedPair_unique_fin_one
-    (D : CellScheme (ι := Fin 1) Finset.univ)
-    {X Y : Finset (Fin 1) × ℕ}
+    {X Y}
     (hX : X ∈ Plan.gradedPlan D.plan) (hY : Y ∈ Plan.gradedPlan D.plan) : X = Y := by
   rcases X with ⟨BX, jX⟩
   rcases Y with ⟨BY, jY⟩
@@ -115,6 +116,8 @@ theorem gradedPair_unique_fin_one
     Finset.eq_of_subset_of_card_le (Finset.subset_univ _) (by simp [hBYcard])
   rw [hBXeq, hBYeq, hjX, hjY]
 
+end
+
 /-! ### The domain: constant row `1` on the arity-one mute scheme -/
 
 /-- The label `1` is self-visible at grade `1`. -/
@@ -124,8 +127,7 @@ theorem one_selfVisible :
   refine Or.inr (Or.inr ⟨((1 : ℕ) : Ordinal), rfl, ?_⟩)
   have h := finitePart_limitPart_add_nat (0 : Ordinal) 1
   have hzero : limitPart (0 : Ordinal) = 0 := by simp [limitPart]
-  rw [hzero, zero_add] at h
-  exact h.symm.le
+  grind
 
 /-- The semantics on the arity-one mute scheme whose every row is the constant `1`. -/
 noncomputable def successorOneSemantics :
@@ -168,14 +170,17 @@ noncomputable def successorOneSemScheme : SemScheme 1 where
 
 /-! ### The labelling `γ + 1` -/
 
+section
+variable (γ : Ordinal)
+
 /-- Every successor label is self-visible at grade `1`: its finite part is at least `1`. -/
-theorem successor_selfVisible (γ : Ordinal) :
+theorem successor_selfVisible  :
     extVisibilityReplace (ofOrd (γ + 1)) 1 1 = ofOrd (γ + 1) := by
   rw [extVisibilityReplace_self_iff]
-  refine Or.inr (Or.inr ⟨γ + 1, rfl, ?_⟩)
+  simp_all
   have hfp : finitePart (γ + 1) = finitePart γ + 1 := by
-    have hdecomp : γ + 1 = (limitPart γ + (finitePart γ : Ordinal)) + 1 :=
-      congrArg (fun x : Ordinal => x + 1) (decomposition γ).symm
+    have hdecomp :=
+      congrArg (fun x => x + 1) (decomposition γ).symm
     have hcast : (finitePart γ : Ordinal) + 1 = ((finitePart γ + 1 : ℕ) : Ordinal) := by simp
     have hnormal : γ + 1 = limitPart γ + ((finitePart γ + 1 : ℕ) : Ordinal) := by
       rw [hdecomp, add_assoc, hcast]
@@ -186,7 +191,7 @@ theorem successor_selfVisible (γ : Ordinal) :
 /-- The constant labelling `γ + 1` respects the constant-`1` semantics: orderliness by
 self-visibility, locality by the step shifter `constNonbot (γ + 1)` at threshold `1`,
 availability at the cell itself. -/
-theorem successorOneLabel_respects (γ : Ordinal) :
+theorem successorOneLabel_respects  :
     RespectsSemantics successorOneSemantics (fun _ => ofOrd (γ + 1)) where
   orderly _ := by
     rw [grade_eq_one_of_fin_one]
@@ -197,10 +202,12 @@ theorem successorOneLabel_respects (γ : Ordinal) :
         (SemScheme.muteChain 1).scheme.grade d.1 ≤ 1 := fun _ => by
       rw [grade_eq_one_of_fin_one]
     simpa [successorOneSemantics] using
-      (isStepShifter_constNonbot (K := 1)
+      (isStepShifter_constNonbot
         (c := ofOrd (γ + 1)) (ofOrd_ne_bot _) (successor_selfVisible γ)).transformsTo
           hgrade (fun _ => ofOrd (1 : ℕ))
   availability _ Xi _ _ := ⟨Xi, rfl, le_rfl⟩
+
+end
 
 /-- **The successor-labelled one-point type** (Lemma 4.2.2, second clause): for `γ + 1 < α`,
 the stage type on `successorOneSemScheme` with every cell labelled `γ + 1`. -/
@@ -210,20 +217,24 @@ noncomputable def successorOneType (α γ : Ordinal) (hγ : γ + 1 < α) : S α 
   label_bound _ := Or.inl (ofOrd_lt_ofOrd.mpr hγ)
   respects := successorOneLabel_respects γ
 
+section
+variable {α γ : Ordinal}
+
 /-- For `γ + 1 < α` there is a one-point type with a cell labelled `γ + 1` (the cell exists by
 completeness at the graded pair `(univ, 1)`). -/
-theorem exists_successorOneType {α γ : Ordinal} (hγ : γ + 1 < α) :
+theorem exists_successorOneType (hγ : γ + 1 < α) :
     ∃ (r : S α 1) (Sig : Cell r.scheme.scheme), r.label Sig = ofOrd (γ + 1) := by
   let r := successorOneType α γ hγ
   have hcomplete := r.scheme.complete (Finset.univ, 1)
     (Plan.mem_gradedPlan.mpr ⟨r.scheme.scheme.isPlan.domain_mem, by omega, by simp⟩)
-  obtain ⟨Sig, -⟩ := hcomplete
-  exact ⟨r, Sig, rfl⟩
+  tauto
 
 /-- At a limit stage, every `γ < α` has a one-point type with a cell labelled `γ + 1`. -/
-theorem exists_successorOneType_of_lt {α γ : Ordinal} (hα : Order.IsSuccLimit α)
+theorem exists_successorOneType_of_lt (hα : Order.IsSuccLimit α)
     (hγ : γ < α) :
     ∃ (r : S α 1) (Sig : Cell r.scheme.scheme), r.label Sig = ofOrd (γ + 1) :=
   exists_successorOneType (hα.add_one_lt hγ)
+
+end
 
 end VaughtConjecture.Knight

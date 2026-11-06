@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthPaddedPrivateRepair
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Active positive-cap private lifting on the unchanged padded successor
 
@@ -18,7 +20,6 @@ are growth theorems, not LOW-family substitutions.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedPrivateLift
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedSuccessor GrowthPaddedDecode GrowthPaddedCharts GrowthPaddedPrivateRepair
@@ -33,15 +34,17 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
+section
+variable {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
+
 /-- Restore the entire private lower vector using the unchanged padded base.
 Every lower auxiliary retains its owner cap; every upper locality target stays
 unchanged. This is a proved restoration, not an input to the final endpoint. -/
 theorem restore
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
     {u : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
     (hu : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) u)
-    {M : ExtOrd} (hM : SelfVis 2 M)
+    {M} (hM : SelfVis 2 M)
     (hread : ∀ d, u (privateAt I X T hA hB hC d) = min (p d) M)
     (hbound : ∀ d, u d ≤ M)
     (hmax : ∀ d, I.right.scheme.grade d.1 = 2 → p d ≤ M) :
@@ -103,11 +106,10 @@ prescription, admitted repair, and lower restoration are all constructed.
 Every physical auxiliary has its own original-cap receipt, including unused
 rungs and the long tips. Literal top is not excluded. -/
 theorem active_private_lift
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
     (hactive : ∃ d, I.right.scheme.grade d.1 = 2 ∧ γ < p d)
     (hag : ∀ d, min (q (privateAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
@@ -129,6 +131,8 @@ theorem active_private_lift
   have hM : SelfVis 2 (p c) := by simpa only [hg] using (hp.orderly c).symm
   obtain ⟨r, hr, hrr, hrc⟩ := restore I X T hA hB hC hp hu hM hread hbound hmax
   exact ⟨r, hr, hrr, fun e => (cap_below (hrc e) hpc.le).trans (hcap e)⟩
+
+end
 
 end
 end VaughtConjecture.Knight.GrowthPaddedPrivateLift

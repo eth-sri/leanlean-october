@@ -17,7 +17,6 @@ application.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeTailRestoration
 open Transform Value ExtOrd
 noncomputable section
@@ -32,12 +31,15 @@ def splice (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
     (d : D.below BJ) : ExtOrd :=
   if h : D.grade d.1 ≤ j then v ⟨d.1, d.2.1, h⟩ else u d
 
-theorem splice_low (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
-    (d : D.below BJ) (h : D.grade d.1 ≤ j) :
+section
+variable (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd) (d : D.below BJ)
+
+theorem splice_low (h : D.grade d.1 ≤ j) :
     splice u v d = v ⟨d.1, d.2.1, h⟩ := dite_eq_left h
 
-theorem splice_high (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
-    (d : D.below BJ) (h : ¬ D.grade d.1 ≤ j) : splice u v d = u d := dite_eq_right h
+theorem splice_high (h : ¬ D.grade d.1 ≤ j) : splice u v d = u d := dite_eq_right h
+
+end
 
 /-- Equality at the restoration cap preserves every smaller cap, without
 any visibility or source-shortness assumption. -/
@@ -46,9 +48,10 @@ theorem cap_below {x y M γ : ExtOrd} (h : min x M = min y M) (hγ : γ ≤ M) :
   have hh := congrArg (fun z => min z γ) h
   simpa only [min_assoc, min_eq_right hγ] using hh
 
-theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
-    {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
-    (hag : ∀ d, min (v d) M = min (u (lowerIncl hj d)) M) :
+section
+variable (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd} {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
+
+theorem splice_cap (hag : ∀ d, min (v d) M = min (u (lowerIncl hj d)) M) :
     ∀ d, min (splice u v d) M = min (u d) M := by
   intro d
   by_cases h : D.grade d.1 ≤ j
@@ -59,9 +62,7 @@ theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
 /-- An actual lower lift can be installed without changing any upper locality
 target. Availability stays inside the actual target: witnesses have the same
 grade as the requester, and therefore stay on the same side of the splice. -/
-theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
-    {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
-    (hu : RespectsSemanticsBelow sem BJ u)
+theorem splice_respects (hu : RespectsSemanticsBelow sem BJ u)
     (hv : RespectsSemanticsBelow sem (BJ.1, j) v)
     (hbound : ∀ d, j < D.grade d.1 → u d ≤ M)
     (hag : ∀ d, min (v d) M = min (u (lowerIncl hj d)) M) :
@@ -107,6 +108,8 @@ theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
       refine ⟨w, hw, ?_⟩
       rw [splice_high u v d h, splice_high u v w hwj]
       exact hdw
+
+end
 
 end
 end VaughtConjecture.Knight.GradeTailRestoration

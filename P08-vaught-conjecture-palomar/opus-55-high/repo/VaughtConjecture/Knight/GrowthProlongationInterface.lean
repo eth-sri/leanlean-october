@@ -26,7 +26,7 @@ universe w
 
 /-- Lemma 5.5.1 in the paper's operational vocabulary: an infinity anchor
 (non-hollowness) plus unbounded top grade produces the next-block expansion. -/
-def GrowthAnchorProlongationAt {M : Type w} {rho : Ordinal.{0}}
+def GrowthAnchorProlongationAt {M} {rho}
     (W : KnightRealization (blockStage rho) M) : Prop :=
   (¬ W.IsHollow ∧ W.HasTopGradeGrowth) →
     W.ProlongsToIn IsModelClass (blockStage_le_succ rho)

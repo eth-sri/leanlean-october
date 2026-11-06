@@ -17,7 +17,6 @@ to refer to the same full inventory.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedCutPrefix
 open Transform Value ExtOrd CanonicalRecursiveSeedRows
 noncomputable section
@@ -29,7 +28,10 @@ abbrev cut := GradeCutBoundary.scheme D 3
 abbrev cutRows := GradeCutBoundary.rows D 3 sem
 abbrev occurrence := GradeCutBoundary.toCell D 3
 
-def oldTarget (d : Cell (cut (D := D))) : CanonicalSeedAmbient.target sem hA :=
+section
+variable (d : Cell (cut (D := D)))
+
+def oldTarget  : CanonicalSeedAmbient.target sem hA :=
   ⟨boundary sem hA (occurrence (D := D) d), by
     have he : (carrier sem hA).cell (boundary sem hA (occurrence (D := D) d)) =
         D.cell (occurrence (D := D) d) :=
@@ -37,13 +39,15 @@ def oldTarget (d : Cell (cut (D := D))) : CanonicalSeedAmbient.target sem hA :=
     rw [he]
     exact ⟨D.isPlan.subset_of_mem (D.scope_mem_plan _), GradeCutBoundary.grade_bound D _ d⟩⟩
 
-theorem oldTarget_cell (d : Cell (cut (D := D))) :
+theorem oldTarget_cell  :
     (carrier sem hA).cell (oldTarget sem hA d).1 = (cut (D := D)).cell d :=
   CanonicalRecursiveInventory.boundary_cell sem 3 hA _
 
+end
+
 theorem exists_section (a : Profile sem)
     {p : Cell (cut (D := D)) → ExtOrd} (hpr : RespectsSemantics (cutRows sem) p)
-    (ht : ∀ d, p d ≠ ⊤) {B : ℕ} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
+    (ht : ∀ d, p d ≠ ⊤) {B} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
     (hag : ∀ d, min (a.val (occurrence (D := D) d)) (CanonicalPairedInverse.grid 3 B) =
       min (p d) (CanonicalPairedInverse.grid 3 B)) :
     ∃ r : Cell (carrier sem hA) → ExtOrd,

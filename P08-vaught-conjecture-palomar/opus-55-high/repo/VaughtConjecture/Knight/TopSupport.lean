@@ -55,10 +55,15 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-! ## The top set, the uniform lowering, and the two conditions -/
 
-/-- The top-labelled cells of a labelling (of any cell type: whole schemes or lower sets). -/
-def topSet {X : Type*} (P : X → ExtOrd) : Set X := {d | P d = ⊤}
+section
+variable {X : Type*}
 
-theorem mem_topSet {X : Type*} {P : X → ExtOrd} {d : X} : d ∈ topSet P ↔ P d = ⊤ := Iff.rfl
+/-- The top-labelled cells of a labelling (of any cell type: whole schemes or lower sets). -/
+def topSet (P : X → ExtOrd) : Set X := {d | P d = ⊤}
+
+theorem mem_topSet {P} {d : X} : d ∈ topSet P ↔ P d = ⊤ := Iff.rfl
+
+end
 
 open Classical in
 /-- The **uniform lowering**: non-top labels are kept, `⊤` is kept on `H` and replaced by `β`
@@ -67,21 +72,25 @@ noncomputable def lower (P : Cell D → ExtOrd) (H : Set (Cell D)) (β : ExtOrd)
     ExtOrd :=
   if P d = ⊤ then (if d ∈ H then ⊤ else β) else P d
 
-theorem lower_of_ne_top {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d ≠ ⊤) : lower P H β d = P d := by
+section
+variable {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd}
+
+section
+variable {d : Cell D}
+
+theorem lower_of_ne_top (h : P d ≠ ⊤) : lower P H β d = P d := by
   unfold lower; rw [ite_eq_right h]
 
-theorem lower_of_mem {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d = ⊤) (hd : d ∈ H) : lower P H β d = ⊤ := by
+theorem lower_of_mem (h : P d = ⊤) (hd : d ∈ H) : lower P H β d = ⊤ := by
   unfold lower; rw [ite_eq_left h, ite_eq_left hd]
 
-theorem lower_of_not_mem {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d = ⊤) (hd : d ∉ H) : lower P H β d = β := by
+theorem lower_of_not_mem (h : P d = ⊤) (hd : d ∉ H) : lower P H β d = β := by
   unfold lower; rw [ite_eq_left h, ite_eq_right hd]
 
+end
+
 /-- The top set of the lowering is `H`, for `H` a set of top cells and `β` proper. -/
-theorem topSet_lower {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd}
-    (hH : H ⊆ topSet P) (hβ : β ≠ ⊤) : topSet (lower P H β) = H := by
+theorem topSet_lower (hH : H ⊆ topSet P) (hβ : β ≠ ⊤) : topSet (lower P H β) = H := by
   ext d
   constructor
   · intro hd
@@ -91,6 +100,8 @@ theorem topSet_lower {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd}
     · exact absurd ((lower_of_ne_top hP).symm.trans hd) hP
   · intro hd
     exact lower_of_mem (hH hd) hd
+
+end
 
 /-- **Top availability**: a cell of `H` has a cell of `H` at every larger same-grade index. -/
 def TopAvailable (D : CellScheme A) (H : Set (Cell D)) : Prop :=
@@ -113,35 +124,30 @@ structure Admissible (sem : Semantics D) (P : Cell D → ExtOrd) (H : Set (Cell 
 /-! ## Necessity, for an arbitrary lawful alternative -/
 
 /-- A replacement of a non-top label is not top. -/
-theorem evr_ne_top {x : ExtOrd} (h : x ≠ ⊤) (k i : ℕ) : extVisibilityReplace x k i ≠ ⊤ := by
+theorem evr_ne_top {x} (h : x ≠ ⊤) k i : extVisibilityReplace x k i ≠ ⊤ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact bot_ne_top
-  · exact absurd rfl h
-  · rw [extVisibilityReplace_ofOrd]; exact ofOrd_ne_top _
+  · simp_all
+  · grind
+  · simp_all
 
-theorem selfVis_top_ext (k : ℕ) : SelfVis k ⊤ := extVisibilityReplace_top k k
+theorem selfVis_top_ext k : SelfVis k ⊤ := rfl
 
-theorem selfVis_max_of {K : ℕ} {a b : ExtOrd} (ha : SelfVis K a) (hb : SelfVis K b) :
-    SelfVis K (max a b) := by
-  change extVisibilityReplace (max a b) K K = max a b
-  rw [extVisibilityReplace_max a b le_rfl]
-  change extVisibilityReplace a K K = a at ha
-  change extVisibilityReplace b K K = b at hb
-  rw [ha, hb]
+theorem selfVis_max_of {K} {a b} (ha : SelfVis K a) (hb : SelfVis K b) :
+    SelfVis K (max a b) := by grind
 
 /-- A rounding at grade `K` is `K`-visible. -/
-theorem selfVis_evr_self (K : ℕ) (t : ExtOrd) : SelfVis K (extVisibilityReplace t K K) := by
+theorem selfVis_evr_self K t : SelfVis K (extVisibilityReplace t K K) := by
   rcases ExtOrd.cases t with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact selfVis_bot K
-  · rw [extVisibilityReplace_top]; exact selfVis_top_ext K
+  · aesop
+  · aesop
   · rw [extVisibilityReplace_ofOrd, selfVis_ofOrd_iff, finitePart_visibilityReplace]
     split_ifs with h <;> omega
 
 /-- A value is at most its own rounding. -/
-theorem le_evr_self (x : ExtOrd) (k : ℕ) : x ≤ extVisibilityReplace x k k := by
+theorem le_evr_self x k : x ≤ extVisibilityReplace x k k := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · exact bot_le
-  · exact le_top
+  · simp_all
+  · simp_all
   · by_cases h : k ≤ finitePart a
     · rw [extVisibilityReplace_of_le_finitePart h]
     · rw [extVisibilityReplace_of_finitePart_lt (not_le.mp h), ofOrd_le_ofOrd]
@@ -158,8 +164,7 @@ theorem topAvailable_of_respects {Q : Cell D → ExtOrd} (hQ : RespectsSemantics
   obtain ⟨Xi, hc, hle⟩ := hQ.availability d Xi₀ hs hg
   refine ⟨Xi, hc, ?_⟩
   rw [mem_topSet] at hd ⊢
-  rw [hd] at hle
-  exact top_le_iff.mp hle
+  grind
 
 /-- **Necessity of source separation**: the top set of any lawful `Q` is source-separated
 relative to any `P` (the argument reads only the tops of `Q`). -/
@@ -177,7 +182,7 @@ theorem sourceSeparated_of_respects (P : Cell D → ExtOrd) {Q : Cell D → ExtO
   have h2 : τ (extVisibilityReplace (sem.E c d) (D.grade c) (D.grade c)) =
       extVisibilityReplace (τ (sem.E c d)) (D.grade c) (D.grade c) :=
     hτ.clause5 _ _ (by rw [gTop_of_le le_rfl]; exact le_top) _ le_rfl
-  have h3 : τ (sem.E c d) ≠ ⊤ := by rw [hread d, hc, min_top_right]; exact hdQ
+  have h3 : τ (sem.E c d) ≠ ⊤ := by grind
   have h4 := hτ.mono hle'
   rw [h1, h2] at h4
   exact evr_ne_top h3 _ _ (top_le_iff.mp h4)
@@ -188,8 +193,7 @@ theorem admissible_of_respects {P Q : Cell D → ExtOrd} (hQ : RespectsSemantics
     (hoff : ∀ d, P d ≠ ⊤ → Q d = P d) : Admissible sem P (topSet Q) where
   subset d hd := by
     rw [mem_topSet] at hd ⊢
-    by_contra h
-    exact h ((hoff d h).symm.trans hd)
+    grind
   available := topAvailable_of_respects hQ
   separated := sourceSeparated_of_respects P hQ
 
@@ -200,21 +204,29 @@ above it. -/
 noncomputable def retune (σ : ExtOrd → ExtOrd) (t β x : ExtOrd) : ExtOrd :=
   if x ≤ t then min (σ x) β else σ x
 
-theorem retune_of_le {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (h : x ≤ t) :
+section
+variable {σ : ExtOrd → ExtOrd} {t β x : ExtOrd}
+
+theorem retune_of_le (h : x ≤ t) :
     retune σ t β x = min (σ x) β := ite_eq_left h
 
-theorem retune_of_gt {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (h : ¬ x ≤ t) :
+theorem retune_of_gt (h : ¬ x ≤ t) :
     retune σ t β x = σ x := ite_eq_right h
 
 /-- The retuned map has the bottom fibre of the old witness. -/
-theorem retune_eq_bot_iff {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (hβ : β ≠ ⊥) :
+theorem retune_eq_bot_iff (hβ : β ≠ ⊥) :
     retune σ t β x = ⊥ ↔ σ x = ⊥ := by
   by_cases h : x ≤ t
   · rw [retune_of_le h, min_eq_bot, or_iff_left hβ]
   · rw [retune_of_gt h]
 
+end
+
+section
+variable {K : ℕ} {σ : ExtOrd → ExtOrd}
+
 /-- **The retuned map is a bounded map** at grade `K`, for a `K`-visible cut and cap. -/
-theorem boundedMap_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ) {t β : ExtOrd}
+theorem boundedMap_retune (hσ : Witness (gTop K) σ) {t β : ExtOrd}
     (ht : SelfVis K t) (hβ : SelfVis K β) : BoundedMap K (retune σ t β) where
   bot := by rw [retune_of_le bot_le, hσ.bot, min_eq_left bot_le]
   mono := by
@@ -238,16 +250,18 @@ theorem boundedMap_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTo
 
 /-- The retuned map interpolates to a faithful witness on any finite source set (the bottom
 fibre is unchanged, so the source-block criterion is inherited from the old witness). -/
-theorem exists_witness_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ)
+theorem exists_witness_retune (hσ : Witness (gTop K) σ)
     {t β : ExtOrd} (ht : SelfVis K t) (hβ : SelfVis K β) (hβbot : β ≠ ⊥) (s : Finset ExtOrd) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop K) τ ∧ ∀ x ∈ s, τ x = retune σ t β x := by
+    ∃ τ, Witness (gTop K) τ ∧ ∀ x ∈ s, τ x = retune σ t β x := by
   apply ((boundedMap_retune hσ ht hβ).interpolate_iff_source_blocks s).mpr
   intro x _ y _ hb hx
   rw [retune_eq_bot_iff hβbot] at hx ⊢
   exact witness_bot_of_same_block hσ hb hx
 
+end
+
 /-- The rounded sources of the lowered tops beneath an owner are self-visible at its grade. -/
-theorem selfVis_sup_evr {X : Type*} (s : Finset X) (f : X → ExtOrd) (k : ℕ) :
+theorem selfVis_sup_evr {X : Type*} (s : Finset X) (f : X → ExtOrd) k :
     SelfVis k (s.sup fun x => extVisibilityReplace (f x) k k) := by
   exact Finset.sup_induction (selfVis_bot k) (fun a ha b hb => selfVis_max_of ha hb)
     fun x _ => selfVis_evr_self k (f x)
@@ -296,9 +310,8 @@ theorem respects_lower {P : Cell D → ExtOrd} (hP : RespectsSemantics sem P) {K
         obtain ⟨σ, hσ, -, hread⟩ := exists_bounded_exact_capped_witness
           (grade := fun d : D.below (D.cell c) => D.grade d.1) (E := sem.E c)
           (p := fun d => P d.1) (c := ⟨c, GradedLe.refl _⟩) (fun d => d.2.2)
-          (by rw [hc]; exact selfVis_top_ext _) (hP.locality c)
-        have hread' : ∀ d : D.below (D.cell c), σ (sem.E c d) = P d.1 := fun d => by
-          rw [hread d]; change min (P d.1) (P c) = P d.1; rw [hc, min_top_right]
+          (by aesop) (hP.locality c)
+        have hread' : ∀ d : D.below (D.cell c), σ (sem.E c d) = P d.1 := fun d => by grind
         -- the cut
         let L : Finset (D.below (D.cell c)) := Finset.univ.filter fun d => P d.1 = ⊤ ∧ d.1 ∉ H
         let R : D.below (D.cell c) → ExtOrd := fun d =>
@@ -315,7 +328,7 @@ theorem respects_lower {P : Cell D → ExtOrd} (hP : RespectsSemantics sem P) {K
           · obtain ⟨d, hdL, hdt⟩ := Finset.exists_mem_eq_sup L hL R
             obtain ⟨-, hd, hdH⟩ := Finset.mem_filter.mp hdL
             have hlt := hH.separated c hcH a haH d hd hdH
-            have hle' : sem.E c a ≤ R d := by rw [← hdt]; exact hle
+            have hle' : sem.E c a ≤ R d := by grind
             exact absurd (hle'.trans_lt hlt) (lt_irrefl _)
           · rw [Finset.not_nonempty_iff_eq_empty] at hL
             have ht0 : t = ⊥ := by simp only [t, hL, Finset.sup_empty]
@@ -379,6 +392,6 @@ theorem eq_of_unique_admissible {P Q : Cell D → ExtOrd} (hQ : RespectsSemantic
   funext d
   by_cases hd : P d = ⊤
   · rw [hd]; exact (mem_topSet.mp (hH ▸ (mem_topSet.mpr hd)))
-  · exact hoff d hd
+  · grind
 
 end VaughtConjecture.Knight.TopSupport

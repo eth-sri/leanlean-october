@@ -18,16 +18,9 @@ condition or new support-plan legality is inferred.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProfileFaceGluing
 
-open Transform Value ExtOrd NormalizedProfileFamily
-
-variable {C X Y Z : Type*}
-
-variable (f : C ↪ X) (g : C ↪ Y) (L : OrderLaw X) (R : OrderLaw Y)
-variable {K : (C → ExtOrd) → Prop}
+variable {C X Y : Type*} (g : C ↪ Y)
 
 open ProfileFaceUnion
 

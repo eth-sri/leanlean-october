@@ -21,7 +21,6 @@ pair whose prescription includes the newly added lower controllers.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalOriginalLift
 open Transform Value ExtOrd CanonicalMixedGradeLayers CanonicalMixedOwnerLift
 open CoatomBoundaryExtension
@@ -35,18 +34,18 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.gra
 incidences are ordinary OLD completeness data, only at possible grades. All
 section and lifting premises concern the two old faces, never the output.
 No properness, owner domination, or active-owner assumption on labels remains. -/
-theorem exists_lift {C : Finset ι} {n : ℕ} (hn : n ≤ 2)
+theorem exists_lift {C} {n} (hn : n ≤ 2)
     (hfull₁ : C.Nonempty → ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
     (hfull₂ : 2 ≤ C.card → ∃ c : D.below (C, 2), D.cell c.1 = (C, 2))
-    {p : D.below (C, n) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, n) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, n) p)
     {q : CanonicalMixedAmbient.target sem 1 (by decide) (by omega) 2 (by decide) hA → ExtOrd}
     (hq : RespectsSemanticsBelow
       (rows sem 1 (by decide) (by omega) hproper 2 hg (by decide) hA (by decide)) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
+    {γ} (hγ : SelfVis 2 γ)
     (hag : ∀ e : D.below (C, n), min (p e) γ =
       min (q (oldTarget sem 1 (by decide) (by omega) hproper 2 hg
         (by decide) hA (by decide) e.1)) γ)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, n) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →

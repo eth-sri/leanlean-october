@@ -17,7 +17,6 @@ fields outside the physical grade-one boundary.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalGradeOneLift
 open Transform Value ExtOrd CanonicalFieldLayer CanonicalFieldOwnerLift
 open CoatomBoundaryExtension
@@ -33,15 +32,15 @@ include hinj
 /-- Positive original-cap lifting from an actual proper grade-one face. The
 ambient is arbitrary on the actual full grade-one target; only OLD face
 lifting clauses are consumed. The inactive branch also covers literal top cap. -/
-theorem exists_positive_lift {C : Finset ι}
+theorem exists_positive_lift {C}
     (hfull : ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
-    {p : D.below (C, 1) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, 1) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, 1) p)
     {q : target sem 1 X occ (by decide) hA → ExtOrd}
     (hq : RespectsSemanticsBelow (rows sem 1 X occ (by decide) hA hproper hg) (A, 1) q)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis 1 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (C, 1), min (p e) γ =
       min (q (oldTarget sem 1 X occ (by decide) hA hproper hg e.1)) γ)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, 1) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →

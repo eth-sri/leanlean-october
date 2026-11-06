@@ -57,19 +57,22 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 
 open Classical in
 /-- The glued section: the lower section on the lower set, the full section above. -/
-noncomputable def glueSection {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
+noncomputable def glueSection {CI BJ} (w : D.below CI → ExtOrd)
     (q : D.below BJ → ExtOrd) (d : D.below BJ) : ExtOrd :=
   if hd : GradedLe (D.cell d.1) CI then w ⟨d.1, hd⟩ else q d
 
-theorem glueSection_of_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
+section
+variable {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd) (q : D.below BJ → ExtOrd) {d : D.below BJ}
+
+theorem glueSection_of_le (hd : GradedLe (D.cell d.1) CI) :
     glueSection w q d = w ⟨d.1, hd⟩ := by
   unfold glueSection; rw [dite_eq_left hd]
 
-theorem glueSection_of_not_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
+theorem glueSection_of_not_le (hd : ¬ GradedLe (D.cell d.1) CI) :
     glueSection w q d = q d := by
   unfold glueSection; rw [dite_eq_right hd]
+
+end
 
 /-- **Vertical gluing**: with `CI` of the same scope as `BJ` and lower grade, a lawful section
 `w` on `CI` and a lawful section `q` on `BJ` glue to a lawful section on `BJ` provided that, at
@@ -102,9 +105,9 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
         funext d
         rw [glueSection_of_not_le w q hS]
         by_cases hd : GradedLe (D.cell d.1) CI
-        · rw [glueSection_of_le w q (d := CellScheme.below.incl Sig d) hd]
+        · rw [glueSection_of_le w q hd]
           exact hcompat Sig hS d hd
-        · rw [glueSection_of_not_le w q (d := CellScheme.below.incl Sig d) hd]
+        · rw [glueSection_of_not_le w q hd]
       rw [heq]; exact key
   availability Sig Xi₀ hs hg := by
     by_cases hS : GradedLe (D.cell Sig.1) CI
@@ -168,20 +171,18 @@ noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : 
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
 omit L hj hu in
-theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
+theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x} (h : τ x = ⊥) :
     retargetShifter τ a η x = ⊥ := by
   unfold retargetShifter; rw [ite_eq_left h]
 
 omit L hj hu in
-theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
+theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x} (hx : x ≤ a) :
     retargetShifter τ a η x = τ x := by
   unfold retargetShifter
-  by_cases h : τ x = ⊥
-  · rw [ite_eq_left h, h]
-  · rw [ite_eq_right h, ite_eq_left hx]
+  grind
 
 omit L hj hu in
-theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
+theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x} (h : τ x ≠ ⊥) (hx : a < x) :
     retargetShifter τ a η x = η := by
   unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
 
@@ -213,7 +214,7 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
     by_cases hkk : kk ≤ k
     · by_cases hx : τ x = ⊥
       · have h1 : τ (extVisibilityReplace x kk i) = ⊥ := by
-          rw [hτ.clause5 x kk (by rw [gTop_of_le hkk]; exact le_top) i hi, hx,
+          rw [hτ.clause5 x kk (by simp_all) i hi, hx,
             extVisibilityReplace_bot]
         rw [retargetShifter_of_bot hx, retargetShifter_of_bot h1, extVisibilityReplace_bot]
       · have h1 : τ (extVisibilityReplace x kk i) = extVisibilityReplace (τ x) kk i :=
@@ -237,7 +238,7 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
         · exact hx hle
         · exact absurd hle (ne_bot_of_gt hηpos)
       have h1 : τ (extVisibilityReplace x kk i) = ⊥ := by
-        rw [hτ.clause5 x kk (by rw [gTop_of_gt (not_le.mp hkk), hx]) i hi, hx,
+        rw [hτ.clause5 x kk (by simp_all) i hi, hx,
           extVisibilityReplace_bot]
       rw [hle, retargetShifter_of_bot h1, extVisibilityReplace_bot]
 

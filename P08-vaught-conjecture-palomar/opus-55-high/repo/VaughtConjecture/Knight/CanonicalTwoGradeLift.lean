@@ -7,7 +7,9 @@ module
 
 public import VaughtConjecture.Knight.CanonicalLowerLift
 public import VaughtConjecture.Knight.CanonicalMixedOwnerLift
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Literal restoration without lower-value domination
 
@@ -19,7 +21,6 @@ values and top. Only old-face lifting is supplied, never output bountifulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalTwoGradeLift
 open Transform Value ExtOrd CanonicalMixedGradeLayers CanonicalMixedOwnerLift
 open CoatomBoundaryExtension GradeTailRestoration
@@ -34,26 +35,26 @@ Both pairs of lifting inputs concern the two OLD boundary faces. Their grade
 one clauses are used at the newly chosen owner cap, not the external cap.
 The low owner incidence is explicit and follows from old-face completeness.
 No domination, lower output lift, alignment, or completed ambient is assumed. -/
-theorem exists_lift {C : Finset ι}
+theorem exists_lift {C}
     (hfull₂ : ∃ c : D.below (C, 2), D.cell c.1 = (C, 2))
     (hfull₁ : ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
-    {p : D.below (C, 2) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, 2) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, 2) p)
     {q : CanonicalMixedAmbient.target sem 1 (by decide) (by omega) 2 (by decide) hA → ExtOrd}
     (hq : RespectsSemanticsBelow
       (rows sem 1 (by decide) (by omega) hproper 2 hg (by decide) hA (by decide)) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis 2 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (C, 2), min (p e) γ =
       min (q (oldTarget sem 1 (by decide) (by omega) hproper 2 hg
         (by decide) hA (by decide) e.1)) γ)
     (hactive : ∃ d : D.below (C, 2), D.grade d.1 = 2 ∧ γ < p d)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, 2) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hCU) (hright : CappedLift sem hOV)
     (hU : U.2 ≤ 2) (hV : V.2 ≤ 2)
-    {U₁ V₁ O₁ : Finset ι × ℕ}
+    {U₁ V₁ O₁}
     (hcover₁ : ∀ d : Cell D, D.grade d ≤ 1 →
       GradedLe (D.cell d) U₁ ∨ GradedLe (D.cell d) V₁)
     (hCU₁ : GradedLe (C, 1) U₁) (hOU₁ : GradedLe O₁ U₁) (hOV₁ : GradedLe O₁ V₁)

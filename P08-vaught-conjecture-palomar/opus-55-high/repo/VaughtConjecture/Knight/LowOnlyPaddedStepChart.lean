@@ -18,7 +18,6 @@ coordinate is top the chart is uncapped everywhere in that lower set.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepChart
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyPaddedStepDecode
@@ -35,9 +34,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 def leafAt (a : F.Anchor (k + 1)) : (carrier P hnext).below (A, k + 1) :=
   ⟨(controller P hnext a).1, (controller P hnext a).2.symm ▸ GradedLe.refl _⟩
 
-theorem exists_chart {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
-    (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q) :
-    ∃ a : F.Anchor (k + 1), ∃ σ : ExtOrd → ExtOrd, ∃ M : ExtOrd,
+section
+variable {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+
+theorem exists_chart (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q) :
+    ∃ a, ∃ σ, ∃ M,
       Witness (gTop (k + 1)) σ ∧
       (∀ d, (carrier P hnext).grade d.1 = k + 1 → q d ≤ M) ∧
       ∀ d, σ (source P hk hnext a d.1) = min (q d) M := by
@@ -52,21 +53,22 @@ theorem exists_chart {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
   refine ⟨a, H.shift, q H.owner, H.witness, H.dominates, ?_⟩
   intro d
   have hr := H.read_capped d d.2.2
-  have he : ∀ e : (carrier P hnext).below ((carrier P hnext).cell H.owner.1),
+  have he : ∀ e,
       (rows P hk hnext).E H.owner.1 e = source P hk hnext a e.1 := by
     rw [← ha]
     exact leaf_row P hk hnext a
   rwa [he] at hr
 
-theorem exists_top_chart {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
-    (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
+theorem exists_top_chart (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
     (htop : ∃ d, (carrier P hnext).grade d.1 = k + 1 ∧ q d = ⊤) :
-    ∃ a : F.Anchor (k + 1), ∃ σ : ExtOrd → ExtOrd,
+    ∃ a, ∃ σ,
       Witness (gTop (k + 1)) σ ∧ ∀ d, σ (source P hk hnext a d.1) = q d := by
   obtain ⟨a, σ, M, hσ, hM, hread⟩ := exists_chart P hk hnext hq
   obtain ⟨d, hd, htop⟩ := htop
   have hMt : M = ⊤ := top_le_iff.mp (htop ▸ hM d hd)
   exact ⟨a, σ, hσ, fun d => (hread d).trans (by rw [hMt, min_top_right])⟩
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedStepChart

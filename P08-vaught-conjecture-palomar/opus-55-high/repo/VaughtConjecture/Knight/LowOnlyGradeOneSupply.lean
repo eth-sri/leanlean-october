@@ -19,7 +19,6 @@ unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
 open LadderScalarRendering RelativeLadderLayer ReceivingCatalogueRanks
@@ -28,7 +27,7 @@ variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
 /-- Terminal insertion preserves every field rank, including literal tops.
 Only membership at the source's own birth grade is asserted. -/
-theorem exists_rank_anchor {j : ℕ} (hj : 1 ≤ j) {S : State P C}
+theorem exists_rank_anchor {j} (hj : 1 ≤ j) {S}
     (hs : F.Admissible j S) :
     ∃ a : F.Anchor j, ∀ d, fieldRank a.val d = fieldRank S.profile d := by
   let l := S.freshFloor 0
@@ -78,7 +77,7 @@ theorem exists_physical_section {S : State P C} (hs : F.Admissible 1 S) :
       RespectsSemanticsBelow (rows D sem hA field (F.fields 1) hproper) (A, 1) w ∧
       ∀ d : D.below (A, 1), w ⟨old D hA d.1, by rw [old_index]; exact d.2⟩ =
         S.profile (field d.1) := by
-  obtain ⟨a, ha⟩ := F.exists_rank_anchor (by decide : 1 ≤ 1) hs
+  obtain ⟨a, ha⟩ := F.exists_rank_anchor (by grind) hs
   have hr (d) : ranks (F.fields 1) a d = fieldRank S.profile d := ha d
   refine ⟨fun d => renderWith D hA field (F.fields 1) a S.profile ⊤ d.1,
     renderWith_respects D sem hA field (F.fields 1) hproper a S.profile hr
@@ -158,7 +157,7 @@ theorem private_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := private_bottom_supply I F hroot hA hB hC hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by grind⟩
   · exact private_positive_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) hag
 

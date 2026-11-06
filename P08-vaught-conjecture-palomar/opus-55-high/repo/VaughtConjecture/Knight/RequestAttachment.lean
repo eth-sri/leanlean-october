@@ -7,7 +7,7 @@ module
 
 public import VaughtConjecture.Knight.ReducedProjectionRequest
 public import VaughtConjecture.AmalgamationPlan.PlanAttachment
-public import VaughtConjecture.Knight.ExtendOneWith
+public import VaughtConjecture.Knight.Domain
 
 /-! # The common plan of the actual context and one requested one-point extension
 
@@ -85,7 +85,7 @@ section PlanImage
 
 /-- Restriction commutes with the image along an injection. -/
 theorem restrictPlan_image {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (g : ι ↪ κ)
-    (S : Finset (Finset ι)) (T : Finset ι) :
+    S T :
     Plan.restrictPlan (S.image (Finset.image g)) (T.image g) =
       (Plan.restrictPlan S T).image (Finset.image g) := by
   ext U
@@ -100,7 +100,7 @@ variable {k m : ℕ}
 
 /-- The image of a restricted scheme's plan is the restriction of the plan to the face. -/
 theorem image_restrictFace_plan (D : CellScheme (ι := Fin m) Finset.univ) (f : Fin k ↪ Fin m)
-    (hr : Finset.univ.image f ∈ D.plan) :
+    hr :
     (D.restrictFace f hr).plan.image (Finset.image f) =
       Plan.restrictPlan D.plan (Finset.univ.image f) := by
   ext S
@@ -113,7 +113,7 @@ theorem image_restrictFace_plan (D : CellScheme (ι := Fin m) Finset.univ) (f : 
     obtain ⟨T, -, rfl⟩ := Finset.subset_image_iff.mp hsub
     exact ⟨T, hS, rfl⟩
 
-theorem univ_image_onePointProj (e : Fin k ↪ Fin m) :
+theorem univ_image_onePointProj e :
     (Finset.univ : Finset (Fin (k + 1))).image (onePointProj e) =
       Finset.univ.image (e.trans Fin.castSuccEmb) ∪ {Fin.last m} := by
   ext x
@@ -136,36 +136,6 @@ end PlanImage
 
 /-! ## The common plan over the actual context -/
 
-section Attach
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-/-- The retained old face, in the form the explicit one-point extension of cell schemes
-consumes: a face of the context's points is visible in the common plan exactly when it is
-visible in the context's plan. -/
-theorem common_plan_hface {m : ℕ} {Rp : Finset (Finset (Fin (m + 1)))}
-    {P₀ : Finset (Finset (Fin m))}
-    (hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-      P₀.image (Finset.image Fin.castSuccEmb)) :
-    ∀ B : Finset (Fin m), B.image Fin.castSuccEmb ∈ Rp ↔ B ∈ P₀ := by
-  intro B
-  have hsub : B.image Fin.castSuccEmb ⊆ Finset.univ.image Fin.castSuccEmb :=
-    Finset.image_subset_image (Finset.subset_univ B)
-  constructor
-  · intro h
-    have : B.image Fin.castSuccEmb ∈ Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) :=
-      Finset.mem_inter.mpr ⟨h, Finset.mem_powerset.mpr hsub⟩
-    rw [hRA, Finset.mem_image] at this
-    obtain ⟨B', hB', e⟩ := this
-    rwa [(Finset.image_injective Fin.castSuccEmb.injective) e] at hB'
-  · intro h
-    have : B.image Fin.castSuccEmb ∈ Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) := by
-      rw [hRA]; exact Finset.mem_image_of_mem _ h
-    exact (Finset.mem_inter.mp this).1
-
-end Attach
-
 /-! ## The cell inventory: old cells, the request's fresh cells, one cell per remaining index
 
 `requestInventory` is the explicit one-point extension (`CellScheme.extendOneWith`) of the
@@ -177,68 +147,6 @@ the request face carries the request's plan and each fresh request cell sits at 
 graded index.  What this does **not** decide is semantic adequacy at the outside indices:
 whether one cell per index suffices, and which rows those cells carry. -/
 
-section Inventory
-
-open CellScheme
-open CellScheme.restrictFace (pushGraded)
-
-variable {m n : ℕ} (X : CellScheme (ι := Fin m) Finset.univ)
-  (Y : CellScheme (ι := Fin (n + 1)) Finset.univ) (e : Fin n ↪ Fin m)
-  (Rp : Finset (Finset (Fin (m + 1)))) (hR : Plan.IsPlan Finset.univ Rp)
-  (hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-    X.plan.image (Finset.image Fin.castSuccEmb))
-  (hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
-    Y.plan.image (Finset.image (onePointProj e)))
-
-/-- The request's fresh cells: those whose scope contains the fresh point. -/
-abbrev FreshReq : Type := {c : Cell Y // Fin.last n ∈ Y.scope c}
-
-/-- The remaining graded indices: in the common plan, containing the fresh point, not inside the
-request face. -/
-abbrev OutsideIndex : Type :=
-  {BJ : Finset (Fin (m + 1)) × ℕ // BJ ∈ (Plan.gradedPlan Rp).filter
-    (fun BJ => Fin.last m ∈ BJ.1 ∧ ¬ BJ.1 ⊆ Finset.univ.image (onePointProj e))}
-
-/-- The new cells' graded indices. -/
-def newIndex : FreshReq Y ⊕ OutsideIndex e Rp → Finset (Fin (m + 1)) × ℕ
-  | Sum.inl c => pushGraded (onePointProj e) (Y.cell c.1)
-  | Sum.inr BJ => BJ.1
-
-include hRB in
-theorem newIndex_mem (x : FreshReq Y ⊕ OutsideIndex e Rp) :
-    newIndex Y e Rp x ∈ Plan.gradedPlan Rp := by
-  classical
-  rcases x with c | BJ
-  · have hmem : (Y.scope c.1).image (onePointProj e) ∈ Rp := by
-      have : (Y.scope c.1).image (onePointProj e) ∈
-          Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) := by
-        rw [hRB]; exact Finset.mem_image_of_mem _ (Y.scope_mem_plan c.1)
-      exact (Finset.mem_inter.mp this).1
-    have h := Plan.mem_gradedPlan.mp (Y.cell_mem c.1)
-    refine Plan.mem_gradedPlan.mpr ⟨hmem, h.2.1, ?_⟩
-    change (Y.cell c.1).2 ≤ ((Y.cell c.1).1.image (onePointProj e)).card
-    rw [Finset.card_image_of_injective _ (onePointProj e).injective]
-    exact h.2.2
-  · exact (Finset.mem_filter.mp BJ.2).1
-
-/-- **The cell inventory** over the common plan. -/
-noncomputable def requestInventory : CellScheme (ι := Fin (m + 1)) Finset.univ :=
-  extendOneWith X Rp hR (common_plan_hface hRA) (newIndex Y e Rp) (newIndex_mem Y e Rp hRB)
-
-variable {X Y e Rp hR hRA hRB}
-
-end Inventory
-
 /-! ## Over the actual context -/
-
-section Actual
-
-open CellScheme
-open CellScheme.restrictFace (pushGraded)
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end Actual
 
 end VaughtConjecture.Knight

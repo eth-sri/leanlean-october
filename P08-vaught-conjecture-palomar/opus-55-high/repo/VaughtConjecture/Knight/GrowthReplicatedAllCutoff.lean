@@ -17,7 +17,6 @@ Mixed prescriptions and proper mixed targets remain separate obligations.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedAllCutoff
 open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension
 open GrowthPaddedIteration GrowthReplicatedRows
@@ -31,14 +30,14 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
   (t : ℕ) (ht : t + 2 ≤ A.card)
 
-theorem private_subface {S : Finset ι} {i j : ℕ}
+theorem private_subface {S} {i j}
     (hS : (S, i) ∈ Plan.gradedPlan R) (hSC : S ⊆ C) (hij : i ≤ j) (hj : j ≤ t + 2) :
     CappedLift (rows (build I X T hA hB hC t ht))
       (show GradedLe (S, i) (A, j) from ⟨hSC.trans hC.subset, hij⟩) :=
   lift_to_full (build I X T hA hB hC t ht) _ (Or.inr hSC)
     (GrowthPaddedAllCutoff.private_subface I X T hA hB hC t ht hS hSC hij hj)
 
-theorem donor_subface (hsmall : n + 1 < X.req.N) {S : Finset ι} {i j : ℕ}
+theorem donor_subface (hsmall : n + 1 < X.req.N) {S} {i j}
     (hS : (S, i) ∈ Plan.gradedPlan R) (hSB : S ⊆ B) (hij : i ≤ j) (hj : j ≤ t + 2) :
     CappedLift (rows (build I X T hA hB hC t ht))
       (show GradedLe (S, i) (A, j) from ⟨hSB.trans hB.subset, hij⟩) :=

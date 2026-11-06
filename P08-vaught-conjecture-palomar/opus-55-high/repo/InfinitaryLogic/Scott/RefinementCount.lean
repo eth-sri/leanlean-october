@@ -63,8 +63,8 @@ show the original and new M-witnesses are equivalent at all levels ≥ α₀. -/
 private theorem chain_step
     {M : Type w} [L.Structure M]
     {N : Type w} [L.Structure N] [Countable N]
-    {α₀ : Ordinal.{0}} (hstab : SelfStabilizesCompletely (L := L) M α₀)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N} {m : M} {m' : N}
+    {α₀} (hstab : SelfStabilizesCompletely (L := L) M α₀)
+    {n} {a} {b} {m : M} {m' : N}
     {ε : Ordinal.{0}} (hε : α₀ ≤ ε)
     (hBF_ext : BFEquiv (L := L) ε (n + 1) (Fin.snoc a m) (Fin.snoc b m'))
     (hBF_base : BFEquiv (L := L) (Order.succ (Order.succ ε)) n a b) :
@@ -176,11 +176,6 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
 
 Each theorem below is a one-liner applying `countableRefinementHypothesis` to the
 corresponding `_of` variant in Sentence.lean. -/
-
-/-- Complete stabilization below ω₁. -/
-theorem exists_complete_stabilization (M : Type w) [L.Structure M] [Countable M] :
-    ∃ α < (Ordinal.omega 1 : Ordinal.{0}), StabilizesCompletely (L := L) M α :=
-  exists_complete_stabilization_of countableRefinementHypothesis M
 
 /-- The Scott sentence of M characterizes M up to isomorphism among countable structures. -/
 @[blueprint "thm:scott-characterizes"

@@ -19,7 +19,6 @@ face. No growth physical receiver or stable occurrence is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
 universe w
@@ -29,11 +28,11 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 is legal and restricts literally to the original donor at `extendFace`.
 The extra root point is actual, but the padded donor is not claimed realized. -/
 theorem acquire_padded (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    (q : S α.1 (n + 1)) (hq : IsCoface p q) (floor : ℕ) :
+    {n} t (p : S α.1 n) (hp : W.eval t = some p)
+    q (hq : IsCoface p q) floor :
     ∃ (z : M) (hz : z ∉ Set.range t) (pR : S α.1 (n + 1)),
       W.eval (snoc t z hz) = some pR ∧ IsCoface p pR ∧
-      ∃ Q : S α.1 (n + 1 + 1), IsCoface pR Q ∧
+      ∃ Q, IsCoface pR Q ∧
         typeMap (FixedHeight.extendFace Fin.castSuccEmb) Q = some q ∧
         ∃ D : HollowGrowthReference.Data (W := W) (snoc t z hz) pR (donorRequests Q)
           (n + 1 + 1) floor, Nonempty (Input Q D) := by
@@ -46,8 +45,8 @@ theorem acquire_padded (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHol
 /-- The donor restriction after padding still has the original public root
 and the same new donor point. This is the tuple equation a later model
 application will need; padding has not changed the requested one-point support. -/
-theorem donor_tuple {n : ℕ} (t : Fin n ↪ M) (z : M) (hz : z ∉ Set.range t)
-    (y : M) (hy : y ∉ Set.range (snoc t z hz)) :
+theorem donor_tuple {n} (t : Fin n ↪ M) z hz
+    y hy :
     (FixedHeight.extendFace Fin.castSuccEmb).trans (snoc (snoc t z hz) y hy) =
       snoc t y (fun h => hy (by
         obtain ⟨i, hi⟩ := h

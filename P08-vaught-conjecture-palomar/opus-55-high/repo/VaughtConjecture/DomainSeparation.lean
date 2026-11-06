@@ -44,10 +44,10 @@ variable {I : Type u} {Q : Type v} {S : Type w}
 this core is empty. -/
 theorem persistent_subsingleton_of_separation
     (D : I → Q → Prop) (holds : S → Q → Prop)
-    (separates : ∀ p q : Q, p ≠ q → ∃ s : S, ¬ (holds s p ↔ holds s q))
-    (homogeneous : ∀ s : S, ∃ i : I,
-      ∀ p : Q, D i p → ∀ q : Q, D i q → (holds s p ↔ holds s q))
-    (p q : Q) (hp : ∀ i : I, D i p) (hq : ∀ i : I, D i q) : p = q := by
+    (separates : ∀ p q, p ≠ q → ∃ s, ¬ (holds s p ↔ holds s q))
+    (homogeneous : ∀ s, ∃ i,
+      ∀ p, D i p → ∀ q, D i q → (holds s p ↔ holds s q))
+    p q (hp : ∀ i, D i p) (hq : ∀ i, D i q) : p = q := by
   classical
   by_contra hne
   obtain ⟨s, hs⟩ := separates p q hne
@@ -130,7 +130,7 @@ theorem mk_eq_aleph_one_of_countable_core {X : Type 1} (D : Ordinal.{0} → Set 
       obtain ⟨ξ, hηξ, hξ, hne⟩ := hloss η hη
       exact ⟨ξ, ⟨hξ, hne⟩, hηξ⟩
     let pick : T → X := fun ξ => ξ.2.2.some
-    have hpick : ∀ ξ : T, pick ξ ∈ D ξ.1 \ D (ξ.1 + 1) := fun ξ => ξ.2.2.some_mem
+    have hpick : ∀ ξ, pick ξ ∈ D ξ.1 \ D (ξ.1 + 1) := fun ξ => ξ.2.2.some_mem
     have hinj : Function.Injective pick := by
       intro ξ ζ hξζ
       by_contra hne

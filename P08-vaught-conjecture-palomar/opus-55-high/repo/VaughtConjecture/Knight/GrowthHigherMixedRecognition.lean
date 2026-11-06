@@ -18,7 +18,6 @@ state. Neither admission nor a whole-section extension is an input.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
@@ -72,8 +71,7 @@ theorem owner_ladder_read (v : Pt) :
         (GrowthPaddedNativeRows.ceiling I O.birth)) v) =
       min (p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v))
         (p (place I X T hA hB hC t ht U hU hm j hj c hc hg)) := by
-  have hz : (D).grade (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v).1 ≤
-      (P).carrier.grade c :=
+  have hz :=
     (congrArg Prod.snd (ladderAt_index I X T hA hB hC t ht U hU hm j hj hj0 v)).le.trans
       ((P).carrier.grade_pos c)
   have he : (P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc
@@ -98,8 +96,7 @@ theorem owner_bottom_reflection (hp : RespectsSemanticsBelow Rows (U, j) p)
   have hf : ∀ i, 0 < i → i ≤ rungs →
       LadderScalarRendering.level (values (fields X (O.birth + 2) O.member)) H i ≠ ⊥ :=
     fun i hi _ => level_pos (bot_not_values _) (values_bound (anchor_bound X O.member)) hHne hi
-  have hspare : τ (LadderScalarRendering.level (values (fields X (O.birth + 2) O.member)) H rungs) =
-      p (place I X T hA hB hC t ht U hU hm j hj c hc hg) := by
+  have hspare := by
     have he := O.row_ladder (SupportLadderRows.leaf (GrowthLeafRecognition.rungs_pos I) a)
     rw [O.row_spare] at he
     rw [SupportLadderRows.image, SupportLadderRows.index_leaf,
@@ -118,8 +115,8 @@ end Owner
 /-- Admission of each grade-capped complete shadow vector is constructed from
 the actual maximal owner's chart. There is no upward-admission step. -/
 theorem exists_admitted_at (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (k : ℕ) (hk : 2 ≤ k) (hkj : k ≤ j) (hkt : k ≤ t + 2) :
-    ∃ S : State I.right.scheme I.left.scheme, Admitted X k S ∧
+    k (hk : 2 ≤ k) (hkj : k ≤ j) (hkt : k ≤ t + 2) :
+    ∃ S, Admitted X k S ∧
       ∀ f, S.profile f = min (shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p f)
         (gradeMax I X T hA hB hC t ht U j p k) := by
   by_cases hz : gradeMax I X T hA hB hC t ht U j p k = ⊥
@@ -142,7 +139,7 @@ theorem exists_admitted_at (hp : RespectsSemanticsBelow Rows (U, j) p)
 /-- Lawfulness on the entire original boundary, including originals absent
 from the prescribed mixed scope, follows from the constructed admitted state. -/
 theorem boundary_capped_lawful (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (k : ℕ) (hk : 2 ≤ k) (hkj : k ≤ j) (hkt : k ≤ t + 2) :
+    k (hk : 2 ≤ k) (hkj : k ≤ j) (hkt : k ≤ t + 2) :
     RespectsSemanticsBelow I.rows (A, k) (fun d =>
       min (shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d.1))
         (gradeMax I X T hA hB hC t ht U j p k)) := by

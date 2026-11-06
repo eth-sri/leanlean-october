@@ -18,7 +18,6 @@ The face-height condition is derived from plan membership in the pair ledger.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepOriginalLifts
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -35,16 +34,15 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-
 variable (hplan : P.carrier.plan = R) (hprev : TargetGradeLifting.Through P.rows k)
 include hplan hprev
 
 theorem private_inactive (hface : k ≤ n)
-    {p : I.right.scheme.below (effC n (k + 1)) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.right.rows (effC n (k + 1)) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hinactive : ∀ d, I.right.scheme.grade d.1 = k + 1 → p d ≤ γ)
     (hag : ∀ d, min (q (privateAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
@@ -101,7 +99,7 @@ theorem private_lift (hface : k ≤ n)
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedStepSupply.private_bottom_supply P hk hnext hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by grind⟩
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact LowOnlyPaddedStepPrivateLift.active_private_lift P hk hnext hplan hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
@@ -109,11 +107,11 @@ theorem private_lift (hface : k ≤ n)
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
 
 theorem donor_inactive (hface : k ≤ n)
-    {p : I.left.scheme.below (effC n (k + 1)) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.left.rows (effC n (k + 1)) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hinactive : ∀ d, I.left.scheme.grade d.1 = k + 1 → p d ≤ γ)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
@@ -170,7 +168,7 @@ theorem donor_lift (hface : k ≤ n)
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedStepSupply.donor_bottom_supply P hk hnext hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by grind⟩
   by_cases ha : ∃ d, I.left.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact LowOnlyPaddedStepDonorLift.active_donor_lift P hk hnext hplan hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag

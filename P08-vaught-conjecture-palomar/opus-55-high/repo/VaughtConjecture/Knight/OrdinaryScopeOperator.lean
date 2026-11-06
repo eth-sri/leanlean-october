@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.WholeDonorSmallScopes
+public import VaughtConjecture.Knight.WholeDonorOrdinaryLift
+public import VaughtConjecture.Knight.CanonicalOneCoatom
+public import VaughtConjecture.Knight.OrdinaryScopeMute
 
 /-! # A constructed ordinary scope operator at every positive height
 
@@ -17,7 +19,6 @@ The mute completion is separate, so no active maximal apex is introduced.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeOperator
 open AmalgamationPlan Transform Value ExtOrd SourcePrefixRows OrbitPrefixSupport
 open WholeDonorOrdinarySections WholeDonorOrdinaryLift
@@ -58,8 +59,6 @@ structure Core (sem : Semantics D) (k : ℕ) where
     Agree (render hp htp G θ) (render hq htq G θ) γ
 
 variable {B C : Finset ι} {R : Finset (Finset ι)} {m nL nR : ℕ}
-variable (I : WholeDonorBoundary.Input A B C R m nL nR) (hBA : B ≠ A) (hCA : C ≠ A)
-variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
 namespace Core
 variable {sem : Semantics D} {k : ℕ} (S : Core sem k)

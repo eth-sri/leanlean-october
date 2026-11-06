@@ -49,32 +49,37 @@ noncomputable def blockFloor : ExtOrd → ExtOrd
 
 @[simp] theorem blockFloor_bot : blockFloor ⊥ = ⊥ := rfl
 @[simp] theorem blockFloor_top : blockFloor ⊤ = ⊤ := rfl
-@[simp] theorem blockFloor_ofOrd (a : Ordinal.{0}) :
+@[simp] theorem blockFloor_ofOrd a :
     blockFloor (ofOrd a) = ofOrd (limitPart a) := rfl
 
-theorem blockFloor_le (x : ExtOrd) : blockFloor x ≤ x := by
+section
+variable (x : ExtOrd)
+
+theorem blockFloor_le  : blockFloor x ≤ x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · exact le_rfl
-  · exact le_rfl
+  · simp_all
+  · simp_all
   · rw [blockFloor_ofOrd, ofOrd_le_ofOrd]; exact limitPart_le a
 
-theorem blockFloor_idem (x : ExtOrd) : blockFloor (blockFloor x) = blockFloor x := by
+theorem blockFloor_idem  : blockFloor (blockFloor x) = blockFloor x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rfl
   · rfl
   · rw [blockFloor_ofOrd, blockFloor_ofOrd, limitPart_idem]
 
-theorem blockFloor_mono {x y : ExtOrd} (h : x ≤ y) : blockFloor x ≤ blockFloor y := by
+end
+
+theorem blockFloor_mono {x y} (h : x ≤ y) : blockFloor x ≤ blockFloor y := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · exact bot_le
-  · rw [top_le_iff.mp h]
+  · grind
   · rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
-    · exact absurd h (not_ofOrd_le_bot a)
+    · grind
     · exact le_top
     · rw [blockFloor_ofOrd, blockFloor_ofOrd, ofOrd_le_ofOrd]
       exact limitPart_mono (ofOrd_le_ofOrd.mp h)
 
-theorem blockFloor_evr (x : ExtOrd) (k i : ℕ) :
+theorem blockFloor_evr x k i :
     blockFloor (extVisibilityReplace x k i) = blockFloor x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rfl
@@ -85,73 +90,88 @@ theorem blockFloor_evr (x : ExtOrd) (k i : ℕ) :
     · exact limitPart_limitPart_add_nat a i
     · rfl
 
-theorem blockFloor_eq_of_between {x y z : ExtOrd} (hxy : x ≤ y) (hyz : y ≤ z)
+theorem blockFloor_eq_of_between {x y z} (hxy : x ≤ y) (hyz : y ≤ z)
     (hxz : blockFloor x = blockFloor z) : blockFloor y = blockFloor x :=
   le_antisymm (hxz ▸ blockFloor_mono hyz) (blockFloor_mono hxy)
 
 /-- A moving replacement at offset `0` is the block floor. -/
-theorem evr_zero_eq_blockFloor {a : Ordinal.{0}} {k : ℕ} (h : finitePart a < k) :
+theorem evr_zero_eq_blockFloor {a} {k} (h : finitePart a < k) :
     extVisibilityReplace (ofOrd a) k 0 = blockFloor (ofOrd a) := by
   rw [extVisibilityReplace_of_finitePart_lt h, blockFloor_ofOrd, Nat.cast_zero, add_zero]
 
 /-! ## The strip domain -/
 
+section
+variable (K : ℕ) (s : Finset ExtOrd)
+
 /-- The full strips of the blocks of a finite inventory, through offset `K`. -/
-noncomputable def stripDomain (K : ℕ) (s : Finset ExtOrd) : Finset ExtOrd :=
+noncomputable def stripDomain  : Finset ExtOrd :=
   s ∪ s.biUnion fun x =>
     match x with
     | some (some a) => (Finset.range (K + 1)).image fun i : ℕ => ofOrd (limitPart a + i)
     | _ => ∅
 
-theorem subset_stripDomain (K : ℕ) (s : Finset ExtOrd) : s ⊆ stripDomain K s :=
+theorem subset_stripDomain  : s ⊆ stripDomain K s :=
   Finset.subset_union_left
 
-theorem mem_stripDomain_of_lp {K : ℕ} {s : Finset ExtOrd} {a : Ordinal.{0}} (ha : ofOrd a ∈ s)
-    {i : ℕ} (hi : i ≤ K) : ofOrd (limitPart a + i) ∈ stripDomain K s := by
+end
+
+section
+variable {K : ℕ} {s : Finset ExtOrd}
+
+theorem mem_stripDomain_of_lp {a} (ha : ofOrd a ∈ s)
+    {i} (hi : i ≤ K) : ofOrd (limitPart a + i) ∈ stripDomain K s := by
   apply Finset.mem_union_right
   exact Finset.mem_biUnion.mpr ⟨ofOrd a, ha,
     Finset.mem_image.mpr ⟨i, Finset.mem_range.mpr (by omega), rfl⟩⟩
 
-theorem stripDomain_exists_sameBlock {K : ℕ} {s : Finset ExtOrd} {z : ExtOrd}
+theorem stripDomain_exists_sameBlock {z}
     (hz : z ∈ stripDomain K s) : ∃ x ∈ s, blockFloor z = blockFloor x := by
   rcases Finset.mem_union.mp hz with h | h
-  · exact ⟨z, h, rfl⟩
+  · grind
   · obtain ⟨x, hx, hm⟩ := Finset.mem_biUnion.mp h
     rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-    · simp at hm
-    · simp at hm
+    · grind
+    · grind
     · obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hm
       exact ⟨ofOrd a, hx, by rw [blockFloor_ofOrd, blockFloor_ofOrd, limitPart_limitPart_add_nat]⟩
 
-theorem stripDomain_fullStrips {K : ℕ} {s : Finset ExtOrd} {a : Ordinal.{0}}
-    (ha : ofOrd a ∈ stripDomain K s) {i : ℕ} (hi : i ≤ K) :
+theorem stripDomain_fullStrips {a}
+    (ha : ofOrd a ∈ stripDomain K s) {i} (hi : i ≤ K) :
     ofOrd (limitPart a + i) ∈ stripDomain K s := by
   obtain ⟨x, hx, hb⟩ := stripDomain_exists_sameBlock ha
   rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
-  · rw [blockFloor_ofOrd, blockFloor_bot] at hb; exact absurd hb (ofOrd_ne_bot _)
-  · rw [blockFloor_ofOrd, blockFloor_top] at hb; exact absurd hb (ofOrd_ne_top _)
+  · simp_all
+  · simp_all
   · rw [blockFloor_ofOrd, blockFloor_ofOrd, ofOrd_inj] at hb
     rw [hb]
     exact mem_stripDomain_of_lp hx hi
 
-theorem stripDomain_floor_mem {K : ℕ} {s : Finset ExtOrd} {z : ExtOrd} (hz : z ∈ stripDomain K s) :
+section
+variable {z : ExtOrd}
+
+theorem stripDomain_floor_mem (hz : z ∈ stripDomain K s) :
     blockFloor z ∈ stripDomain K s := by
   rcases ExtOrd.cases z with rfl | rfl | ⟨a, rfl⟩
-  · exact hz
-  · exact hz
+  · simp_all
+  · simp_all
   · rw [blockFloor_ofOrd]
     have := stripDomain_fullStrips hz (Nat.zero_le K)
     rwa [Nat.cast_zero, add_zero] at this
 
 /-- **The strip domain is closed under every replacement at thresholds `≤ K`.** -/
-theorem stripDomain_closed {K : ℕ} {s : Finset ExtOrd} {z : ExtOrd} (hz : z ∈ stripDomain K s)
-    {k i : ℕ} (hk : k ≤ K) (hi : i ≤ k) : extVisibilityReplace z k i ∈ stripDomain K s := by
+theorem stripDomain_closed (hz : z ∈ stripDomain K s)
+    {k i} (hk : k ≤ K) (hi : i ≤ k) : extVisibilityReplace z k i ∈ stripDomain K s := by
   rcases ExtOrd.cases z with rfl | rfl | ⟨a, rfl⟩
-  · simpa using hz
-  · simpa using hz
+  · simp_all
+  · simp_all
   · by_cases hfp : finitePart a < k
     · rw [extVisibilityReplace_of_finitePart_lt hfp]; exact stripDomain_fullStrips hz (hi.trans hk)
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hfp)]; exact hz
+
+end
+
+end
 
 /-! ## Rounding up to the least represented input of a block -/
 
@@ -165,69 +185,63 @@ open Classical in
 noncomputable def roundUp (s : Finset ExtOrd) (x : ExtOrd) : ExtOrd :=
   if h : (sourceBlock s x).Nonempty then max x ((sourceBlock s x).min' h) else x
 
-theorem sourceBlock_eq {s : Finset ExtOrd} {x y : ExtOrd} (h : blockFloor x = blockFloor y) :
+theorem sourceBlock_eq {s : Finset ExtOrd} {x y} (h : blockFloor x = blockFloor y) :
     sourceBlock s x = sourceBlock s y := by
-  classical
   unfold sourceBlock; simp only [h]
 
-theorem le_roundUp (s : Finset ExtOrd) (x : ExtOrd) : x ≤ roundUp s x := by
-  classical
+theorem le_roundUp (s : Finset ExtOrd) x : x ≤ roundUp s x := by
   unfold roundUp; split_ifs
-  · exact le_max_left _ _
-  · exact le_rfl
+  · grind
+  · grind
 
-theorem roundUp_of_mem {s : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ s) : roundUp s x = x := by
-  classical
+theorem roundUp_of_mem {s : Finset ExtOrd} {x} (hx : x ∈ s) : roundUp s x = x := by
   have hm : x ∈ sourceBlock s x := Finset.mem_filter.mpr ⟨hx, rfl⟩
   unfold roundUp
   rw [dite_eq_left ⟨x, hm⟩, max_eq_left (Finset.min'_le _ _ hm)]
 
-theorem blockFloor_roundUp (s : Finset ExtOrd) (x : ExtOrd) :
+section
+variable (s : Finset ExtOrd)
+
+theorem blockFloor_roundUp (x : ExtOrd) :
     blockFloor (roundUp s x) = blockFloor x := by
-  classical
   unfold roundUp
   split_ifs with h
   · have hm := (Finset.mem_filter.mp (Finset.min'_mem (sourceBlock s x) h)).2
-    rcases le_total x ((sourceBlock s x).min' h) with hx | hx
-    · rw [max_eq_right hx]; exact hm
-    · rw [max_eq_left hx]
+    grind
   · rfl
 
-theorem roundUp_mono (s : Finset ExtOrd) : Monotone (roundUp s) := by
+theorem roundUp_mono  : Monotone (roundUp s) := by
   classical
   intro x y hxy
   by_cases hb : blockFloor x = blockFloor y
   · have hs := sourceBlock_eq (s := s) hb
     unfold roundUp
-    rw [hs]
-    split_ifs
-    · exact max_le_max_right _ hxy
-    · exact hxy
+    grind
   · apply le_trans ?_ (le_roundUp s y)
     by_contra hn
     exact hb (blockFloor_eq_of_between hxy (not_le.mp hn).le (blockFloor_roundUp s x).symm).symm
 
-theorem roundUp_bot (s : Finset ExtOrd) : roundUp s ⊥ = ⊥ := by
+theorem roundUp_bot  : roundUp s ⊥ = ⊥ := by
   have h := blockFloor_roundUp s ⊥
-  rw [blockFloor_bot] at h
   rcases ExtOrd.cases (roundUp s ⊥) with h0 | h0 | ⟨a, h0⟩
   · exact h0
-  · rw [h0] at h; exact absurd h (by simp)
-  · rw [h0] at h; exact absurd h (by simp)
+  · simp_all
+  · simp_all
 
-theorem roundUp_mem_of_nonempty {s : Finset ExtOrd} {x : ExtOrd} (h : (sourceBlock s x).Nonempty)
+end
+
+theorem roundUp_mem_of_nonempty {s : Finset ExtOrd} {x} h
     (hle : x ≤ (sourceBlock s x).min' h) : roundUp s x ∈ s := by
-  classical
   unfold roundUp
-  rw [dite_eq_left h, max_eq_right hle]
+  simp_all
   exact (Finset.mem_filter.mp (Finset.min'_mem _ h)).1
 
 /-- **Rounding commutes with bounded replacements** when the inventory is closed under them: a
 low minimum forces its own block floor to be represented; otherwise it is fixed by every bounded
 replacement. -/
-theorem roundUp_commutes (s : Finset ExtOrd) (K : ℕ)
-    (hClosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
-    (x : ExtOrd) (k i : ℕ) (hk : k ≤ K) (hi : i ≤ k) :
+theorem roundUp_commutes s K
+    (hClosed : ∀ x ∈ s, ∀ k i, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
+    x k i (hk : k ≤ K) (hi : i ≤ k) :
     roundUp s (extVisibilityReplace x k i) = extVisibilityReplace (roundUp s x) k i := by
   classical
   have hs := sourceBlock_eq (s := s) (blockFloor_evr x k i)
@@ -262,9 +276,8 @@ theorem roundUp_commutes (s : Finset ExtOrd) (K : ℕ)
   · rfl
 
 /-- The rounded floor of a represented input is represented. -/
-theorem roundUp_floor_mem {s : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ s) :
+theorem roundUp_floor_mem {s : Finset ExtOrd} {x} (hx : x ∈ s) :
     roundUp s (blockFloor x) ∈ s := by
-  classical
   have hxB : x ∈ sourceBlock s (blockFloor x) :=
     Finset.mem_filter.mpr ⟨hx, (blockFloor_idem x).symm⟩
   apply roundUp_mem_of_nonempty ⟨x, hxB⟩
@@ -274,9 +287,9 @@ theorem roundUp_floor_mem {s : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ s) :
   exact hmB.symm.le.trans (blockFloor_le _)
 
 /-- **Every strip point rounds back into the inventory.** -/
-theorem roundUp_mem (K : ℕ) (s : Finset ExtOrd)
-    (hClosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
-    {z : ExtOrd} (hz : z ∈ stripDomain K s) : roundUp s z ∈ s := by
+theorem roundUp_mem K s
+    (hClosed : ∀ x ∈ s, ∀ k i, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
+    {z} (hz : z ∈ stripDomain K s) : roundUp s z ∈ s := by
   rcases Finset.mem_union.mp hz with hz | hz
   · rw [roundUp_of_mem hz]; exact hz
   · obtain ⟨x, hx, hm⟩ := Finset.mem_biUnion.mp hz
@@ -303,12 +316,12 @@ theorem roundUp_mem (K : ℕ) (s : Finset ExtOrd)
 /-- A shifter whose `⊥`-points propagate to all their replacements is `⊥` on whole blocks. -/
 theorem bot_of_same_block {f : ExtOrd → ExtOrd}
     (hbot : ∀ x, f x = ⊥ → ∀ k i, i ≤ k → f (extVisibilityReplace x k i) = ⊥)
-    {x y : ExtOrd} (hb : blockFloor x = blockFloor y) (hx : f x = ⊥) : f y = ⊥ := by
+    {x y} (hb : blockFloor x = blockFloor y) (hx : f x = ⊥) : f y = ⊥ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
     · exact hx
     · exact absurd hb (by simp)
-    · rw [blockFloor_bot, blockFloor_ofOrd] at hb; exact absurd hb.symm (ofOrd_ne_bot _)
+    · tauto
   · rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
     · exact absurd hb (by simp)
     · exact hx
@@ -328,9 +341,11 @@ theorem bot_of_same_block {f : ExtOrd → ExtOrd}
 def FloorSupport (s : Finset ExtOrd) (f : ExtOrd → ExtOrd) : Prop :=
   ∀ z ∈ s, blockFloor z < z → f z ≠ ⊥ → ∃ y ∈ s, y ≤ blockFloor z ∧ f y ≠ ⊥
 
-theorem table_eq_bot_after_replace_of_floorSupport (s : Finset ExtOrd) (f : ExtOrd → ExtOrd)
-    (hFloor : FloorSupport s f) (x : ExtOrd) (k i : ℕ)
-    (hActive : finiteLowerEnvelope s f x ≤ ⊥) (z : ExtOrd) (hz : z ∈ s)
+section
+variable (s : Finset ExtOrd) (f : ExtOrd → ExtOrd)
+
+theorem table_eq_bot_after_replace_of_floorSupport (hFloor : FloorSupport s f) (x : ExtOrd) k i
+    (hActive : finiteLowerEnvelope s f x ≤ ⊥) z (hz : z ∈ s)
     (hzReplace : z ≤ extVisibilityReplace x k i) : f z = ⊥ := by
   have hOld : ∀ y ∈ s, y ≤ x → f y = ⊥ := by
     intro y hy hyx
@@ -350,31 +365,40 @@ theorem table_eq_bot_after_replace_of_floorSupport (s : Finset ExtOrd) (f : ExtO
     exact hyBot (hOld y hy (hyFloor.trans hFloorLe))
 
 /-- A `⊥` suppressor supplies every tail bridge from floor support alone. -/
-theorem bridge_tail_of_floorSupport (s : Finset ExtOrd) (f : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
-    (K : ℕ) (hTail : ∀ k, K < k → g k = ⊥) (hFloor : FloorSupport s f)
-    (x : ExtOrd) (k : ℕ) (hk : K < k) (hActive : finiteLowerEnvelope s f x ≤ g k) (i : ℕ)
-    (z : ExtOrd) (hz : z ∈ s) (hzReplace : z ≤ extVisibilityReplace x k i) :
+theorem bridge_tail_of_floorSupport (g : ℕ → ExtOrd)
+    K (hTail : ∀ k, K < k → g k = ⊥) (hFloor : FloorSupport s f)
+    x k (hk : K < k) (hActive : finiteLowerEnvelope s f x ≤ g k) i
+    z (hz : z ∈ s) (hzReplace : z ≤ extVisibilityReplace x k i) :
     f z = ⊥ ∨ ∃ y ∈ s, y ≤ x ∧ f z ≤ extVisibilityReplace (f y) k i :=
   Or.inl (table_eq_bot_after_replace_of_floorSupport s f hFloor x k i
     (hActive.trans_eq (hTail k hk)) z hz hzReplace)
 
+end
+
 /-! ## The full-strip bridge below the controller grade -/
 
-theorem limitPart_le_of_le_limitPart_add {a b : Ordinal.{0}} {i : ℕ} (h : a ≤ limitPart b + i) :
+section
+variable {a b : Ordinal.{0}} {i : ℕ}
+
+theorem limitPart_le_of_le_limitPart_add (h : a ≤ limitPart b + i) :
     limitPart a ≤ limitPart b := by
   have := limitPart_mono h
   rwa [limitPart_limitPart_add_nat] at this
 
-theorem finitePart_le_of_le_limitPart_add {a b : Ordinal.{0}} {i : ℕ} (h : a ≤ limitPart b + i)
+theorem finitePart_le_of_le_limitPart_add (h : a ≤ limitPart b + i)
     (heq : limitPart a = limitPart b) : finitePart a ≤ i := by
   rw [← limitPart_add_finitePart a, heq] at h
   exact_mod_cast (add_le_add_iff_left _).mp h
 
+end
+
+section
+variable (K : ℕ) (t : Finset ExtOrd)
+
 /-- **On a full-strip domain, every point visible below a replaced input is dominated by the
 replacement of a point below the original input.** -/
-theorem exists_source_below_replace (K : ℕ) (t : Finset ExtOrd)
-    (hStrip : ∀ a : Ordinal.{0}, ofOrd a ∈ t → ∀ i : ℕ, i ≤ K → ofOrd (limitPart a + i) ∈ t)
-    (x : ExtOrd) {k i : ℕ} (hk : k ≤ K) (_hi : i ≤ k) {z : ExtOrd} (hz : z ∈ t)
+theorem exists_source_below_replace (hStrip : ∀ a, ofOrd a ∈ t → ∀ i, i ≤ K → ofOrd (limitPart a + i) ∈ t)
+    x {k i} (hk : k ≤ K) (_hi : i ≤ k) {z} (hz : z ∈ t)
     (hzx : z ≤ extVisibilityReplace x k i) :
     ∃ y ∈ t, y ≤ x ∧ z ≤ extVisibilityReplace y k i := by
   rcases ExtOrd.cases z with rfl | rfl | ⟨a, rfl⟩
@@ -446,17 +470,19 @@ theorem exists_source_below_replace (K : ℕ) (t : Finset ExtOrd)
                 _ = b := limitPart_add_finitePart b
 
 /-- **The bounded bridge on a full-strip domain**, from monotonicity and bounded commutation. -/
-theorem fullStrip_bridge (K : ℕ) (t : Finset ExtOrd) (f : ExtOrd → ExtOrd)
-    (hStrip : ∀ a : Ordinal.{0}, ofOrd a ∈ t → ∀ i : ℕ, i ≤ K → ofOrd (limitPart a + i) ∈ t)
+theorem fullStrip_bridge (f : ExtOrd → ExtOrd)
+    (hStrip : ∀ a, ofOrd a ∈ t → ∀ i, i ≤ K → ofOrd (limitPart a + i) ∈ t)
     (hMono : ∀ a ∈ t, ∀ b ∈ t, a ≤ b → f a ≤ f b)
-    (hComm : ∀ a ∈ t, ∀ k i : ℕ, k ≤ K → i ≤ k →
+    (hComm : ∀ a ∈ t, ∀ k i, k ≤ K → i ≤ k →
       f (extVisibilityReplace a k i) = extVisibilityReplace (f a) k i)
-    (hClosed : ∀ a ∈ t, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace a k i ∈ t)
-    (x : ExtOrd) {k : ℕ} (hk : k ≤ K) {i : ℕ} (hi : i ≤ k) {z : ExtOrd} (hz : z ∈ t)
+    (hClosed : ∀ a ∈ t, ∀ k i, k ≤ K → i ≤ k → extVisibilityReplace a k i ∈ t)
+    x {k} (hk : k ≤ K) {i} (hi : i ≤ k) {z} (hz : z ∈ t)
     (hzx : z ≤ extVisibilityReplace x k i) :
     ∃ y ∈ t, y ≤ x ∧ f z ≤ extVisibilityReplace (f y) k i := by
   obtain ⟨y, hy, hyx, hzy⟩ := exists_source_below_replace K t hStrip x hk hi hz hzx
   exact ⟨y, hy, hyx, (hMono z hz _ (hClosed y hy k i hk hi) hzy).trans_eq (hComm y hy k i hk hi)⟩
+
+end
 
 /-! ## The assembled floor completion -/
 
@@ -464,8 +490,8 @@ theorem fullStrip_bridge (K : ℕ) (t : Finset ExtOrd) (f : ExtOrd → ExtOrd)
 of a bounded, monotone, bottom-preserving shifter that commutes with all bounded replacements
 and whose `⊥`-fibre propagates has bottom, monotonicity, the weak orbit law, and the
 unrestricted block bridge, against any suppressor vanishing above `K`. -/
-theorem floorCompletion (K : ℕ) (s : Finset ExtOrd) (τ : ExtOrd → ExtOrd) (g : ℕ → ExtOrd)
-    (hClosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
+theorem floorCompletion (K : ℕ) (s : Finset ExtOrd) τ g
+    (hClosed : ∀ x ∈ s, ∀ k i, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
     (hBot : τ ⊥ = ⊥) (hMono : Monotone τ)
     (hBotProp : ∀ x, τ x = ⊥ → ∀ k i, i ≤ k → τ (extVisibilityReplace x k i) = ⊥)
     (hComm : ∀ x k i, k ≤ K → i ≤ k →

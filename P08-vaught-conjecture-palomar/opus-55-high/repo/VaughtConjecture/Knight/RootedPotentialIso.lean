@@ -42,8 +42,8 @@ variable {M : Type w} {N : Type w'} [L.Structure M] [L.Structure N]
 /-- The potential isomorphism rooted at a member pair `(a, b)`, in the original language:
 the tails whose concatenation with the root belongs to the family. No closure of the original
 family under restrictions or reindexing is assumed. -/
-noncomputable def rootedPotentialIso (P : PotentialIso L M N) {k : ℕ} {a : Fin k → M}
-    {b : Fin k → N} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
+noncomputable def rootedPotentialIso (P : PotentialIso L M N) {k} {a}
+    {b} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
     PotentialIso L M N :=
   PotentialIso.ofExtensionFamily
     (fun n c d => (⟨k + n, Fin.append a c, Fin.append b d⟩ :
@@ -63,8 +63,8 @@ noncomputable def rootedPotentialIso (P : PotentialIso L M N) {k : ℕ} {a : Fin
 isomorphism yields an isomorphism extending any member pair literally. The graph specification
 is applied to the rooted tail family, not directly to the original unrooted family. -/
 theorem exists_equiv_of_mem {M N : Type w} [L.Structure M] [L.Structure N]
-    [Countable M] [Countable N] (P : PotentialIso L M N) {k : ℕ} {a : Fin k → M}
-    {b : Fin k → N} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
+    [Countable M] [Countable N] (P : PotentialIso L M N) {k} {a}
+    {b} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
     ∃ e : M ≃[L] N, ∀ i, e (a i) = b i := by
   obtain ⟨e, he⟩ := (rootedPotentialIso P hab).countable_toEquiv_graph
   refine ⟨e, fun i => ?_⟩
@@ -84,10 +84,12 @@ section Knight
 variable {α : LimitStage} {M N : Type w}
 variable {R : KnightRealization α M} {R' : KnightRealization α N}
 
+section
+variable [Countable M] [Countable N]
+
 /-- The Karp bridge, root-preserving: on countable carriers a potential isomorphism of the stage
 chart structures yields a realization isomorphism extending any member pair. -/
-theorem exists_iso_of_potentialIso_mem [Countable M] [Countable N]
-    (P : @PotentialIso (stageLang α) (stageLang.isRelational α) M N
+theorem exists_iso_of_potentialIso_mem (P : @PotentialIso (stageLang α) (stageLang.isRelational α) M N
       (stageStructureOf R) (stageStructureOf R'))
     {k : ℕ} {a : Fin k → M} {b : Fin k → N}
     (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈
@@ -100,8 +102,7 @@ theorem exists_iso_of_potentialIso_mem [Countable M] [Countable N]
 
 /-- On countable carriers, a common-chart family with empty pair and one-point forth/back yields
 a realization isomorphism extending any member pair. -/
-theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
-    (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
+theorem exists_iso_of_commonCharts_mem (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
     (family : Set (Σ n : ℕ, (Fin n → M) × (Fin n → N)))
     (empty_mem : (⟨0, Fin.elim0, Fin.elim0⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
     (commonChart : ∀ x ∈ family, HasCommonChart R R' x.2.1 x.2.2)
@@ -116,6 +117,8 @@ theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
     ∃ e : R.Iso R', ∀ i, e.1 (a i) = b i :=
   exists_iso_of_potentialIso_mem
     (potentialIsoOfCommonCharts hR hR' family empty_mem commonChart forth back) hab
+
+end
 
 end Knight
 

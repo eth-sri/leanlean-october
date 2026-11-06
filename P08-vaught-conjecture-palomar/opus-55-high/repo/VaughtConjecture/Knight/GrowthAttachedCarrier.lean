@@ -21,7 +21,6 @@ assert a stage-bounded selected display or a model receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthAttachedCarrier
 open AmalgamationPlan Transform Value ExtOrd Growth
 open CellScheme.restrictFace
@@ -114,13 +113,13 @@ theorem restrict_private :
     (E).restrictFace Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall) = C :=
   GrowthReplicatedLegal.restrict_private I X T hA hB hD hsmall
 
-theorem donor_occurrence (d : Cell P.scheme) :
+theorem donor_occurrence d :
     toCell (E).scheme (onePointProj e) (donor_visible C P Q e hvC hvP hC hP X T hsmall)
       (SemScheme.castCell (restrict_donor C P Q e hvC hvP hC hP X T hsmall).symm d) =
       (donorFace C P Q e hvC hvP hC hP X T hsmall).map d :=
   GrowthReplicatedLegal.donor_occurrence I X T hA hB hD hsmall d
 
-theorem private_occurrence (d : Cell C.scheme) :
+theorem private_occurrence d :
     toCell (E).scheme Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall)
       (SemScheme.castCell (restrict_private C P Q e hvC hvP hC hP X T hsmall).symm d) =
       (privateFace C P Q e hvC hvP hC hP X T hsmall).map d :=

@@ -19,7 +19,6 @@ at the observed mixed scope. No lawful extension is used to obtain these rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
@@ -46,14 +45,14 @@ local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue X 1)
 def original (d : Cell I.boundary) : Cell (P).carrier :=
   (P).baseMap (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)
 
-theorem original_index (d : Cell I.boundary) : (P).carrier.cell
+theorem original_index d : (P).carrier.cell
     (original I X T hA hB hC t ht d) = I.boundary.cell d :=
   ((P).base_index _).trans (RelativeLadderLayer.old_index _ _ d)
 
 abbrev ladder (v : Pt) : Cell (P).carrier :=
   GrowthPaddedNativeRows.ladder I X T hA hB hC t ht v
 
-theorem ladder_index (v : Pt) : (P).carrier.cell
+theorem ladder_index v : (P).carrier.cell
     (ladder I X T hA hB hC t ht v) = (A, 1) :=
   GrowthPaddedNativeRows.ladder_index I X T hA hB hC t ht v
 
@@ -61,7 +60,7 @@ variable (U : Finset ι) (hU : U ∈ R)
   (hm : U = A ∨ ScopeReplicationCarrier.Mixed B C U)
   (j : ℕ) (hj : j ≤ U.card)
 
-def place (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
+def place c (hc : (P).carrier.scope c = A)
     (hg : (P).carrier.grade c ≤ j) : (D).below (U, j) :=
   ⟨ScopeReplicationCarrier.atScope (P).carrier B C U
       (by rw [GrowthPaddedIteration.build_plan]; exact hU) hm c hc (hg.trans hj),

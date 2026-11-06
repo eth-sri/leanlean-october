@@ -31,8 +31,6 @@ Nothing here establishes extension or injectivity for any carrier; both are hypo
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ExtensionInjectivity
 
 open Transform Value ExtOrd AmalgamationPlan

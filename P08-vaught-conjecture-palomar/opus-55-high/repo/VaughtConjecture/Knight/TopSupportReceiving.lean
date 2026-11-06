@@ -48,21 +48,26 @@ open TypeTower StageType KnightRealization Value ExtOrd Transform TopSupport
 
 universe w
 
-variable {α : LimitStage} {M : Type w} {m n : ℕ}
+variable {α : LimitStage}  {m n : ℕ}
 
 /-! ## The hypothesis -/
 
 /-! ## Transport along equal domains -/
 
-theorem SemScheme.castCell_castCell_symm {X Y : SemScheme n} (h : X = Y) (d : Cell Y.scheme) :
+section
+variable {X Y : SemScheme n} (h : X = Y)
+
+theorem SemScheme.castCell_castCell_symm d :
     SemScheme.castCell h (SemScheme.castCell h.symm d) = d := by
   subst h; rfl
 
 /-- Respect transports along an equality of domains. -/
-theorem respects_castCell {X Y : SemScheme n} (h : X = Y) {l : Cell X.scheme → ExtOrd}
+theorem respects_castCell {l}
     (hl : RespectsSemantics X.rows l) :
     RespectsSemantics Y.rows (fun d => l (SemScheme.castCell h.symm d)) := by
   subst h; exact hl
+
+end
 
 /-- Stage types with equal domains and labels are equal. -/
 theorem StageType.eq_of_label {q P : S α.1 m} (h : q.scheme = P.scheme)
@@ -83,9 +88,9 @@ theorem read_of_min_eq_of_lt {x y δ : ExtOrd} (h : min x δ = y) (hy : y < δ) 
     exact absurd (h ▸ hy) (lt_irrefl _)
 
 /-- A label below the cutoff is read back literally from agreement below the cutoff. -/
-theorem label_eq_of_agree {q P : S α.1 m} (h : q.scheme = P.scheme) {δ : ExtOrd}
+theorem label_eq_of_agree {q P : S α.1 m} h {δ}
     (hagree : ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ)
-    (d : Cell P.scheme.scheme) (hd : P.label d < δ) :
+    d (hd : P.label d < δ) :
     q.label (SemScheme.castCell h.symm d) = P.label d := by
   obtain ⟨sq, lq, bq, rq⟩ := q
   obtain ⟨sP, lP, bP, rP⟩ := P
@@ -96,13 +101,13 @@ theorem label_eq_of_agree {q P : S α.1 m} (h : q.scheme = P.scheme) {δ : ExtOr
   exact read_of_min_eq_of_lt this hd
 
 /-- Every cell of a stage type on `n + 1` points has grade at most `n + 1`. -/
-theorem grade_le_succ (P : S α.1 (n + 1)) (d : Cell P.scheme.scheme) :
+theorem grade_le_succ (P : S α.1 (n + 1)) d :
     P.scheme.scheme.grade d ≤ n + 1 :=
   (CellScheme.grade_le_card_scope _ d).trans
     ((Finset.card_le_univ _).trans_eq (Fintype.card_fin _))
 
 /-- The retained root tops of a coface: the root cells whose label is `⊤`. -/
-def rootTops {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p P) : Set (Cell P.scheme.scheme) :=
+def rootTops {p} {P : S α.1 (n + 1)} (hP : IsCoface p P) : Set (Cell P.scheme.scheme) :=
   {c | ∃ d, c = hP.extendsDomain.cellOf d ∧ P.label c = ⊤}
 
 /-! ## A proper cutoff above the proper labels always exists -/
@@ -121,11 +126,11 @@ theorem ordOf_top : ordOf (⊤ : ExtOrd) = 0 := by
 
 /-- A proper cutoff below the stage and strictly above every proper label of a stage type. -/
 theorem exists_proper_cutoff (P : S α.1 m) :
-    ∃ δ : ExtOrd, ⊥ < δ ∧ δ < ofOrd α.1 ∧ ∀ d, P.label d ≠ ⊤ → P.label d < δ := by
+    ∃ δ, ⊥ < δ ∧ δ < ofOrd α.1 ∧ ∀ d, P.label d ≠ ⊤ → P.label d < δ := by
   classical
   have h0 : (0 : Ordinal.{0}) < α.1 := by
     rw [← Ordinal.bot_eq_zero]; exact bot_lt_iff_ne_bot.mpr α.2.ne_bot
-  let a : Ordinal.{0} := Finset.univ.sup fun d : Cell P.scheme.scheme => ordOf (P.label d)
+  let a : Ordinal.{0} := Finset.univ.sup fun d => ordOf (P.label d)
   have ha : a < α.1 := by
     rw [Finset.sup_lt_iff h0]
     intro d _
@@ -168,8 +173,8 @@ noncomputable def lowerType (P : S α.1 (n + 1)) (H : Set (Cell P.scheme.scheme)
 
 /-- The lowering is a coface of the root when the root's tops are retained. -/
 theorem isCoface_lowerType {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p P)
-    {H : Set (Cell P.scheme.scheme)} {b : Ordinal.{0}} (hb : b < α.1)
-    (hβ : SelfVis (n + 1) (ofOrd b)) (hβgt : ∀ d, P.label d ≠ ⊤ → P.label d < ofOrd b)
+    {H} {b} hb
+    hβ (hβgt : ∀ d, P.label d ≠ ⊤ → P.label d < ofOrd b)
     (hH : Admissible P.scheme.rows P.label H) (hroot : rootTops hP ⊆ H) :
     IsCoface p (lowerType P H hb hβ hβgt hH) := by
   have hvis := hP.extendsDomain.visible

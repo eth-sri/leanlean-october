@@ -12,7 +12,6 @@ public import VaughtConjecture.Knight.CanonicalLowerLift
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalLowerAllCaps
 open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension
 noncomputable section
@@ -21,16 +20,16 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hA : 2 ≤ A.card)
 variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ 2)
 
-theorem exists_lift {C : Finset ι}
+theorem exists_lift {C}
     (hfull : C.Nonempty → ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
-    {p : D.below (C, 1) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, 1) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, 1) p)
     {q : (scheme sem 1 (by decide) (by omega) 2 (by decide) hA).below (A, 1) → ExtOrd}
     (hq : RespectsSemanticsBelow
       (rows sem 1 (by decide) (by omega) hproper 2 hg (by decide) hA (by decide)) (A, 1) q)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ)
+    {γ} (hγ : SelfVis 1 γ)
     (hag : ∀ e : D.below (C, 1), min (p e) γ =
       min (q (CanonicalLowerLift.oldLow sem (by omega) 2 (by decide) hA e.1 e.2.2)) γ)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, 1) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →

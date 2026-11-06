@@ -73,7 +73,7 @@ pair in `A` is isomorphic, then one countable back-and-forth level separates eve
 No countability of the relation symbols is assumed. -/
 theorem exists_uniform_bfSeparation {A : Set (StructureSpace L × StructureSpace L)}
     (hA : AnalyticSet A) (hA_noniso : ∀ p ∈ A, ¬ (structureIsoSetoid L).r p.1 p.2) :
-    ∃ α : Ordinal.{0}, α < Ordinal.omega 1 ∧ ∀ p ∈ A, ¬ CodeBFEquiv α p.1 p.2 := by
+    ∃ α, α < Ordinal.omega 1 ∧ ∀ p ∈ A, ¬ CodeBFEquiv α p.1 p.2 := by
   have hwf : ∀ p ∈ A, WellFounded (extBelow (bfTree p.1 p.2)) := fun p hp ↦
     (wellFounded_extBelow_iff_not_hasInfiniteBranch _).mpr fun hb ↦
       hA_noniso p hp ((hasInfiniteBranch_bfTree_iff _ _).mp hb)

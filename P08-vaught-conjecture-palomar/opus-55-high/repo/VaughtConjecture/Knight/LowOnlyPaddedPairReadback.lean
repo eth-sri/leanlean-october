@@ -16,7 +16,6 @@ receipts and strict leaf comparison remain the only readback inputs.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPairReadback
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
@@ -31,26 +30,29 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-def originalAt (t : ℕ) (ht : t + 2 ≤ A.card) (d : I.boundary.below (A, t + 2)) :
+def originalAt t ht (d : I.boundary.below (A, t + 2)) :
     (build I F hroot hA hB hC t ht).carrier.below (A, t + 2) :=
   ⟨original I F hroot hA hB hC t ht d.1, by rw [original_index]; exact d.2⟩
 
-def privateIncl {j : ℕ} (d : I.right.scheme.below (effC n j)) : I.boundary.below (A, j) :=
+section
+variable {j : ℕ}
+
+def privateIncl (d : I.right.scheme.below (effC n j)) : I.boundary.below (A, j) :=
   ⟨I.rightFace.map d.1, I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _),
     (congrArg Prod.snd (I.rightFace.index d.1)).le.trans (d.2.2.trans (min_le_left _ _))⟩
 
-def donorIncl {j : ℕ} (d : I.left.scheme.below (effC n j)) : I.boundary.below (A, j) :=
+def donorIncl (d : I.left.scheme.below (effC n j)) : I.boundary.below (A, j) :=
   ⟨I.leftFace.map d.1, I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _),
     (congrArg Prod.snd (I.leftFace.index d.1)).le.trans (d.2.2.trans (min_le_left _ _))⟩
 
+end
+
 variable {F}
 
-theorem native_top_chart (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (ht : t + 2 ≤ A.card)
-    {q : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2) → ExtOrd}
+section
+variable (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2)) (hroot : ∀ i : Cell I.common.scheme, ∃ a : I.left.scheme.below (F.root.A, F.root.A.card), a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i) (ht : t + 2 ≤ A.card)
+
+theorem native_top_chart {q : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2) → ExtOrd}
     (hq : RespectsSemanticsBelow (build I F hroot hA hB hC t ht).rows (A, t + 2) q)
     (htop : ∃ d, (build I F hroot hA hB hC t ht).carrier.grade d.1 = t + 2 ∧ q d = ⊤) :
     ∃ a : F.Anchor (t + 2), ∃ σ : ExtOrd → ExtOrd,
@@ -60,14 +62,9 @@ theorem native_top_chart (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
   | zero => exact LowOnlyPaddedTwoReadback.exists_top_chart I F hroot hA hB hC hq htop
   | succ t => exact LowOnlyPaddedStepChart.exists_top_chart _ _ _ hq htop
 
-theorem native_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (ht : t + 2 ≤ A.card) (a : F.Anchor (t + 2))
-    (hlt : LowSeparator.cutoffCut (t + 2) (LowSeparator.donorField F) (state F a).profile <
-      (state F a).b)
-    {q : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2) → ExtOrd}
+theorem native_readback a
+    hlt
+    {q}
     (hq : RespectsSemanticsBelow (build I F hroot hA hB hC t ht).rows (A, t + 2) q)
     (hc : q (originalAt I F hroot hA hB hC t ht (privateIncl I (F.gap.cC le_rfl))) = ⊤)
     (hr : q (originalAt I F hroot hA hB hC t ht (privateIncl I (F.gap.rC le_rfl))) = ⊤)
@@ -105,15 +102,10 @@ theorem native_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
     ((congrFun (state_profile F b).symm _).trans (field_donor I (state F b) d.1))
   exact he.symm.trans ((congrArg σ hs).trans htop)
 
-theorem whole_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (ht : t + 2 ≤ A.card) (r : ℕ) (hheight : t + r + 2 ≤ A.card)
-    (a : F.Anchor (t + 2))
-    (hlt : LowSeparator.cutoffCut (t + 2) (LowSeparator.donorField F) (state F a).profile <
-      (state F a).b)
-    {q : Cell (build I F hroot hA hB hC (t + r) hheight).carrier → ExtOrd}
+theorem whole_readback r hheight
+    a
+    hlt
+    {q}
     (hq : RespectsSemantics (build I F hroot hA hB hC (t + r) hheight).rows q)
     (hc : q (original I F hroot hA hB hC (t + r) hheight (I.rightFace.map F.gap.c)) = ⊤)
     (hr : q (original I F hroot hA hB hC (t + r) hheight (I.rightFace.map F.gap.r.1)) = ⊤)
@@ -121,7 +113,7 @@ theorem whole_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
         (leafAt I F hroot hA hB hC t ht (partner t rfl a hlt))).1 <
       q (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hheight
         (leafAt I F hroot hA hB hC t ht a)).1)
-    (d : Cell I.left.scheme) (hd : F.p d = ⊤) :
+    d (hd : F.p d = ⊤) :
     q (original I F hroot hA hB hC (t + r) hheight (I.leftFace.map d)) = ⊤ := by
   have hm (e : I.boundary.below (A, t + 2)) :
       q (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hheight
@@ -135,6 +127,8 @@ theorem whole_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
       (whole_pullback I F hroot hA hB hC t ht (A, t + 2) le_rfl r hheight hq)
       ((hm (privateIncl I (F.gap.cC le_rfl))).trans hc)
       ((hm (privateIncl I (F.gap.rC le_rfl))).trans hr) hsep d' hd)
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedPairReadback

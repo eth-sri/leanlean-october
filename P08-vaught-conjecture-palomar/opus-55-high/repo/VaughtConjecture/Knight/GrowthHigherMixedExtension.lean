@@ -17,7 +17,6 @@ of the completed carrier or supplied extension is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration
@@ -54,25 +53,21 @@ theorem native_orderly (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ 
     have hi := congrArg Prod.snd (place_index I X T hA hB hC t ht U hU hm j hj d.1 hd d.2.2)
     change (D).grade (place I X T hA hB hC t ht U hU hm j hj d.1 hd d.2.2).1 =
       (P).carrier.grade d.1 at hi
-    change _ = extVisibilityReplace _
-      ((D).grade (place I X T hA hB hC t ht U hU hm j hj d.1 hd d.2.2).1)
-      ((D).grade (place I X T hA hB hC t ht U hU hm j hj d.1 hd d.2.2).1) at hv
-    rw [hi] at hv
-    exact hv
+    grind
 
-theorem native_le_gradeMax (p : (D).below (U, j) → ExtOrd)
-    (d : Cell (P).carrier) (hd : (P).carrier.grade d ≤ j) :
+theorem native_le_gradeMax p
+    d (hd : (P).carrier.grade d ≤ j) :
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p d ≤
       gradeMax I X T hA hB hC t ht U j p ((P).carrier.grade d) := by
   rcases original_or_full I X T hA hB hC t ht d with ⟨e, rfl⟩ | hf
   · have he : (P).carrier.grade (original I X T hA hB hC t ht e) = I.boundary.grade e :=
       congrArg Prod.snd (original_index I X T hA hB hC t ht e)
-    rw [he] at hd ⊢
+    simp_all
     rw [native_original, boundaryValue, height]
     split_ifs with he1
     · rw [min_top_right]
-      have heq : I.boundary.grade e = 1 := le_antisymm he1 (I.boundary.grade_pos e)
-      rw [heq]
+      have heq := le_antisymm he1 (I.boundary.grade_pos e)
+      simp_all
       apply Finset.sup_le
       intro a _
       exact le_gradeMax I X T hA hB hC t ht U j p 1 _
@@ -138,7 +133,7 @@ theorem native_lawful (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t
     · exact higher_locality I X T hA hB hC t ht U hU hm j hj hj0 hp hjt c hc hcut.2 (by omega)
   availability := native_availability I X T hA hB hC t ht U hU hm j hj hj0 hp hjt
 
-theorem lawful (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2) (V : Finset ι) :
+theorem lawful (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2) V :
     RespectsSemanticsBelow Rows (V, j) (value I X T hA hB hC t ht U hU hm j hj hj0 p) :=
   ScopeReplicationSemantics.duplicateBelow_respects (P).carrier B C
     (GrowthReplicatedRows.proper_covered P) (P).rows (J := (V, j)) (K := (A, j))

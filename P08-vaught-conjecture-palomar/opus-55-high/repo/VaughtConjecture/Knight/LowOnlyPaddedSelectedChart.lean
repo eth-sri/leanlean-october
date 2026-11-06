@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.LowOnlyPaddedRenderChart
-public import VaughtConjecture.Knight.LowOnlyPaddedStage
+public import VaughtConjecture.Knight.LowOnlyTerminalSupport
+public import VaughtConjecture.Knight.LowOnlyPaddedEndpoints
 
 /-! # A whole LOW display with a simultaneous native chart
 
@@ -18,7 +19,6 @@ of selected renderings and no lifting hypothesis is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSelectedChart
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedInstallation
@@ -33,16 +33,17 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem native_source_original (t : ℕ) (ht : t + 2 ≤ A.card)
-    (a : F.Anchor (t + 2)) (d : Cell I.boundary) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card) (a : F.Anchor (t + 2))
+
+theorem native_source_original d :
     nativeSource I F hroot hA hB hC t ht a (original I F hroot hA hB hC t ht d) =
       a.val (field I d) := by
   cases t with
   | zero => exact LowOnlyPaddedSuccessor.original_readback I F hroot hA hB hC a d
   | succ t => exact LowOnlyPaddedStepDecode.source_original _ _ _ a d
 
-theorem native_decoded_lawful (t : ℕ) (ht : t + 2 ≤ A.card)
-    (a : F.Anchor (t + 2)) {δ : ExtOrd → ExtOrd} (hδ : Witness (gTop (t + 2)) δ)
+theorem native_decoded_lawful {δ} (hδ : Witness (gTop (t + 2)) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, t + 2)
       (fun d => δ (a.val (field I d.1)))) :
@@ -54,10 +55,10 @@ theorem native_decoded_lawful (t : ℕ) (ht : t + 2 ≤ A.card)
 
 /-- Every native source has the same complete padded-base rank table,
 with a constructed admitted rank anchor. -/
-theorem native_source_base (t : ℕ) (ht : t + 2 ≤ A.card) (a : F.Anchor (t + 2)) :
-    ∃ b : F.Anchor 1,
+theorem native_source_base  :
+    ∃ b,
       RelativeLadderLayer.ranks (F.fields 1) b = LadderScalarRendering.fieldRank a.val ∧
-      ∀ d : Cell (base I F hroot hA hB hC),
+      ∀ d,
         nativeSource I F hroot hA hB hC t ht a
           ((build I F hroot hA hB hC t ht).baseMap d) =
         RelativeLadderLayer.renderWith I.boundary (by omega) (field I) (F.fields 1)
@@ -74,21 +75,23 @@ theorem native_source_base (t : ℕ) (ht : t + 2 ≤ A.card) (a : F.Anchor (t + 
       funext (LowOnlyPaddedStepSupply.birth_ranks P a),
       LowOnlyPaddedStepSupply.source_base P (by omega) ht a⟩
 
+end
+
 /-- The native chart and the whole supported display are produced together.
 One top complete field makes the chart's reserved ceiling top. -/
-theorem exists_whole_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
-    (hr : t + r + 2 ≤ A.card) (hfull : t + r + 2 = A.card)
-    {S : State I.left I.right} (hS : F.Admissible (t + r + 2) S)
+theorem exists_whole_chart t ht r
+    hr (hfull : t + r + 2 = A.card)
+    {S} (hS : F.Admissible (t + r + 2) S)
     (htop : ∃ f, S.profile f = ⊤) :
-    ∃ w : Cell (build I F hroot hA hB hC (t + r) hr).carrier → ExtOrd,
+    ∃ w,
       RespectsSemantics (build I F hroot hA hB hC (t + r) hr).rows w ∧
       (∀ d, w (original I F hroot hA hB hC (t + r) hr d) = S.profile (field I d)) ∧
       (∀ d, OrbitPrefixSupport.Supported (t + r + 2) ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∃ a : F.Anchor (t + 2), ∃ σ : ExtOrd → ExtOrd,
+      ∃ a, ∃ σ,
         BoundedMap (t + 2) σ ∧
         (∀ f, σ (a.val f) = S.profile f) ∧
         σ (CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right)) = ⊤ ∧
-        ∀ d : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2),
+        ∀ d,
           w (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hr d).1 =
             σ (nativeSource I F hroot hA hB hC t ht a d.1) := by
   obtain ⟨Q, hQ, hcanon, δ, hδ, hread, hreflect, hsupp⟩ :=

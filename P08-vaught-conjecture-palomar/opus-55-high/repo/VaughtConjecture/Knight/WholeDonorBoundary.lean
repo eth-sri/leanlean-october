@@ -20,8 +20,6 @@ This constructs no mixed owners and does not claim bountifulness of the union.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 
 open AmalgamationPlan Transform Value ExtOrd
@@ -180,19 +178,22 @@ def paste (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOr
   OrderedFaceBoundarySemantics.paste I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q
 
-theorem paste_left (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
-    (d : Cell I.left.scheme) : I.paste p q (I.leftFace.map d) = p d :=
+section
+variable (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
+
+theorem paste_left (d : Cell I.left.scheme) : I.paste p q (I.leftFace.map d) = p d :=
   OrderedFaceBoundarySemantics.paste_left I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q d
 
-theorem paste_right (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
-    (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) (d : Cell I.right.scheme) :
+theorem paste_right (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) (d : Cell I.right.scheme) :
     I.paste p q (I.rightFace.map d) = q d :=
   OrderedFaceBoundarySemantics.paste_right I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q h d
 
+end
+
 /-- The selected inherited display needs agreement only on the literal common face. -/
-theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem paste_respects {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
     RespectsSemantics I.rows (I.paste p q) := by
@@ -203,7 +204,10 @@ theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.sch
   · have he : I.paste p q ∘ I.rightFace.map = q := funext (I.paste_right p q h)
     exact he.symm ▸ hq
 
-theorem left_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1 ⊆ B) :
+section
+variable {J : Finset ι × ℕ}
+
+theorem left_mem (hJ : J ∈ Plan.gradedPlan R) (hB : J.1 ⊆ B) :
     J ∈ Plan.gradedPlan I.leftScheme.plan := by
   obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hJ
   refine Plan.mem_gradedPlan.mpr ⟨?_, hp, hc⟩
@@ -211,7 +215,7 @@ theorem left_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1
   rw [← I.planLeft]
   exact Finset.mem_inter.mpr ⟨hm, Finset.mem_powerset.mpr hB⟩
 
-theorem right_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hC : J.1 ⊆ C) :
+theorem right_mem (hJ : J ∈ Plan.gradedPlan R) (hC : J.1 ⊆ C) :
     J ∈ Plan.gradedPlan I.rightScheme.plan := by
   obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hJ
   refine Plan.mem_gradedPlan.mpr ⟨?_, hp, hc⟩
@@ -220,7 +224,7 @@ theorem right_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hC : J.
   exact Finset.mem_inter.mpr ⟨hm, Finset.mem_powerset.mpr hC⟩
 
 /-- Exactly the old point scopes are occupied; no mixed owner is hidden in this boundary. -/
-theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
+theorem occupied_iff (hJ : J ∈ Plan.gradedPlan R) :
     (∃ d, I.boundary.cell d = J) ↔ J.1 ⊆ B ∨ J.1 ⊆ C := by
   constructor
   · rintro ⟨d, rfl⟩
@@ -239,12 +243,14 @@ theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
       (pointImage_complete _ _ _ I.right.complete)
     exact h.imp (I.left_mem hJ) (I.right_mem hJ)
 
+end
+
 /-- Every lifting problem whose upper scope stays inside either original face
 is inherited at the original cap, for arbitrary lawful target-local ambients. -/
-theorem inherited_lift {CI BJ : Finset ι × ℕ}
+theorem inherited_lift {CI BJ}
     (hCI : CI ∈ Plan.gradedPlan R) (hBJ : BJ ∈ Plan.gradedPlan R)
-    (h : GradedLe CI BJ) (hne : CI ≠ BJ) (hscope : BJ.1 ⊆ B ∨ BJ.1 ⊆ C)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
+    h (hne : CI ≠ BJ) (hscope : BJ.1 ⊆ B ∨ BJ.1 ⊆ C)
+    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) γ
     (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :

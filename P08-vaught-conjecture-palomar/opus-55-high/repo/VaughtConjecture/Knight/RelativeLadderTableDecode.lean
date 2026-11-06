@@ -17,15 +17,14 @@ field ranks. Thus unused rungs, spare tips and zero shadows are included.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd
 noncomputable section
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype X] [Fintype Q] {A : Finset ι}
   (D : CellScheme A) (hA : 0 < A.card) (field : Cell D → X) (fields : Q → X → ExtOrd)
 
-theorem renderWith_decode_normalized (j : ℕ) (a : Q) (p : X → ExtOrd)
-    (hp : ∀ x, p x ≠ ⊤) {G : Finset ExtOrd} {H T : ExtOrd}
+theorem renderWith_decode_normalized j a p
+    (hp : ∀ x, p x ≠ ⊤) {G} {H T}
     (hG : ∀ z ∈ G, SelfVis j z) (hH : SelfVis j H)
     (hT : PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G H T = H)
     (d : Cell (carrier D hA (X := X) (Q := Q))) :

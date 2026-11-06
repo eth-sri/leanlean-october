@@ -54,14 +54,14 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
     have hc := hcap (SemScheme.castCell (he.trans hqD).symm d.val)
     have hb : r.label (SemScheme.castCell (he.trans hqD).symm d.val) = ⊥ ↔
         q.label (SemScheme.castCell hqD.symm d.val) = ⊥ := by
-      have hh := congrArg (fun x : ExtOrd => x = ⊥) hc
+      have hh := congrArg (fun x => x = ⊥) hc
       simp only [min_eq_bot, ofOrd_ne_bot, or_false] at hh
       exact Iff.of_eq hh
     exact hb.trans (hpat d)
   · intro n t p ht γ hγ hγα
     obtain ⟨q, ⟨d, hlo, hhi⟩, hqp⟩ :=
       FixedHeight.exists_uniformity_coface (CanonicalCoatomSupply.supply α.2) p γ hγ hγα
-    obtain ⟨a, ha⟩ : ∃ a : Ordinal.{0}, q.label d = ofOrd a := by
+    obtain ⟨a, ha⟩ : ∃ a, q.label d = ofOrd a := by
       rcases ExtOrd.cases (q.label d) with hb | ht | h
       · rw [hb] at hlo
         exact False.elim ((not_le_of_gt (bot_lt_ofOrd γ)) hlo)
@@ -85,7 +85,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       (bot_lt_ofOrd _) (ofOrd_lt_ofOrd.mpr (α.2.succ_lt hγα))
     refine ⟨y, hy, r, ⟨SemScheme.castCell he.symm d, ?_, ?_⟩,
       isCoface_of_consistent hcons ht hr, hr⟩
-    · have hgcast : ∀ {X Y : SemScheme (n + 1)} (e : X = Y) (d : Cell X.scheme),
+    · have hgcast : ∀ {X Y : SemScheme (n + 1)} e d,
           Y.scheme.grade (SemScheme.castCell e d) = X.scheme.grade d := by
         intro X Y e d
         cases e

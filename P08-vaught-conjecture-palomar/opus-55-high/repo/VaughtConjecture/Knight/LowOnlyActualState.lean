@@ -19,15 +19,14 @@ Admission is proved at every grade, not transported upward from a catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyActualState
 open Transform Value ExtOrd CappedDonor LowOnly LowSeparator
 noncomputable section
 
 /-- A proper visible value strictly above any value below a limit stage. -/
-theorem exists_visible_above {α : LimitStage} (K : ℕ) {x : ExtOrd}
+theorem exists_visible_above {α : LimitStage} K {x}
     (hx : x < ofOrd α.1) :
-    ∃ b : ExtOrd, SelfVis K b ∧ x < b ∧ b < ofOrd α.1 := by
+    ∃ b, SelfVis K b ∧ x < b ∧ b < ofOrd α.1 := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · refine ⟨ofOrd ((K + 1 : ℕ) : Ordinal.{0}), ?_, bot_lt_ofOrd _, ?_⟩
     · simpa only [zero_add] using
@@ -44,7 +43,7 @@ theorem exists_visible_above {α : LimitStage} (K : ℕ) {x : ExtOrd}
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
 
 /-- The cutoff does not contribute to the designated non-top donor maximum. -/
-theorem cutoffCut_actual (v : Cell C.scheme → ExtOrd) (b : ExtOrd) :
+theorem cutoffCut_actual v b :
     cutoffCut K (donorField F) (State.profile (⟨F.p, v, b⟩ : State P C)) =
       cutoffCut K (donorField F) (State.profile (⟨F.p, v, ⊥⟩ : State P C)) := by
   unfold cutoffCut
@@ -58,11 +57,11 @@ theorem cutoffCut_actual (v : Cell C.scheme → ExtOrd) (b : ExtOrd) :
 
 /-- Construct the active state, with all original proper fields and the cutoff
 below the stage. This uses only the two original lawful labellings. -/
-theorem exists_active {α : LimitStage} (v : Cell C.scheme → ExtOrd)
+theorem exists_active {α : LimitStage} v
     (hv : RespectsSemantics C.rows v) (hshared : F.root.Shared F.p v)
     (hpbound : ∀ d, F.p d ≠ ⊤ → F.p d < ofOrd α.1)
     (hvbound : ∀ d, v d ≠ ⊤ → v d < ofOrd α.1) :
-    ∃ b : ExtOrd,
+    ∃ b,
       b < ofOrd α.1 ∧
       (∀ j, F.Admissible j (⟨F.p, v, b⟩ : State P C)) ∧
       cutoffCut K (donorField F) (State.profile (⟨F.p, v, b⟩ : State P C)) < b ∧

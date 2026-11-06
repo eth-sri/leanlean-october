@@ -59,7 +59,7 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 /-- **A finite globally top-rigid core**: on every actual finite cover of `B` (a realized tuple
 `C` with `B` as the coordinate face `e`), every admissible top support of the cover's type that
 contains every top cell of the face `e` is the whole top set. -/
-def RigidCore (R : KnightRealization α M) {k : ℕ} (B : Fin k ↪ M) : Prop :=
+def RigidCore (R : KnightRealization α M) {k} (B : Fin k ↪ M) : Prop :=
   ∀ {m : ℕ} (C : Fin m ↪ M) (c : S α.1 m), R.eval C = some c →
     ∀ (e : Fin k ↪ Fin m), e.trans C = B →
       ∀ H : Set (Cell c.scheme.scheme), Admissible c.scheme.rows c.label H →
@@ -69,17 +69,16 @@ def RigidCore (R : KnightRealization α M) {k : ℕ} (B : Fin k ↪ M) : Prop :=
 
 /-- **The residual acquisition**: a root that is not a globally rigid core has an actual finite
 cover with a proper admissible top support containing the root's tops. -/
-theorem exists_flexible_cover_of_not_rigidCore {k : ℕ} {B : Fin k ↪ M} (h : ¬ RigidCore R B) :
+theorem exists_flexible_cover_of_not_rigidCore {k} {B} (h : ¬ RigidCore R B) :
     ∃ (m : ℕ) (C : Fin m ↪ M) (c : S α.1 m), R.eval C = some c ∧
       ∃ (e : Fin k ↪ Fin m), e.trans C = B ∧
-        ∃ H : Set (Cell c.scheme.scheme), Admissible c.scheme.rows c.label H ∧
-          (∀ x : Cell c.scheme.scheme, c.scheme.scheme.scope x ⊆ Finset.univ.image e →
+        ∃ H, Admissible c.scheme.rows c.label H ∧
+          (∀ x, c.scheme.scheme.scope x ⊆ Finset.univ.image e →
             c.label x = ⊤ → x ∈ H) ∧ H ≠ topSet c.label := by
   by_contra hcon
   apply h
   intro m C c hc e he H hH htops
-  by_contra hne
-  exact hcon ⟨m, C, c, hc, e, he, H, hH, htops, hne⟩
+  grind
 
 /-! ## Classification of models with globally rigid cores -/
 
@@ -89,7 +88,7 @@ variable {M₁ M₂ : Type w} {R₁ : KnightRealization α M₁} {R₂ : KnightR
 
 /-- The chart invariant: both cores are coordinate faces of the common chart, at the same
 coordinates. -/
-def CoreChart {k : ℕ} (B₁ : Fin k ↪ M₁) (B₂ : Fin k ↪ M₂)
+def CoreChart {k} (B₁ : Fin k ↪ M₁) (B₂ : Fin k ↪ M₂)
     (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)) : Prop :=
   ∃ e : Fin k ↪ Fin nd.arity, e.trans nd.tuple₁ = B₁ ∧ e.trans nd.tuple₂ = B₂
 
@@ -98,7 +97,7 @@ def swapNode (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)) :
     CommonChartNode (A₁ := R₂) (A₂ := R₁) :=
   ⟨nd.arity, nd.tuple₂, nd.tuple₁, nd.type, nd.eval₂, nd.eval₁⟩
 
-theorem coreChart_swapNode {k : ℕ} {B₁ : Fin k ↪ M₁} {B₂ : Fin k ↪ M₂}
+theorem coreChart_swapNode {k} {B₁} {B₂ : Fin k ↪ M₂}
     {nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)} (h : CoreChart B₁ B₂ nd) :
     CoreChart B₂ B₁ (swapNode nd) := by
   obtain ⟨e, h₁, h₂⟩ := h
@@ -110,9 +109,9 @@ type over the second side above every proper label, and reading the tops back fr
 the first model's core. -/
 theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ :
     R₁.IsInitialSegmentCovering)
-    (hcons₂ : R₂.IsExactParentConsistent) (hFC₂ : FiniteCutReceiving R₂) {k : ℕ} {B₁ : Fin k ↪ M₁}
+    (hcons₂ : R₂.IsExactParentConsistent) (hFC₂ : FiniteCutReceiving R₂) {k} {B₁}
     {B₂ : Fin k ↪ M₂} (r₁ : RigidCore R₁ B₁) (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂))
-    (hnd : CoreChart B₁ B₂ nd) (x : M₁) :
+    (hnd : CoreChart B₁ B₂ nd) x :
     ∃ (next : CommonChartNode (A₁ := R₁) (A₂ := R₂)) (emb : Fin nd.arity ↪ Fin next.arity),
       emb.trans next.tuple₁ = nd.tuple₁ ∧ emb.trans next.tuple₂ = nd.tuple₂ ∧
       (∃ i, next.tuple₁ i = x) ∧ CoreChart B₁ B₂ next := by
@@ -176,7 +175,7 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
     exact StageType.eq_of_label rfl (fun d => congrFun hQP d)
   refine ⟨⟨nd.arity + 1 + j, s, u, P, hP, by rw [← hQ'P]; exact hu⟩, f, hfs, hfu,
     ⟨Fin.castAddEmb j (Fin.last nd.arity), ?_⟩, e', he's, ?_⟩
-  · have hlast := congrArg (fun g : Fin (nd.arity + 1) ↪ M₁ => g (Fin.last nd.arity)) hs
+  · have hlast := congrArg (fun g => g (Fin.last nd.arity)) hs
     simpa only [Function.Embedding.trans_apply, snoc_apply_last] using hlast
   · rw [he'def, Function.Embedding.trans_assoc, hfu, he₂]
 
@@ -199,11 +198,13 @@ theorem restrictedStepSupply_of_receiving (hcons₁ : R₁.IsExactParentConsiste
     exact ⟨⟨⟨swapNode next, emb, h₂, h₁, fun _ hx => absurd hx Sum.inr_ne_inl,
       fun _ hy' => (Sum.inr.inj hy') ▸ hy⟩, coreChart_swapNode hgood⟩⟩
 
+section
+variable [Countable M₁] [Countable M₂] [Nonempty M₁] [Nonempty M₂]
+
 /-- **Root-preserving classification**: two countable models at the same stage with globally
 rigid cores of the same finite type are isomorphic by an isomorphism carrying one core onto the
 other coordinatewise. -/
-theorem exists_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂] [Nonempty M₁]
-    [Nonempty M₂] (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ : R₁.IsInitialSegmentCovering)
+theorem exists_iso_of_rigidCores_of_receiving (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ : R₁.IsInitialSegmentCovering)
     (hFC₁ : FiniteCutReceiving R₁) (hcons₂ : R₂.IsExactParentConsistent)
     (hcov₂ : R₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving R₂) {k : ℕ} {B₁ : Fin k ↪ M₁}
       {B₂ : Fin k ↪ M₂} {b : S α.1 k}
@@ -216,8 +217,7 @@ theorem exists_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂] 
 
 /-- **Classification**: two countable models at the same stage with globally rigid cores of the
 same finite type are isomorphic. -/
-theorem nonempty_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂] [Nonempty M₁]
-    [Nonempty M₂] (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ : R₁.IsInitialSegmentCovering)
+theorem nonempty_iso_of_rigidCores_of_receiving (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ : R₁.IsInitialSegmentCovering)
     (hFC₁ : FiniteCutReceiving R₁) (hcons₂ : R₂.IsExactParentConsistent)
     (hcov₂ : R₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving R₂) {k : ℕ} {B₁ : Fin k ↪ M₁}
       {B₂ : Fin k ↪ M₂} {b : S α.1 k}
@@ -226,6 +226,8 @@ theorem nonempty_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂
   let ⟨e, _⟩ := exists_iso_of_rigidCores_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ h₁ h₂ r₁
     r₂
   ⟨e⟩
+
+end
 
 end Classification
 

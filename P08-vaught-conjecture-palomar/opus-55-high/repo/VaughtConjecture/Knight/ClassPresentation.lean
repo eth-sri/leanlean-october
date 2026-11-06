@@ -41,12 +41,12 @@ theorem modelClass_surjective : Function.Surjective modelClass := by
   exact ⟨c, by rw [modelClass, hc, Equiv.apply_symm_apply]⟩
 
 /-- Isomorphic codes have the same class. -/
-theorem modelClass_eq_of_iso {c d : ModelsOf knightSentence}
+theorem modelClass_eq_of_iso {c d}
     (h : (structureIsoSetoid knightLang).r c.1 d.1) : modelClass c = modelClass d :=
   congrArg isoClassEquiv (Quotient.sound (isoSetoid_r_iff.mpr h))
 
 /-- **Class truth is satisfaction on the code.** -/
-theorem realizes_modelClass (φ : knightLang.Sentenceω) (c : ModelsOf knightSentence) :
+theorem realizes_modelClass φ c :
     realizes φ (modelClass c) ↔ c.1 ∈ ModelsOf φ := by
   change @Sentenceω.Realize knightLang φ ℕ (structureOf (realizationOfCode c).1) ↔ _
   exact (@LomegaEquiv.of_equiv knightLang ℕ ℕ

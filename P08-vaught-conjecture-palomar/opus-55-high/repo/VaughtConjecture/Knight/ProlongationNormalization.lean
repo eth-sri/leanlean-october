@@ -34,13 +34,13 @@ namespace KnightRealization
 
 /-- Knight's model axioms (Def. 3.2.1) as a **target class** for certified prolongation
 (`ProlongsToIn IsModelClass` is Knight-VC's `PaperExactModelExpandsTo`). -/
-abbrev IsModelClass : ∀ {δ : LimitStage} {N : Type w}, KnightRealization δ N → Prop :=
+abbrev IsModelClass : ∀ {δ} {N}, KnightRealization δ N → Prop :=
   fun R => R.IsModel
 
 /-- The model class is closed under push-forward along a bijection of carriers
 (`IsModel.map`, `Knight/ModelMap.lean`; the missing lemma of the #73 audit): the map-closure
 hypothesis of `prolongsToIn_iff_prolongsToOnIn`, discharged once for Knight. -/
-theorem isModelClass_map {δ : LimitStage} {N N' : Type w} (e : N ≃ N')
+theorem isModelClass_map {δ} {N N' : Type w} (e : N ≃ N')
     (R' : KnightRealization δ N) (hR' : IsModelClass R') : IsModelClass (R'.map e) :=
   hR'.map e
 
@@ -50,7 +50,7 @@ the carrier of `R` itself** reduces **exactly** to `R`.  Immediate from `IsModel
 generic `prolongsToIn_iff_prolongsToOnIn`; this is what lets the #46 limit construction
 consume chains of literal reduct equations (`KnightRealization.IsReductChain`) with no loss
 against the up-to-isomorphism links. -/
-theorem prolongsToIn_isModelClass_iff_on {δ δ' : LimitStage} {N : Type w}
+theorem prolongsToIn_isModelClass_iff_on {δ δ'} {N}
     (R : KnightRealization δ N) (h : δ ≤ δ') :
     R.ProlongsToIn IsModelClass h ↔ R.ProlongsToOnIn IsModelClass h :=
   Realization.prolongsToIn_iff_prolongsToOnIn

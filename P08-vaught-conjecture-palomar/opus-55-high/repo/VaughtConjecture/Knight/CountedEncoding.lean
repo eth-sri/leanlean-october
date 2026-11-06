@@ -44,8 +44,6 @@ variable (l : ℕ) (S : Finset Ordinal.{0})
 noncomputable def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem encOrdK_eq_code (v : Ordinal.{0}) : encOrdK l S v = code l S v := rfl
-
 /-- The counted encoding on labels: `⊥`, `⊤` fixed, ordinals coded. -/
 noncomputable def encT : ExtOrd → ExtOrd
   | ⊥ => ⊥
@@ -54,18 +52,21 @@ noncomputable def encT : ExtOrd → ExtOrd
 
 theorem encT_bot : encT l S ⊥ = ⊥ := rfl
 theorem encT_top : encT l S ⊤ = ⊤ := rfl
-theorem encT_ofOrd (α : Ordinal.{0}) : encT l S (ofOrd α) = ofOrd (encOrdK l S α) := rfl
+theorem encT_ofOrd α : encT l S (ofOrd α) = ofOrd (encOrdK l S α) := rfl
 
 /-- **Keyed values**: `⊥`, `⊤`, and ordinals whose key is a key of `S`. -/
 def Keyed (x : ExtOrd) : Prop := x = ⊥ ∨ x = ⊤ ∨ ∃ α, x = ofOrd α ∧ keyOrd l α ∈ keys l S
 
 theorem keyed_bot : Keyed l S ⊥ := Or.inl rfl
-theorem keyed_top : Keyed l S ⊤ := Or.inr (Or.inl rfl)
-theorem keyed_of_mem {v : Ordinal.{0}} (hv : v ∈ S) : Keyed l S (ofOrd v) :=
+theorem keyed_top : Keyed l S ⊤ := by tauto
+theorem keyed_of_mem {v} (hv : v ∈ S) : Keyed l S (ofOrd v) :=
   Or.inr (Or.inr ⟨v, rfl, keyOrd_mem_keys l S hv⟩)
 
+section
+variable {k : ℕ}
+
 /-- Replacement at a threshold `≤ l` preserves the key. -/
-theorem keyOrd_visibilityReplace {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} (hi : i ≤ k) :
+theorem keyOrd_visibilityReplace (hk : k ≤ l) α {i} (hi : i ≤ k) :
     keyOrd l (visibilityReplace α k i) = keyOrd l α := by
   unfold visibilityReplace
   split_ifs with hfp
@@ -75,21 +76,26 @@ theorem keyOrd_visibilityReplace {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i 
   · rfl
 
 /-- Replacement images of keyed values at thresholds `≤ l` are keyed. -/
-theorem keyed_evr {k : ℕ} (hk : k ≤ l) {x : ExtOrd} (hx : Keyed l S x) {i : ℕ} (hi : i ≤ k) :
+theorem keyed_evr (hk : k ≤ l) {x} (hx : Keyed l S x) {i} (hi : i ≤ k) :
     Keyed l S (extVisibilityReplace x k i) := by
   rcases hx with rfl | rfl | ⟨α, rfl, hα⟩
-  · exact keyed_bot l S
-  · exact keyed_top l S
+  · tauto
+  · tauto
   · rw [extVisibilityReplace_ofOrd]
     exact Or.inr (Or.inr ⟨_, rfl, by rw [keyOrd_visibilityReplace l hk α hi]; exact hα⟩)
 
-theorem keyed_min {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) : Keyed l S (min x y) := by
+end
+
+theorem keyed_min {x y} (hx : Keyed l S x) (hy : Keyed l S y) : Keyed l S (min x y) := by
   rcases le_total x y with h | h
   · rw [min_eq_left h]; exact hx
   · rw [min_eq_right h]; exact hy
 
+section
+variable {k : ℕ}
+
 /-- **The encoder's clause 5 at thresholds `≤ l`**, on all values. -/
-theorem encOrdK_evr_of_le {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} (hi : i ≤ k) :
+theorem encOrdK_evr_of_le (hk : k ≤ l) α {i} (hi : i ≤ k) :
     encOrdK l S (visibilityReplace α k i) = visibilityReplace (encOrdK l S α) k i := by
   unfold encOrdK
   have hkey := keyOrd_visibilityReplace l hk α hi
@@ -101,12 +107,9 @@ theorem encOrdK_evr_of_le {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} 
     unfold ordinalReplace
     rw [finitePart_limitPart_add_nat, finitePart_mul_add, ite_eq_left (by omega), limitPart_mul_add,
       min_eq_left (by omega : i ≤ l)]
-  · rw [ite_eq_right hfp, finitePart_mul_add, ite_eq_right (by
-      intro h
-      have := min_le_left (finitePart α) l
-      omega)]
+  · rw [ite_eq_right hfp, finitePart_mul_add, ite_eq_right (by grind)]
 
-theorem encT_evr_of_le {k : ℕ} (hk : k ≤ l) (x : ExtOrd) {i : ℕ} (hi : i ≤ k) :
+theorem encT_evr_of_le (hk : k ≤ l) x {i} (hi : i ≤ k) :
     encT l S (extVisibilityReplace x k i) = extVisibilityReplace (encT l S x) k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
@@ -114,7 +117,12 @@ theorem encT_evr_of_le {k : ℕ} (hk : k ≤ l) (x : ExtOrd) {i : ℕ} (hi : i �
   · rw [extVisibilityReplace_ofOrd, encT_ofOrd, encT_ofOrd, extVisibilityReplace_ofOrd,
       encOrdK_evr_of_le l S hk α hi]
 
-theorem keyOrd_mono_of_le {v v' : Ordinal.{0}} (h : v ≤ v') : keyOrd l v ≤ keyOrd l v' := by
+end
+
+section
+variable {v v' : Ordinal.{0}}
+
+theorem keyOrd_mono_of_le (h : v ≤ v') : keyOrd l v ≤ keyOrd l v' := by
   unfold keyOrd
   split_ifs with h1 h2 h2
   · exact limitPart_mono h
@@ -125,10 +133,10 @@ theorem keyOrd_mono_of_le {v v' : Ordinal.{0}} (h : v ≤ v') : keyOrd l v ≤ k
     · have heq : limitPart v = limitPart v' := le_antisymm (limitPart_mono h) hge
       have := finitePart_le_of_le_of_limitPart_eq h heq
       omega
-  · exact h
+  · grind
 
 /-- **Strict monotonicity of the encoding on keyed ordinals.** -/
-theorem encOrdK_lt_keyed {v v' : Ordinal.{0}} (hv : keyOrd l v ∈ keys l S)
+theorem encOrdK_lt_keyed (hv : keyOrd l v ∈ keys l S)
     (hv' : keyOrd l v' ∈ keys l S) (h : v < v') : encOrdK l S v < encOrdK l S v' := by
   unfold encOrdK
   have hb : blockOf l S v ≤ blockOf l S v' := blockOfKey_mono l S (keyOrd_mono_of_le l h.le)
@@ -154,7 +162,12 @@ theorem encOrdK_lt_keyed {v v' : Ordinal.{0}} (hv : keyOrd l v ∈ keys l S)
     · exfalso; have := congrArg finitePart hk; rw [finitePart_limitPart] at this; omega
     · exact absurd hk h.ne
 
-theorem encT_lt_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) (h : x < y) :
+end
+
+section
+variable {x y : ExtOrd}
+
+theorem encT_lt_keyed (hx : Keyed l S x) (hy : Keyed l S y) (h : x < y) :
     encT l S x < encT l S y := by
   rcases hy with rfl | rfl | ⟨v', rfl, hv'⟩
   · exact absurd h not_lt_bot
@@ -166,34 +179,34 @@ theorem encT_lt_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) (h : 
     · rw [encT_bot, encT_ofOrd]; exact bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _)
     · exact absurd h (not_lt.mpr le_top)
     · rw [encT_ofOrd, encT_ofOrd]
-      have hvv' : v < v' := by
-        by_contra hc; exact absurd h (not_lt.mpr (ofOrd_le_ofOrd.mpr (not_lt.mp hc)))
+      have hvv' : v < v' := by simp_all
       exact WithBot.coe_lt_coe.mpr (WithTop.coe_lt_coe.mpr (encOrdK_lt_keyed l S hv hv' hvv'))
 
-theorem encT_le_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) (h : x ≤ y) :
+theorem encT_le_keyed (hx : Keyed l S x) (hy : Keyed l S y) (h : x ≤ y) :
     encT l S x ≤ encT l S y := by
   rcases h.lt_or_eq with hlt | rfl
   · exact (encT_lt_keyed l S hx hy hlt).le
-  · exact le_rfl
+  · grind
 
-theorem encT_le_iff_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) :
+theorem encT_le_iff_keyed (hx : Keyed l S x) (hy : Keyed l S y) :
     encT l S x ≤ encT l S y ↔ x ≤ y := by
   refine ⟨fun h => ?_, encT_le_keyed l S hx hy⟩
   by_contra hc
   exact absurd h (not_le.mpr (encT_lt_keyed l S hy hx (not_le.mp hc)))
 
-theorem encT_min_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) :
+theorem encT_min_keyed (hx : Keyed l S x) (hy : Keyed l S y) :
     encT l S (min x y) = min (encT l S x) (encT l S y) := by
   rcases le_total x y with h | h
   · rw [min_eq_left h, min_eq_left (encT_le_keyed l S hx hy h)]
   · rw [min_eq_right h, min_eq_right (encT_le_keyed l S hy hx h)]
 
+end
+
 /-- The encoding of a finite supremum of keyed values is the supremum of the encodings. -/
-theorem encT_finsetSup {ι : Type*} (s : Finset ι) (f : ι → ExtOrd) (hf : ∀ i ∈ s, Keyed l S (f i)) :
+theorem encT_finsetSup {ι} (s : Finset ι) f (hf : ∀ i ∈ s, Keyed l S (f i)) :
     encT l S (s.sup f) = s.sup fun i => encT l S (f i) := by
-  classical
   rcases Finset.eq_empty_or_nonempty s with rfl | hne
-  · simp [encT_bot]
+  · aesop
   · obtain ⟨i₀, hi₀, hsup⟩ := Finset.exists_mem_eq_sup s hne f
     apply le_antisymm
     · rw [hsup]; exact Finset.le_sup (f := fun i => encT l S (f i)) hi₀
@@ -210,7 +223,7 @@ section Transport
 variable (l : ℕ) (S : Finset Ordinal.{0}) {D : Type*} [Finite D] (grade : D → ℕ)
   (source target : D → ExtOrd)
 
-theorem finiteTargetSuppressor_eq (k : ℕ) :
+theorem finiteTargetSuppressor_eq k :
     finiteTargetSuppressor grade target k =
       (@Finset.univ D (Fintype.ofFinite D)).sup fun d => if k ≤ grade d then target d else ⊥ := rfl
 
@@ -222,13 +235,12 @@ theorem finiteTargetSuppressor_encode (ht : ∀ d, Keyed l S (target d)) (k : �
   rw [finiteTargetSuppressor_eq, finiteTargetSuppressor_eq]
   rw [encT_finsetSup l S _ _ (fun d _ => by
     split_ifs
-    · exact ht d
+    · grind
     · exact keyed_bot l S)]
   congr 1
-  funext d
-  split_ifs <;> rfl
+  aesop
 
-theorem finiteTargetSuppressor_keyed (ht : ∀ d, Keyed l S (target d)) (k : ℕ) :
+theorem finiteTargetSuppressor_keyed (ht : ∀ d, Keyed l S (target d)) k :
     Keyed l S (finiteTargetSuppressor grade target k) := by
   classical
   rw [finiteTargetSuppressor_eq]
@@ -236,31 +248,32 @@ theorem finiteTargetSuppressor_keyed (ht : ∀ d, Keyed l S (target d)) (k : ℕ
   · rw [he]; exact keyed_bot l S
   · obtain ⟨d, -, hsup⟩ := Finset.exists_mem_eq_sup _ hne
       fun d => if k ≤ grade d then target d else ⊥
-    rw [hsup]
+    simp_all
     split_ifs
-    · exact ht d
-    · exact keyed_bot l S
+    · grind
+    · tauto
 
 /-- The encoded lower envelope is the lower envelope of the encoded table. -/
-theorem finiteLowerEnvelope_encode (s : Finset ExtOrd) (table : ExtOrd → ExtOrd)
-    (hs : ∀ y ∈ s, Keyed l S (table y)) (x : ExtOrd) :
+theorem finiteLowerEnvelope_encode s (table : ExtOrd → ExtOrd)
+    (hs : ∀ y ∈ s, Keyed l S (table y)) x :
     finiteLowerEnvelope s (fun y => encT l S (table y)) x =
       encT l S (finiteLowerEnvelope s table x) := by
   unfold finiteLowerEnvelope
   rw [encT_finsetSup l S s _ (fun y hy => by
     split_ifs
-    · exact hs y hy
+    · grind
     · exact keyed_bot l S)]
   congr 1
-  funext y
-  split_ifs <;> rfl
+  aesop
 
 variable {l S grade source target}
+
+section
+variable (C : FiniteBlockBridgeCertificate grade source target)
 
 /-- **Transport of a keyed certificate along the counted encoding**, with the coding grade at
 least every grade. -/
 noncomputable def FiniteBlockBridgeCertificate.encode
-    (C : FiniteBlockBridgeCertificate grade source target)
     (hl : ∀ d, grade d ≤ l) (ht : ∀ d, Keyed l S (target d))
     (hkeyed : ∀ y ∈ C.tableDomain, Keyed l S (C.table y)) :
     FiniteBlockBridgeCertificate grade source (fun d => encT l S (target d)) where
@@ -334,12 +347,13 @@ noncomputable def FiniteBlockBridgeCertificate.encode
 
 /-- **The coded closure from a keyed certificate**: if the uncoded locality has a keyed finite
 certificate and the coded target is orderly, the coded locality holds. -/
-theorem transformsTo_encode (C : FiniteBlockBridgeCertificate grade source target)
-    (hl : ∀ d, grade d ≤ l) (ht : ∀ d, Keyed l S (target d))
+theorem transformsTo_encode (hl : ∀ d, grade d ≤ l) (ht : ∀ d, Keyed l S (target d))
     (hkeyed : ∀ y ∈ C.tableDomain, Keyed l S (C.table y))
     (hord : IsOrderly grade fun d => encT l S (target d)) :
     TransformsTo grade source fun d => encT l S (target d) :=
   (C.encode hl ht hkeyed).transformsTo hord
+
+end
 
 omit [Finite D] in
 /-- Orderliness of the coded target follows from orderliness of the target, since the encoding
@@ -347,11 +361,8 @@ commutes with the self-visibility replacement at grades `≤ l`. -/
 theorem isOrderly_encode (hl : ∀ d, grade d ≤ l) (hord : IsOrderly grade target) :
     IsOrderly grade fun d => encT l S (target d) := by
   intro d
-  show encT l S (target d) = extVisibilityReplace (encT l S (target d)) (grade d) (grade d)
   rw [← encT_evr_of_le l S (hl d) _ le_rfl, ← hord d]
 
 end Transport
-
-open Transform Value ExtOrd
 
 end VaughtConjecture.Knight

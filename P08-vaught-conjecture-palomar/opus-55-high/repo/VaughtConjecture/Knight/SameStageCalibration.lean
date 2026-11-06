@@ -5,7 +5,14 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GuardActivation
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.ReductModel
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RestrictedComposition
+public import VaughtConjecture.Knight.CountedEncoding
 public import VaughtConjecture.Knight.StableLiftCore
 public import VaughtConjecture.Knight.Directedness
 public import VaughtConjecture.Knight.FiniteOffset
@@ -56,7 +63,7 @@ theorem limitPart_stage : limitPart α.1 = α.1 :=
   limitPart_eq_self_of_isNonSuccessor (Or.inr α.2)
 
 /-- A proper ordinal at least `α` (a limit) and `N`-visible is at least `α + N`. -/
-theorem stage_add_le_of_selfVis {γ : Ordinal.{0}} (hγ : α.1 ≤ γ) {N : ℕ}
+theorem stage_add_le_of_selfVis {γ} (hγ : α.1 ≤ γ) {N}
     (hN : SelfVis N (ofOrd γ)) : α.1 + N ≤ γ := by
   rw [selfVis_ofOrd_iff] at hN
   have h1 : α.1 ≤ limitPart γ := by
@@ -69,8 +76,8 @@ theorem stage_add_le_of_selfVis {γ : Ordinal.{0}} (hγ : α.1 ≤ γ) {N : ℕ}
 /-- **Stable values of top-labelled cells**: at a cell of grade `N` labelled `⊤`, the stable
 value is `⊤` or a proper ordinal at least `α + N` (at least `α`, and `N`-visible by lawfulness
 of the stable labelling). -/
-theorem stable_ge_of_top (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q : S α.1 m}
-    (hu : R.eval u = some q) {Θ : Cell q.scheme.scheme} (hΘ : q.label Θ = ⊤) :
+theorem stable_ge_of_top (hM : R.IsModel) {m} {u} {q : S α.1 m}
+    (hu : R.eval u = some q) {Θ} (hΘ : q.label Θ = ⊤) :
     ofOrd (α.1 + q.scheme.scheme.grade Θ) ≤ R.stableValue u q Θ := by
   have hα := le_stableValue_of_top (R := R) hu hΘ
   have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue u q Θ) :=
@@ -86,12 +93,5 @@ theorem stage_add_lt {j N : ℕ} (h : j < N) : ofOrd (α.1 + j) < ofOrd (α.1 + 
   ofOrd_lt_ofOrd.mpr (add_lt_add_right (Nat.cast_lt.mpr h) _)
 
 /-! ## The controller and the stable guard in a realized coface -/
-
-variable (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q₀ : S α.1 m} (hu : R.eval u = some q₀)
-  {N : ℕ} {cap : Cell q₀.scheme.scheme} (hcap : q₀.scheme.scheme.cell cap = (Finset.univ, N))
-  (hcapl : q₀.label cap = ⊤)
-  {y : M} {hy : y ∉ Set.range u} {Q : S α.1 (m + 1)} (hQ : R.eval (snoc u y hy) = some Q)
-
-/-! ## Readback in the ordinary labelling -/
 
 end VaughtConjecture.Knight

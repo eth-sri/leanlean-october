@@ -19,7 +19,6 @@ lawful section supplies its own serving leaf and monotone rank table.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRankReadback
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LadderScalarRendering LowOnlyPaddedContract LowSeparator
@@ -28,21 +27,28 @@ noncomputable section
 section Partner
 variable {n : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C 1)
 
-def partnerState (S : State P C) : State P C := ⟨S.u, S.v, F.maximum S⟩
+section
+variable (S : State P C)
 
-theorem partner_profile (S : State P C) :
+def partnerState  : State P C := ⟨S.u, S.v, F.maximum S⟩
+
+theorem partner_profile  :
     (partnerState F S).profile =
       LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile := by
-  classical
   funext d
   rcases d with d | d | d
-  · exact (Function.update_of_ne (by simp) _ _).symm
-  · exact (Function.update_of_ne (by simp) _ _).symm
+  · aesop
+  · aesop
   · cases d
     exact (maximum_eq_donorMax F S).trans
       (LowSeparatorRank.rankPartner_apply_self (donorField F) cutoffField S.profile).symm
 
-theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
+end
+
+section
+variable {S : State P C}
+
+theorem partner_admissible (hS : F.Admissible 1 S) :
     F.Admissible 1 (partnerState F S) where
   lawfulP := hS.lawfulP
   lawfulC := hS.lawfulC
@@ -59,14 +65,16 @@ theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
 
 /-- The existing catalogue contains both rank anchors, literal-top selected
 fields included. No raw vector is identified with its canonical normalization. -/
-theorem exists_anchors {S : State P C} (hS : F.Admissible 1 S) :
-    ∃ a b : F.Anchor 1,
+theorem exists_anchors (hS : F.Admissible 1 S) :
+    ∃ a b,
       RelativeLadderLayer.ranks (F.fields 1) a = fieldRank S.profile ∧
       RelativeLadderLayer.ranks (F.fields 1) b =
         fieldRank (LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile) := by
   obtain ⟨a, ha⟩ := F.exists_rank_anchor le_rfl hS
   obtain ⟨b, hb⟩ := F.exists_rank_anchor le_rfl (partner_admissible F hS)
   exact ⟨a, b, funext ha, (funext hb).trans (congrArg fieldRank (partner_profile F S))⟩
+
+end
 end Partner
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}

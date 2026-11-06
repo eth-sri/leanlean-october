@@ -40,25 +40,30 @@ namespace ExtOrd
 /-- The threshold map: identity at or below `τ`, `⊤` above. -/
 noncomputable def jump (τ x : ExtOrd) : ExtOrd := if x ≤ τ then x else ⊤
 
-theorem jump_of_le {τ x : ExtOrd} (h : x ≤ τ) : jump τ x = x := by
+section
+variable {τ x : ExtOrd}
+
+theorem jump_of_le (h : x ≤ τ) : jump τ x = x := by
   unfold jump; rw [ite_eq_left h]
 
-theorem jump_of_not_le {τ x : ExtOrd} (h : ¬ x ≤ τ) : jump τ x = ⊤ := by
+theorem jump_of_not_le (h : ¬ x ≤ τ) : jump τ x = ⊤ := by
   unfold jump; rw [ite_eq_right h]
 
-theorem le_jump (τ x : ExtOrd) : x ≤ jump τ x := by
+end
+
+theorem le_jump τ x : x ≤ jump τ x := by
   unfold jump; split_ifs <;> simp
 
-theorem jump_mono (τ : ExtOrd) : Monotone (jump τ) := by
+theorem jump_mono τ : Monotone (jump τ) := by
   intro x y hxy
   by_cases hy : y ≤ τ
   · rw [jump_of_le (hxy.trans hy), jump_of_le hy]; exact hxy
   · rw [jump_of_not_le hy]; exact le_top
 
-theorem jump_min (τ x y : ExtOrd) : jump τ (min x y) = min (jump τ x) (jump τ y) :=
+theorem jump_min τ x y : jump τ (min x y) = min (jump τ x) (jump τ y) :=
   (jump_mono τ).map_min
 
-@[simp] theorem jump_bot (τ : ExtOrd) : jump τ ⊥ = ⊥ := jump_of_le bot_le
+@[simp] theorem jump_bot τ : jump τ ⊥ = ⊥ := rfl
 
 open Classical in
 /-- The sub-`α` part of a value (`0` for `⊥`, `⊤`, or values `≥ α`). -/
@@ -67,15 +72,12 @@ noncomputable def ordOrZero (x : ExtOrd) : Ordinal.{0} :=
 
 theorem ordOrZero_bot : ordOrZero ⊥ = 0 := by
   unfold ordOrZero
-  rw [dite_eq_right]
-  rintro ⟨μ, hμ⟩
-  exact ofOrd_ne_bot μ hμ.symm
+  simp_all
+  tauto
 
-theorem ordOrZero_ofOrd (μ : Ordinal.{0}) : ordOrZero (ofOrd μ) = μ := by
+theorem ordOrZero_ofOrd μ : ordOrZero (ofOrd μ) = μ := by
   unfold ordOrZero
-  have h : ∃ μ' : Ordinal.{0}, ofOrd μ = ofOrd μ' := ⟨μ, rfl⟩
-  rw [dite_eq_left h]
-  exact (ofOrd_inj.mp h.choose_spec).symm
+  simp_all
 
 end ExtOrd
 
@@ -84,45 +86,44 @@ end ExtOrd
 namespace Value
 
 /-- Below a limit, band replacement stays below the limit. -/
-theorem visibilityReplace_lt_of_lt {α μ : Ordinal.{0}} (hα : Order.IsSuccLimit α) (hμ : μ < α)
-    (k i : ℕ) : visibilityReplace μ k i < α := by
+theorem visibilityReplace_lt_of_lt {α μ} (hα : Order.IsSuccLimit α) (hμ : μ < α)
+    k i : visibilityReplace μ k i < α := by
   unfold visibilityReplace ordinalReplace
   split_ifs with h
   · calc limitPart μ + (i : Ordinal.{0}) < limitPart μ + Ordinal.omega0 :=
           (add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 i)
       _ ≤ α := add_omega0_le_of_lt_isSuccLimit hα ((limitPart_le μ).trans_lt hμ)
-  · exact hμ
+  · grind
 
-theorem visibilityReplace_of_not_lt {μ : Ordinal.{0}} {k i : ℕ} (h : ¬ finitePart μ < k) :
+theorem visibilityReplace_of_not_lt {μ} {k i} (h : ¬ finitePart μ < k) :
     visibilityReplace μ k i = μ := by
   unfold visibilityReplace ordinalReplace
   rw [ite_eq_right h]
 
 /-- Below `α + K`, band replacement at threshold `k ≤ K` with `i ≤ K` stays below `α + K`. -/
 theorem visibilityReplace_le_add_of_le {α μ : Ordinal.{0}} (hα : Order.IsSuccLimit α) {K i : ℕ}
-    (hμ : μ ≤ α + K) (k : ℕ) (hi : i ≤ K) : visibilityReplace μ k i ≤ α + K := by
+    (hμ : μ ≤ α + K) k (hi : i ≤ K) : visibilityReplace μ k i ≤ α + K := by
   unfold visibilityReplace ordinalReplace
   split_ifs with h
   · have hlp : limitPart μ ≤ α := by
       rcases lt_or_ge μ α with hlt | hge
       · exact (limitPart_le μ).trans hlt.le
       · have hlt : μ < α + (K + 1 : ℕ) := by
-          push_cast
           exact hμ.trans_lt ((add_lt_add_iff_left α).mpr (lt_add_one _))
         have := limitPart_eq_of_le_of_lt (μ := α) (z := μ)
           (by rw [limitPart_of_succLimit hα]; exact hge)
           (by rw [limitPart_of_succLimit hα]; exact hlt)
         rw [this, limitPart_of_succLimit hα]
     exact add_le_add hlp ((Nat.cast_le (α := Ordinal.{0})).mpr hi)
-  · exact hμ
+  · grind
 
 end Value
 
 open Transform in
 /-- **Threshold composition**: if `⟨g, σ⟩ : p ⇒ q` and every cell of grade `> K` has target
 `< α`, then `p ⇒ jump (α + K) ∘ q`. -/
-theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade : D → ℕ} {p q : D → ExtOrd}
-    (h : TransformsTo grade p q) {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (K n : ℕ)
+theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade} {p q : D → ExtOrd}
+    (h : TransformsTo grade p q) {α} (hα : Order.IsSuccLimit α) K n
     (hK_le_n : K ≤ n) (hn : ∀ d, grade d ≤ n) (hK : ∀ d, K < grade d → q d < ofOrd α) :
     TransformsTo grade p (fun d => jump (ofOrd (α + K)) (q d)) := by
   classical
@@ -216,7 +217,7 @@ theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade : D → ℕ} {p q :
     · exact le_rfl
     · exact (ofOrd_lt_ofOrd.mpr hc).le.trans (not_lt.mp h)
   -- `σ a ≤ τ` is forced by a band mate below the threshold
-  have key : ∀ (a : ExtOrd) (k i : ℕ), k ≤ K → i ≤ k → τ < g k →
+  have key : ∀ a k i, k ≤ K → i ≤ k → τ < g k →
       σ (extVisibilityReplace a k i) ≤ τ → σ a ≤ τ := by
     intro a k i hkK hik hgk hb
     rcases ExtOrd.cases a with rfl | rfl | ⟨ν, rfl⟩
@@ -394,30 +395,40 @@ noncomputable def bandMap (α lam : Ordinal.{0}) (K : ℕ) : ExtOrd → ExtOrd
   | some (some ν) =>
       if lam + K ≤ ν then ofOrd (α + K) else if lam ≤ ν then ofOrd (α + finitePart ν) else ofOrd α
 
-theorem bandMap_bot (α lam : Ordinal.{0}) (K : ℕ) : bandMap α lam K ⊥ = ⊥ := rfl
+section
+variable (α lam : Ordinal.{0}) (K : ℕ)
 
-theorem bandMap_top (α lam : Ordinal.{0}) (K : ℕ) : bandMap α lam K ⊤ = ofOrd (α + K) := rfl
+theorem bandMap_bot  : bandMap α lam K ⊥ = ⊥ := rfl
 
-theorem bandMap_ofOrd_of_cap {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}} (h : lam + K ≤ ν) :
+theorem bandMap_top  : bandMap α lam K ⊤ = ofOrd (α + K) := rfl
+
+end
+
+section
+variable {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}}
+
+theorem bandMap_ofOrd_of_cap (h : lam + K ≤ ν) :
     bandMap α lam K (ofOrd ν) = ofOrd (α + K) := by
   change (if lam + K ≤ ν then _ else _) = _
   rw [ite_eq_left h]
 
-theorem bandMap_ofOrd_of_band {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}} (h₁ : lam ≤ ν)
+theorem bandMap_ofOrd_of_band (h₁ : lam ≤ ν)
     (h₂ : ν < lam + K) : bandMap α lam K (ofOrd ν) = ofOrd (α + finitePart ν) := by
   change (if lam + K ≤ ν then _ else if lam ≤ ν then _ else _) = _
   rw [ite_eq_right (not_le.mpr h₂), ite_eq_left h₁]
 
-theorem bandMap_ofOrd_of_lt {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}} (h : ν < lam) :
+theorem bandMap_ofOrd_of_lt (h : ν < lam) :
     bandMap α lam K (ofOrd ν) = ofOrd α := by
   change (if lam + K ≤ ν then _ else if lam ≤ ν then _ else _) = _
   have h' : ¬ lam + K ≤ ν := not_le.mpr (h.trans_le (le_add_of_nonneg_right zero_le))
   rw [ite_eq_right h', ite_eq_right (not_le.mpr h)]
 
-theorem le_bandMap_of_ne_bot (α lam : Ordinal.{0}) (K : ℕ) {x : ExtOrd} (hx : x ≠ ⊥) :
+end
+
+theorem le_bandMap_of_ne_bot α lam K {x} (hx : x ≠ ⊥) :
     ofOrd α ≤ bandMap α lam K x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
-  · exact absurd rfl hx
+  · grind
   · rw [bandMap_top]; exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
   · by_cases h1 : lam + K ≤ ν
     · rw [bandMap_ofOrd_of_cap h1]; exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
@@ -426,7 +437,10 @@ theorem le_bandMap_of_ne_bot (α lam : Ordinal.{0}) (K : ℕ) {x : ExtOrd} (hx :
         exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
       · rw [bandMap_ofOrd_of_lt (not_le.mp h2)]
 
-theorem bandMap_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ) (x : ExtOrd) :
+section
+variable {α lam : Ordinal.{0}}
+
+theorem bandMap_le (hlam : limitPart lam = lam) K x :
     bandMap α lam K x ≤ ofOrd (α + K) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · rw [bandMap_bot]; exact bot_le
@@ -435,7 +449,7 @@ theorem bandMap_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ)
     · rw [bandMap_ofOrd_of_cap h1]
     · by_cases h2 : lam ≤ ν
       · rw [bandMap_ofOrd_of_band h2 (not_le.mp h1), ofOrd_le_ofOrd]
-        refine add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr ?_)
+        simp
         -- `ν = lam + fp ν < lam + K`
         have hlp : limitPart ν = lam := by
           have := limitPart_eq_of_le_of_lt (μ := lam) (z := ν) (by rwa [hlam])
@@ -450,8 +464,8 @@ theorem bandMap_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ)
         exact le_add_of_nonneg_right zero_le
 
 /-- The band map is monotone on `[lam, ⊤]`. -/
-theorem bandMap_mono_of_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ)
-    {x y : ExtOrd} (hx : ofOrd lam ≤ x) (hxy : x ≤ y) :
+theorem bandMap_mono_of_le (hlam : limitPart lam = lam) K
+    {x y} (hx : ofOrd lam ≤ x) (hxy : x ≤ y) :
     bandMap α lam K x ≤ bandMap α lam K y := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · exact absurd hx (not_le.mpr (bot_lt_ofOrd _))
@@ -482,49 +496,58 @@ theorem bandMap_mono_of_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (
           have hfp : finitePart ν ≤ finitePart ν' := finitePart_le_of_le (hlp.trans hlp'.symm) hνν'
           exact add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr hfp)
 
+end
+
 end ExtOrd
 
 /-! ### Multiples of `ω` -/
 
 namespace Value
 
+section
+variable {μ : Ordinal.{0}}
+
 /-- `finitePart (μ + i) = i` for a multiple of `ω`. -/
-theorem finitePart_limitPart_add_nat' {μ : Ordinal.{0}} (hμ : limitPart μ = μ) (i : ℕ) :
+theorem finitePart_limitPart_add_nat' (hμ : limitPart μ = μ) (i : ℕ) :
     finitePart (μ + i) = i := by
   have := finitePart_limitPart_add_nat μ i
   rwa [hμ] at this
 
 /-- `limitPart (μ + i) = μ` for a multiple of `ω`. -/
-theorem limitPart_add_nat_of_limitPart_eq {μ : Ordinal.{0}} (hμ : limitPart μ = μ) (i : ℕ) :
+theorem limitPart_add_nat_of_limitPart_eq (hμ : limitPart μ = μ) (i : ℕ) :
     limitPart (μ + i) = μ := by
   have := limitPart_limitPart_add_nat μ i
   rwa [hμ] at this
 
+end
+
+section
+variable {μ ν : Ordinal.{0}}
+
 /-- A multiple of `ω` strictly below a limit part sits a whole `ω` below it. -/
-theorem add_omega0_le_limitPart_of_lt {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
+theorem add_omega0_le_limitPart_of_lt (hμ : limitPart μ = μ)
     (h : μ < limitPart ν) : μ + Ordinal.omega0 ≤ limitPart ν := by
   rw [← hμ] at h ⊢
   unfold limitPart at h ⊢
-  have hq : μ / Ordinal.omega0 < ν / Ordinal.omega0 :=
+  have hq :=
     (mul_lt_mul_iff_right₀ Ordinal.omega0_pos).mp h
   rw [← Ordinal.mul_succ]
   exact mul_le_mul_right (Order.succ_le_of_lt hq) _
 
 /-- Band replacement below a multiple-of-`ω` bound stays below it. -/
-theorem visibilityReplace_lt_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
-    (hν : ν < μ) (k i : ℕ) : visibilityReplace ν k i < μ := by
+theorem visibilityReplace_lt_of_lt_of_limitPart_eq (hμ : limitPart μ = μ)
+    (hν : ν < μ) k i : visibilityReplace ν k i < μ := by
   unfold visibilityReplace ordinalReplace
   split_ifs with h
   · have hlt : limitPart ν < μ := (limitPart_le ν).trans_lt hν
     have := add_omega0_le_limitPart_of_lt (μ := limitPart ν) (ν := μ) (limitPart_limitPart ν)
-      (by rwa [hμ])
-    rw [hμ] at this
+      (by grind)
+    simp_all
     exact lt_of_lt_of_le ((add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 i)) this
   · exact hν
 
 /-- Band replacement with `i ≤ K` below `μ + K` (`μ` a multiple of `ω`) stays below `μ + K`. -/
-theorem visibilityReplace_le_add_of_le_of_limitPart_eq {μ ν : Ordinal.{0}}
-    (hμ : limitPart μ = μ) {K i : ℕ} (hν : ν ≤ μ + K) (k : ℕ) (hi : i ≤ K) :
+theorem visibilityReplace_le_add_of_le_of_limitPart_eq (hμ : limitPart μ = μ) {K i : ℕ} (hν : ν ≤ μ + K) k (hi : i ≤ K) :
     visibilityReplace ν k i ≤ μ + K := by
   unfold visibilityReplace ordinalReplace
   split_ifs with h
@@ -532,11 +555,11 @@ theorem visibilityReplace_le_add_of_le_of_limitPart_eq {μ ν : Ordinal.{0}}
       have := limitPart_mono hν
       rwa [limitPart_add_nat_of_limitPart_eq hμ] at this
     exact add_le_add hlp ((Nat.cast_le (α := Ordinal.{0})).mpr hi)
-  · exact hν
+  · grind
 
 /-- Band replacement at threshold `k ≤ K` with `i ≤ k` of a value above `μ + K` (`μ` a
 multiple of `ω`) stays at or above `μ + K`. -/
-theorem le_visibilityReplace_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
+theorem le_visibilityReplace_of_lt_of_limitPart_eq (hμ : limitPart μ = μ)
     {K k i : ℕ} (hν : μ + K < ν) (hk : k ≤ K) (_hi : i ≤ k) :
     μ + K ≤ visibilityReplace ν k i := by
   unfold visibilityReplace ordinalReplace
@@ -565,13 +588,15 @@ theorem le_visibilityReplace_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : 
       _ ≤ limitPart ν + i := le_add_of_nonneg_right zero_le
   · exact hν.le
 
+end
+
 end Value
 
 namespace ExtOrd
 
 /-- The band map commutes with band replacement at thresholds `≤ K` on `[lam, ⊤]`. -/
-theorem bandMap_extVisibilityReplace {α lam : Ordinal.{0}} (hα : Order.IsSuccLimit α)
-    (hlam : limitPart lam = lam) {K k i : ℕ} (hk : k ≤ K) (hi : i ≤ k) {x : ExtOrd}
+theorem bandMap_extVisibilityReplace {α lam} (hα : Order.IsSuccLimit α)
+    (hlam : limitPart lam = lam) {K k i} (hk : k ≤ K) (hi : i ≤ k) {x}
     (hx : ofOrd lam ≤ x) :
     bandMap α lam K (extVisibilityReplace x k i) =
       extVisibilityReplace (bandMap α lam K x) k i := by
@@ -597,11 +622,6 @@ theorem bandMap_extVisibilityReplace {α lam : Ordinal.{0}} (hα : Order.IsSuccL
       have hlp : limitPart ν = lam := by
         have := limitPart_eq_of_le_of_lt (μ := lam) (z := ν) (by rwa [hlam]) (by rwa [hlam])
         rwa [hlam] at this
-      have hfpν : finitePart ν < K := by
-        have hdec := decomposition ν
-        rw [hlp] at hdec
-        rw [← hdec] at hband
-        exact_mod_cast (add_lt_add_iff_left _).mp hband
       by_cases hfp : finitePart ν < k
       · rw [visibilityReplace_of_finitePart_lt hfp, hlp,
           visibilityReplace_of_finitePart_lt (by rw [finitePart_succLimit_add_nat hα]; exact hfp),
@@ -621,15 +641,15 @@ end ExtOrd
 open Value ExtOrd in
 /-- Under a multiple-of-`ω` bound `c = μ + K'` with `K ≤ K'`, band replacement at thresholds
 `≤ K` commutes with capping at `c`. -/
-theorem min_extVisibilityReplace_cap {μ : Ordinal.{0}} (hμ : limitPart μ = μ) {K K' k i : ℕ}
-    (hKK' : K ≤ K') (hk : k ≤ K) (hi : i ≤ k) (x : ExtOrd) (hx : x ≠ ⊤) :
+theorem min_extVisibilityReplace_cap {μ : Ordinal.{0}} (hμ : limitPart μ = μ) {K K' k i}
+    (hKK' : K ≤ K') (hk : k ≤ K) (hi : i ≤ k) x (hx : x ≠ ⊤) :
     min (extVisibilityReplace x k i) (ofOrd (μ + K')) =
       extVisibilityReplace (min x (ofOrd (μ + K'))) k i := by
   have hfp : ¬ finitePart (μ + K') < k := by
     rw [finitePart_limitPart_add_nat' hμ]; exact not_lt.mpr (hk.trans hKK')
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
-  · simp only [extVisibilityReplace_bot, min_eq_left bot_le]
-  · exact absurd rfl hx
+  · simp_all
+  · grind
   · rw [extVisibilityReplace_ofOrd]
     rcases le_or_gt ν (μ + K') with hle | hlt
     · have h1 : visibilityReplace ν k i ≤ μ + K' :=

@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthHigherMixedExtension
-public import VaughtConjecture.Knight.GrowthMixedGradeOneLedger
+public import VaughtConjecture.Knight.GrowthMixedGradeOne
+public import VaughtConjecture.Knight.GrowthReplicatedAllCutoff
 public import VaughtConjecture.Knight.EffectiveGradeLifting
 
 /-! # Bountifulness of the fixed full-height replicated growth carrier
@@ -20,7 +21,6 @@ all graded pairs. No bountifulness of an unfinished carrier is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedBountiful
 open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension
 open GrowthHigherMixed
@@ -40,7 +40,7 @@ local notation "Rows" => rows I X T hA hB hC t ht
 /-- Extend the actual mixed-target ambient, use the constructed original-face
 lift at full scope, and restrict back. This includes source grade changes. -/
 theorem original_to_mixed (hsmall : n + 1 < X.req.N)
-    {S V : Finset ι} {i j : ℕ} (hS : (S, i) ∈ Plan.gradedPlan R)
+    {S V} {i j} (hS : (S, i) ∈ Plan.gradedPlan R)
     (hV : V ∈ R) (hmV : V = A ∨ ScopeReplicationCarrier.Mixed B C V)
     (hv : j ≤ V.card) (hjt : j ≤ t + 2)
     (h : GradedLe (S, i) (V, j)) (hs : S ⊆ B ∨ S ⊆ C) :
@@ -66,7 +66,7 @@ theorem original_to_mixed (hsmall : n + 1 < X.req.N)
 
 /-- Every same-grade pair at an installed cutoff on one fixed carrier.
 The strict arity hypothesis is used only for the donor-original direction. -/
-theorem same_grade (hsmall : n + 1 < X.req.N) (S V : Finset ι) (j : ℕ)
+theorem same_grade (hsmall : n + 1 < X.req.N) S V j
     (hS : (S, j) ∈ Plan.gradedPlan R) (hV : (V, j) ∈ Plan.gradedPlan R)
     (hjt : j ≤ t + 2) (hSV : S ⊆ V) :
     CappedLift Rows (show GradedLe (S, j) (V, j) from ⟨hSV, le_rfl⟩) := by

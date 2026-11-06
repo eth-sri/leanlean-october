@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FiniteCoverReceiving
+public import VaughtConjecture.Knight.FiniteCoverReceivingCore
+public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
+public import VaughtConjecture.Knight.BlockCode
 public import VaughtConjecture.Knight.TopSupportRigidCoreCap
 
 /-! # Classification from globally rigid top-support cores
@@ -24,7 +26,7 @@ variable {α : LimitStage} {M M₁ M₂ : Type w} {R : KnightRealization α M}
 /-- **Classification**: two countable models at the same stage with globally rigid cores of the
 same finite type are isomorphic. -/
 theorem nonempty_iso_of_rigidCores [Countable M₁] [Countable M₂] (hM₁ : R₁.IsModel)
-    (hM₂ : R₂.IsModel) {k : ℕ} {B₁ : Fin k ↪ M₁} {B₂ : Fin k ↪ M₂} {b : S α.1 k}
+    (hM₂ : R₂.IsModel) {k} {B₁} {B₂} {b : S α.1 k}
     (h₁ : R₁.eval B₁ = some b) (h₂ : R₂.eval B₂ = some b) (r₁ : RigidCore R₁ B₁)
     (r₂ : RigidCore R₂ B₂) : Nonempty (R₁.Iso R₂) := by
   have := hM₁.nonempty
@@ -35,7 +37,7 @@ theorem nonempty_iso_of_rigidCores [Countable M₁] [Countable M₂] (hM₁ : R�
 
 /-- Enlarging a globally rigid core preserves rigidity, whether or not the
 initial tuple itself has a label. -/
-theorem rigidCore_mono {k m : ℕ} {B : Fin k ↪ M} {C : Fin m ↪ M}
+theorem rigidCore_mono {k m} {B} {C}
     (hB : RigidCore R B) (f : Fin k ↪ Fin m) (hf : f.trans C = B) : RigidCore R C := by
   intro n D d hd e he H hH ht
   apply hB D d hd (f.trans e) (by rw [Function.Embedding.trans_assoc, he, hf]) H hH

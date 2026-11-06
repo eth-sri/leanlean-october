@@ -18,7 +18,6 @@ constructed by the donor release fibre, not a symmetry of LOW.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CanonicalPairedInverse
 open LadderScalarRendering SharpWitnessComposition RelativeLadderLayer
@@ -45,9 +44,7 @@ include hfield in
 theorem anchor_donor (a : F.Anchor 1) (d : P.scheme.below (effC n 1)) :
     F.fields 1 a (field (incl d).1) = a.val (.inl d.1) := by
   obtain ⟨S, hs, he⟩ := a.property.2
-  change a.val (field (incl d).1) = a.val (.inl d.1)
-  rw [← he]
-  exact hfield S hs d
+  aesop
 
 include hfield in
 theorem leafSource_donor (a : F.Anchor 1) (d : P.scheme.below (effC n 1)) :
@@ -199,11 +196,10 @@ theorem donor_positive_lift
     (hag : ∀ d, min (q (donorAt F D hA incl d)) γ = min (p d) γ) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (donorAt F D hA incl d) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
   by_cases hsmall : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hsmall d)),
-      fun _ => by rw [min_assoc, min_self]⟩
+      fun _ => by grind⟩
   · obtain ⟨c, hc⟩ := not_forall.mp hsmall
     exact donor_active_lift F D sem hA field hproper hboundary incl hfield
       hp hq hγ hpos hag c (not_le.mp hc)

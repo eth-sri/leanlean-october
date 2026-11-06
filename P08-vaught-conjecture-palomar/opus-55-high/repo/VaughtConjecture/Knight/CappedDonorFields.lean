@@ -74,16 +74,21 @@ def Field.grade : Field P C → ℕ
   | .priv d => C.scheme.grade d
   | .gate => 1
 
+section
+variable (j : ℕ)
+
 /-- A request cell is present at cutoff `j` exactly when its grade is at most `j`. -/
-theorem present_req_iff (j : ℕ) (d : Cell P.scheme) :
+theorem present_req_iff (d : Cell P.scheme) :
     GradedLe (P.scheme.cell d) (effP nP j) ↔ P.scheme.grade d ≤ j :=
   ⟨fun h => h.2.trans (min_le_left _ _),
     fun h => ⟨Finset.subset_univ _, le_min h (Ref.gradeP_le d)⟩⟩
 
 /-- A private cell is present at cutoff `j` exactly when its grade is at most `j`. -/
-theorem present_priv_iff (j : ℕ) (d : Cell C.scheme) :
+theorem present_priv_iff (d : Cell C.scheme) :
     GradedLe (C.scheme.cell d) (effC J j) ↔ C.scheme.grade d ≤ j :=
   ⟨fun h => h.2.trans (min_le_left _ _), fun h => ⟨Finset.subset_univ _, le_min h (gradeC_le d)⟩⟩
+
+end
 
 namespace Ref
 
@@ -101,26 +106,21 @@ def State.persistent {j : ℕ} (st : R.State j) : Field P C → ExtOrd
   | .priv d => st.shadowC d
   | .gate => st.gate
 
-/-- Numerical values are self-visible at their field's grade. -/
-theorem Admissible.numeric_selfVis {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    (f : Field P C) (h : f.grade ≤ j) : SelfVis f.grade (st.numeric f h) := by
-  cases f with
-  | req d => exact (hst.u_respects.orderly ⟨d, (present_req_iff j d).mpr h⟩).symm
-  | priv d => exact (hst.v_respects.orderly ⟨d, (present_priv_iff j d).mpr h⟩).symm
-  | gate => exact hst.gate_vis
+section
+variable {j : ℕ}
 
 /-- Persistent values are `1`-visible. -/
-theorem Admissible.persistent_selfVis {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    (f : Field P C) : SelfVis 1 (st.persistent f) := by
+theorem Admissible.persistent_selfVis {st : R.State j} (hst : R.Admissible st)
+    f : SelfVis 1 (st.persistent f) := by
   cases f with
   | req d => exact hst.shadowP_vis d
   | priv d => exact hst.shadowC_vis d
   | gate => exact hst.gate_vis
 
 /-- The cap receipts are receipts for every persistent field, present or future. -/
-theorem capReceipts_iff {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) :
+theorem capReceipts_iff γ (st st₁ : R.State j) :
     R.CapReceipts γ st st₁ ↔
-      ∀ f : Field P C, min (st₁.persistent f) γ = min (st.persistent f) γ := by
+      ∀ f, min (st₁.persistent f) γ = min (st.persistent f) γ := by
   constructor
   · rintro ⟨hg, hP, hC⟩ f
     cases f with
@@ -130,22 +130,27 @@ theorem capReceipts_iff {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) :
   · intro h
     exact ⟨h .gate, fun d => h (.req d), fun d => h (.priv d)⟩
 
+end
+
 /-! ## Restriction across grades -/
 
-theorem effC_mono {j' j : ℕ} (h : j' ≤ j) : GradedLe (effC J j') (effC J j) :=
+theorem effC_mono {j' j} (h : j' ≤ j) : GradedLe (effC J j') (effC J j) :=
   ⟨Finset.Subset.refl _, min_le_min_right _ h⟩
 
 /-! ## The non-top readback (notes32 §8) -/
 
+section
+variable {v₁ v₂ : R.Low → ExtOrd}
+
 /-- The cut depends only on the cap and reference values. -/
-theorem cut_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.capL)
+theorem cut_congr (hcap : v₁ R.capL = v₂ R.capL)
     (href : ∀ i, v₁ (R.lowRef i) = v₂ (R.lowRef i)) : R.cut v₁ = R.cut v₂ := by
   unfold cut
   simp only [hcap, href]
 
 /-- The selector depends only on the cap and reference values. -/
-theorem sel_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.capL)
-    (href : ∀ i, v₁ (R.lowRef i) = v₂ (R.lowRef i)) (d : Cell P.scheme) :
+theorem sel_congr (hcap : v₁ R.capL = v₂ R.capL)
+    (href : ∀ i, v₁ (R.lowRef i) = v₂ (R.lowRef i)) d :
     R.sel v₁ d = R.sel v₂ d := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
   · rw [R.sel_of_proper h, R.sel_of_proper h, cut_congr hcap href, href]
@@ -153,6 +158,8 @@ theorem sel_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.ca
   · rw [R.sel_of_bot hb, R.sel_of_bot hb]
   · have ht := not_not.mp fun ht => h ⟨hb, ht⟩
     rw [R.sel_of_top ht, R.sel_of_top ht, cut_congr hcap href]
+
+end
 
 end Ref
 

@@ -22,8 +22,6 @@ pointwise minima is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.StageType
 
 open TypeTower Value ExtOrd
@@ -31,10 +29,12 @@ open CellScheme.restrictFace (toCell)
 
 variable {α β : Ordinal.{0}} {n : ℕ}
 
+section
+variable (hα : Order.IsSuccLimit α) (hαβ : α ≤ β) (q : S β n) (d : Cell q.scheme.scheme)
+
 /-- Every label of a higher type equals its reduct's provisional value, or is at
 least the reduct's top-grade threshold. The higher stage need only be above `α`. -/
-theorem label_eq_provisional_or_threshold_le (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
-    (q : S β n) (d : Cell q.scheme.scheme) :
+theorem label_eq_provisional_or_threshold_le  :
     q.label d = (reduceType hα hαβ q).someProvisionalValue d ∨
       ofOrd (α + (reduceType hα hαβ q).topGrade) ≤ q.label d := by
   let p := reduceType hα hαβ q
@@ -61,17 +61,18 @@ theorem label_eq_provisional_or_threshold_le (hα : Order.IsSuccLimit α) (hαβ
 
 /-- The provisional value is a lower bound for every lawful higher lift of its
 literal reduct, coordinate by coordinate in the common scalar value space. -/
-theorem provisional_reduct_le_label (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
-    (q : S β n) (d : Cell q.scheme.scheme) :
+theorem provisional_reduct_le_label  :
     (reduceType hα hαβ q).someProvisionalValue d ≤ q.label d := by
   rcases label_eq_provisional_or_threshold_le hα hαβ q d with h | h
   · exact h.ge
   · exact (someProvisionalValue_le _ _).trans h
 
+end
+
 /-- Fixed-scheme form: every lawful bounded vector reducing to `p` dominates its
 provisional vector. Rows and cells are literally those of `p`. -/
 theorem provisional_le_of_lawful_lift (p : S α n) (hα : Order.IsSuccLimit α)
-    (hαβ : α ≤ β) (v : Cell p.scheme.scheme → ExtOrd)
+    (hαβ : α ≤ β) v
     (hbound : ∀ d, v d < ofOrd β ∨ v d = ⊤)
     (hlawful : RespectsSemantics p.scheme.rows v)
     (hreduce : ∀ d, truncExt α (v d) = p.label d) :
@@ -80,16 +81,19 @@ theorem provisional_le_of_lawful_lift (p : S α n) (hα : Order.IsSuccLimit α)
   have hred : reduceType hα hαβ q = p :=
     StageType.ext rfl (heq_of_eq (funext hreduce))
   have he : (reduceType hα hαβ q).someProvisionalValue = p.someProvisionalValue :=
-    eq_of_heq (congr_arg_heq (fun t : S α n => t.someProvisionalValue) hred)
+    eq_of_heq (congr_arg_heq (fun t => t.someProvisionalValue) hred)
   intro d
   simpa only [he] using provisional_reduct_le_label hα hαβ q d
+
+section
+variable {m : ℕ}
 
 /-- Restricting a larger provisional lift gives a lawful lift of the face.
 Leastness therefore proves provisional monotonicity without invoking the
 existing ratchet theorem. Equality of the two provisional vectors is not asserted. -/
-theorem provisional_le_restrict_of_least {m : ℕ} (q : S α n)
+theorem provisional_le_restrict_of_least (q : S α n)
     (hα : Order.IsSuccLimit α) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ q.scheme.scheme.plan) :
+    hr :
     ∀ d : Cell (q.scheme.scheme.restrictFace f hr),
       (q.restrictFace f hr).someProvisionalValue d ≤
         q.someProvisionalValue (toCell q.scheme.scheme f hr d) := by
@@ -103,12 +107,14 @@ theorem provisional_le_restrict_of_least {m : ℕ} (q : S α n)
 
 /-- Exact-face adapter for least-lift monotonicity, retaining the specified face
 embedding and its transported cell. -/
-theorem provisional_le_mapCell_of_least {m : ℕ} {p : S α m} {q : S α n}
-    {f : Fin m ↪ Fin n} (hα : Order.IsSuccLimit α) (hf : typeMap f q = some p)
-    (d : Cell p.scheme.scheme) :
+theorem provisional_le_mapCell_of_least {p : S α m} {q : S α n}
+    {f} (hα : Order.IsSuccLimit α) (hf : typeMap f q = some p)
+    d :
     p.someProvisionalValue d ≤ q.someProvisionalValue (mapCell hf d) := by
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
     ⟨visible_of_typeMap_eq_some hf, restrictFace_eq_of_typeMap_eq_some hf⟩
   exact provisional_le_restrict_of_least q hα f hr d
+
+end
 
 end VaughtConjecture.Knight.StageType

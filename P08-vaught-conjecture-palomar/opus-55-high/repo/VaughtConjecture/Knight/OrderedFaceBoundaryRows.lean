@@ -18,8 +18,6 @@ Generalizes `AmalgamatedBoundaryRows` without requiring coatom geometry.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrderedFaceBoundaryRows
 
 open AmalgamationPlan OrderedFaceBoundary Transform Value ExtOrd
@@ -41,10 +39,10 @@ local notation "r" => rightCell D E w R hR hD hE
 def Compatible : Prop :=
   ∀ i j, total semD (w.f i) (w.f j) = total semE (w.g i) (w.g j)
 
-theorem shared_cell (i : Fin k) : l (w.f i) = r (w.g i) :=
+theorem shared_cell i : l (w.f i) = r (w.g i) :=
   (overlap D E w R hR hD hE _ _).mpr ⟨i, rfl, rfl⟩
 
-theorem covered (c : Cell K) : (∃ d, l d = c) ∨ ∃ e, r e = c := by
+theorem covered c : (∃ d, l d = c) ∨ ∃ e, r e = c := by
   rcases ProfileFaceUnion.covered w.f w.g ((enumeration D E w).symm c) with
     ⟨d, hd⟩ | ⟨e, he⟩
   · exact Or.inl ⟨d, (congrArg (enumeration D E w) hd).trans
@@ -52,7 +50,7 @@ theorem covered (c : Cell K) : (∃ d, l d = c) ∨ ∃ e, r e = c := by
   · exact Or.inr ⟨e, (congrArg (enumeration D E w) he).trans
       ((enumeration D E w).apply_symm_apply c)⟩
 
-theorem pushRow_shared (hc : Compatible D E w semD semE) (i : Fin k) :
+theorem pushRow_shared (hc : Compatible D E w semD semE) i :
     pushRow l semD (w.f i) = pushRow r semE (w.g i) := by
   funext z
   by_cases hz : GradedLe ((K).cell z) (D.cell (w.f i))
@@ -63,8 +61,7 @@ theorem pushRow_shared (hc : Compatible D E w semD semE) (i : Fin k) :
     have he : l d.1 = z := congrArg Subtype.val hd
     have hdc : D.scope d.1 ⊆ C := by
       have hs := d.2.1
-      change D.scope d.1 ⊆ (D.cell (w.f i)).1 at hs
-      have hs' : (D.cell (w.f i)).1 ⊆ (E.cell (w.g i)).1 :=
+      have hs' :=
         subset_of_eq (congrArg Prod.fst (w.shared i))
       exact hs.trans (hs'.trans (E.isPlan.subset_of_mem (E.scope_mem_plan _)))
     obtain ⟨j, hj⟩ := w.left_exhaustive d.1 hdc
@@ -81,15 +78,15 @@ noncomputable def table (c : Cell K) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm c)
 
-theorem table_left (c d : Cell D) : table D E w R hR hD hE semD semE (l c) (l d) =
+theorem table_left c d : table D E w R hR hD hE semD semE (l c) (l d) =
     total semD c d := by
   change ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.left w.g c))) (l d) = _
-  rw [Equiv.symm_apply_apply]
+  simp_all
   exact pushRow_at l (left_order D E w R hR hD hE).injective semD c d
 
-theorem table_right (hc : Compatible D E w semD semE) (c d : Cell E) :
+theorem table_right (hc : Compatible D E w semD semE) c d :
     table D E w R hR hD hE semD semE (r c) (r d) = total semE c d := by
   change ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm

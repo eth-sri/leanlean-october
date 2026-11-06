@@ -18,7 +18,6 @@ No semantic or lifting hypothesis enters this finite carrier construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationCarrier
 open AmalgamationPlan
 noncomputable section
@@ -53,12 +52,12 @@ def enumeration : (Cell D ⊕ Copy D B C) ≃ Cell (scheme D B C) :=
 abbrev old (d : Cell D) : Cell (scheme D B C) := enumeration D B C (.inl d)
 abbrev added (p : Copy D B C) : Cell (scheme D B C) := enumeration D B C (.inr p)
 
-theorem old_index (d : Cell D) : (scheme D B C).cell (old D B C d) = D.cell d := by
+theorem old_index d : (scheme D B C).cell (old D B C d) = D.cell d := by
   change (scheme D B C).cell (Fin.castAdd (Fintype.card (Copy D B C)) d) = D.cell d
   unfold scheme
   simp only [Fin.addCases_left]
 
-theorem added_index (p : Copy D B C) :
+theorem added_index p :
     (scheme D B C).cell (added D B C p) = (p.1.1.1, D.grade p.1.2) := by
   change (scheme D B C).cell (Fin.natAdd D.card (Fintype.equivFin (Copy D B C) p)) = _
   unfold scheme
@@ -66,37 +65,43 @@ theorem added_index (p : Copy D B C) :
 
 theorem old_order : StrictMono (old D B C) := Fin.strictMono_castAdd _
 
-theorem cases (d : Cell (scheme D B C)) :
+section
+variable (d : Cell (scheme D B C))
+
+theorem cases  :
     (∃ c, d = old D B C c) ∨ ∃ p, d = added D B C p := by
   obtain ⟨x, rfl⟩ := (enumeration D B C).surjective d
-  cases x with
-  | inl c => exact Or.inl ⟨c, rfl⟩
-  | inr p => exact Or.inr ⟨p, rfl⟩
+  grind
 
-def erase (d : Cell (scheme D B C)) : Cell D :=
+def erase  : Cell D :=
   match (enumeration D B C).symm d with
   | .inl c => c
   | .inr p => p.1.2
 
-@[simp] theorem erase_old (d : Cell D) : erase D B C (old D B C d) = d := by
+end
+
+@[simp] theorem erase_old d : erase D B C (old D B C d) = d := by
   simp only [erase, old, Equiv.symm_apply_apply]
 
-@[simp] theorem erase_added (p : Copy D B C) : erase D B C (added D B C p) = p.1.2 := by
+@[simp] theorem erase_added p : erase D B C (added D B C p) = p.1.2 := by
   simp only [erase, added, Equiv.symm_apply_apply]
 
-theorem erase_grade (d : Cell (scheme D B C)) :
+section
+variable (d : Cell (scheme D B C))
+
+theorem erase_grade  :
     D.grade (erase D B C d) = (scheme D B C).grade d := by
   rcases cases D B C d with ⟨c, rfl⟩ | ⟨p, rfl⟩
   · rw [erase_old]; exact (congrArg Prod.snd (old_index D B C c)).symm
   · rw [erase_added]; exact (congrArg Prod.snd (added_index D B C p)).symm
 
-theorem erase_scope_of_ne (d : Cell (scheme D B C)) (h : D.scope (erase D B C d) ≠ A) :
+theorem erase_scope_of_ne (h : D.scope (erase D B C d) ≠ A) :
     D.scope (erase D B C d) = (scheme D B C).scope d := by
   rcases cases D B C d with ⟨c, rfl⟩ | ⟨p, rfl⟩
   · rw [erase_old]; exact (congrArg Prod.fst (old_index D B C c)).symm
-  · exact (h (by rw [erase_added]; exact p.2.2.2.1)).elim
+  · aesop
 
-theorem scope_le_erase (d : Cell (scheme D B C)) :
+theorem scope_le_erase  :
     (scheme D B C).scope d ⊆ D.scope (erase D B C d) := by
   rcases cases D B C d with ⟨c, rfl⟩ | ⟨p, rfl⟩
   · rw [erase_old]
@@ -104,13 +109,14 @@ theorem scope_le_erase (d : Cell (scheme D B C)) :
   · rw [erase_added, p.2.2.2.1]
     exact (scheme D B C).isPlan.subset_of_mem ((scheme D B C).scope_mem_plan _)
 
-theorem full_or_mixed (d : Cell (scheme D B C))
-    (h : D.scope (erase D B C d) = A) :
+theorem full_or_mixed (h : D.scope (erase D B C d) = A) :
     (scheme D B C).scope d = A ∨ Mixed B C ((scheme D B C).scope d) := by
   rcases cases D B C d with ⟨c, rfl⟩ | ⟨p, rfl⟩
   · exact Or.inl ((congrArg Prod.fst (old_index D B C c)).trans
-      (by simpa only [erase_old, CellScheme.scope] using h))
+      (by simp_all))
   · exact Or.inr (by simpa only [CellScheme.scope, added_index] using p.2.2.1)
+
+end
 
 variable (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
 
@@ -123,7 +129,7 @@ theorem erase_le {d c : Cell (scheme D B C)}
   · change D.grade (erase D B C d) ≤ D.grade (erase D B C c)
     rw [erase_grade, erase_grade]
     exact h.2
-  change D.scope (erase D B C d) ⊆ D.scope (erase D B C c)
+  simp_all
   by_cases hc : D.scope (erase D B C c) = A
   · rw [hc]; exact D.isPlan.subset_of_mem (D.scope_mem_plan _)
   · rw [erase_scope_of_ne D B C c hc]
@@ -145,42 +151,43 @@ include hcover in
 theorem old_index_exhaustive (c : Cell D) (z : Cell (scheme D B C))
     (hz : (scheme D B C).cell z = D.cell c) : ∃ d, old D B C d = z := by
   rcases cases D B C z with ⟨d, rfl⟩ | ⟨p, rfl⟩
-  · exact ⟨d, rfl⟩
+  · grind
   · have hs : p.1.1.1 = D.scope c := (congrArg Prod.fst (added_index D B C p)).symm.trans
       (congrArg Prod.fst hz)
     by_cases hc : D.scope c = A
-    · exact (p.2.1 (hs.trans hc)).elim
+    · grind
     · rcases hcover c hc with hb | hc'
       · exact (p.2.2.1.1 (hs ▸ hb)).elim
       · exact (p.2.2.1.2 (hs ▸ hc')).elim
 
-def oldBelow (J : Finset ι × ℕ) (d : D.below J) : (scheme D B C).below J :=
+def oldBelow J (d : D.below J) : (scheme D B C).below J :=
   ⟨old D B C d.1, by rw [old_index]; exact d.2⟩
 
 /-- Relocate a full-scope prototype to an actual mixed scope, retaining its
 identity. At the full scope use its existing occurrence. -/
-def atScope (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
-    (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
+def atScope U (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
+    c (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
     Cell (scheme D B C) := by
   classical
   exact if h : U = A then old D B C c else
     added D B C ⟨(⟨U, hU⟩, c), h, hm.resolve_left h, hc, hg⟩
 
-theorem atScope_index (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
-    (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
+section
+variable (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U) (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card)
+
+theorem atScope_index  :
     (scheme D B C).cell (atScope D B C U hU hm c hc hg) = (U, D.grade c) := by
-  classical
   unfold atScope
   split_ifs with h
   · exact (old_index D B C c).trans (Prod.ext (hc.trans h.symm) rfl)
   · exact added_index D B C _
 
-theorem erase_atScope (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
-    (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
+theorem erase_atScope  :
     erase D B C (atScope D B C U hU hm c hc hg) = c := by
-  classical
   unfold atScope
   split_ifs <;> simp only [erase_old, erase_added]
+
+end
 
 /-- Any original availability witness at the erased target has an actual
 occurrence at that target's scope, with exactly the same prototype. -/
@@ -195,7 +202,7 @@ theorem exists_at_index (t : Cell (scheme D B C)) (w : Cell D)
     let z := atScope D B C ((scheme D B C).scope t) ((scheme D B C).scope_mem_plan t)
       (full_or_mixed D B C t ht) w hws (hwg ▸ (scheme D B C).grade_le_card_scope t)
     refine ⟨z, ?_, erase_atScope D B C _ _ _ _ _ _⟩
-    exact (atScope_index D B C _ _ _ _ _ _).trans (by rw [hwg]; rfl)
+    exact (atScope_index D B C _ _ _ _ _ _).trans (by simp_all)
   · refine ⟨old D B C w, (old_index D B C w).trans (hw.trans ?_), erase_old D B C w⟩
     exact Prod.ext (erase_scope_of_ne D B C t ht) (erase_grade D B C t)
 

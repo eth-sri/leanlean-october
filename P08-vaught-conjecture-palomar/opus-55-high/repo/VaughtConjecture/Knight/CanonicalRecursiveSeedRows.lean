@@ -18,7 +18,6 @@ No whole-boundary completion or future-owner lawfulness is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveSeedRows
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
 noncomputable section
@@ -43,15 +42,19 @@ abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv (predecessor sem hA)
 abbrev controllerEquiv := SeparatedSourceLayerCarrier.controllerEquiv (predecessor sem hA)
   (Profile sem) 3 (by decide) hA (separation sem hA hp)
 abbrev member := (controllerEquiv sem hA hp).symm
-theorem member_controller (q : Profile sem) :
+theorem member_controller q :
     member sem hA hp (controller sem hA q) = q :=
   (controllerEquiv sem hA hp).symm_apply_apply q
+
 abbrev grid := sourceGrid 3 (Fintype.card (Cell D))
 abbrev ceiling := CanonicalFieldLayer.ceiling 3 (Cell D)
 
 theorem carrier_eq_recursive : carrier sem hA = CanonicalRecursiveInventory.scheme sem 3 hA := rfl
 
-theorem profile_lawful (q : Profile sem) :
+section
+variable (q : Profile sem)
+
+theorem profile_lawful  :
     RespectsSemanticsBelow sem (A, 3) (fun d => q.val d.1) := by
   have hr := (GradeCutBoundary.respects_iff D 3 sem (A, 3) le_rfl _).mp
     (q.property.1.toBelow (A, 3))
@@ -60,54 +63,64 @@ theorem profile_lawful (q : Profile sem) :
   exact (congrArg q.val (congrArg Subtype.val
     ((GradeCutBoundary.belowEquiv D 3 (A, 3) le_rfl).apply_symm_apply d))).symm
 
-theorem profile_proper (q : Profile sem) (d : Cell D) : q.val d ≠ ⊤ := q.property.2.2 d
+theorem profile_proper d : q.val d ≠ ⊤ := q.property.2.2 d
+
+end
 
 abbrev selected (q : Profile sem) := CanonicalPairLocalSections.sectionOf sem (two_le hA) hp
   (by decide : 2 ≤ 3) (profile_lawful sem q) (profile_proper sem q)
   (grid (D := D)) (ceiling (D := D))
 
-theorem selected_lawful (q : Profile sem) :
+section
+variable (q : Profile sem)
+
+theorem selected_lawful  :
     RespectsSemanticsBelow (predecessorRows sem hA hp) (A, 3)
       (fun d => selected sem hA hp q d.1) :=
   CanonicalPairLocalSections.section_lawful sem (two_le hA) hp (by decide)
     (profile_lawful sem q) (profile_proper sem q)
-    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide : 2 ≤ 3))
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
+    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by grind))
+    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by grind))
 
-theorem selected_bound (q : Profile sem) (d : Cell (predecessor sem hA)) :
+theorem selected_bound d :
     selected sem hA hp q d ≤ ceiling (D := D) :=
   CanonicalPairLocalSections.section_bound sem (two_le hA) hp (by decide)
     (profile_lawful sem q) (profile_proper sem q)
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
+    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by grind))
     (CanonicalFieldLayer.profile_bound (GradeCutBoundary.rows D 3 sem) 3
       (Cell D) (GradeCutBoundary.toCell D 3) q) d
 
-theorem selected_agreement (p q : Profile sem) {h : ExtOrd}
+end
+
+theorem selected_agreement p q {h}
     (hh : h ∈ grid (D := D)) (hag : Agree p.val q.val h) :
     Agree (selected sem hA hp p) (selected sem hA hp q) h :=
   CanonicalPairLocalSections.section_agreement sem (two_le hA) hp (by decide)
     (profile_lawful sem p) (profile_proper sem p) (profile_lawful sem q) (profile_proper sem q)
-    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide : 2 ≤ 3))
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
+    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by grind))
+    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by grind))
     hh (CanonicalFieldLayer.grid_bound 3 (Cell D) hh) hag
 
-theorem selected_supported (q : Profile sem) (d : Cell (predecessor sem hA)) :
+section
+variable (q : Profile sem)
+
+theorem selected_supported d :
     OrbitPrefixSupport.Supported 3 (grid (D := D) : Set ExtOrd) q.val
       (selected sem hA hp q d) :=
   CanonicalPairLocalSections.section_supported sem (two_le hA) hp (by decide)
     (profile_lawful sem q) (profile_proper sem q) (by decide)
     (sourceGrid_endpoint le_rfl) d
 
-def lower (q : Profile sem) (d : Cell (carrier sem hA)) : ExtOrd :=
+def lower (d : Cell (carrier sem hA)) : ExtOrd :=
   match SourceLayerCarrier.toOcc (predecessor sem hA) (Profile sem) 3 (by decide) hA d with
   | .inl x => selected sem hA hp q x
   | .inr _ => ⊥
 
-theorem lower_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
+theorem lower_old d :
     lower sem hA hp q (old sem hA d) = selected sem hA hp q d := by
-  change lower sem hA hp q
-    (SourceLayerCarrier.toCell (predecessor sem hA) (Profile sem) 3 (by decide) hA (.inl d)) = _
   simp only [lower, SourceLayerCarrier.toOcc_toCell]
+
+end
 
 def data : ScopedSourcePrefixLayer.Data (carrier sem hA) 3 (Cell D) where
   base := SeparatedSourceLayerCarrier.base (predecessor sem hA) (Profile sem) 3
@@ -152,20 +165,26 @@ abbrev rows := (data sem hA hp).rows
 abbrev source (q : Profile sem) := (data sem hA hp).profile (controller sem hA q)
 abbrev boundary (d : Cell D) := old sem hA (CanonicalPairLocalSections.original sem (two_le hA) d)
 
-theorem source_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
+section
+variable (q : Profile sem)
+
+theorem source_old d :
     source sem hA hp q (old sem hA d) = selected sem hA hp q d := by
   rw [source, ScopedSourcePrefixLayer.Data.profile_old _ _
     (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ (separation sem hA hp) d)]
   change lower sem hA hp (member sem hA hp (controller sem hA q)) _ = _
   rw [member_controller, lower_old]
 
-theorem source_boundary (q : Profile sem) (d : Cell D) :
+theorem source_boundary d :
     source sem hA hp q (boundary sem hA d) = q.val d := by
   rw [source_old]
   exact CanonicalPairLocalSections.section_old sem (two_le hA) hp (by decide)
     (profile_lawful sem q) (profile_proper sem q) d
 
-theorem source_supported (q : Profile sem) (d : Cell (carrier sem hA)) :
+section
+variable (d : Cell (carrier sem hA))
+
+theorem source_supported  :
     OrbitPrefixSupport.Supported 3 (grid (D := D) : Set ExtOrd) q.val
       (source sem hA hp q d) := by
   by_cases hd : (carrier sem hA).cell d = (A, 3)
@@ -179,14 +198,18 @@ theorem source_supported (q : Profile sem) (d : Cell (carrier sem hA)) :
     rw [source_old]
     exact selected_supported sem hA hp q x
 
-theorem source_short (q : Profile sem) (d : Cell (carrier sem hA)) :
+theorem source_short  :
     SharpWitnessComposition.Short 3 (source sem hA hp q d) :=
   PairedCoupledSections.supported_short
     (fun _ hh => CanonicalFieldLayer.grid_short 3 (Cell D) hh)
     (CanonicalFieldLayer.profile_short (GradeCutBoundary.rows D 3 sem) 3
       (Cell D) (GradeCutBoundary.toCell D 3) q) (source_supported sem hA hp q d)
 
-theorem source_agreement_all (p q : Profile sem) {h : ExtOrd}
+end
+
+end
+
+theorem source_agreement_all p q {h}
     (hh : h ∈ grid (D := D)) (hag : Agree p.val q.val h) :
     Agree (source sem hA hp p) (source sem hA hp q) h := by
   intro d
@@ -199,8 +222,8 @@ theorem source_agreement_all (p q : Profile sem) {h : ExtOrd}
       (Profile sem) 3 (by decide) hA d hd
     simpa only [source_old] using selected_agreement sem hA hp p q hh hag x
 
-theorem inherited_row (c : Cell (predecessor sem hA))
-    (d : (predecessor sem hA).below ((predecessor sem hA).cell c)) :
+theorem inherited_row c
+    d :
     (rows sem hA hp).E (old sem hA c) (ownerEquiv sem hA hp c d) =
       (predecessorRows sem hA hp).E c d := by
   rw [ScopedSourcePrefixLayer.Data.row_old _
@@ -218,7 +241,7 @@ theorem consistent (hs : sem.IsConsistent) : (rows sem hA hp).IsConsistent := by
       (predecessorRows sem hA hp).E x := by
     funext d
     exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ x d
-  rw [he]
+  simp_all
   exact CanonicalPairBoundary.consistent sem 1 2 (by decide)
     (CanonicalPairLocalSections.one_le (two_le hA)) (by decide) (two_le hA) hp (by decide) hs x
 

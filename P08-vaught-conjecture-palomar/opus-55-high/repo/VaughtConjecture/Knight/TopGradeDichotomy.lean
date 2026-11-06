@@ -34,7 +34,7 @@ top-grade split used in Cor. 5.3.8. -/
 theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
     (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering) :
     R.HasTopGradeGrowth ∨
-      ∃ K : ℕ, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} := by
+      ∃ K, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} := by
   let := KnightRealization.nonempty_labelledExt hcov
   let := labelledExt_isDirectedOrder hcons hcov
   rcases DirectedNat.eventually_constant_or_tendsto
@@ -50,7 +50,7 @@ theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
 /-- Model-facing compatibility wrapper. -/
 theorem KnightRealization.IsModel.hasTopGradeGrowth_or_coinitial_constant
     (hR : R.IsModel) :
-    R.HasTopGradeGrowth ∨ ∃ K : ℕ, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} :=
+    R.HasTopGradeGrowth ∨ ∃ K, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} :=
   KnightRealization.hasTopGradeGrowth_or_coinitial_constant hR.consistent hR.covering
 
 end VaughtConjecture.Knight

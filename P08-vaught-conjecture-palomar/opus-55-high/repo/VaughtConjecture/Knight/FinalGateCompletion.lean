@@ -19,7 +19,6 @@ ledger, and does not assume that the predecessor is already complete there.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -27,8 +26,8 @@ noncomputable section
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
 variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
-theorem node_row (a : Q) (marked : Bool)
-    (d : F.carrier.below (F.carrier.cell (F.added a marked))) :
+theorem node_row a marked
+    d :
     F.rows.E (F.added a marked) d = min (F.source a d.1) (F.nodeWeight (a, marked)) := by
   have hm : WeightedSourcePrefixLayer.master F.data F.weight (F.controller (a, marked)) d.1 =
       F.source a d.1 := by
@@ -39,8 +38,8 @@ theorem node_row (a : Q) (marked : Bool)
       rw [hm]
       simp only [weight, member_controller])
 
-theorem grade_bound (hD : ∀ d : Cell D, D.grade d ≤ N) :
-    ∀ d : Cell F.carrier, F.carrier.grade d ≤ N := by
+theorem grade_bound (hD : ∀ d, D.grade d ≤ N) :
+    ∀ d, F.carrier.grade d ≤ N := by
   intro d
   obtain ⟨x, rfl⟩ := (SourceLayerCarrier.enumeration D (Node (Q := Q)) N
     F.positive F.height).surjective d
@@ -92,7 +91,7 @@ noncomputable section
 variable {I : Type*} [Fintype I] {nP N : ℕ}
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
-theorem member_coded (a : Member R) (f : Field P C) : IsCodedLabel N (a.val f) := by
+theorem member_coded (a : Member R) f : IsCodedLabel N (a.val f) := by
   rcases mem_codedAlphabet_iff.mp
     (CanonicalPairedProfiles.inventory_coded (Field P C) N a.property.1 f)
     with hb | ⟨b, i, _, hi, he⟩

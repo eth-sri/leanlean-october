@@ -25,7 +25,6 @@ grade values remain a separate restoration obligation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalMixedOwnerLift
 open Transform Value ExtOrd SharpWitnessComposition CanonicalMixedGradeLayers
 open CoatomBoundaryExtension
@@ -37,11 +36,14 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
 variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
 variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
-abbrev oldTarget (d : Cell D) : CanonicalMixedAmbient.target sem j hj hjA k hk hkA :=
+section
+variable (d : Cell D)
+
+abbrev oldTarget  : CanonicalMixedAmbient.target sem j hj hjA k hk hkA :=
   SourcePrefixAmbient.occurrence (data sem j hj hjA hproper k hg hk hkA hjk)
     (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d))
 
-theorem oldTarget_grade (d : Cell D) :
+theorem oldTarget_grade  :
     (scheme sem j hj hjA k hk hkA).grade
       (oldTarget sem j hj hjA hproper k hg hk hkA hjk d).1 = D.grade d := by
   change (SourceLayerCarrier.scheme _ _ _ _ _).grade
@@ -49,16 +51,18 @@ theorem oldTarget_grade (d : Cell D) :
       (SourceLayerCarrier.toCell _ _ _ _ _ (.inl d)))) = _
   simp only [CellScheme.grade, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index]
 
-theorem exists_owner_capped_lift (c : Cell D) (hc : D.grade c = k)
-    {p : D.below (D.cell c) → ExtOrd}
+end
+
+theorem exists_owner_capped_lift c (hc : D.grade c = k)
+    {p}
     (hp : RespectsSemanticsBelow sem (D.cell c) p)
     {q : CanonicalMixedAmbient.target sem j hj hjA k hk hkA → ExtOrd}
     (hq : RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) (A, k) q)
-    {γ : ExtOrd} (hγ : SelfVis k γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis k γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (D.cell c), min (p e) γ =
       min (q (oldTarget sem j hj hjA hproper k hg hk hkA hjk e.1)) γ)
     (hpc : γ < p ⟨c, GradedLe.refl _⟩)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hcU : GradedLe (D.cell c) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →

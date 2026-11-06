@@ -20,7 +20,6 @@ predecessor lift or bountifulness of the new output is assumed.
 admission, terminal insertion, and boundary lawfulness are growth results. -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepSupply
 open Transform Value ExtOrd CappedDonor Growth GrowthOrderedBase
 open GrowthPaddedContract GrowthPaddedStepRows GrowthPaddedStepDecode
@@ -38,12 +37,15 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 def birth (a : Catalogue X (k + 1)) : Catalogue X 1 :=
   P.birth (Nat.le_succ k) (state X a) (state_admitted X a) (state_proper X a)
 
-theorem birth_ranks (a : Catalogue X (k + 1)) (d : Field I.right.scheme I.left.scheme) :
+section
+variable (a : Catalogue X (k + 1))
+
+theorem birth_ranks d :
     RelativeLadderLayer.ranks (fields X 1) (birth P a) d =
       LadderScalarRendering.fieldRank (fields X (k + 1) a) d := by
   rw [birth, P.birth_ranks, state_profile]
 
-theorem source_base (a : Catalogue X (k + 1)) (d : Cell (base I X T hA hB hC)) :
+theorem source_base d :
     source P hk hnext a (baseMap P hnext d) =
       RelativeLadderLayer.renderWith I.boundary (by omega : 0 < A.card)
         (field I) (fields X 1) (birth P a) (fields X (k + 1) a) (ceiling P) d := by
@@ -56,8 +58,10 @@ theorem source_base (a : Catalogue X (k + 1)) (d : Cell (base I X T hA hB hC)) :
     (fun f => by rw [state_profile]; exact anchor_bound X a f) d
   simpa only [selected, birth, state_profile] using he
 
-theorem decoded_base (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
-    (hδ : Witness (gTop (k + 1)) δ)
+section
+variable {δ : ExtOrd → ExtOrd}
+
+theorem decoded_base (hδ : Witness (gTop (k + 1)) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, k + 1)
       (fun d => δ (a.val (field I d.1)))) :
@@ -109,8 +113,7 @@ theorem decoded_base (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
     · simpa only [f, birth_ranks, LadderScalarRendering.field_readback,
         GrowthHigherSources.fields] using horiginal
 
-theorem decoded_lawful (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
-    (hδ : Witness (gTop (k + 1)) δ)
+theorem decoded_lawful (hδ : Witness (gTop (k + 1)) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, k + 1)
       (fun d => δ (a.val (field I d.1)))) :
@@ -123,11 +126,9 @@ theorem decoded_lawful (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
   rcases GrowthPaddedStepRendering.cell_cases P hk hnext c.1 with
     ⟨b, he⟩ | ⟨hscope, hgrade, _⟩
   · right
-    have hb : GradedLe ((base I X T hA hB hC).cell b) (A, k + 1) := by
+    have hb := by
       simpa only [he, base_index] using c.2
-    have hr : RespectsSemanticsBelow (rows P hk hnext)
-        ((carrier P hnext).cell (baseMap P hnext b))
-        (fun d => δ (source P hk hnext a d.1)) :=
+    have hr :=
       (base_respects P hk hnext b (fun d => δ (source P hk hnext a d))).mpr (hl.mono hb)
     rcases c with ⟨c, hc⟩
     dsimp only at he
@@ -135,8 +136,12 @@ theorem decoded_lawful (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
     exact hr.locality ⟨_, GradedLe.refl _⟩
   · exact Or.inl (higher_short P hk hnext c.1 hscope hgrade)
 
+end
+
+end
+
 /-- Independent native physical supply, including literal top. -/
-theorem exists_section {S : State I.right.scheme I.left.scheme}
+theorem exists_section {S}
     (hS : Admitted X (k + 1) S) :
     ∃ w, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) w ∧
       ∀ d : I.boundary.below (A, k + 1),
@@ -150,7 +155,6 @@ theorem exists_section {S : State I.right.scheme I.left.scheme}
     simpa only [a, hread] using boundary_lawful_at I X T hS
   refine ⟨_, decoded_lawful P hk hnext a hδ hreflect horiginal, ?_⟩
   intro d
-  change δ (source P hk hnext a (original P hnext d.1)) = _
   rw [source_original]
   exact hread _
 

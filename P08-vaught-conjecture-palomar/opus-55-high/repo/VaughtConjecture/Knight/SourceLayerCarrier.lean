@@ -5,7 +5,20 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GradeOneSourceCarrier
+public import Mathlib.Data.Finset.Sort
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
+public import VaughtConjecture.Knight.FiniteProfileControllers
+public import VaughtConjecture.Knight.SlotControllerFamily
+public import VaughtConjecture.Knight.FreshSourceSlots
+public import VaughtConjecture.Knight.SourceBlockPadding
+public import VaughtConjecture.Knight.FreeDiagonal
+public import VaughtConjecture.Knight.SlackCutPasting
+public import VaughtConjecture.Knight.SourcePrefixRows
+public import VaughtConjecture.Knight.SourcePrefixLayer
+public import VaughtConjecture.Knight.AmalgamatedBoundaryRows
+public import VaughtConjecture.Knight.FiniteOffset
 
 /-! # Appending a full-scope layer above an actual lower inventory
 
@@ -15,8 +28,6 @@ their lower domains. All inherited occurrences and their enumeration survive.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.SourceLayerCarrier
 
@@ -47,11 +58,11 @@ noncomputable def toCell (d : Cell D ⊕ Q) : Cell (scheme D Q k hk hA) :=
 noncomputable def toOcc (d : Cell (scheme D Q k hk hA)) : Cell D ⊕ Q :=
   (enumeration D Q k hk hA).symm d
 
-@[simp] theorem toOcc_toCell (d : Cell D ⊕ Q) :
+@[simp] theorem toOcc_toCell d :
     toOcc D Q k hk hA (toCell D Q k hk hA d) = d :=
   (enumeration D Q k hk hA).symm_apply_apply d
 
-@[simp] theorem toCell_toOcc (d : Cell (scheme D Q k hk hA)) :
+@[simp] theorem toCell_toOcc d :
     toCell D Q k hk hA (toOcc D Q k hk hA d) = d :=
   (enumeration D Q k hk hA).apply_symm_apply d
 
@@ -59,7 +70,7 @@ def index : Cell D ⊕ Q → Finset ι × ℕ
   | .inl d => D.cell d
   | .inr _ => (A, k)
 
-theorem cell_toCell (d : Cell D ⊕ Q) :
+theorem cell_toCell d :
     (scheme D Q k hk hA).cell (toCell D Q k hk hA d) = index D Q k d := by
   cases d with
   | inl d =>
@@ -74,14 +85,12 @@ theorem cell_eq (d : Cell (scheme D Q k hk hA)) :
     (scheme D Q k hk hA).cell d = index D Q k (toOcc D Q k hk hA d) := by
   rw [← cell_toCell, toCell_toOcc]
 
-theorem old_order : StrictMono (fun d : Cell D => toCell D Q k hk hA (.inl d)) :=
+theorem old_order : StrictMono (fun d => toCell D Q k hk hA (.inl d)) :=
   Fin.strictMono_castAdd _
-
-variable (hgrade : ∀ d : Cell D, D.grade d < k)
 
 theorem old_occurrence (d : Cell (scheme D Q k hk hA))
     (hd : (scheme D Q k hk hA).cell d ≠ (A, k)) :
-    ∃ x : Cell D, d = toCell D Q k hk hA (.inl x) := by
+    ∃ x, d = toCell D Q k hk hA (.inl x) := by
   cases he : toOcc D Q k hk hA d with
   | inl x => exact ⟨x, by rw [← he, toCell_toOcc]⟩
   | inr q => exact False.elim (hd (by rw [cell_eq, he]; rfl))
@@ -89,7 +98,5 @@ theorem old_occurrence (d : Cell (scheme D Q k hk hA))
 noncomputable def controller (q : Q) :
     SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
   ⟨toCell D Q k hk hA (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
-
-variable (sem : Semantics D)
 
 end VaughtConjecture.Knight.SourceLayerCarrier

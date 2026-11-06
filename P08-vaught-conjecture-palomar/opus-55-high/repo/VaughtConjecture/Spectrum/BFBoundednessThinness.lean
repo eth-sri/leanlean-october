@@ -17,8 +17,6 @@ measurability of the ambient class or its observation maps is needed.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Spectrum
 
 open FirstOrder Language MeasureTheory Set

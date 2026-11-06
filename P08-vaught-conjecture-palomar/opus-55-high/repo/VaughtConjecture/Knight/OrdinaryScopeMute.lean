@@ -20,7 +20,6 @@ no bountifulness of a prospective output is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeMute
 open Transform Value ExtOrd SourceLayerCarrier SourcePrefixRows
 noncomputable section
@@ -37,41 +36,49 @@ def render (p : Cell D → ExtOrd) : Cell (carrier D K l hKl hlA) → ExtOrd :=
   fun d => Sum.elim p (fun _ => ⊥)
     (toOcc D Unit l (MaximalFullLayer.positive K l hKl) hlA d)
 
-theorem render_old (p : Cell D → ExtOrd) (d : Cell D) :
+section
+variable (p : Cell D → ExtOrd)
+
+theorem render_old d :
     render D K l hKl hlA p (old D K l hKl hlA d) = p d := by
   simp only [render, old, MaximalFullLayer.old, toOcc_toCell, Sum.elim_inl]
 
-theorem render_apex (p : Cell D → ExtOrd) :
+theorem render_apex  :
     render D K l hKl hlA p (apex D K l hKl hlA) = ⊥ := by
   simp only [render, apex, MaximalFullLayer.apex, toOcc_toCell, Sum.elim_inr]
+
+end
 
 theorem covered (d : Cell (carrier D K l hKl hlA)) :
     (∃ c, d = old D K l hKl hlA c) ∨ d = apex D K l hKl hlA := by
   obtain ⟨x, rfl⟩ := (enumeration D Unit l (MaximalFullLayer.positive K l hKl) hlA).surjective d
-  cases x with
-  | inl c => exact Or.inl ⟨c, rfl⟩
-  | inr u => cases u; exact Or.inr rfl
+  aesop
 
-theorem render_lawful {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
+section
+variable {p : Cell D → ExtOrd}
+
+theorem render_lawful (hp : RespectsSemantics sem p) :
     RespectsSemantics (rows D sem K l hK hKl hlA) (render D K l hKl hlA p) := by
   obtain ⟨r, hr, hold, hnew⟩ := HighLayerBountiful.exists_zero_tail D Unit l
     (MaximalFullLayer.positive K l hKl) hlA K hK hKl sem
     (rows D sem K l hK hKl hlA) (MaximalFullLayer.inherited_row D sem K l hK hKl hlA) hp
-  have he : render D K l hKl hlA p = r := by
+  have he := by
     funext d
     rcases covered D K l hKl hlA d with ⟨c, rfl⟩ | rfl
     · exact (render_old D K l hKl hlA p c).trans (hold c).symm
     · exact (render_apex D K l hKl hlA p).trans (hnew ()).symm
   exact he.symm ▸ hr
 
-theorem render_bound {p : Cell D → ExtOrd} {θ : ExtOrd} (hp : ∀ d, p d ≤ θ)
-    (d : Cell (carrier D K l hKl hlA)) : render D K l hKl hlA p d ≤ θ := by
+theorem render_bound {θ} (hp : ∀ d, p d ≤ θ)
+    d : render D K l hKl hlA p d ≤ θ := by
   rcases covered D K l hKl hlA d with ⟨c, rfl⟩ | rfl
   · rw [render_old]; exact hp c
   · rw [render_apex]; exact bot_le
 
+end
+
 /-- All cut equations survive, not just equations at represented fields. -/
-theorem render_agreement {p q : Cell D → ExtOrd} {γ : ExtOrd} (hpq : Agree p q γ) :
+theorem render_agreement {p q} {γ} (hpq : Agree p q γ) :
     Agree (render D K l hKl hlA p) (render D K l hKl hlA q) γ := by
   intro d
   rcases covered D K l hKl hlA d with ⟨c, rfl⟩ | rfl
@@ -79,35 +86,40 @@ theorem render_agreement {p q : Cell D → ExtOrd} {γ : ExtOrd} (hpq : Agree p 
   · simp only [render_apex]
 
 /-- No new grid point or supporting original field is introduced. -/
-theorem render_supported {X : Type*} {v : X → ExtOrd} {k : ℕ} {G : Set ExtOrd}
-    {p : Cell D → ExtOrd} (hp : ∀ d, OrbitPrefixSupport.Supported k G v (p d))
-    (d : Cell (carrier D K l hKl hlA)) :
+theorem render_supported {X} {v : X → ExtOrd} {k} {G}
+    {p} (hp : ∀ d, OrbitPrefixSupport.Supported k G v (p d))
+    d :
     OrbitPrefixSupport.Supported k G v (render D K l hKl hlA p d) := by
   rcases covered D K l hKl hlA d with ⟨c, rfl⟩ | rfl
   · rw [render_old]; exact hp c
   · rw [render_apex]; exact Or.inl rfl
 
-theorem apex_row (d : (carrier D K l hKl hlA).below
-    ((carrier D K l hKl hlA).cell (apex D K l hKl hlA))) :
+section
+variable (d : (carrier D K l hKl hlA).below ((carrier D K l hKl hlA).cell (apex D K l hKl hlA)))
+
+theorem apex_row  :
     (rows D sem K l hK hKl hlA).E (apex D K l hKl hlA) d = ⊥ := by
   simp only [rows, MaximalFullLayer.base, apex, MaximalFullLayer.apex,
     SeparatedSourceLayerCarrier.base, toOcc_toCell, SeparatedSourceLayerCarrier.oldTable]
 
-theorem apex_short (d : (carrier D K l hKl hlA).below
-    ((carrier D K l hKl hlA).cell (apex D K l hKl hlA))) :
+theorem apex_short  :
     SharpWitnessComposition.Short l ((rows D sem K l hK hKl hlA).E
       (apex D K l hKl hlA) d) := by
   rw [apex_row]
   exact Or.inl rfl
 
-theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
+end
+
+section
+variable (c : Cell D)
+
+theorem inherited_row d :
     (rows D sem K l hK hKl hlA).E (old D K l hKl hlA c)
       (MaximalFullLayer.ownerEquiv D K l hK hKl hlA c d) = sem.E c d :=
   MaximalFullLayer.inherited_row D sem K l hK hKl hlA c d
 
 /-- Existing short-row receipts transport, but inherited long rows are allowed. -/
-theorem inherited_short (c : Cell D)
-    (hc : ∀ d : D.below (D.cell c), SharpWitnessComposition.Short (D.grade c) (sem.E c d))
+theorem inherited_short (hc : ∀ d, SharpWitnessComposition.Short (D.grade c) (sem.E c d))
     (d : (carrier D K l hKl hlA).below
       ((carrier D K l hKl hlA).cell (old D K l hKl hlA c))) :
     SharpWitnessComposition.Short ((carrier D K l hKl hlA).grade (old D K l hKl hlA c))
@@ -115,6 +127,8 @@ theorem inherited_short (c : Cell D)
   obtain ⟨e, rfl⟩ := (MaximalFullLayer.ownerEquiv D K l hK hKl hlA c).surjective d
   rw [inherited_row]
   simpa only [CellScheme.grade, old, MaximalFullLayer.old, cell_toCell, index] using hc e
+
+end
 
 theorem consistent (hs : sem.IsConsistent) : (rows D sem K l hK hKl hlA).IsConsistent :=
   MaximalFullLayer.consistent D sem K l hK hKl hlA hs
@@ -144,7 +158,7 @@ theorem complete_last (hcard : A.card = l) (hnext : l = K + 1)
   have hc := Finset.card_le_card hsub
   by_contra hn
   have hj : J.2 = l := by omega
-  have he : J.1 = A := Finset.eq_of_subset_of_card_le hsub (by omega)
+  have he := Finset.eq_of_subset_of_card_le hsub (by omega)
   exact hne (Prod.ext he hj)
 
 end

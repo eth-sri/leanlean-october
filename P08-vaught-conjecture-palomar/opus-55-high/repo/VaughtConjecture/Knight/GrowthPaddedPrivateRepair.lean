@@ -17,7 +17,6 @@ source is supplied by the caller. The argument reuses
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedPrivateRepair
 open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
 open GrowthPaddedSuccessor GrowthPaddedDecode GrowthPaddedCharts
@@ -32,7 +31,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem private_grade (d : I.right.scheme.below (Finset.univ, 2)) :
+theorem private_grade d :
     (carrier I X T hA hB hC).grade (privateAt I X T hA hB hC d).1 =
       I.right.scheme.grade d.1 := by
   exact (congrArg Prod.snd (original_index I X T hA hB hC
@@ -41,13 +40,13 @@ theorem private_grade (d : I.right.scheme.below (Finset.univ, 2)) :
 /-- A supplied original owner identifies the actual private lower domain.
 The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped
-    (c : I.right.scheme.below (Finset.univ, 2))
+    c
     (hc : I.right.scheme.cell c.1 = (Finset.univ, 2)) (hg : I.right.scheme.grade c.1 = 2)
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (privateAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ u, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) u ∧
       (∀ d, u (privateAt I X T hA hB hC d) = min (p d) (p c)) ∧
@@ -80,7 +79,7 @@ theorem owner_capped
   let fromEff := CellScheme.below.mono (D := I.right.scheme)
     (show GradedLe (Finset.univ, 2) (I.right.scheme.cell c.1) from by
       rw [hc]; exact GradedLe.refl _)
-  let s := (fun d : I.right.scheme.below (Finset.univ, 2) => S.privateValues d.1) ∘ toEff
+  let s := (fun d => S.privateValues d.1) ∘ toEff
   let p' := p ∘ toEff
   have hs' : RespectsSemanticsBelow I.right.rows (I.right.scheme.cell c.1) s :=
     hS.private_lawful.mono _

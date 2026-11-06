@@ -85,8 +85,7 @@ variable {D : CellScheme A}
 @[ext]
 theorem Semantics.ext {s₁ s₂ : Semantics D} (h_E : s₁.E = s₂.E) : s₁ = s₂ := by
   obtain ⟨E₁, _⟩ := s₁
-  obtain ⟨E₂, _⟩ := s₂
-  subst h_E; rfl
+  simp_all
 
 /-- A labelling `p` of the cells **respects** the semantics `sem` (Knight, Def. 2.5.4, all
 clauses): `p` is orderly; **locality** — for every cell `Sig` the semantic row `sem.E Sig`
@@ -122,7 +121,7 @@ theorem RespectsSemantics.bot {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
 /-- The row of `sem` at a cell `Sig` of the lower set `D.below BJ` has domain
 `D.below (D.cell Sig)`, which embeds in `D.below BJ` (`GradedLe.trans`): this is the
 restricted scheme's own "below" of `Sig`, `D⟨B,j⟩⟨Sig⟩ = D⟨Sig⟩`. -/
-def CellScheme.below.incl {BJ : Finset ι × ℕ} (Sig : D.below BJ)
+def CellScheme.below.incl {BJ} (Sig : D.below BJ)
     (d : D.below (D.cell Sig.1)) : D.below BJ :=
   ⟨d.1, d.2.trans Sig.2⟩
 
@@ -146,12 +145,15 @@ structure RespectsSemanticsBelow (sem : Semantics D) (BJ : Finset ι × ℕ)
     ∀ Sig Xi₀ : D.below BJ, D.scope Sig.1 ⊆ D.scope Xi₀.1 → D.grade Sig.1 = D.grade Xi₀.1 →
       ∃ Xi : D.below BJ, D.cell Xi.1 = D.cell Xi₀.1 ∧ r Sig ≤ r Xi
 
+section
+variable {sem : Semantics D}
+
 /-- A labelling respecting the semantics of the whole scheme (Def. 2.5.4) respects the
 restricted semantics `E⟨B,j⟩` on every lower set (the converse of
 `RespectsSemanticsBelow.toRespects`, with no hypothesis on `BJ`): locality and orderliness
 are read off the underlying cells, and the availability witness — which has the graded index of
 `Xi₀` — lies in the lower set. -/
-theorem RespectsSemantics.toBelow {sem : Semantics D} {p : Cell D → ExtOrd}
+theorem RespectsSemantics.toBelow {p : Cell D → ExtOrd}
     (h : RespectsSemantics sem p) (BJ : Finset ι × ℕ) :
     RespectsSemanticsBelow sem BJ (fun d => p d.1) where
   orderly d := h.orderly d.1
@@ -163,7 +165,7 @@ theorem RespectsSemantics.toBelow {sem : Semantics D} {p : Cell D → ExtOrd}
 /-- A labelling of a lower set containing every cell respects the semantics (Def. 2.5.4) as a
 labelling of the whole scheme when it respects the restricted semantics `E⟨B,j⟩`
 (`RespectsSemanticsBelow`).  This is the case `D⟨A,|A|⟩ = D` used by Prop. 4.3.24. -/
-theorem RespectsSemanticsBelow.toRespects {sem : Semantics D} {BJ : Finset ι × ℕ}
+theorem RespectsSemanticsBelow.toRespects {BJ : Finset ι × ℕ}
     {r : D.below BJ → ExtOrd} (h : RespectsSemanticsBelow sem BJ r)
     (hall : ∀ d : Cell D, GradedLe (D.cell d) BJ) :
     RespectsSemantics sem (fun d => r ⟨d, hall d⟩) where
@@ -173,33 +175,39 @@ theorem RespectsSemanticsBelow.toRespects {sem : Semantics D} {BJ : Finset ι ×
     obtain ⟨Xi, hc, hle⟩ := h.availability ⟨Sig, hall Sig⟩ ⟨Xi₀, hall Xi₀⟩ hs hg
     exact ⟨Xi.1, hc, hle⟩
 
+end
+
 /-- The all-bottom labelling is lawful on every lower set of any semantics. -/
-theorem RespectsSemanticsBelow.bot (sem : Semantics D) (BJ : Finset ι × ℕ) :
+theorem RespectsSemanticsBelow.bot (sem : Semantics D) BJ :
     RespectsSemanticsBelow sem BJ (fun _ => ⊥) :=
   (RespectsSemantics.bot sem).toBelow BJ
 
 /-- A bottom diagonal forces a bottom label, regardless of the other rows. -/
-theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem : Semantics D} {BJ : Finset ι × ℕ}
-    {r : D.below BJ → ExtOrd} (h : RespectsSemanticsBelow sem BJ r) (c : D.below BJ)
+theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem} {BJ}
+    {r} (h : RespectsSemanticsBelow sem BJ r) (c : D.below BJ)
     (hc : sem.E c.1 ⟨c.1, GradedLe.refl _⟩ = ⊥) : r c = ⊥ := by
   obtain ⟨g, σ, _, _, hbot, _, _, heq⟩ := h.locality c
   have hread := heq ⟨c.1, GradedLe.refl _⟩
   change min (r c) (r c) = min (σ (sem.E c.1 ⟨c.1, GradedLe.refl _⟩)) _ at hread
   simpa only [min_self, hc, hbot, min_eq_left bot_le] using hread
 
+section
+variable (sem : Semantics D)
+
 /-- A semantics is **consistent** (Knight, Def. 2.5.12): for every cell `Sig` with graded
 index `(B, j)`, the row `E Sig`, a labelling of `D⟨B,j⟩ = D.below (D.cell Sig)`, respects the
 restricted semantics `E⟨B,j⟩` (`RespectsSemanticsBelow`).  (Orderliness of the row is already
 `sem.orderly Sig`.) -/
-def Semantics.IsConsistent (sem : Semantics D) : Prop :=
+def Semantics.IsConsistent  : Prop :=
   ∀ Sig : Cell D, RespectsSemanticsBelow sem (D.cell Sig) (sem.E Sig)
 
 /-- Two values of a semantic row at propositionally equal indices are equal (Knight-VC
 `sem_E_congr`; the index of `E` is dependent, so this is stated with both equalities). -/
-theorem Semantics.E_congr (sem : Semantics D) {a b : Cell D} (hab : a = b) {c d : Cell D}
-    {hc : GradedLe (D.cell c) (D.cell a)} {hd : GradedLe (D.cell d) (D.cell b)} (hcd : c = d) :
-    sem.E a ⟨c, hc⟩ = sem.E b ⟨d, hd⟩ := by
-  subst hab; subst hcd; rfl
+theorem Semantics.E_congr {a b} (hab : a = b) {c d}
+    {hc} {hd} (hcd : c = d) :
+    sem.E a ⟨c, hc⟩ = sem.E b ⟨d, hd⟩ := by grind
+
+end
 
 /-! ### Transport along vertical truncation (semantics fixed) -/
 
@@ -233,17 +241,22 @@ open CellScheme.restrictFace (toCell belowMap)
 variable {m n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {f : Fin m ↪ Fin n}
   {hr : Finset.univ.image f ∈ D.plan}
 
+section
+variable (sem : Semantics D)
+
 /-- The rows of `D` restricted to the face `f`: the row of a restricted cell `Sig` is the row
 of its underlying cell `toCell Sig`, read at the underlying cells (Knight, Def. 3.1.5; the
 row part of Knight-VC `typeMap`). -/
-noncomputable def Semantics.restrictFace (sem : Semantics D) (f : Fin m ↪ Fin n)
+noncomputable def Semantics.restrictFace (f : Fin m ↪ Fin n)
     (hr : Finset.univ.image f ∈ D.plan) : Semantics (D.restrictFace f hr) where
   E Sig d := sem.E (toCell D f hr Sig) (belowMap D f hr Sig d)
   orderly Sig d := sem.orderly (toCell D f hr Sig) (belowMap D f hr Sig d)
 
-@[simp] theorem Semantics.restrictFace_E (sem : Semantics D) (Sig : Cell (D.restrictFace f hr))
-    (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
+@[simp] theorem Semantics.restrictFace_E Sig
+    d :
     (sem.restrictFace f hr).E Sig d = sem.E (toCell D f hr Sig) (belowMap D f hr Sig d) := rfl
+
+end
 
 /-- Faithful respect of semantics (Def. 2.5.4, both clauses) transports along face
 restriction: the restricted labelling `p ∘ toCell` respects the restricted rows.  Locality is

@@ -56,20 +56,12 @@ open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 /-! ## Meets under nested caps -/
 
 theorem min_cap_of_le {x x' c' γ : ExtOrd} (h : c' ≤ γ) (hag : min x γ = min x' γ) :
-    min x c' = min x' c' := by
-  calc min x c' = min (min x γ) c' := by rw [min_assoc, min_eq_right h]
-    _ = min (min x' γ) c' := by rw [hag]
-    _ = min x' c' := by rw [min_assoc, min_eq_right h]
+    min x c' = min x' c' := by grind
 
-theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by
-  rw [min_assoc, min_eq_right h]
+theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by grind
 
 /-- `min e c = v` with `v < c` forces `e = v`. -/
-theorem eq_of_min_eq_of_lt' {e c v : ExtOrd} (h : min e c = v) (hv : v < c) : e = v :=
-by
-  rcases le_total e c with he | he
-  · simpa only [min_eq_left he] using h
-  · exact (hv.ne ((min_eq_right he).symm.trans h).symm).elim
+theorem eq_of_min_eq_of_lt' {e c v : ExtOrd} (h : min e c = v) (hv : v < c) : e = v := by grind
 
 namespace RelativeData
 
@@ -77,23 +69,28 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ] {A : Finset ιA} 
   {DA : CellScheme A} {semA : Semantics DA} {DQ : CellScheme Q} {semQ : Semantics DQ}
   (X : RelativeData DA semA DQ semQ)
 
-theorem tOf_eq (u : Cell DA → ExtOrd) (f : Cell DQ) : X.req.tOf (X.req.sec u) f =
+section
+variable (u : Cell DA → ExtOrd)
+
+theorem tOf_eq f : X.req.tOf (X.req.sec u) f =
     min (extVisibilityReplace (u (X.req.ρ f).1) X.req.N (X.req.off f)) (u X.req.C) := rfl
 
-theorem dOf_eq (u : Cell DA → ExtOrd) : X.req.dOf (X.req.sec u) =
+theorem dOf_eq  : X.req.dOf (X.req.sec u) =
     min (extVisibilityReplace (u X.req.a.1) X.req.N X.req.R) (u X.req.C) := rfl
 
 /-- The correctness relations of a whole old labelling, read at the cap's label. -/
-theorem correct_sec_iff (u : Cell DA → ExtOrd) (v : Cell DQ → ExtOrd) :
+theorem correct_sec_iff v :
     X.req.Correct (X.req.sec u) v ↔
       (∀ z ∈ X.req.Z, min (v z) (u X.req.C) = ⊥) ∧
       (∀ f ∈ X.req.F, min (v f) (u X.req.C) = X.req.tOf (X.req.sec u) f) ∧
       ∀ y ∈ X.req.T, X.req.dOf (X.req.sec u) ≤ min (v y) (u X.req.C) := Iff.rfl
 
+end
+
 theorem R_le_N : X.req.R ≤ X.req.N := X.req.R_lt_N.le
 
 /-- The cap's label is `N`-visible. -/
-theorem cap_selfVis {u : Cell DA → ExtOrd} (hu : RespectsSemantics semA u) :
+theorem cap_selfVis {u} (hu : RespectsSemantics semA u) :
     SelfVis X.req.N (u X.req.C) := by
   have := (hu.orderly X.req.C).symm
   rwa [X.grade_C] at this
@@ -101,19 +98,22 @@ theorem cap_selfVis {u : Cell DA → ExtOrd} (hu : RespectsSemantics semA u) :
 /-! ## Case 0 -/
 
 /-- **Case 0**: outside the class, the root lift at `γ` suffices. -/
-theorem lift_case0 {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
-    {γ : ExtOrd} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
+theorem lift_case0 {u v u'} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
+    {γ} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
     (hcls : ¬ InClass X.ZA u') :
-    ∃ v' : Cell DQ → ExtOrd, X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
+    ∃ v', X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
   obtain ⟨-, hv, hroot, -⟩ := hall
   obtain ⟨v', hv', hr', hcap⟩ := X.lift_root hu' hv hγ
-    (fun r => by rw [hroot r]; exact (hag _).symm)
+    (fun r => by grind)
   exact ⟨v', ⟨hu', hv', hr', fun h => absurd h hcls⟩, hcap⟩
 
 /-! ## Case 1 -/
 
+section
+variable {u v u' v' : _}
+
 /-- **Case 1**: in the class with `c' ≤ γ`, correctness transfers to any `γ`-agreeing lift. -/
-theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
+theorem correct_of_cap_le (hu' : RespectsSemantics semA u')
     (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd} (hag : ∀ d, min (u' d) γ = min (u d) γ)
     (hc'γ : u' X.req.C ≤ γ) (hcap : ∀ d, min (v' d) γ = min (v d) γ) :
     X.req.Correct (X.req.sec u') v' := by
@@ -129,7 +129,7 @@ theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
     exact min_eq_left bot_le
   · intro f hf
     have hi := X.off_lt f hf
-    have e3 : min (u (X.req.ρ f).1) (u' X.req.C) = min (u' (X.req.ρ f).1) (u' X.req.C) :=
+    have e3 :=
       (min_cap_of_le hc'γ (hag (X.req.ρ f).1)).symm
     rw [min_cap_of_le hc'γ (hcap f), ← min_min_of_le hc'c, hC.2.1 f hf, X.tOf_eq, X.tOf_eq,
       min_min_of_le hc'c, ← evr_min_of_selfVis hvisc' le_rfl hi, e3,
@@ -148,8 +148,7 @@ theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
 
 /-- **Case 2**: in the class with `c' > γ`, high values requested, and `d' < γ`: the frame
 fixes every exact value below `γ`, so correctness transfers to any `γ`-agreeing lift. -/
-theorem correct_of_dOf_lt {u v u' v' : _}
-    (hcls : InClass X.ZA u) (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd}
+theorem correct_of_dOf_lt (hcls : InClass X.ZA u) (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd}
     (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
     (hγc' : γ < u' X.req.C) (hd' : X.req.dOf (X.req.sec u') < γ)
     (hframe' : ∀ f ∈ X.req.F, X.req.tOf (X.req.sec u') f ≤ X.req.dOf (X.req.sec u'))
@@ -206,20 +205,15 @@ theorem correct_of_dOf_lt {u v u' v' : _}
     have htu : X.req.tOf (X.req.sec u) f = X.req.tOf (X.req.sec u') f := by
       rw [X.tOf_eq, huρ, ht'eq]
       exact min_eq_left ((ht'eq ▸ ht').le.trans hcγ)
-    have hvf : v f = X.req.tOf (X.req.sec u') f :=
-      eq_of_min_eq_of_lt' ((hC.2.1 f hf).trans htu) (ht'.trans_le hcγ)
-    have hv'f : v' f = X.req.tOf (X.req.sec u') f := by
-      have h := hcap f
-      rw [hvf, min_eq_left ht'.le] at h
-      exact eq_of_min_eq_of_lt' h ht'
-    rw [hv'f]
-    exact min_eq_left (ht'.trans hγc').le
+    grind
   · intro y hy
     have h1 : X.req.dOf (X.req.sec u') ≤ v y :=
       hdu ▸ (hC.2.2 y hy).trans (min_le_left _ _)
     have h2 : X.req.dOf (X.req.sec u') ≤ min (v' y) γ := by
       rw [hcap y]; exact le_min h1 hd'.le
     exact le_min (h2.trans (min_le_left _ _)) (hd'.trans hγc').le
+
+end
 
 /-! ## Case 3: the template image -/
 
@@ -241,7 +235,7 @@ include hθe in
 theorem θ_cap : θ (X.e X.req.capCell) = u' X.req.C := by
   rw [hθe, Requests.sec_capCell, min_self]
 
-theorem tOf_e_eq (f : Cell DQ) : X.req.tOf X.e f =
+theorem tOf_e_eq f : X.req.tOf X.e f =
     min (extVisibilityReplace (X.e (X.req.ρ f)) X.req.N (X.req.off f)) (X.e X.req.capCell) := rfl
 
 theorem dOf_e_eq : X.req.dOf X.e =
@@ -283,9 +277,9 @@ theorem image_dOf {y : Cell DQ} (hy : y ∈ X.req.T) :
   exact hθ.mono (X.V_correct.2.2 y hy)
 
 /-- The template is bottom on the requested-bottom cells. -/
-theorem V_bot {z : Cell DQ} (hz : z ∈ X.req.Z) : X.V z = ⊥ := by
+theorem V_bot {z} (hz : z ∈ X.req.Z) : X.V z = ⊥ := by
   rcases min_eq_bot.mp (X.V_correct.1 z hz) with h | h
-  · exact h
+  · grind
   · exact absurd ((X.e_bot _).mp h) X.C_notin
 
 include hθe in
@@ -335,9 +329,9 @@ end Template
 
 /-- **The relative lifting theorem** (notes3 §4): every allowed pair has every relative
 old-face lift at every `N`-visible comparison cap, bottom included. -/
-theorem relative_lift {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
-    {γ : ExtOrd} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ) :
-    ∃ v' : Cell DQ → ExtOrd, X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
+theorem relative_lift {u v u'} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
+    {γ} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ) :
+    ∃ v', X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
   by_cases hcls' : InClass X.ZA u'
   swap
   · exact X.lift_case0 hall hu' hγ hag hcls'

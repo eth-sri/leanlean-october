@@ -19,7 +19,6 @@ LowOnlyPaddedSupply and uses the growth terminal decoder and boundary theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedSupply
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedSuccessor GrowthPaddedDecode GrowthPaddedCharts
@@ -33,7 +32,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem decoded_lower (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
+theorem decoded_lower a {δ}
     (hδ : Witness (gTop 2) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, 2)
@@ -86,7 +85,7 @@ theorem decoded_lower (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
 
 /-- Retained proper owners can have grade two or higher. Separation, rather
 than a false global predecessor grade bound, identifies their domains. -/
-theorem old_respects_iff (c : Cell (input I X T hA hB hC).lower)
+theorem old_respects_iff c
     (p : (carrier I X T hA hB hC).below
       ((carrier I X T hA hB hC).cell (old I X T hA hB hC c)) → ExtOrd) :
     RespectsSemanticsBelow (rows I X T hA hB hC)
@@ -109,7 +108,7 @@ theorem old_respects_iff (c : Cell (input I X T hA hB hC).lower)
     (fun b d _ => (inherited_row I X T hA hB hC b.1 d).symm) (p ∘ e)
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hh.symm
 
-theorem decoded_lawful (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
+theorem decoded_lawful a {δ}
     (hδ : Witness (gTop 2) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, 2)
@@ -143,24 +142,22 @@ theorem decoded_lawful (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
     rw [leaf_row]
     exact source_short I X T hA hB hC b d.1
 
-
 /-- Terminal insertion reflects bottom on every represented field. The long
 rungs use the resulting rank table, not short-row composition. -/
-theorem exists_section {S : State I.right.scheme I.left.scheme}
+theorem exists_section {S}
     (hS : Admitted X 2 S) :
     ∃ w, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) w ∧
       ∀ d : I.boundary.below (A, 2),
         w ⟨original I X T hA hB hC d.1, by rw [original_index]; exact d.2⟩ =
           S.profile (GrowthOrderedBase.field I d.1) := by
   obtain ⟨Q, hQ, hcanon, δ, hδ, hread, hreflect, _⟩ :=
-    Growth.exists_supported_decoder X (by decide : 1 ≤ 2) hS
+    Growth.exists_supported_decoder X (by grind) hS
   let a : Catalogue X 2 := ⟨Q.profile, hcanon, Q, hQ, rfl⟩
   have horiginal : RespectsSemanticsBelow I.rows (A, 2)
       (fun d => δ (a.val (GrowthOrderedBase.field I d.1))) := by
     simpa only [a, hread] using GrowthHigherSources.boundary_lawful_at I X T hS
   refine ⟨_, decoded_lawful I X T hA hB hC a hδ hreflect horiginal, ?_⟩
   intro d
-  change δ (source I X T hA hB hC a (original I X T hA hB hC d.1)) = _
   rw [original_readback]
   exact hread _
 

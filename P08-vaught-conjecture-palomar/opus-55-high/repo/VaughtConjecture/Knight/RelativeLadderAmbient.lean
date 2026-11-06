@@ -18,7 +18,6 @@ does not assume synchronization, a selected ambient, or bountifulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd
 noncomputable section
@@ -35,7 +34,7 @@ the original maximizing owner was a zero-rank shadow. -/
 theorem exists_maximal_leaf (seed : Q)
     {q : (carrier D hA (X := X) (Q := Q)).below (A, 1) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows D sem hA field fields hp) (A, 1) q) :
-    ∃ a : Q, ∀ d, q d ≤ q (leafOccurrence D hA a) := by
+    ∃ a, ∀ d, q d ≤ q (leafOccurrence D hA a) := by
   obtain ⟨chart⟩ := AmbientGradeCharts.exists_chart hq
     ⟨leafOccurrence D hA seed, added_index D hA _⟩
   have hg (d : (carrier D hA (X := X) (Q := Q)).below (A, 1)) :
@@ -73,7 +72,7 @@ original fields. Higher inherited cells are outside this grade-one domain. -/
 theorem exists_leaf_chart (seed : Q)
     {q : (carrier D hA (X := X) (Q := Q)).below (A, 1) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows D sem hA field fields hp) (A, 1) q) :
-    ∃ a : Q, ∃ τ : ExtOrd → ExtOrd, Witness (gTop 1) τ ∧
+    ∃ a, ∃ τ, Witness (gTop 1) τ ∧
       (∀ x, τ x ≤ q (leafOccurrence D hA a)) ∧
       ∀ d, τ (ladderRow D hA field fields
         (SupportLadderRows.leaf (Nat.succ_pos _) a) d.1) = q d := by
@@ -103,8 +102,8 @@ the original cap, and reads every capped physical coordinate. -/
 theorem exists_capped_leaf_chart (seed : Q)
     {q : (carrier D hA (X := X) (Q := Q)).below (A, 1) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows D sem hA field fields hp) (A, 1) q)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) :
-    ∃ a : Q, ∃ τ : ExtOrd → ExtOrd, Witness (gTop 1) τ ∧
+    {γ} (hγ : SelfVis 1 γ) :
+    ∃ a, ∃ τ, Witness (gTop 1) τ ∧
       (∀ x, τ x ≤ γ) ∧ ∀ d,
         τ (ladderRow D hA field fields (SupportLadderRows.leaf (Nat.succ_pos _) a) d.1) =
           min (q d) γ := by

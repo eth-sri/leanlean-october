@@ -16,8 +16,6 @@ original cap and arbitrary target-local ambient transport literally.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PointImageSemantics
 
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundary
@@ -28,7 +26,7 @@ variable (he : B.image e = C) (sem : Semantics D)
 
 local notation "K" => pointImage D e he
 
-theorem respects_owner_iff (c : Cell D) (q : (K).below ((K).cell c) → ExtOrd) :
+theorem respects_owner_iff (c : Cell D) q :
     RespectsSemanticsBelow (rows D e he sem) ((K).cell c) q ↔
       RespectsSemanticsBelow sem (D.cell c) (q ∘ belowEquiv D e he c) :=
   respects_iff_of_equiv (belowEquiv D e he c).symm (fun _ => rfl)
@@ -44,7 +42,7 @@ theorem bountiful (hD : D.IsComplete) (hb : sem.IsBountiful) :
   have h' := (below_iff D e he c d).mp h
   have hne' : D.cell c ≠ D.cell d := by
     intro heq
-    exact hne (congrArg (fun z : Finset ι × ℕ => (z.1.image e, z.2)) heq)
+    exact hne (congrArg (fun z => (z.1.image e, z.2)) heq)
   exact bountiful_of_equiv (sem' := rows D e he sem) (sem := sem) h h'
     (belowEquiv D e he d).symm (belowEquiv D e he c).symm (fun _ => rfl)
     (respects_owner_iff D e he sem d) (respects_owner_iff D e he sem c)

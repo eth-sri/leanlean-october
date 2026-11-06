@@ -18,7 +18,6 @@ donor back below the actual cut. Model realization is deliberately separate.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingProbe
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
 open OrdinaryReceivingAssembly
@@ -77,8 +76,8 @@ theorem request_visible : Finset.univ.image W.placeRight ∈
 
 /-- Ordered exact semantic faces identify the restriction as a semantic scheme,
 including every row, not just its cell inventory. -/
-theorem restrict_of_ordered_face {m k : ℕ} (P : SemScheme m) (S : SemScheme k)
-    (f : Fin m ↪ Fin k) {U : Finset (Fin k)} (hf : Finset.univ.image f = U)
+theorem restrict_of_ordered_face {m k} P (S : SemScheme k)
+    (f : Fin m ↪ Fin k) {U} hf
     (E : ExactSemanticFace (PointImageSemantics.rows P.scheme f hf P.rows) S.rows)
     (ho : StrictMono E.map)
     (hp : Plan.restrictPlan S.scheme.plan U = P.scheme.plan.image (Finset.image f)) :
@@ -100,7 +99,7 @@ theorem request_restrict : (semScheme W R hunion hface).restrictFace W.placeRigh
     (request_order W R hunion hface) (request_plan W R hunion hface)
 
 /-- The cell map of the literal private restriction is the installed private map. -/
-theorem private_toCell (d : Cell W.left.scheme) :
+theorem private_toCell d :
     CellScheme.restrictFace.toCell (semScheme W R hunion hface).scheme W.placeLeft
       (private_visible W R hunion hface)
       (SemScheme.castCell (private_restrict W R hunion hface).symm d) =
@@ -110,7 +109,7 @@ theorem private_toCell (d : Cell W.left.scheme) :
     (private_plan W R hunion hface) d
 
 /-- The donor restriction uses the actual installed map, also for noninitial faces. -/
-theorem request_toCell (d : Cell W.right.scheme) :
+theorem request_toCell d :
     CellScheme.restrictFace.toCell (semScheme W R hunion hface).scheme W.placeRight
       (request_visible W R hunion hface)
       (SemScheme.castCell (request_restrict W R hunion hface).symm d) =
@@ -126,7 +125,7 @@ abbrev gate (a : OrdinaryFinalCatalogue.Member R) :
 abbrev apex : Cell (semScheme W R hunion hface).scheme :=
   FinalGateApex.apex (input W R hunion hface) (Finset.card_fin _)
 
-theorem gate_grade (a : OrdinaryFinalCatalogue.Member R) :
+theorem gate_grade a :
     (semScheme W R hunion hface).scheme.grade (gate W R hunion hface a) = n + 4 := by
   exact congrArg Prod.snd
     ((FinalGateApex.old_index (input W R hunion hface) (Finset.card_fin _)
@@ -135,7 +134,7 @@ theorem gate_grade (a : OrdinaryFinalCatalogue.Member R) :
 
 /-- The model's bottom-pattern test needs a lawful raw display, not a stage type. -/
 theorem exists_raw_display :
-    ∃ (a : OrdinaryFinalCatalogue.Member R) (r : Cell (semScheme W R hunion hface).scheme → ExtOrd),
+    ∃ a r,
       RespectsSemantics (semScheme W R hunion hface).rows r ∧
       (∀ d, r ((requestFace W R hunion hface).map d) = R.p d) ∧
       (∀ d, r ((privateFace W R hunion hface).map d) = R.vact d) ∧
@@ -147,12 +146,14 @@ theorem exists_raw_display :
     (predecessor W R hunion).rightFace.map (predecessor W R hunion).leftFace.map
     (lower_request W R hunion hface) (lower_private W R hunion hface)
 
+section
+variable {q : Cell (semScheme W R hunion hface).scheme → ExtOrd}
+
 /-- Arbitrary lawful physical sections: no chart, admission, synchronization
 or selected-family coverage is supplied by the caller. -/
-theorem capped_readback {q : Cell (semScheme W R hunion hface).scheme → ExtOrd}
-    (hq : RespectsSemantics (semScheme W R hunion hface).rows q)
+theorem capped_readback (hq : RespectsSemantics (semScheme W R hunion hface).rows q)
     (hretain : ∀ d, q ((privateFace W R hunion hface).map d) = R.vact d)
-    (a : OrdinaryFinalCatalogue.Member R) (hgate : q (gate W R hunion hface a) ≠ ⊥)
+    a (hgate : q (gate W R hunion hface a) ≠ ⊥)
     (d : Cell W.right.scheme) :
     min (q ((requestFace W R hunion hface).map d)) (R.cut R.vactL) =
       min (R.p d) (R.cut R.vactL) :=
@@ -163,13 +164,14 @@ theorem capped_readback {q : Cell (semScheme W R hunion hface).scheme → ExtOrd
     (fun d => congrArg Prod.snd ((predecessor W R hunion).leftFace.index d))
     (lower_request W R hunion hface) (lower_private W R hunion hface) hq hretain a hgate d
 
-theorem readback_below {q : Cell (semScheme W R hunion hface).scheme → ExtOrd}
-    (hq : RespectsSemantics (semScheme W R hunion hface).rows q)
+theorem readback_below (hq : RespectsSemantics (semScheme W R hunion hface).rows q)
     (hretain : ∀ d, q ((privateFace W R hunion hface).map d) = R.vact d)
-    (a : OrdinaryFinalCatalogue.Member R) (hgate : q (gate W R hunion hface a) ≠ ⊥)
-    {δ : ExtOrd} (hδ : δ ≤ R.cut R.vactL) (d : Cell W.right.scheme) :
+    a (hgate : q (gate W R hunion hface a) ≠ ⊥)
+    {δ} (hδ : δ ≤ R.cut R.vactL) (d : Cell W.right.scheme) :
     min (q ((requestFace W R hunion hface).map d)) δ = min (R.p d) δ :=
   GradeTailRestoration.cap_below (capped_readback W R hunion hface hq hretain a hgate d) hδ
+
+end
 
 end
 end VaughtConjecture.Knight.OrdinaryReceivingProbe

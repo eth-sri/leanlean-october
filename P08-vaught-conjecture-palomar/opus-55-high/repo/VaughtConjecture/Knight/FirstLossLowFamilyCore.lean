@@ -48,33 +48,35 @@ universe w
 
 /-! ## Transport lemmas -/
 
-/-- Rows transport along an equality of schemes. -/
-theorem rows_castCell {n : ℕ} {X Y : SemScheme n} (h : X = Y) (Sig : Cell X.scheme)
-    (d : X.scheme.below (X.scheme.cell Sig))
-    (hd : GradedLe (Y.scheme.cell (SemScheme.castCell h d.1))
-      (Y.scheme.cell (SemScheme.castCell h Sig))) :
-    Y.rows.E (SemScheme.castCell h Sig) ⟨SemScheme.castCell h d.1, hd⟩ = X.rows.E Sig d := by
-  subst h; rfl
+section
+variable {n : ℕ} {X Y : SemScheme n} (h : X = Y)
 
-theorem gradedLe_castCell {n : ℕ} {X Y : SemScheme n} (h : X = Y) {c c' : Cell X.scheme}
+/-- Rows transport along an equality of schemes. -/
+theorem rows_castCell Sig
+    d
+    hd :
+    Y.rows.E (SemScheme.castCell h Sig) ⟨SemScheme.castCell h d.1, hd⟩ = X.rows.E Sig d := by aesop
+
+theorem gradedLe_castCell {c c'}
     (hc : GradedLe (X.scheme.cell c) (X.scheme.cell c')) :
     GradedLe (Y.scheme.cell (SemScheme.castCell h c))
-      (Y.scheme.cell (SemScheme.castCell h c')) := by
-  subst h; exact hc
+      (Y.scheme.cell (SemScheme.castCell h c')) := by aesop
+
+end
 
 /-- The scope of the image of a transported cell of a literal restriction. -/
-theorem scope_toCell_castCell {m n : ℕ} {X : SemScheme n} {f : Fin m ↪ Fin n}
-    {hv : Finset.univ.image f ∈ X.scheme.plan} {Z : SemScheme m}
-    (h : X.restrictFace f hv = Z) (c : Cell Z.scheme) :
+theorem scope_toCell_castCell {m n} {X : SemScheme n} {f : Fin m ↪ Fin n}
+    {hv} {Z}
+    (h : X.restrictFace f hv = Z) c :
     X.scheme.scope (toCell X.scheme f hv (SemScheme.castCell h.symm c)) =
       (Z.scheme.scope c).image f := by
   subst h
   exact (image_scope_restrictFace X.scheme f hv c).symm
 
 /-- A row entry depends only on the owner and the underlying cell of the argument. -/
-theorem E_congr {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.below (D.cell Sig))
-    (d' : D.below (D.cell Sig')) (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
+theorem E_congr {ι} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') d
+    d' (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
   subst h
   congr 1
   exact Subtype.ext hd
@@ -87,7 +89,7 @@ variable {α : Ordinal.{0}} {k : ℕ} {pR : S α k} {P C : S α (k + 1)} (hP : I
   (hC : IsCoface pR C)
 
 /-- The root face on `k + 1` points. -/
-abbrev rootFace (k : ℕ) : Finset (Fin (k + 1)) := Finset.univ.image Fin.castSuccEmb
+abbrev rootFace k : Finset (Fin (k + 1)) := Finset.univ.image Fin.castSuccEmb
 
 /-- The identification of the two copies of the root. -/
 noncomputable def faceOf :
@@ -102,35 +104,36 @@ noncomputable def rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).
   SemScheme.castCell hP.extendsDomain.restrict
     ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm a).1
 
-theorem toCell_rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+section
+variable (a : P.scheme.scheme.below (rootFace k, (rootFace k).card))
+
+theorem toCell_rootCell  :
     toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
       (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)) = a.1 :=
   toCell_belowEquiv_symm_val P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
     (BJ' := (Finset.univ, (rootFace k).card)) (BJ := (rootFace k, (rootFace k).card)) rfl a
 
-theorem faceOf_val (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+theorem faceOf_val  :
     (faceOf hP hC a).1 = toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
       (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a)) :=
   commonFace_val Fin.castSuccEmb hP.extendsDomain.visible hP.extendsDomain.restrict
     Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace k).card a
 
-theorem scopeP (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+theorem scopeP  :
     P.scheme.scheme.scope a.1 =
       (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
   rw [← toCell_rootCell hP a]
   exact scope_toCell_castCell hP.extendsDomain.restrict (rootCell hP a)
 
-theorem scopeC (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+theorem scopeC  :
     C.scheme.scheme.scope (faceOf hP hC a).1 =
       (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
   rw [faceOf_val hP hC a]
   exact scope_toCell_castCell hC.extendsDomain.restrict (rootCell hP a)
 
 /-- The rows of two cofaces agree on the root, through the identification. -/
-theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card))
-    (d : P.scheme.scheme.below (P.scheme.scheme.cell a.1))
-    (hd : GradedLe (C.scheme.scheme.cell (faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1)
-      (C.scheme.scheme.cell (faceOf hP hC a).1)) :
+theorem row_of_cofaces (d : P.scheme.scheme.below (P.scheme.scheme.cell a.1))
+    hd :
     P.scheme.rows.E a.1 d =
       C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ := by
   have hda : P.scheme.scheme.scope d.1 ⊆ rootFace k := d.2.1.trans a.2.1
@@ -196,6 +199,8 @@ theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card
     exact e1.trans e2
   exact hL.trans hR.symm
 
+end
+
 /-- Two cofaces of one type have a literal common root along the initial face. -/
 noncomputable def commonRoot_of_cofaces : LowOnly.CommonRoot P.scheme C.scheme where
   A := rootFace k
@@ -237,10 +242,10 @@ cofaces of one type `pR` along `Fin.castSuccEmb`, and KVC's family `F` on their 
 donor labelling `Q'.label`, the root along the initial face, the owner and low source both `⊤`
 in the actual private labelling, and every pair `(Q'.label, CT.label, b)` admissible at every
 grade for every cutoff `b` visible at `min j K`. -/
-theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
+theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K) (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : R.eval t = some p) (q : S α.1 (n + 1))
+    {n} t p (hp : R.eval t = some p) (q : S α.1 (n + 1))
     (hq : IsCoface p q) (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :
     ∃ (k : ℕ) (u : Fin (k + 1) ↪ M) (CT : S α.1 (k + 1)) (e : Fin n ↪ Fin k)
       (pR : S α.1 k) (Q' : S α.1 (k + 1)),

@@ -90,16 +90,16 @@ smaller level at successor limits (`limit`), and has the forth and back properti
 down at successors, relates only `BFEquiv` pairs: a seed `R α n a b` with `α ≤ height` gives
 `BFEquiv α n a b`. -/
 theorem bfEquiv_of_gradedSystem
-    (R : Ordinal.{uι} → (n : ℕ) → (Fin n → M) → (Fin n → N) → Prop) {height : Ordinal.{uι}}
+    (R : Ordinal.{uι} → (n : ℕ) → (Fin n → M) → (Fin n → N) → Prop) {height}
     (atomic : ∀ {n a b}, R 0 n a b → SameAtomicType (L := L) a b)
     (down : ∀ {α n a b}, Order.succ α ≤ height → R (Order.succ α) n a b → R α n a b)
     (limit : ∀ {α}, Order.IsSuccLimit α → α ≤ height →
       ∀ {n a b}, R α n a b → ∀ β < α, R β n a b)
     (forth : ∀ {α n a b}, Order.succ α ≤ height → R (Order.succ α) n a b →
-      ∀ x : M, ∃ y : N, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
+      ∀ x, ∃ y, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
     (back : ∀ {α n a b}, Order.succ α ≤ height → R (Order.succ α) n a b →
-      ∀ y : N, ∃ x : M, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
-    {α : Ordinal.{uι}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+      ∀ y, ∃ x, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
+    {α} {n} {a} {b}
     (hα : α ≤ height) (seed : R α n a b) : BFEquiv (L := L) α n a b := by
   induction α using Ordinal.limitRecOn generalizing n a b with
   | zero => exact (BFEquiv.zero a b).2 (atomic seed)
@@ -120,14 +120,14 @@ ordinals up to `height`, that is atomic at level `0`, lowers (`β ≤ α ≤ hei
 `R β`), and has the forth and back properties from level `α + 1 ≤ height` to level `α`, relates
 only `BFEquiv` pairs: a seed `R α n a b` with `α ≤ height` gives `BFEquiv α n a b`. -/
 theorem bfEquiv_of_gradedMatching
-    (R : Ordinal.{uι} → (n : ℕ) → (Fin n → M) → (Fin n → N) → Prop) {height : Ordinal.{uι}}
+    (R : Ordinal.{uι} → (n : ℕ) → (Fin n → M) → (Fin n → N) → Prop) {height}
     (atomic : ∀ {n a b}, R 0 n a b → SameAtomicType (L := L) a b)
     (lower : ∀ {α β n a b}, β ≤ α → α ≤ height → R α n a b → R β n a b)
     (forth : ∀ {α n a b}, α + 1 ≤ height → R (α + 1) n a b →
-      ∀ x : M, ∃ y : N, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
+      ∀ x, ∃ y, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
     (back : ∀ {α n a b}, α + 1 ≤ height → R (α + 1) n a b →
-      ∀ y : N, ∃ x : M, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
-    {α : Ordinal.{uι}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+      ∀ y, ∃ x, R α (n + 1) (Fin.snoc a x) (Fin.snoc b y))
+    {α} {n} {a} {b}
     (hα : α ≤ height) (seed : R α n a b) : BFEquiv (L := L) α n a b :=
   bfEquiv_of_gradedSystem R atomic (fun h hR ↦ lower (Order.le_succ _) h hR)
     (fun _ h _ _ _ hR β hβ ↦ lower hβ.le h hR)
@@ -141,14 +141,14 @@ which need not be unique and may change under lowering.  A seed `Nonempty (Recei
 with `α ≤ height` gives `BFEquiv α n a b`. -/
 theorem bfEquiv_of_nonempty_gradedReceipt
     (Receipt : Ordinal.{uι} → (n : ℕ) → (Fin n → M) → (Fin n → N) → Type r)
-    {height : Ordinal.{uι}}
+    {height}
     (atomic : ∀ {n a b}, Receipt 0 n a b → SameAtomicType (L := L) a b)
     (lower : ∀ {α β n a b}, β ≤ α → α ≤ height → Receipt α n a b → Nonempty (Receipt β n a b))
     (forth : ∀ {α n a b}, α + 1 ≤ height → Receipt (α + 1) n a b →
-      ∀ x : M, ∃ y : N, Nonempty (Receipt α (n + 1) (Fin.snoc a x) (Fin.snoc b y)))
+      ∀ x, ∃ y, Nonempty (Receipt α (n + 1) (Fin.snoc a x) (Fin.snoc b y)))
     (back : ∀ {α n a b}, α + 1 ≤ height → Receipt (α + 1) n a b →
-      ∀ y : N, ∃ x : M, Nonempty (Receipt α (n + 1) (Fin.snoc a x) (Fin.snoc b y)))
-    {α : Ordinal.{uι}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+      ∀ y, ∃ x, Nonempty (Receipt α (n + 1) (Fin.snoc a x) (Fin.snoc b y)))
+    {α} {n} {a} {b}
     (hα : α ≤ height) (seed : Nonempty (Receipt α n a b)) : BFEquiv (L := L) α n a b :=
   bfEquiv_of_gradedMatching (fun α n a b ↦ Nonempty (Receipt α n a b))
     (fun ⟨ρ⟩ ↦ atomic ρ) (fun hβα h ⟨ρ⟩ ↦ lower hβα h ρ)

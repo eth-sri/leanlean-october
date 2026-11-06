@@ -17,7 +17,6 @@ encoded template. There is no physical-receiving assertion here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace
@@ -25,14 +24,17 @@ noncomputable section
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
-theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
-    {t : Fin n ↪ M} {p : S α.1 n} (hp : W.eval t = some p)
-    {u : Fin J ↪ M} {C : S α.1 J} (hC : W.eval u = some C)
+section
+variable (hM : W.IsModel)
+
+theorem exists_input_at {n J} (hn : 0 < n)
+    {t} {p} hp
+    {u} {C} (hC : W.eval u = some C)
     {f : Fin n ↪ Fin J} (hfu : f.trans u = t) (hf : typeMap f C = some p)
     (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
-    (c : Cell C.scheme.scheme) (hsc : C.scheme.scheme.scope c = Finset.univ)
-    (hc : C.label c = ⊤) (L : ℕ) (hnL : n + 1 < L) (hLN : L < C.scheme.scheme.grade c)
-    (a : C.scheme.scheme.below (C.scheme.scheme.cell c)) {i : ℕ}
+    c (hsc : C.scheme.scheme.scope c = Finset.univ)
+    (hc : C.label c = ⊤) L (hnL : n + 1 < L) hLN
+    a {i : ℕ}
     (hi : i < C.scheme.scheme.grade c) (ha : W.stableValue u C a.1 = ofOrd (α.1 + i))
     (hai : ofOrd (α.1 + i) < W.stableValue u C c)
     (hcut : ofOrd (α.1 + L) < W.stableValue u C c)
@@ -191,11 +193,11 @@ The final two receipts deliberately differ: non-top donor labels are recovered
 exactly, whereas donor tops are only forced strictly above the requested cut.
 The positive-root restriction belongs to the existing `RelativeData` geometry.
 -/
-theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    {k : ℕ} {s : Fin k ↪ M} {p₀ : S α.1 k} (hs : W.eval s = some p₀)
-    (a₀ : Cell p₀.scheme.scheme) (hatop : p₀.label a₀ = ⊤) {i : ℕ}
+theorem exists_input (hg : W.HasTopGradeGrowth)
+    {k : ℕ} {s} {p₀ : S α.1 k} (hs : W.eval s = some p₀)
+    a₀ (hatop : p₀.label a₀ = ⊤) {i : ℕ}
     (ha₀ : W.stableValue s p₀ a₀ = ofOrd (α.1 + i))
-    {n : ℕ} (hn : 0 < n) {t : Fin n ↪ M} {p : S α.1 n} (hp : W.eval t = some p)
+    {n} (hn : 0 < n) {t} {p} (hp : W.eval t = some p)
     (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
     (γ : Ordinal.{0}) (hγ : γ < α.nextBlock.1) :
     ∃ (J : ℕ) (u : Fin J ↪ M) (C : S α.1 J), W.eval u = some C ∧
@@ -260,6 +262,8 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
       exact hγL.trans_le (GrowthFiniteCapRequests.high_readback c L hLN a ref q.label
         (W.stableValue u C) (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))
         hi ha hcut hv hd)
+
+end
 
 end
 end VaughtConjecture.Knight.GrowthStableTemplate

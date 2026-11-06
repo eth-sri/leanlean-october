@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CappedDonorLowHighFibres
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
 public import VaughtConjecture.Knight.CappedDonorNormalization
 public import VaughtConjecture.Knight.PairedSlotDecoder
 
@@ -50,9 +51,12 @@ open Transform Value ExtOrd AmalgamationPlan
 
 /-! ## Order facts about limit block floors -/
 
+section
+variable {l : Ordinal.{0}}
+
 /-- Below a limit block floor, replacement stays below it. -/
-theorem evr_lt_of_lt_limit {l : Ordinal.{0}} (hl : limitPart l = l) {x : ExtOrd}
-    (hx : x < ofOrd l) (k i : ℕ) : extVisibilityReplace x k i < ofOrd l := by
+theorem evr_lt_of_lt_limit (hl : limitPart l = l) {x}
+    (hx : x < ofOrd l) k i : extVisibilityReplace x k i < ofOrd l := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rw [extVisibilityReplace_bot]; exact hx
   · exact absurd hx not_top_lt
@@ -69,8 +73,8 @@ theorem evr_lt_of_lt_limit {l : Ordinal.{0}} (hl : limitPart l = l) {x : ExtOrd}
     · exact hx
 
 /-- Above a limit block floor, replacement stays above it. -/
-theorem le_evr_of_limit_le {l : Ordinal.{0}} (hl : limitPart l = l) {x : ExtOrd}
-    (hx : ofOrd l ≤ x) (k i : ℕ) : ofOrd l ≤ extVisibilityReplace x k i := by
+theorem le_evr_of_limit_le (hl : limitPart l = l) {x}
+    (hx : ofOrd l ≤ x) k i : ofOrd l ≤ extVisibilityReplace x k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · exact absurd hx (not_le.mpr (bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _)))
   · rw [extVisibilityReplace_top]; exact le_top
@@ -82,6 +86,8 @@ theorem le_evr_of_limit_le {l : Ordinal.{0}} (hl : limitPart l = l) {x : ExtOrd}
       have h1 : l ≤ limitPart α := by rw [← hl]; exact limitPart_mono hx
       exact h1.trans le_self_add
     · exact hx
+
+end
 
 /-! ## Two elementary witnesses -/
 
@@ -100,22 +106,27 @@ theorem capWitness {j : ℕ} {β : ExtOrd} (hβ : SelfVis j β) (hβbot : β ≠
       have hx : x = ⊥ := (min_eq_bot.mp hle).resolve_right hβbot
       rw [hx, extVisibilityReplace_bot, min_bot_left, extVisibilityReplace_bot]
 
-theorem capWitness_reflects_bottom {β : ExtOrd} (hβbot : β ≠ ⊥) (x : ExtOrd)
+theorem capWitness_reflects_bottom {β} (hβbot : β ≠ ⊥) (x : ExtOrd)
     (h : min x β = ⊥) : x = ⊥ := (min_eq_bot.mp h).resolve_right hβbot
 
 /-- Collapse a whole terminal block and everything above it to top. -/
 noncomputable def collapseBlock (l : Ordinal.{0}) (x : ExtOrd) : ExtOrd :=
   if ofOrd l ≤ x then ⊤ else x
 
-theorem collapseBlock_of_le {l : Ordinal.{0}} {x : ExtOrd} (h : ofOrd l ≤ x) :
+section
+variable {l : Ordinal.{0}} {x : ExtOrd}
+
+theorem collapseBlock_of_le (h : ofOrd l ≤ x) :
     collapseBlock l x = ⊤ := by
   unfold collapseBlock; rw [ite_eq_left h]
 
-theorem collapseBlock_of_lt {l : Ordinal.{0}} {x : ExtOrd} (h : x < ofOrd l) :
+theorem collapseBlock_of_lt (h : x < ofOrd l) :
     collapseBlock l x = x := by
   unfold collapseBlock; rw [ite_eq_right (not_le.mpr h)]
 
-theorem collapseBlock_reflects_bottom (l : Ordinal.{0}) (x : ExtOrd) (h : collapseBlock l x = ⊥) :
+end
+
+theorem collapseBlock_reflects_bottom l x (h : collapseBlock l x = ⊥) :
     x = ⊥ := by
   unfold collapseBlock at h
   split_ifs at h with hx
@@ -146,237 +157,10 @@ theorem collapseBlock_witness (j : ℕ) {l : Ordinal.{0}} (hl : limitPart l = l)
 
 /-- Readback: collapsing the terminal block after capping at `β ≥ λ` recovers every value below
 `λ` and literal top. -/
-theorem collapseBlock_min {l : Ordinal.{0}} {β x : ExtOrd} (hβ : ofOrd l ≤ β)
+theorem collapseBlock_min {l} {β x} (hβ : ofOrd l ≤ β)
     (hx : x < ofOrd l ∨ x = ⊤) : collapseBlock l (min x β) = x := by
   rcases hx with hx | rfl
   · rw [min_eq_left (hx.le.trans hβ), collapseBlock_of_lt hx]
   · rw [min_top_left, collapseBlock_of_le hβ]
-
-namespace CappedDonor
-
-variable {nP J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-
-/-! ## The complete inventory: receiving fields and the stored cutoff -/
-
-/-- The complete field inventory of the two-threshold family: the receiving fields and the stored
-cutoff. -/
-inductive TField {nP J : ℕ} (P : SemScheme (nP + 1)) (C : SemScheme J)
-  | field (f : Field P C)
-  | cutoff
-
-/-- The complete inventory as a sum type. -/
-def TField.equivSum : TField P C ≃ Field P C ⊕ Unit where
-  toFun
-    | .field f => Sum.inl f
-    | .cutoff => Sum.inr ()
-  invFun
-    | Sum.inl f => .field f
-    | Sum.inr _ => .cutoff
-  left_inv f := by cases f <;> rfl
-  right_inv s := by rcases s with f | ⟨⟩ <;> rfl
-
-instance : Fintype (TField P C) := Fintype.ofEquiv _ TField.equivSum.symm
-
-namespace Ref
-
-variable {I : Type*} [Fintype I] {N : ℕ} {R : Ref I nP N J P C}
-
-/-- The complete source vector of a two-threshold state. -/
-noncomputable def TState.profile {j : ℕ} (S : R.TState j) : TField P C → ExtOrd
-  | .field f => S.st.sourceProfile f
-  | .cutoff => S.b
-
-/-- Apply a scalar map to every field, including the stored cutoff. -/
-def mapT {j : ℕ} (σ : ExtOrd → ExtOrd) (S : R.TState j) : R.TState j :=
-  ⟨mapState σ S.st, σ S.b⟩
-
-theorem profile_mapT (σ : ExtOrd → ExtOrd) {j : ℕ} (S : R.TState j) (f : TField P C) :
-    (mapT σ S).profile f = σ (S.profile f) := by
-  cases f with
-  | field f => exact sourceProfile_map σ S.st f
-  | cutoff => rfl
-
-/-! ## Closure under current-grade maps -/
-
-section Map
-
-variable {Kσ : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop Kσ) σ)
-
-include hσ
-
-theorem lt_of_map_lt {x y : ExtOrd} (h : σ x < σ y) : x < y :=
-  lt_of_not_ge fun hle => not_le.mpr h (hσ.mono hle)
-
-theorem nonTopMax_map {j : ℕ} (st : R.State j) : (mapState σ st).nonTopMax = σ st.nonTopMax := by
-  classical
-  unfold State.nonTopMax
-  rw [Finset.apply_sup_eq_sup_comp σ (fun _ _ => hσ.mono.map_max) hσ.bot]
-  congr 1
-  funext d
-  exact sourceProfile_map σ st _
-
-omit hσ in
-theorem capField_map (σ : ExtOrd → ExtOrd) {j : ℕ} (st : R.State j) :
-    (mapState σ st).capField = σ st.capField :=
-  sourceProfile_map σ st _
-
-variable {K : ℕ} (L : R.LowRef K)
-
-/-- The frontier commutes with a witness through `K`. -/
-theorem LowRef.eC_map (hK : K ≤ Kσ) {j : ℕ} (hj : K ≤ j) (v : C.scheme.below (effC J j) → ExtOrd) :
-    L.eC hj (fun d => σ (v d)) = σ (L.eC hj v) := by
-  unfold LowRef.eC LowRef.lowD LowRef.e
-  rw [hσ.mono.map_min, map_comm hσ hK _ le_rfl]
-
-/-- **Closure under current-grade maps**: a bottom-reflecting normalized witness through the
-present grades (and grade one) preserves two-threshold admissibility. -/
-theorem LowRef.TAdmissible.map {j : ℕ} (hK : (effC J j).2 ≤ Kσ) (h1 : 1 ≤ Kσ)
-    (hbot : ∀ x, σ x = ⊥ → x = ⊥) {S : R.TState j} (hS : L.TAdmissible S) :
-    L.TAdmissible (mapT σ S) where
-  adm := hS.adm.map hσ hK h1 hbot
-  b_vis := selfVis_map hσ h1 hS.b_vis
-  b_visK hjK :=
-    selfVis_map hσ ((le_min hjK (L.K_lt_N.le.trans R.N_le)).trans hK) (hS.b_visK hjK)
-  low hjK hg hm hH t ht := by
-    have hKσ : K ≤ Kσ := (le_min hjK (L.K_lt_N.le.trans R.N_le)).trans hK
-    change (mapState σ S.st).nonTopMax < σ S.b at hm
-    change σ S.b < (mapState σ S.st).capField at hH
-    rw [nonTopMax_map hσ] at hm
-    rw [capField_map] at hH
-    change max (σ S.b) (L.eC hjK (fun d => σ (S.st.v d))) ≤ σ (S.st.u _)
-    rw [L.eC_map hσ hKσ, ← hσ.mono.map_max]
-    exact hσ.mono (hS.low hjK ((map_ne_bot_iff hσ hbot _).mp hg) (lt_of_map_lt hσ hm)
-      (lt_of_map_lt hσ hH) t ht)
-  high hj hg := by
-    have hN : N ≤ Kσ := (le_min hj R.N_le).trans hK
-    change min (σ S.b) (σ (S.st.v (R.capC hj))) = R.cut (fun e => σ (R.lowC hj S.st.v e))
-    rw [cut_map hσ hN, ← hσ.mono.map_min, hS.high hj ((map_ne_bot_iff hσ hbot _).mp hg)]
-
-end Map
-
-/-! ## Canonical normalization on the complete inventory -/
-
-/-- The complete inventory of a two-threshold state: the ordinal values of its source vector,
-the stored cutoff included. -/
-noncomputable def TState.inventory {j : ℕ} (S : R.TState j) : Finset Ordinal.{0} :=
-  PairedSlotEncoding.values S.profile
-
-/-- The canonical incoming encoder of a two-threshold state at its cutoff. -/
-noncomputable def TState.encoder {j : ℕ} (S : R.TState j) : ExtOrd → ExtOrd :=
-  PairedSlotIncoming.encoder j S.inventory
-
-theorem TState.encoder_witness {j : ℕ} (S : R.TState j) : Witness (gTop j) S.encoder :=
-  PairedSlotIncoming.encoder_witness j S.inventory
-
-theorem TState.encoder_reflects_bottom {j : ℕ} (S : R.TState j) (x : ExtOrd)
-    (h : S.encoder x = ⊥) : x = ⊥ :=
-  PairedSlotIncoming.encoder_reflects_bottom j S.inventory x h
-
-/-- **Canonical normalization** of a two-threshold state on its complete inventory. -/
-noncomputable def normalizeT {j : ℕ} (S : R.TState j) : R.TState j := mapT S.encoder S
-
-/-- On the complete source vector, normalization is the paired-slot normalization. -/
-theorem profile_normalizeT {j : ℕ} (S : R.TState j) (f : TField P C) :
-    (normalizeT S).profile f = PairedSlotEncoding.normalize j S.profile f := by
-  rw [normalizeT, profile_mapT]
-  exact PairedSlotIncoming.encoder_profile j S.profile f
-
-variable {K : ℕ} (L : R.LowRef K)
-
-/-- Normalization preserves two-threshold admissibility, at the current grade. -/
-theorem LowRef.normalizeT_tadmissible {j : ℕ} (hj : 1 ≤ j) {S : R.TState j}
-    (hS : L.TAdmissible S) : L.TAdmissible (normalizeT S) :=
-  hS.map S.encoder_witness L (min_le_left j J) hj S.encoder_reflects_bottom
-
-/-- Normalization preserves synchronization of the receiving state. -/
-theorem normalizeT_synchronized {j : ℕ} (hj : 1 ≤ j) {S : R.TState j}
-    (hs : Synchronized S.st) : Synchronized (normalizeT S).st :=
-  hs.map S.encoder_witness hj
-
-/-! ## Normalized repairs stay in the catalogue -/
-
-/-! ## The supported decoding contract with terminal-block top -/
-
-/-- A fresh limit block floor above every proper value of the source vector and above a given
-ordinal. -/
-noncomputable def TState.freshFloor {j : ℕ} (S : R.TState j) (h : Ordinal.{0}) : Ordinal.{0} :=
-  Ordinal.omega0 * ((insert h (PairedSlotEncoding.values S.profile)).sup id + 1)
-
-theorem TState.freshFloor_limit {j : ℕ} (S : R.TState j) (h : Ordinal.{0}) :
-    limitPart (S.freshFloor h) = S.freshFloor h :=
-  limitPart_omega0_mul _
-
-theorem TState.lt_freshFloor {j : ℕ} (S : R.TState j) (h : Ordinal.{0}) {a : Ordinal.{0}}
-    (ha : a ∈ insert h (PairedSlotEncoding.values S.profile)) : a < S.freshFloor h := by
-  unfold TState.freshFloor
-  set m : Ordinal.{0} := (insert h (PairedSlotEncoding.values S.profile)).sup id with hm
-  have h1 : a ≤ m := Finset.le_sup (f := id) ha
-  have h2 : m + 1 ≤ Ordinal.omega0 * (m + 1) := Ordinal.le_mul_right _ Ordinal.omega0_pos
-  have h3 : a < m + 1 := Order.lt_add_one_iff.mpr h1
-  exact h3.trans_le h2
-
-theorem TState.profile_lt_freshFloor {j : ℕ} (S : R.TState j) (h : Ordinal.{0}) (f : TField P C) :
-    S.profile f < ofOrd (S.freshFloor h) ∨ S.profile f = ⊤ := by
-  rcases ExtOrd.cases (S.profile f) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
-  · exact Or.inr ht
-  · refine Or.inl ?_
-    rw [ha, ofOrd_lt_ofOrd]
-    exact S.lt_freshFloor h (Finset.mem_insert_of_mem
-      (PairedSlotEncoding.mem_values.mpr ⟨f, ha⟩))
-
-theorem TState.h_lt_freshFloor {j : ℕ} (S : R.TState j) (h : Ordinal.{0}) :
-    h < S.freshFloor h :=
-  S.lt_freshFloor h (Finset.mem_insert_self _ _)
-
-/-- **The supported decoding contract with terminal-block top**: capping an admissible state at
-`β = λ + j` for the fresh limit floor `λ` gives an admissible proper state with the same prefix
-below any prescribed cut `h < λ`; the right-filled decoder of the capped inventory reads its
-canonical normalization back exactly, and whole-block collapse recovers the original vector,
-literal tops included; the composite is one normalized witness through `j`. -/
-theorem LowRef.exists_terminal_decoding {j : ℕ} (hj : 1 ≤ j) {S : R.TState j}
-    (hS : L.TAdmissible S) (h : Ordinal.{0}) :
-    ∃ (l : Ordinal.{0}) (β : ExtOrd), limitPart l = l ∧ β = ofOrd (l + j) ∧ SelfVis j β ∧
-      L.TAdmissible (mapT (fun x => min x β) S) ∧
-      (∀ f, (mapT (fun x => min x β) S).profile f ≠ ⊤) ∧
-      (∀ f, min ((mapT (fun x => min x β) S).profile f) (ofOrd h) = min (S.profile f) (ofOrd h)) ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
-        ∀ f, δ ((normalizeT (mapT (fun x => min x β) S)).profile f) = S.profile f := by
-  set l := S.freshFloor h with hl
-  have hlim : limitPart l = l := S.freshFloor_limit h
-  set β : ExtOrd := ofOrd (l + j) with hβdef
-  have hβvis : SelfVis j β := by
-    rw [hβdef, selfVis_ofOrd_iff]
-    have := finitePart_limitPart_add_nat l j
-    rw [hlim] at this
-    rw [this]
-  have hβbot : β ≠ ⊥ := ofOrd_ne_bot _
-  have hlβ : ofOrd l ≤ β := ofOrd_le_ofOrd.mpr le_self_add
-  have hcap : L.TAdmissible (mapT (fun x => min x β) S) :=
-    hS.map (capWitness hβvis hβbot) L (min_le_left j J) hj (capWitness_reflects_bottom hβbot)
-  have hproper : ∀ f, (mapT (fun x => min x β) S).profile f ≠ ⊤ := by
-    intro f
-    rw [profile_mapT]
-    exact fun ht => ofOrd_ne_top _ ((min_eq_top.mp ht).2)
-  have hprefix : ∀ f, min ((mapT (fun x => min x β) S).profile f) (ofOrd h) =
-      min (S.profile f) (ofOrd h) := by
-    intro f
-    rw [profile_mapT, min_assoc, min_eq_right
-      ((ofOrd_le_ofOrd.mpr (S.h_lt_freshFloor h).le).trans hlβ)]
-  refine ⟨l, β, hlim, rfl, hβvis, hcap, hproper, hprefix, ?_⟩
-  -- the outgoing map: the right-filled decoder followed by whole-block collapse
-  have hG : ∀ z ∈ (∅ : Finset ExtOrd), SelfVis j z := fun z hz => absurd hz (Finset.notMem_empty z)
-  refine ⟨collapseBlock l ∘ PairedSlotDecoder.decode j
-    (PairedSlotEncoding.values (mapT (fun x => min x β) S).profile) ∅ β,
-    Witness.comp_of_bottom_reflecting (PairedSlotDecoder.decode_witness hG hβvis)
-      (collapseBlock_witness j hlim) le_rfl (collapseBlock_reflects_bottom l), ?_⟩
-  intro f
-  rw [Function.comp_apply, profile_normalizeT,
-    PairedSlotDecoder.decode_normalize hG hβvis hproper f, profile_mapT]
-  exact collapseBlock_min hlβ (S.profile_lt_freshFloor h f)
-
-end Ref
-
-end CappedDonor
 
 end VaughtConjecture.Knight

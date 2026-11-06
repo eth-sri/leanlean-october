@@ -18,7 +18,6 @@ apex literal top while retaining the entire old lawful display and all old rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.MaximalFullLayer
 open Transform Value ExtOrd AmalgamationPlan SourceLayerCarrier
 noncomputable section
@@ -37,12 +36,13 @@ abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv D Unit l
 abbrev base := SeparatedSourceLayerCarrier.base D Unit l
   (positive K l hKl) hlA (separated D K l hK hKl) sem
 
-theorem old_index (d : Cell D) : (scheme D K l hKl hlA).cell (old D K l hKl hlA d) =
+theorem old_index d : (scheme D K l hKl hlA).cell (old D K l hKl hlA d) =
     D.cell d := cell_toCell _ _ _ _ _ _
+
 theorem apex_index : (scheme D K l hKl hlA).cell (apex D K l hKl hlA) = (A, l) :=
   cell_toCell _ _ _ _ _ _
 
-theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
+theorem inherited_row c d :
     (base D sem K l hK hKl hlA).E (old D K l hKl hlA c)
       (ownerEquiv D K l hK hKl hlA c d) = sem.E c d :=
   SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
@@ -60,8 +60,7 @@ theorem consistent (hs : sem.IsConsistent) : (base D sem K l hK hKl hlA).IsConsi
     have he : (base D sem K l hK hKl hlA).E (old D K l hKl hlA c) ∘
         ownerEquiv D K l hK hKl hlA c = sem.E c :=
       funext (inherited_row D sem K l hK hKl hlA c)
-    rw [he]
-    exact hs c
+    aesop
   | inr u =>
     have he : (base D sem K l hK hKl hlA).E
         (toCell D Unit l (positive K l hKl) hlA (.inr u)) = fun _ => ⊥ := by
@@ -97,7 +96,7 @@ theorem complete (hc : ∀ J ∈ Plan.gradedPlan D.plan, J ≠ (A, l) → ∃ d,
 
 /-- All old labels, not just either face separately, remain literal. -/
 theorem exists_active (hk : 1 ≤ K) (hc : sem.IsConsistent) (hb : sem.IsBountiful)
-    (hcode : sem.IsCoded) {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
+    (hcode : sem.IsCoded) {p} (hp : RespectsSemantics sem p) :
     ∃ (out : Semantics (scheme D K l hKl hlA)) (q : Cell (scheme D K l hKl hlA) → ExtOrd),
       out.IsConsistent ∧ out.IsBountiful ∧ out.IsCoded ∧ RespectsSemantics out q ∧
       (∀ c d, out.E (old D K l hKl hlA c) (ownerEquiv D K l hK hKl hlA c d) = sem.E c d) ∧

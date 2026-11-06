@@ -21,7 +21,6 @@ the family's finite coded alphabet contains only bottom and proper ordinals.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotProfiles
 open Transform Value ExtOrd PairedSlotEncoding SharpWitnessComposition
 noncomputable section
@@ -29,7 +28,10 @@ noncomputable section
 section Profile
 variable {X : Type*} [Fintype X]
 
-theorem normalize_short (j : ℕ) (p : X → ExtOrd) (d : X) :
+section
+variable (j : ℕ)
+
+theorem normalize_short p (d : X) :
     Short j (PairedSlotEncoding.normalize j p d) := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
   · exact Or.inl (by simp only [PairedSlotEncoding.normalize, hb])
@@ -41,10 +43,12 @@ theorem normalize_short (j : ℕ) (p : X → ExtOrd) (d : X) :
 
 /-- A single visible proper source ceiling bounds every finite normalized profile
 on the same carrier, regardless of the ordinal size of its original labels. -/
-def sourceCeiling (j : ℕ) (X : Type*) [Fintype X] : ExtOrd :=
+def sourceCeiling X [Fintype X] : ExtOrd :=
   ofOrd (Ordinal.omega0 * (2 * Fintype.card X : ℕ) + j)
 
-theorem normalize_le_ceiling {j : ℕ} {p : X → ExtOrd}
+end
+
+theorem normalize_le_ceiling {j} {p}
     (hp : ∀ d, p d ≠ ⊤) (d : X) :
     PairedSlotEncoding.normalize j p d ≤ sourceCeiling j X := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
@@ -63,10 +67,5 @@ theorem normalize_le_ceiling {j : ℕ} {p : X → ExtOrd}
 
 end Profile
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
 end
 end VaughtConjecture.Knight.PairedSlotProfiles

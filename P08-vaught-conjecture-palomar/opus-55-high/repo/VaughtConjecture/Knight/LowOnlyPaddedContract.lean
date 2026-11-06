@@ -17,7 +17,6 @@ lifting or bountifulness hypothesis.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedContract
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
@@ -26,19 +25,25 @@ noncomputable section
 section Catalogue
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
 
-def state {j : ℕ} (a : F.Anchor j) : State P C := State.ofProfile a.val
-theorem state_admissible {j : ℕ} (a : F.Anchor j) : F.Admissible j (state F a) :=
+def state {j} (a : F.Anchor j) : State P C := State.ofProfile a.val
+
+section
+variable {j : ℕ} (a : F.Anchor j)
+
+theorem state_admissible  : F.Admissible j (state F a) :=
   by
     obtain ⟨S, hS, he⟩ := a.property.2
     have hs : state F a = S := State.profile_injective
       ((State.profile_ofProfile a.val).trans he.symm)
     exact hs.symm ▸ hS
-theorem state_profile {j : ℕ} (a : F.Anchor j) : (state F a).profile = F.fields j a :=
+theorem state_profile  : (state F a).profile = F.fields j a :=
   State.profile_ofProfile a.val
-theorem state_proper {j : ℕ} (a : F.Anchor j) (d : Field P C) :
+theorem state_proper (d : Field P C) :
     (state F a).profile d ≠ ⊤ := by
   rw [state_profile]
   exact LowOnlyRecursiveCharts.anchor_proper F a d
+
+end
 end Catalogue
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -52,10 +57,10 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 abbrev base := (LowOnlyPaddedSuccessor.input I F hroot hA hB hC).lower
 abbrev baseRows := (LowOnlyPaddedSuccessor.input I F hroot hA hB hC).lowerRows
 
-theorem base_full_grade (c : Cell (base I F hroot hA hB hC))
+theorem base_full_grade c
     (hc : (base I F hroot hA hB hC).scope c = A) :
     (base I F hroot hA hB hC).grade c = 1 := by
-  rcases RelativeLadderLayer.cell_cases I.boundary (by omega : 0 < A.card) c with
+  rcases RelativeLadderLayer.cell_cases I.boundary (by grind) c with
     ⟨d, rfl⟩ | ⟨v, rfl⟩
   · exact False.elim (proper I hB hC d
       ((congrArg Prod.fst (RelativeLadderLayer.old_index I.boundary (by omega) d)).symm.trans hc))
@@ -111,14 +116,14 @@ structure Layer (k : ℕ) where
 namespace Layer
 variable {k : ℕ} (P : Layer I F hroot hA hB hC k)
 
-theorem full_grade (hk : 1 ≤ k) (d : Cell P.carrier) (hd : P.carrier.scope d = A) :
+theorem full_grade (hk : 1 ≤ k) d (hd : P.carrier.scope d = A) :
     P.carrier.grade d ≤ k := by
   rcases P.cases d with ⟨c, rfl⟩ | ⟨_, _, hg⟩
   · have hs : (base I F hroot hA hB hC).scope c = A :=
       (congrArg Prod.fst (P.base_index c)).symm.trans hd
     exact (congrArg Prod.snd (P.base_index c)).le.trans
       ((base_full_grade I F hroot hA hB hC c hs).le.trans hk)
-  · exact hg
+  · grind
 
 theorem separated (hk : 1 ≤ k) (d : Cell P.carrier) :
     ¬ GradedLe (A, k + 1) (P.carrier.cell d) := by
@@ -129,15 +134,16 @@ theorem separated (hk : 1 ≤ k) (d : Cell P.carrier) :
   have hk' : k + 1 ≤ P.carrier.grade d := hd.2
   omega
 
-theorem original_readback {j : ℕ} (hj : k ≤ j) (S : State I.left I.right)
-    (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) {G H}
+theorem original_readback {j} hj S
+    (hS : F.Admissible j S) hp {G H}
     (hG : ∀ z ∈ G, SelfVis k z) (hH : SelfVis k H) (hb : ∀ d, S.profile d ≤ H)
-    (d : Cell I.boundary) :
+    d :
     P.render hj S hS hp G H (P.baseMap (RelativeLadderLayer.old I.boundary (by omega) d)) =
       S.profile (field I d) := by
   rw [P.render_base hj S hS hp hG hH hb]
   exact RelativeLadderLayer.renderWith_old I.boundary (by omega) (field I) (F.fields 1)
     _ _ _ (P.birth_ranks hj S hS hp) d
+
 end Layer
 
 /-- The existing actual first successor supplies the invariant without changing its rows. -/

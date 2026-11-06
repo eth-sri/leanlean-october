@@ -17,7 +17,6 @@ or modelhood of that lift is used here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open TypeTower StageType
 noncomputable section

@@ -18,7 +18,6 @@ to a higher cutoff.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedSources
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 noncomputable section

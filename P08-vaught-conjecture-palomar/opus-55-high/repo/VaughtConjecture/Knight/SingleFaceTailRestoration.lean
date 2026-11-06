@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
 
 /-! # Literal single-face restoration from a predecessor lifting clause
@@ -17,7 +19,6 @@ proper. The unchanged upper tail is bounded by the restoration cap.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SingleFaceTailRestoration
 open Transform Value ExtOrd GradeTailRestoration CoatomBoundaryExtension
 noncomputable section
@@ -28,15 +29,15 @@ variable (sem : Semantics D) {C B : Finset ι} {j : ℕ} (hCB : C ⊆ B)
 no lifting property of the upper output or scalar unsaturation is assumed. -/
 theorem exists_restore
     (hlift : CappedLift sem (show GradedLe (C, j) (B, j) from ⟨hCB, le_rfl⟩))
-    {p : D.below (C, j + 1) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow sem (C, j + 1) p)
-    {u : D.below (B, j + 1) → ExtOrd}
+    {u}
     (hu : RespectsSemanticsBelow sem (B, j + 1) u)
-    {M : ExtOrd} (hM : SelfVis (j + 1) M)
+    {M} (hM : SelfVis (j + 1) M)
     (hread : ∀ e, u (CellScheme.below.mono
       (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) e) = min (p e) M)
-    (hhigh : ∀ e : D.below (C, j + 1), D.grade e.1 = j + 1 → p e ≤ M) :
-    ∃ r : D.below (B, j + 1) → ExtOrd,
+    (hhigh : ∀ e, D.grade e.1 = j + 1 → p e ≤ M) :
+    ∃ r,
       RespectsSemanticsBelow sem (B, j + 1) r ∧
       (∀ e, r (CellScheme.below.mono
         (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) e) = p e) ∧
@@ -79,15 +80,15 @@ theorem exists_restore
 ambient. This includes bottom and top caps and an empty upper-owner set. -/
 theorem exists_inactive
     (hlift : CappedLift sem (show GradedLe (C, j) (B, j) from ⟨hCB, le_rfl⟩))
-    {p : D.below (C, j + 1) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow sem (C, j + 1) p)
-    {q : D.below (B, j + 1) → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow sem (B, j + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (j + 1) γ)
+    {γ} (hγ : SelfVis (j + 1) γ)
     (hag : ∀ e, min (q (CellScheme.below.mono
       (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) e)) γ = min (p e) γ)
-    (hhigh : ∀ e : D.below (C, j + 1), D.grade e.1 = j + 1 → p e ≤ γ) :
-    ∃ r : D.below (B, j + 1) → ExtOrd,
+    (hhigh : ∀ e, D.grade e.1 = j + 1 → p e ≤ γ) :
+    ∃ r,
       RespectsSemanticsBelow sem (B, j + 1) r ∧
       (∀ d, min (r d) γ = min (q d) γ) ∧
       ∀ e, r (CellScheme.below.mono

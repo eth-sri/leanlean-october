@@ -18,7 +18,6 @@ predecessor lift or bountifulness of the new output is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepSupply
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyPaddedStepDecode
@@ -36,12 +35,15 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 def birth (a : F.Anchor (k + 1)) : F.Anchor 1 :=
   P.birth (Nat.le_succ k) (state F a) (state_admissible F a) (state_proper F a)
 
-theorem birth_ranks (a : F.Anchor (k + 1)) (d : Field I.left I.right) :
+section
+variable (a : F.Anchor (k + 1))
+
+theorem birth_ranks d :
     RelativeLadderLayer.ranks (F.fields 1) (birth P a) d =
       LadderScalarRendering.fieldRank (F.fields (k + 1) a) d := by
   rw [birth, P.birth_ranks, state_profile]
 
-theorem source_base (a : F.Anchor (k + 1)) (d : Cell (base I F hroot hA hB hC)) :
+theorem source_base d :
     source P hk hnext a (baseMap P hnext d) =
       RelativeLadderLayer.renderWith I.boundary (by omega : 0 < A.card)
         (field I) (F.fields 1) (birth P a) (F.fields (k + 1) a) (ceiling P) d := by
@@ -54,8 +56,10 @@ theorem source_base (a : F.Anchor (k + 1)) (d : Cell (base I F hroot hA hB hC)) 
     (fun f => by rw [state_profile]; exact LowOnlyRecursiveCharts.anchor_bound F a f) d
   simpa only [selected, birth, state_profile] using he
 
-theorem decoded_base (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
-    (hδ : Witness (gTop (k + 1)) δ)
+section
+variable {δ : ExtOrd → ExtOrd}
+
+theorem decoded_base (hδ : Witness (gTop (k + 1)) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, k + 1)
       (fun d => δ (a.val (field I d.1)))) :
@@ -108,8 +112,7 @@ theorem decoded_base (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
     · simpa only [f, birth_ranks, LadderScalarRendering.field_readback,
         Family.fields] using horiginal
 
-theorem decoded_lawful (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
-    (hδ : Witness (gTop (k + 1)) δ)
+theorem decoded_lawful (hδ : Witness (gTop (k + 1)) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, k + 1)
       (fun d => δ (a.val (field I d.1)))) :
@@ -122,11 +125,9 @@ theorem decoded_lawful (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
   rcases LowOnlyPaddedStepRendering.cell_cases P hk hnext c.1 with
     ⟨b, he⟩ | ⟨hscope, hgrade, _⟩
   · right
-    have hb : GradedLe ((base I F hroot hA hB hC).cell b) (A, k + 1) := by
+    have hb := by
       simpa only [he, base_index] using c.2
-    have hr : RespectsSemanticsBelow (rows P hk hnext)
-        ((carrier P hnext).cell (baseMap P hnext b))
-        (fun d => δ (source P hk hnext a d.1)) :=
+    have hr :=
       (base_respects P hk hnext b (fun d => δ (source P hk hnext a d))).mpr (hl.mono hb)
     rcases c with ⟨c, hc⟩
     dsimp only at he
@@ -134,9 +135,13 @@ theorem decoded_lawful (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
     exact hr.locality ⟨_, GradedLe.refl _⟩
   · exact Or.inl (higher_short P hk hnext c.1 hscope hgrade)
 
+end
+
+end
+
 /-- Native section supply for every admitted state, with literal-top fields.
 No external positive cap or lower-layer lifting theorem is used. -/
-theorem exists_section {S : State I.left I.right} (hS : F.Admissible (k + 1) S) :
+theorem exists_section {S} (hS : F.Admissible (k + 1) S) :
     ∃ w, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) w ∧
       ∀ d : I.boundary.below (A, k + 1),
         w ⟨original P hnext d.1, by rw [original_index]; exact d.2⟩ =
@@ -157,7 +162,6 @@ theorem exists_section {S : State I.left I.right} (hS : F.Admissible (k + 1) S) 
     simpa only [a, hread] using LowOnlyOrderedSources.boundary_lawful_at I F hroot (k + 1) S hS
   refine ⟨_, decoded_lawful P hk hnext a hδ hreflect horiginal, ?_⟩
   intro d
-  change δ (source P hk hnext a (original P hnext d.1)) = _
   rw [source_original]
   exact hread _
 

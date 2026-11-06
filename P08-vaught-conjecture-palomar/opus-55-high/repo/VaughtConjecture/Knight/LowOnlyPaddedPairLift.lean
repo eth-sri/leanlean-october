@@ -18,7 +18,6 @@ inferred from the two original-face endpoints.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPairLift
 open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension
 open LowOnlyPaddedSuccessor LowOnlyPaddedFaces LowOnlyPaddedCharts
@@ -56,8 +55,7 @@ theorem donor_one : CappedLift (rows I F hroot hA hB hC)
     ((full_respects_iff I.left I.placeLeft I.imageLeft
       (donorFace I F hroot hA hB hC) 1 p).mp hp) hq' hγ (fun d => hag (f d))
   refine ⟨r ∘ e.symm, (lower_respects_iff I F hroot hA hB hC r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (e.symm d)
+  · grind
   · intro d
     obtain ⟨x, rfl⟩ := f.surjective d
     change r (e.symm (e (Family.donorAt F I.boundary (by omega)
@@ -90,8 +88,7 @@ theorem private_one : CappedLift (rows I F hroot hA hB hC)
     ((full_respects_iff I.right I.placeRight I.imageRight
       (privateFace I F hroot hA hB hC) 1 p).mp hp) hq' hγ (fun d => hag (f d))
   refine ⟨r ∘ e.symm, (lower_respects_iff I F hroot hA hB hC r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (e.symm d)
+  · grind
   · intro d
     obtain ⟨x, rfl⟩ := f.surjective d
     change r (e.symm (e (Family.privateAt F I.boundary (by omega)
@@ -160,12 +157,12 @@ theorem cover_two_cofaces (s : AmalgamatedBoundaryPlan.Step A)
     (hR : R = s.plan) (hleft : B = A.erase s.a) (hright : C = A.erase s.b) :
     ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C := by
   intro S hS hs
-  rw [hR] at hS
+  simp_all
   rcases Finset.mem_union.mp hS with hS | hS
   · rcases Finset.mem_union.mp hS with hl | hr
     · exact Or.inl (hleft ▸ s.left_plan.subset_of_mem hl)
     · exact Or.inr (hright ▸ s.right_plan.subset_of_mem hr)
-  · exact False.elim (hs (Finset.mem_singleton.mp hS))
+  · grind
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedPairLift

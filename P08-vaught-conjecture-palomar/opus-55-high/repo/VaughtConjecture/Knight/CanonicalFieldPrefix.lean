@@ -17,7 +17,6 @@ fields by retaining their old source values, not by dropping them.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldPrefix
 open Transform Value ExtOrd SourcePrefixRows CanonicalFieldLayer
 open CanonicalPairedInverse PairedSlotEncoding
@@ -28,11 +27,11 @@ variable (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D →
 variable (hj : 0 < j) (hA : j ≤ A.card)
 variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
 
-theorem exists_section (a : Profile sem j X occ)
-    {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ)) (ht : ∀ x, p x ≠ ⊤)
-    {B : ℕ} (hB : B ≤ 2 * Fintype.card X + 1)
+theorem exists_section a
+    {p} (hp : RespectsSemantics sem (p ∘ occ)) (ht : ∀ x, p x ≠ ⊤)
+    {B} (hB : B ≤ 2 * Fintype.card X + 1)
     (hag : ∀ x, min (a.val x) (grid j B) = min (p x) (grid j B)) :
-    ∃ r : Cell (scheme sem j X occ hj hA) → ExtOrd,
+    ∃ r,
       RespectsSemantics (rows sem j X occ hj hA hproper hg) r ∧
       (∀ d, r (old sem j X occ hj hA d) = p (occ d)) ∧
       ∀ d, min (r d) (grid j B) =
@@ -99,11 +98,11 @@ theorem exists_section (a : Profile sem j X occ)
 
 /-- Completion of physical occurrences, with all other fields retained before
 normalization. Injectivity is occurrence injectivity, not label injectivity. -/
-theorem exists_boundary_section (hinj : Function.Injective occ) (a : Profile sem j X occ)
-    {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    {B : ℕ} (hB : B ≤ 2 * Fintype.card X + 1)
+theorem exists_boundary_section (hinj : Function.Injective occ) a
+    {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
+    {B} (hB : B ≤ 2 * Fintype.card X + 1)
     (hag : ∀ d, min (a.val (occ d)) (grid j B) = min (p d) (grid j B)) :
-    ∃ r : Cell (scheme sem j X occ hj hA) → ExtOrd,
+    ∃ r,
       RespectsSemantics (rows sem j X occ hj hA hproper hg) r ∧
       (∀ d, r (old sem j X occ hj hA d) = p d) ∧
       ∀ d, min (r d) (grid j B) =
@@ -116,15 +115,13 @@ theorem exists_boundary_section (hinj : Function.Injective occ) (a : Profile sem
   have hvt : ∀ x, v x ≠ ⊤ := by
     intro x
     by_cases hx : ∃ d, occ d = x
-    · obtain ⟨d, rfl⟩ := hx
-      rw [hv]; exact ht d
+    · grind
     · rw [show v x = a.val x from Function.extend_apply' p a.val x hx]
       exact a.property.2.2 x
   have hva : ∀ x, min (a.val x) (grid j B) = min (v x) (grid j B) := by
     intro x
     by_cases hx : ∃ d, occ d = x
-    · obtain ⟨d, rfl⟩ := hx
-      rw [hv]; exact hag d
+    · grind
     · rw [show v x = a.val x from Function.extend_apply' p a.val x hx]
   obtain ⟨r, hr, hread, hcap⟩ := exists_section sem j X occ hj hA hproper hg
     a hvp hvt hB hva

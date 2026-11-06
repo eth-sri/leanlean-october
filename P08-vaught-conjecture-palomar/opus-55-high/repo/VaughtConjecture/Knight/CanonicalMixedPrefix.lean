@@ -19,7 +19,6 @@ an arbitrary ambient at an unrelated external cap.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalMixedPrefix
 open Transform Value ExtOrd SourcePrefixRows CanonicalMixedGradeLayers
 open CanonicalPairedInverse PairedSlotEncoding
@@ -35,11 +34,11 @@ variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 The proper repaired old boundary is the input produced by ordinary old-face
 amalgamation. Every actual controller coordinate retains its source cap. -/
 theorem exists_section
-    (a : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    {B : ℕ} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
+    a
+    {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
+    {B} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
     (hag : ∀ d, min (a.val d) (grid k B) = min (p d) (grid k B)) :
-    ∃ r : Cell (scheme sem j hj hjA k hk hkA) → ExtOrd,
+    ∃ r,
       RespectsSemantics (rows sem j hj hjA hproper k hg hk hkA hjk) r ∧
       (∀ d, r (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d)) = p d) ∧
       (∀ d, min (r d) (grid k B) =

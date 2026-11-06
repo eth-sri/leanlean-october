@@ -8,7 +8,8 @@ module
 public import VaughtConjecture.Knight.TopFreePinnedExtension
 public import VaughtConjecture.Knight.FiniteMasterState
 public import VaughtConjecture.Knight.FiniteRequestData
-public import VaughtConjecture.Knight.FixedHeightChain
+public import VaughtConjecture.Knight.FinitePartialState
+public import VaughtConjecture.TypeTower.ChainUnion
 public import VaughtConjecture.Knight.CapReceivingModel
 public import VaughtConjecture.Knight.TopFreeTerminal
 public import VaughtConjecture.TypeTower.FiniteMasterScheduler
@@ -35,16 +36,16 @@ variable {β : LimitStage} {M : Type w}
 structure State (β : LimitStage) (M : Type w) extends RunState β M where
   proper : ∀ d, P.label d ≠ ⊤
 
-theorem State.topFree (st : State β M) {n : ℕ} (t : Fin n ↪ M)
+theorem State.topFree (st : State β M) {n} t
     (p : S β.1 n) (hp : st.A.eval t = some p) : ∀ d, p.label d ≠ ⊤ := by
-  obtain ⟨f, rfl⟩ := st.hM t (by rw [hp]; rfl)
+  obtain ⟨f, rfl⟩ := st.hM t (by aesop)
   have hf : typeMap f st.P = some p := (st.hA.consistent _ _ f st.htup).symm.trans hp
-  have hv := (typeMap_isSome_iff f st.P).mp (by rw [hf]; rfl)
+  have hv := (typeMap_isSome_iff f st.P).mp (by grind)
   have he := Option.some.inj ((typeMap_eq_some f st.P hv).symm.trans hf)
   subst p
   exact fun d => st.proper _
 
-noncomputable def initial (β : LimitStage) (M : Type w) : State β M :=
+noncomputable def initial β M : State β M :=
   { initState β M with
     proper := by
       intro d
@@ -53,8 +54,8 @@ noncomputable def initial (β : LimitStage) (M : Type w) : State β M :=
       change (initState β M).P.scheme.scheme.grade d ≤ 0 at h
       omega }
 
-theorem install (st : State β M) {y : M} (hy : y ∉ Set.range st.tup)
-    (Q : S β.1 (st.N + 1)) (hQ : IsCoface st.P Q) (hproper : ∀ d, Q.label d ≠ ⊤) :
+theorem install (st : State β M) {y} hy
+    Q (hQ : IsCoface st.P Q) (hproper : ∀ d, Q.label d ≠ ⊤) :
     ∃ st' : State β M, Extends st.A st'.A ∧ Set.range st.tup ⊆ Set.range st'.tup ∧
       st'.A.eval (snoc st.tup y hy) = some Q ∧ y ∈ Set.range st'.tup := by
   let st' : State β M := ⟨RunState.ofMaster ⟨_, snoc st.tup y hy, Q⟩, hproper⟩
@@ -77,7 +78,7 @@ def Serves (A : KnightRealization β M) : Request β M → Prop
         ∀ d, min (r.label d) (ofOrd ν.1) =
           min (q.1.label (SemScheme.castCell he d)) (ofOrd ν.1)
 
-theorem service [Infinite M] (st : State β M) (r : Request β M)
+theorem service [Infinite M] (st : State β M) r
     (hr : Applicable st.A r) :
     ∃ st' : State β M, Extends st.A st'.A ∧ Set.range st.tup ⊆ Set.range st'.tup ∧
       Serves st'.A r := by
@@ -102,7 +103,7 @@ theorem service [Infinite M] (st : State β M) (r : Request β M)
   rw [st'.hA.consistent _ Q (extendFace f) hQ]
   exact hQq
 
-theorem absorb (st : State β M) {x : M} (hx : x ∉ Set.range st.tup) :
+theorem absorb (st : State β M) {x} (hx : x ∉ Set.range st.tup) :
     ∃ st' : State β M, Extends st.A st'.A ∧ Set.range st.tup ⊆ Set.range st'.tup ∧
       x ∈ Set.range st'.tup := by
   obtain ⟨q, _, hq⟩ := exists_highGrade_coface (CanonicalCoatomSupply.supply β.2)
@@ -113,9 +114,8 @@ theorem absorb (st : State β M) {x : M} (hx : x ∉ Set.range st.tup) :
   exact ⟨st', hext, hrange, hx'⟩
 
 /-- A serviced observation is a literal finite evaluation, so it persists. -/
-theorem Serves.mono {A B : KnightRealization β M} (h : Extends A B)
+theorem Serves.mono {A B} (h : Extends A B)
     {r : Request β M} (hr : Serves A r) : Serves B r := by
-  obtain ⟨n, t, p, q, ν⟩ := r
   obtain ⟨y, hy, s, hs, he, hcap⟩ := hr
   exact ⟨y, hy, s, h _ _ hs, he, hcap⟩
 
@@ -123,10 +123,12 @@ theorem Serves.mono {A B : KnightRealization β M} (h : Extends A B)
 def task : Request β M → RootedTask knightTower β M
   | r@⟨n, t, p, _, _⟩ => ⟨n, t, p, fun A => Serves A r, fun h hs => hs.mono h⟩
 
+section
+variable [Countable M] [Infinite M]
+
 /-- At every countable limit stage there is a top-free model on any countable
 infinite carrier. The request alphabet is countable, not asserted computable. -/
-theorem exists_topFree_model [Countable M] [Infinite M]
-    (hβ : β.1.card ≤ Cardinal.aleph0) :
+theorem exists_topFree_model (hβ : β.1.card ≤ Cardinal.aleph0) :
     ∃ R : KnightRealization β M, R.IsModel ∧
       ∀ {n} (t : Fin n ↪ M) (p : S β.1 n), R.eval t = some p → ∀ d, p.label d ≠ ⊤ := by
   have : ∀ n : ℕ, Countable (S β.1 n) := StageType.countable_S hβ
@@ -163,11 +165,12 @@ theorem exists_topFree_model [Countable M] [Infinite M]
   obtain ⟨s, hs⟩ := hfinite t p hp
   exact s.topFree t p (s.toRunState.chart_eq ▸ hs)
 
-theorem exists_terminal_model [Countable M] [Infinite M]
-    (hβ : β.1.card ≤ Cardinal.aleph0) :
+theorem exists_terminal_model (hβ : β.1.card ≤ Cardinal.aleph0) :
     ∃ R : KnightRealization β M, R.IsModel ∧
       ∀ (γ : LimitStage) (hβγ : β < γ), R.NoProlongationToIn IsModelClass hβγ.le := by
   obtain ⟨R, hR, htop⟩ := exists_topFree_model (M := M) hβ
   exact ⟨R, hR, fun _ hβγ => hR.noProlongation_of_topFree hβγ htop⟩
+
+end
 
 end VaughtConjecture.Knight.TopFreeCapHenkin

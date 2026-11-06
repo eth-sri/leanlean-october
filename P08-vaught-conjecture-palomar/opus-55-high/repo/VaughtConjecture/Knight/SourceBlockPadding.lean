@@ -30,8 +30,8 @@ noncomputable def pad : ExtOrd → ExtOrd
   | some (some α) => ofOrd (Ordinal.omega0 + α)
 
 @[simp] theorem pad_bot : pad ⊥ = ⊥ := rfl
-@[simp] theorem pad_top : pad ⊤ = ⊤ := rfl
-@[simp] theorem pad_ofOrd (α : Ordinal.{0}) : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
+
+@[simp] theorem pad_ofOrd α : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
 
 theorem pad_mono : Monotone pad := by
   intro x y hxy
@@ -43,28 +43,33 @@ theorem pad_mono : Monotone pad := by
     · exact le_top
     · exact ofOrd_le_ofOrd.mpr (add_le_add_right (ofOrd_le_ofOrd.mp hxy) _)
 
-theorem pad_reflects_bottom (x : ExtOrd) (hx : pad x = ⊥) : x = ⊥ := by
+theorem pad_reflects_bottom x (hx : pad x = ⊥) : x = ⊥ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
   · exact False.elim (top_ne_bot hx)
   · exact False.elim (ofOrd_ne_bot _ hx)
 
-theorem pad_decomposition (α : Ordinal.{0}) :
+section
+variable (α : Ordinal.{0})
+
+theorem pad_decomposition  :
     Ordinal.omega0 + α =
       Ordinal.omega0 * (1 + α / Ordinal.omega0) + (finitePart α : ℕ) := by
   rw [mul_add, mul_one, add_assoc]
   exact congrArg (fun z => Ordinal.omega0 + z) (decomposition α).symm
 
-theorem finitePart_pad (α : Ordinal.{0}) : finitePart (Ordinal.omega0 + α) = finitePart α := by
+theorem finitePart_pad  : finitePart (Ordinal.omega0 + α) = finitePart α := by
   rw [pad_decomposition, finitePart_code]
 
-theorem limitPart_pad (α : Ordinal.{0}) :
+theorem limitPart_pad  :
     limitPart (Ordinal.omega0 + α) = Ordinal.omega0 + limitPart α := by
   rw [pad_decomposition, limitPart_code, mul_add, mul_one]
   rfl
 
+end
+
 /-- Padding commutes with every replacement, with no threshold bound. -/
-theorem pad_comm (x : ExtOrd) (k i : ℕ) :
+theorem pad_comm x k i :
     pad (extVisibilityReplace x k i) = extVisibilityReplace (pad x) k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
@@ -92,13 +97,12 @@ noncomputable def unpad : ExtOrd → ExtOrd
   | some (some α) => if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥
 
 @[simp] theorem unpad_bot : unpad ⊥ = ⊥ := rfl
-@[simp] theorem unpad_top : unpad ⊤ = ⊤ := rfl
 
 open Classical in
-theorem unpad_ofOrd (α : Ordinal.{0}) :
+theorem unpad_ofOrd α :
     unpad (ofOrd α) = if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥ := rfl
 
-theorem unpad_pad (x : ExtOrd) : unpad (pad x) = x := by
+theorem unpad_pad x : unpad (pad x) = x := by
   classical
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
@@ -124,7 +128,7 @@ theorem unpad_mono : Monotone unpad := by
 
 /-- The erased first block is a whole block, so the inverse also commutes at
 thresholds above the eventual owner grade. -/
-theorem unpad_comm (x : ExtOrd) (k i : ℕ) :
+theorem unpad_comm x k i :
     unpad (extVisibilityReplace x k i) = extVisibilityReplace (unpad x) k i := by
   classical
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩

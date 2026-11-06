@@ -22,8 +22,6 @@ indices, arbitrary-ambient lifting, or coatom amalgamation.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PairedBoundarySections
 
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
@@ -32,21 +30,15 @@ open PairedSlotEncoding PairedSlotComparison
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ)
-
-/-- All lawful short coded profiles, not a chosen list of displays. Including
-non-normalized coded profiles avoids needing idempotence for family membership. -/
-def Profile := {p : Cell D → ExtOrd // RespectsSemantics sem p ∧
-  (∀ d, p d ∈ ExtOrd.codedAlphabet (2 * Fintype.card (Cell D)) j) ∧ ∀ d, Short j (p d)}
-
-instance : Fintype (Profile sem j) :=
-  ((codedLabellings_finite (Cell D) (2 * Fintype.card (Cell D)) j).subset
-    (fun _ h => h.2.1)).fintype
+variable (j : ℕ)
 
 def ceiling : ExtOrd :=
   ofOrd (Ordinal.omega0 * (2 * Fintype.card (Cell D) + 1 : ℕ) + j)
 
-theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card (Cell D))) :
+section
+variable {h : ExtOrd}
+
+theorem grid_bound (hh : h ∈ sourceGrid j (Fintype.card (Cell D))) :
     h ≤ ceiling (D := D) j := by
   classical
   rcases Finset.mem_insert.mp hh with rfl | hh
@@ -58,7 +50,7 @@ theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card (Cell D))
     apply ofOrd_le_ofOrd.mpr
     gcongr
 
-theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card (Cell D))) :
+theorem grid_short (hh : h ∈ sourceGrid j (Fintype.card (Cell D))) :
     Short j h := by
   classical
   rcases Finset.mem_insert.mp hh with rfl | hh
@@ -66,11 +58,7 @@ theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card (Cell D))
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp hh
     exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_mul_add]⟩)
 
-variable (hj : 0 < j) (hA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (hg : ∀ d : Cell D, D.grade d ≤ j)
-
-variable {G : Finset ExtOrd} {C : ExtOrd}
+end
 
 end
 end VaughtConjecture.Knight.PairedBoundarySections

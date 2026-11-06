@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Descriptive.Measurable
+public import InfinitaryLogic.Descriptive.StructureSpace
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 public import Mathlib.Topology.Clopen
 
 /-!

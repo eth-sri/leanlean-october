@@ -28,7 +28,6 @@ and the reviewer's final-gate construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
 open PairedSlotComparison SharpWitnessComposition
@@ -41,13 +40,18 @@ abbrev Member := ↥R.Catalogue
 
 instance : Fintype (Member R) := R.catalogue_finite.fintype
 
-theorem member_short (a : Member R) (f : Field P C) : Short N (a.val f) :=
+section
+variable (a : Member R) (f : Field P C)
+
+theorem member_short  : Short N (a.val f) :=
   CanonicalPairedProfiles.inventory_short _ _ a.property.1 f
 
-theorem member_bound (a : Member R) (f : Field P C) :
+theorem member_bound  :
     a.val f ≤ CanonicalFieldLayer.ceiling N (Field P C) := by
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 f).trans
   exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
+
+end
 
 theorem member_gate_visible (a : Member R) : SelfVis N (a.val .gate) := by
   obtain ⟨st, -, -, hg, he⟩ := a.property.2
@@ -67,7 +71,7 @@ theorem field_grade_le (f : Field P C) : f.grade ≤ N := by
   | gate => exact R.one_le_N
 
 /-- No future fields remain when the acquired context has arity `N`. -/
-theorem profile_present (st : R.State N) (f : Field P C) :
+theorem profile_present (st : R.State N) f :
     st.sourceProfile f = st.numeric f (field_grade_le R f) :=
   st.sourceProfile_of_present (field_grade_le R f)
 
@@ -108,8 +112,8 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
 vector. The gate is literally top after decoding, not merely positive. -/
 theorem exists_actual_member_reflecting :
     ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
+      (∀ d, δ (a.val (.req d)) = R.p d) ∧
+      (∀ d, δ (a.val (.priv d)) = R.vact d) ∧
       δ (a.val .gate) = ⊤ ∧
       ∀ f, δ (a.val f) = ⊥ ↔ a.val f = ⊥ := by
   let st := resync (R.actualState N)
@@ -130,8 +134,8 @@ theorem exists_actual_member_reflecting :
 /-- The field-level exact display, without its finite reflection receipt. -/
 theorem exists_actual_member :
     ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
+      (∀ d, δ (a.val (.req d)) = R.p d) ∧
+      (∀ d, δ (a.val (.priv d)) = R.vact d) ∧
       δ (a.val .gate) = ⊤ := by
   obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
   exact ⟨a, δ, hw, hP, hC, hg⟩

@@ -26,7 +26,7 @@ noncomputable def masterChart (w : Fin N ↪ M) (P : S β.1 N) : KnightRealizati
   (FiniteMaster.mk N w P : FiniteMaster knightTower β M).chart
 
 theorem eq_masterChart {A : KnightRealization β M}
-    (hcons : A.IsExactParentConsistent) (w : Fin N ↪ M) (P : S β.1 N)
+    (hcons : A.IsExactParentConsistent) w (P : S β.1 N)
     (hw : A.eval w = some P) (hmaster : MasteredBy A w) : A = masterChart w P :=
   FiniteMaster.eq_chart (T := knightTower) ⟨N, w, P⟩ hcons hw (fun t ht => hmaster t ht)
 

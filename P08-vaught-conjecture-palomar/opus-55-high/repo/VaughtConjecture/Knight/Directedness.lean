@@ -110,7 +110,7 @@ into a single injective tuple, the first as its initial segment (`t` first, then
 
 /-- Any two injective tuples `t`, `s` on `M` jointly embed into one injective tuple: `t` is an
 initial segment, and `s` embeds via `g`. -/
-theorem exists_common_tuple {M : Type w} {n m : ℕ} (t : Fin n ↪ M) (s : Fin m ↪ M) :
+theorem exists_common_tuple {M : Type w} {n m} t s :
     ∃ (k : ℕ) (w : Fin (n + k) ↪ M) (g : Fin m ↪ Fin (n + k)),
       (Fin.castAddEmb k).trans w = t ∧ g.trans w = s := by
   classical
@@ -121,7 +121,7 @@ theorem exists_common_tuple {M : Type w} {n m : ℕ} (t : Fin n ↪ M) (s : Fin 
   let e : Fin B.card → M := fun j => (B.equivFin.symm j : M)
   have he : Function.Injective e := fun i j hij =>
     B.equivFin.symm.injective (Subtype.coe_injective hij)
-  have hte : ∀ (a : Fin n) (b : Fin B.card), t a ≠ e b := by
+  have hte : ∀ a b, t a ≠ e b := by
     intro a b hab
     exact hBt _ (B.equivFin.symm b).2 ⟨a, hab⟩
   have hwinj : Function.Injective (Fin.append (⇑t) e) := by
@@ -182,20 +182,19 @@ restriction preserves the `∞`-label and the grade of a witnessing top cell
 (`label_mapCell`, `grade_mapCell`), and availability (Def. 2.5.4(2)) + completeness
 (Def. 2.5.15) then produce a full-scope `∞`-cell of the same grade in `q`
 (`grade_mem_topGrades`). -/
-theorem topGrade_le_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
+theorem topGrade_le_of_typeMap_eq_some {q} {p : S α m} {f : Fin m ↪ Fin n}
     (h : typeMap f q = some p) : p.topGrade ≤ q.topGrade := by
   by_cases hne : p.topGrades.Nonempty
   · obtain ⟨Θ, hsc, hgr, htop⟩ : p.topGrade ∈ p.topGrades :=
       Nat.sSup_mem hne p.topGrades_bddAbove
-    have hmem : p.topGrade ∈ q.topGrades := by
+    have hmem := by
       have hlab : q.label (mapCell h Θ) = ⊤ := by rw [label_mapCell h Θ, htop]
       have hmem' := grade_mem_topGrades hlab
       rwa [grade_mapCell h Θ, hgr] at hmem'
     exact le_csSup q.topGrades_bddAbove hmem
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     unfold topGrade
-    rw [hne]
-    simp [csSup_empty]
+    simp_all
 
 end StageType
 
@@ -250,8 +249,6 @@ theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
 
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
-
 end LabelledExt
 
 variable {R : KnightRealization α M}
@@ -264,7 +261,7 @@ cover there is a labelled cover containing any prescribed tuple.  *Concatenate*
 existential-closure clause is consulted, and no coface is manufactured: the larger cover is
 one of the realization's own. -/
 theorem exists_labelledExt_le (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (x : R.LabelledExt) {m : ℕ} (s : Fin m ↪ M) :
+    (hcov : R.IsInitialSegmentCovering) x {m} (s : Fin m ↪ M) :
     ∃ y : R.LabelledExt, x ≤ y ∧ ∃ g : Fin m ↪ Fin y.arity, g.trans y.tuple = s := by
   obtain ⟨k, w, g0, hwt, hws⟩ := exists_common_tuple x.tuple s
   obtain ⟨k', u, hu, husome⟩ := hcov w
@@ -272,7 +269,7 @@ theorem exists_labelledExt_le (hcons : R.IsExactParentConsistent)
   have htuple : ((Fin.castAddEmb k).trans (Fin.castAddEmb k')).trans u = x.tuple := by
     rw [Function.Embedding.trans_assoc, hu]
     exact hwt
-  have htype : typeMap ((Fin.castAddEmb k).trans (Fin.castAddEmb k')) q = some x.type := by
+  have htype := by
     have h := hcons u q ((Fin.castAddEmb k).trans (Fin.castAddEmb k')) hq
     rw [htuple, x.eval_eq] at h
     exact h.symm
@@ -282,8 +279,8 @@ theorem exists_labelledExt_le (hcons : R.IsExactParentConsistent)
   exact hws
 
 /-- Convenience wrapper of `exists_labelledExt_le` for a full model. -/
-theorem IsModel.exists_labelledExt_le (hR : R.IsModel) (x : R.LabelledExt) {m : ℕ}
-    (s : Fin m ↪ M) :
+theorem IsModel.exists_labelledExt_le (hR : R.IsModel) x {m}
+    s :
     ∃ y : R.LabelledExt, x ≤ y ∧ ∃ g : Fin m ↪ Fin y.arity, g.trans y.tuple = s :=
   KnightRealization.exists_labelledExt_le hR.consistent hR.covering x s
 
@@ -292,7 +289,7 @@ suffice): any two labelled covers have a common labelled extension.  Cor. 5.3.8'
 "amalgamation" citation is replaced by this theorem; no §4.3, no `ExtendsDomain`, no
 producer. -/
 theorem directed_labelledExt (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (x y : R.LabelledExt) :
+    (hcov : R.IsInitialSegmentCovering) x y :
     ∃ z : R.LabelledExt, x ≤ z ∧ y ≤ z := by
   obtain ⟨z, hxz, g, hg⟩ := exists_labelledExt_le hcons hcov x y.tuple
   refine ⟨z, hxz, g, hg, ?_⟩
@@ -309,11 +306,14 @@ theorem nonempty_labelledExt (hcov : R.IsInitialSegmentCovering) : Nonempty R.La
 
 /-! ### Dominating and coinitial sets of covers (Def. 5.3.9 / Cor. 5.3.8 vocabulary) -/
 
+section
+variable (D : Set R.LabelledExt)
+
 /-- A set of labelled covers is **dominating** when every labelled cover has a member above it
 (Def. 5.3.9's "dominating set"; for a model this quantification over labelled covers agrees
 with quantification over arbitrary tuples, `isDominating_iff` — the form
 `StabilizesTo` uses). -/
-def IsDominating (D : Set R.LabelledExt) : Prop :=
+def IsDominating  : Prop :=
   ∀ x : R.LabelledExt, ∃ y ∈ D, x ≤ y
 
 /-- A set of labelled covers is **coinitial** when above every labelled cover it contains a
@@ -321,8 +321,10 @@ whole principal tail (Cor. 5.3.8's "coinitial set"): every cover has an extensio
 *all* covers are members.  Unlike dominating sets, coinitial sets are closed under finite
 intersection (`IsCoinitial.inter`) — they form a filter with the tails
 (`isCoinitial_tail`). -/
-def IsCoinitial (D : Set R.LabelledExt) : Prop :=
+def IsCoinitial  : Prop :=
   ∀ x : R.LabelledExt, ∃ y, x ≤ y ∧ y.tail ⊆ D
+
+end
 
 /-- The actual cover order supplies Mathlib's directed-order interface. -/
 theorem labelledExt_isDirectedOrder (hcons : R.IsExactParentConsistent)
@@ -367,7 +369,7 @@ upgrade (headline 2) and tail intersections (headline 3) then apply to these set
 the Lemma 5.3.7 ratchet instance lands. -/
 theorem stabilizesTo_iff_isDominating (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) (x : R.LabelledExt)
-    (Xi : Cell x.type.scheme.scheme) (γ : ExtOrd) :
+    Xi γ :
     R.StabilizesTo x.tuple x.type Xi γ ↔ IsDominating (stableSet x Xi γ) := by
   constructor
   · intro H x'
@@ -389,9 +391,12 @@ theorem stabilizesTo_iff_isDominating (hcons : R.IsExactParentConsistent)
 
 /-! ### Top-grade growth -/
 
+section
+variable (R : KnightRealization α M)
+
 /-- The **growth set** at threshold `K`: the labelled covers whose label has top grade
 (Def. 5.3.1's `K^p`) strictly above `K`.  Upward closed by `topGrade_mono`. -/
-def growthSet (R : KnightRealization α M) (K : ℕ) : Set R.LabelledExt :=
+def growthSet (K : ℕ) : Set R.LabelledExt :=
   {y | K < y.type.topGrade}
 
 /-- The **growth branch** of Lemma 5.3.10's dichotomy, in dominating form (mirroring
@@ -399,8 +404,10 @@ def growthSet (R : KnightRealization α M) (K : ℕ) : Set R.LabelledExt :=
 alternative branch — `K^q` eventually constant — is Case 1 of Lemma 5.3.10 (no second witness
 needed); the split between them is classical control flow in the consumer (#51 boundary 3),
 never a theorem-milestone here. -/
-def HasTopGradeGrowth (R : KnightRealization α M) : Prop :=
+def HasTopGradeGrowth  : Prop :=
   ∀ K : ℕ, IsDominating (R.growthSet K)
+
+end
 
 end KnightRealization
 

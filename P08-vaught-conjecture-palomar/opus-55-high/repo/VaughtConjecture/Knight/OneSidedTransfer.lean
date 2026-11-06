@@ -42,10 +42,10 @@ Only the target is used. The empty root (`n = 0`) needs no separate case. Repeat
 coordinates never reach this lemma: the root is an embedding, and the forth step handles a
 repeated point through the chart's selector, without transfer. One direction of one step does
 not give back-and-forth equivalence. -/
-theorem receive_donor_uniform (β : Ordinal.{0}) {N : Type w}
-    {W' : KnightRealization (blockStage (β + 1)) N} (hcons : W'.IsExactParentConsistent)
-    (hFC : FiniteCutReceiving W') {n m : ℕ} (Q : S (blockStage (β + 1)).1 m)
-    (f : Fin n ↪ Fin m) (tb : Fin n ↪ N) (p : S (blockStage (β + 1)).1 n)
+theorem receive_donor_uniform β {N}
+    {W'} (hcons : W'.IsExactParentConsistent)
+    (hFC : FiniteCutReceiving W') {n m} Q
+    f tb (p : S (blockStage (β + 1)).1 n)
     (hp : typeMap f Q = some p) (htb : W'.eval tb = some p) :
     ∃ (ub : Fin m ↪ N) (Q' : S (blockStage (β + 1)).1 m), f.trans ub = tb ∧
       W'.eval ub = some Q' ∧

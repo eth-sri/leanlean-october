@@ -34,18 +34,18 @@ theorem isNormal_blockLevel : Order.IsNormal blockLevel :=
   (Ordinal.isNormal_add_right Ordinal.omega0).comp
     (Ordinal.isNormal_mul_right Ordinal.omega0_pos)
 
-theorem exists_lt_blockLevel_of_lt {l μ : Ordinal.{0}} (hl : Order.IsSuccLimit l)
+theorem exists_lt_blockLevel_of_lt {l μ} (hl : Order.IsSuccLimit l)
     (h : μ < blockLevel l) : ∃ ξ < l, μ < blockLevel ξ :=
   (isNormal_blockLevel.lt_iff_exists_lt hl).mp h
 
-theorem blockLevel_le_of_forall_lt {l b : Ordinal.{0}} (hl : Order.IsSuccLimit l)
+theorem blockLevel_le_of_forall_lt {l b} (hl : Order.IsSuccLimit l)
     (h : ∀ ξ < l, blockLevel ξ ≤ b) : blockLevel l ≤ b :=
   (isNormal_blockLevel.le_iff_forall_le hl).mpr h
 
 /-- A value below a limit block level, or `∞`, is determined by its truncations at the lower
 block levels. -/
-theorem ExtOrd.eq_of_forall_truncExt_blockLevel_eq {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
-    {x y : ExtOrd} (hx : x < ofOrd (blockLevel l) ∨ x = ⊤) (hy : y < ofOrd (blockLevel l) ∨ y = ⊤)
+theorem ExtOrd.eq_of_forall_truncExt_blockLevel_eq {l} (hl : Order.IsSuccLimit l)
+    {x y} (hx : x < ofOrd (blockLevel l) ∨ x = ⊤) (hy : y < ofOrd (blockLevel l) ∨ y = ⊤)
     (h : ∀ ξ < l, truncExt (blockLevel ξ) x = truncExt (blockLevel ξ) y) : x = y := by
   have h0 : (0 : Ordinal.{0}) < l := hl.pos
   rcases ExtOrd.cases x with rfl | rfl | ⟨μ, rfl⟩
@@ -92,7 +92,7 @@ variable {M : Type w}
 
 /-- **Limit uniqueness**: realizations at a limit block with equal reducts to every lower block
 are equal (no model hypotheses). -/
-theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
+theorem eq_of_reduct_eq_of_forall_lt {l} (hl : Order.IsSuccLimit l)
     {N N' : KnightRealization (blockStage l) M}
     (hred : ∀ ξ (h : ξ < l), N.reduct (blockStage_mono h.le) = N'.reduct (blockStage_mono h.le)) :
     N = N' := by
@@ -101,7 +101,7 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
   intro n t
   have hr : ∀ ξ (h : ξ < l), (N.eval t).map (knightTower.reduce (blockStage_mono h.le)) =
       (N'.eval t).map (knightTower.reduce (blockStage_mono h.le)) := fun ξ h =>
-    congrArg (fun R : KnightRealization (blockStage ξ) M => R.eval t) (hred ξ h)
+    congrArg (fun R => R.eval t) (hred ξ h)
   rcases hp' : N.eval t with _ | p' <;> rcases hp'' : N'.eval t with _ | p''
   · rfl
   · have := hr 0 h0
@@ -120,7 +120,7 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
       rw [hp', hp''] at this
       exact Option.some_injective _ this
     have hsch : p'.scheme = p''.scheme :=
-      congrArg (fun q : S (blockStage 0).1 n => q.scheme) (hrt 0 h0)
+      congrArg (fun q => q.scheme) (hrt 0 h0)
     obtain ⟨sc, lab, bnd, resp⟩ := p'
     obtain ⟨sc', lab', bnd', resp'⟩ := p''
     simp only at hsch
@@ -135,7 +135,7 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
 
 /-- **Reduction is injective on models**: two models at block `η` with equal reducts to a block
 `ξ ≤ η` are equal. -/
-theorem eq_of_reduct_eq_of_le (η : Ordinal.{0}) :
+theorem eq_of_reduct_eq_of_le η :
     ∀ (ξ : Ordinal.{0}) (hξη : ξ ≤ η) (N N' : KnightRealization (blockStage η) M),
       N.IsModel → N'.IsModel →
       N.reduct (blockStage_mono hξη) = N'.reduct (blockStage_mono hξη) → N = N' := by

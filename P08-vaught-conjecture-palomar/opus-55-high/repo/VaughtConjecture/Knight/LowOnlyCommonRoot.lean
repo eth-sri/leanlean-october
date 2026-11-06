@@ -44,13 +44,18 @@ namespace CommonRoot
 
 variable (R : CommonRoot P C)
 
-def fullP {j : ℕ} (a : P.scheme.below (faceIndex R.A j)) :
+section
+variable {j : ℕ}
+
+def fullP (a : P.scheme.below (faceIndex R.A j)) :
     P.scheme.below (R.A, R.A.card) :=
   ⟨a.1, a.2.1, a.2.2.trans (min_le_left _ _)⟩
 
-def fullC {j : ℕ} (a : C.scheme.below (faceIndex R.B j)) :
+def fullC (a : C.scheme.below (faceIndex R.B j)) :
     C.scheme.below (R.B, R.B.card) :=
   ⟨a.1, a.2.1, a.2.2.trans (min_le_left _ _)⟩
+
+end
 
 def faceAt (j : ℕ) : P.scheme.below (faceIndex R.A j) ≃
     C.scheme.below (faceIndex R.B j) where
@@ -71,30 +76,38 @@ def faceAt (j : ℕ) : P.scheme.below (faceIndex R.A j) ≃
     change (R.face (R.face.symm (R.fullC a))).1 = a.1
     exact congrArg Subtype.val (R.face.apply_symm_apply (R.fullC a))
 
-theorem at_grade {j : ℕ} (a : P.scheme.below (faceIndex R.A j)) :
+section
+variable {j : ℕ}
+
+theorem at_grade (a : P.scheme.below (faceIndex R.A j)) :
     P.scheme.grade a.1 = C.scheme.grade (R.faceAt j a).1 := R.grade (R.fullP a)
 
 /-- Lawfulness transport is proved from every actual row identity. -/
-theorem respects_iff {j : ℕ} (v : C.scheme.below (faceIndex R.B j) → ExtOrd) :
+theorem respects_iff (v : C.scheme.below (faceIndex R.B j) → ExtOrd) :
     RespectsSemanticsBelow C.rows (faceIndex R.B j) v ↔
       RespectsSemanticsBelow P.rows (faceIndex R.A j) (fun a => v (R.faceAt j a)) := by
-  have h := respects_iff_of_equiv (sem' := P.rows) (sem := C.rows) (R.faceAt j)
+  have h := respects_iff_of_equiv (R.faceAt j)
     R.at_grade (fun a b => R.scope (R.fullP a) (R.fullP b))
     (fun a d hd => R.row (R.fullP a) d hd) (fun a => v (R.faceAt j a))
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using h.symm
 
+end
+
 def Shared (u : Cell P.scheme → ExtOrd) (v : Cell C.scheme → ExtOrd) : Prop :=
   ∀ a, u a.1 = v (R.face a).1
 
-theorem shared_at {u : Cell P.scheme → ExtOrd} {v : Cell C.scheme → ExtOrd}
-    (h : R.Shared u v) {j : ℕ} (a : P.scheme.below (faceIndex R.A j)) :
+theorem shared_at {u : Cell P.scheme → ExtOrd} {v}
+    (h : R.Shared u v) {j} a :
     u a.1 = v (R.faceAt j a).1 := h (R.fullP a)
 
+section
+variable {j : ℕ}
+
 /-- Installing the present vector keeps the entire common root, including its future part. -/
-theorem shared_complete {j : ℕ} {u : Cell P.scheme → ExtOrd} {v : Cell C.scheme → ExtOrd}
-    (h : R.Shared u v) (u' : P.scheme.below (effC n j) → ExtOrd)
-    (v' : C.scheme.below (effC n j) → ExtOrd)
-    (hface : ∀ a : P.scheme.below (faceIndex R.A j),
+theorem shared_complete {u : Cell P.scheme → ExtOrd} {v}
+    (h : R.Shared u v) u'
+    v'
+    (hface : ∀ a,
       u' (CellScheme.below.mono (faceIndex_le R.A j) a) =
         v' (CellScheme.below.mono (faceIndex_le R.B j) (R.faceAt j a))) :
     R.Shared (completeAt u u') (completeAt v v') := by
@@ -111,17 +124,17 @@ theorem shared_complete {j : ℕ} {u : Cell P.scheme → ExtOrd} {v : Cell C.sch
 
 /-- Prescribe the private root in the original donor, preserving all donor caps.
 Empty roots and nominal grade zero need no bountifulness call. -/
-theorem installP {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
+theorem installP {u}
     (hu : RespectsSemanticsBelow P.rows (effC n j) u)
-    {v : C.scheme.below (effC n j) → ExtOrd}
+    {v}
     (hv : RespectsSemanticsBelow C.rows (effC n j) v)
-    {γ : ExtOrd} (hγ : SelfVis (effC n j).2 γ)
-    (hag : ∀ a : P.scheme.below (faceIndex R.A j),
+    {γ} (hγ : SelfVis (effC n j).2 γ)
+    (hag : ∀ a,
       min (u (CellScheme.below.mono (faceIndex_le R.A j) a)) γ =
         min (v (CellScheme.below.mono (faceIndex_le R.B j) (R.faceAt j a))) γ) :
     ∃ u', RespectsSemanticsBelow P.rows (effC n j) u' ∧
       (∀ d, min (u' d) γ = min (u d) γ) ∧
-      ∀ a : P.scheme.below (faceIndex R.A j),
+      ∀ a,
         u' (CellScheme.below.mono (faceIndex_le R.A j) a) =
           v (CellScheme.below.mono (faceIndex_le R.B j) (R.faceAt j a)) := by
   by_cases hk : 0 < min R.A.card j
@@ -133,17 +146,17 @@ theorem installP {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
   · exact ⟨u, hu, fun _ => rfl, fun a => (faceIndex_absent hk a).elim⟩
 
 /-- The reverse original-face installation uses the inverse actual root map. -/
-theorem installC {j : ℕ} {v : C.scheme.below (effC n j) → ExtOrd}
+theorem installC {v}
     (hv : RespectsSemanticsBelow C.rows (effC n j) v)
-    {u : P.scheme.below (effC n j) → ExtOrd}
+    {u}
     (hu : RespectsSemanticsBelow P.rows (effC n j) u)
-    {γ : ExtOrd} (hγ : SelfVis (effC n j).2 γ)
-    (hag : ∀ a : P.scheme.below (faceIndex R.A j),
+    {γ} (hγ : SelfVis (effC n j).2 γ)
+    (hag : ∀ a,
       min (v (CellScheme.below.mono (faceIndex_le R.B j) (R.faceAt j a))) γ =
         min (u (CellScheme.below.mono (faceIndex_le R.A j) a)) γ) :
     ∃ v', RespectsSemanticsBelow C.rows (effC n j) v' ∧
       (∀ d, min (v' d) γ = min (v d) γ) ∧
-      ∀ a : P.scheme.below (faceIndex R.A j),
+      ∀ a,
         v' (CellScheme.below.mono (faceIndex_le R.B j) (R.faceAt j a)) =
           u (CellScheme.below.mono (faceIndex_le R.A j) a) := by
   by_cases hk : 0 < min R.B.card j
@@ -154,10 +167,11 @@ theorem installC {j : ℕ} {v : C.scheme.below (effC n j) → ExtOrd}
     obtain ⟨v', hv', hcap, hface⟩ := C.bountiful.extend (faceIndex_mem R.B_mem hk)
       (effC_mem (hk.trans_le (min_le_right _ _))
         ((hk.trans_le (min_le_left _ _)).trans_le (by simpa using Finset.card_le_univ R.B)))
-      (faceIndex_le R.B j) hlaw hv hγ (fun a => by
-        simpa only [Equiv.apply_symm_apply] using hag ((R.faceAt j).symm a))
-    exact ⟨v', hv', hcap, fun a => by simpa using hface (R.faceAt j a)⟩
+      (faceIndex_le R.B j) hlaw hv hγ (fun a => by grind)
+    exact ⟨v', hv', hcap, fun a => by grind⟩
   · exact ⟨v, hv, fun _ => rfl, fun a => (faceIndex_absent hk (R.faceAt j a)).elim⟩
+
+end
 
 end CommonRoot
 end VaughtConjecture.Knight.LowOnly

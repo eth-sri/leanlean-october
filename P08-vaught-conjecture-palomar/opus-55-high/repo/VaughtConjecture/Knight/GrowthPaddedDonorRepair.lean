@@ -18,7 +18,6 @@ No symmetry of the admission predicate is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedDonorRepair
 open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
 open GrowthPaddedSuccessor GrowthPaddedDecode GrowthPaddedCharts
@@ -33,7 +32,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem donor_grade (d : I.left.scheme.below (Finset.univ, 2)) :
+theorem donor_grade d :
     (carrier I X T hA hB hC).grade (donorAt I X T hA hB hC d).1 =
       I.left.scheme.grade d.1 := by
   exact (congrArg Prod.snd (original_index I X T hA hB hC
@@ -42,13 +41,13 @@ theorem donor_grade (d : I.left.scheme.below (Finset.univ, 2)) :
 /-- A supplied original owner identifies the actual donor lower domain.
 The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped (hN : 2 < X.req.N)
-    (c : I.left.scheme.below (Finset.univ, 2))
+    c
     (hc : I.left.scheme.cell c.1 = (Finset.univ, 2)) (hg : I.left.scheme.grade c.1 = 2)
-    {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {p}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) p)
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (donorAt I X T hA hB hC d)) γ = min (p d) γ) :
     ∃ u, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) u ∧
       (∀ d, u (donorAt I X T hA hB hC d) = min (p d) (p c)) ∧
@@ -81,7 +80,7 @@ theorem owner_capped (hN : 2 < X.req.N)
   let fromEff := CellScheme.below.mono (D := I.left.scheme)
     (show GradedLe (Finset.univ, 2) (I.left.scheme.cell c.1) from by
       rw [hc]; exact GradedLe.refl _)
-  let s := (fun d : I.left.scheme.below (Finset.univ, 2) => S.donorValues d.1) ∘ toEff
+  let s := (fun d => S.donorValues d.1) ∘ toEff
   let p' := p ∘ toEff
   have hs' : RespectsSemanticsBelow I.left.rows (I.left.scheme.cell c.1) s :=
     hS.donor_lawful.mono _

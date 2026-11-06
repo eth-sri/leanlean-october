@@ -35,8 +35,8 @@ open TypeTower Value ExtOrd StageType
 universe w
 
 /-- The provisional value of an `∞`-cell is `α + j` for a natural `j`. -/
-theorem someProvisionalValue_top_form {β : Ordinal.{0}} {n : ℕ} {p : S β n}
-    {Xi : Cell p.scheme.scheme} (htop : p.label Xi = ⊤) :
+theorem someProvisionalValue_top_form {β} {n} {p : S β n}
+    {Xi} (htop : p.label Xi = ⊤) :
     ∃ j : ℕ, p.someProvisionalValue Xi = ofOrd (β + j) := by
   by_cases hcap : p.ProvisionalCap Xi
   · exact ⟨p.topGrade, someProvisionalValue_of_cap htop hcap⟩
@@ -51,9 +51,7 @@ theorem RespectsSemantics.jump {n : ℕ} {D : SemScheme n} {v : Cell D.scheme �
     (hgr : ∀ d : Cell D.scheme, D.scheme.grade d ≤ K) :
     RespectsSemantics D.rows (fun d => ExtOrd.jump (ofOrd (β + K)) (v d)) where
   orderly d := by
-    change ExtOrd.jump (ofOrd (β + K)) (v d) =
-      extVisibilityReplace (ExtOrd.jump (ofOrd (β + K)) (v d)) (D.scheme.grade d)
-        (D.scheme.grade d)
+    simp_all
     by_cases hle : v d ≤ ofOrd (β + K)
     · rw [jump_of_le hle]; exact h.orderly d
     · rw [jump_of_not_le hle, extVisibilityReplace_top]
@@ -77,30 +75,33 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
 /-! ### Gate 1: the stable value as a function -/
 
+section
+variable (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (Xi : Cell p.scheme.scheme)
+
 /-- **The stable value `M⁺(Ξ)` as a function** (Def. 5.3.9, functional under clauses (2) and
 (3)): a classical choice from the total graph `HasStableValue`. -/
-noncomputable def stableValue (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M)
-    (p : S α.1 n) (Xi : Cell p.scheme.scheme) : ExtOrd :=
+noncomputable def stableValue  : ExtOrd :=
   Classical.choose (exists_hasStableValue (R := R) t p Xi)
 
 /-- The specification of `stableValue`. -/
-theorem hasStableValue_stableValue (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M)
-    (p : S α.1 n) (Xi : Cell p.scheme.scheme) :
+theorem hasStableValue_stableValue  :
     R.HasStableValue t p Xi (R.stableValue t p Xi) :=
   Classical.choose_spec (exists_hasStableValue (R := R) t p Xi)
 
+end
+
 /-- Any value of the graph is the stable value. -/
 theorem stableValue_eq (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
+    (hcov : R.IsInitialSegmentCovering) {n} {t} {p : S α.1 n}
     (hpt : R.eval t = some p)
-    {Xi : Cell p.scheme.scheme} {γ : ExtOrd} (h : R.HasStableValue t p Xi γ) :
+    {Xi} {γ} (h : R.HasStableValue t p Xi γ) :
     R.stableValue t p Xi = γ :=
   HasStableValue.unique hcons hcov hpt (R.hasStableValue_stableValue t p Xi) h
 
 /-- A stabilizing value is the stable value. -/
 theorem stableValue_of_stabilizesTo (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    (hpt : R.eval t = some p) {Xi : Cell p.scheme.scheme} {γ : ExtOrd}
+    (hcov : R.IsInitialSegmentCovering) {n} {t} {p : S α.1 n}
+    (hpt : R.eval t = some p) {Xi} {γ}
     (hγ : γ < ofOrd (α.1 + Ordinal.omega0)) (h : R.StabilizesTo t p Xi γ) :
     R.stableValue t p Xi = γ :=
   stableValue_eq hcons hcov hpt (Or.inl ⟨hγ, h⟩)
@@ -109,19 +110,19 @@ theorem stableValue_of_stabilizesTo (hcons : R.IsExactParentConsistent)
 
 /-- The stable value of a non-`∞` cell is its source label. -/
 theorem stableValue_of_ne_top (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    (hpt : R.eval t = some p) {Xi : Cell p.scheme.scheme} (hne : p.label Xi ≠ ⊤) :
+    (hcov : R.IsInitialSegmentCovering) {n} {t} {p : S α.1 n}
+    (hpt : R.eval t = some p) {Xi} (hne : p.label Xi ≠ ⊤) :
     R.stableValue t p Xi = p.label Xi := by
   have hlt : p.label Xi < ofOrd (α.1 + Ordinal.omega0) := by
     rcases p.label_bound Xi with h | h
     · exact h.trans (ofOrd_lt_ofOrd.mpr (lt_add_of_pos_right _ Ordinal.omega0_pos))
-    · exact absurd h hne
+    · grind
   exact stableValue_of_stabilizesTo hcons hcov hpt hlt
     (stabilizesTo_label_of_ne_top ⟨n, t, p, hpt⟩ hne hcons hcov)
 
 /-- The stable value of an `∞` cell is at least `α`. -/
-theorem le_stableValue_of_top {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    (_hpt : R.eval t = some p) {Xi : Cell p.scheme.scheme} (htop : p.label Xi = ⊤) :
+theorem le_stableValue_of_top {n} {t} {p : S α.1 n}
+    (_hpt : R.eval t = some p) {Xi} (htop : p.label Xi = ⊤) :
     ofOrd α.1 ≤ R.stableValue t p Xi := by
   rcases R.hasStableValue_stableValue t p Xi with ⟨-, hs⟩ | ⟨heq, -⟩
   · obtain ⟨m', u, g, f, q, hpq, hq, hgu, hfu, hval⟩ := hs t
@@ -129,7 +130,7 @@ theorem le_stableValue_of_top {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
     calc ofOrd α.1 ≤ q.someProvisionalValue (mapCell hpq Xi) :=
           le_someProvisionalValue_of_top hlab
       _ = R.stableValue t p Xi := (isProvisionalValue_iff.mp hval).symm
-  · rw [heq]; exact le_top
+  · simp_all
 
 /-! ### Gate 2b: face naturality of the stable value -/
 
@@ -138,10 +139,10 @@ a cell stabilizes iff its underlying ambient cell does.  Each witness over the f
 at a tuple joining `u` to the requested tuple, already is an actual common extension; exact
 consistency and injectivity identify its embeddings.  The face's own evaluation is not an
 input. -/
-theorem stabilizesTo_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : ℕ}
-    {t : Fin n ↪ M} {p : S α.1 n} {u : Fin m ↪ M} {q : S α.1 m} (hqu : R.eval u = some q)
+theorem stabilizesTo_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m}
+    {t} {p} {u} {q : S α.1 m} (hqu : R.eval u = some q)
     {f : Fin n ↪ Fin m} (hfu : f.trans u = t) (hpq : typeMap f q = some p)
-    (Xi : Cell p.scheme.scheme) (γ : ExtOrd) :
+    Xi γ :
     R.StabilizesTo u q (mapCell hpq Xi) γ ↔ R.StabilizesTo t p Xi γ := by
   constructor
   · -- compose each witness's root embedding with the face
@@ -177,10 +178,10 @@ theorem stabilizesTo_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : ℕ
 
 /-- **Face naturality of the stable-value graph from exact consistency alone**: along an actual
 face, a cell has stable value `γ` iff its underlying ambient cell does. -/
-theorem hasStableValue_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : ℕ}
-    {t : Fin n ↪ M} {p : S α.1 n} {u : Fin m ↪ M} {q : S α.1 m} (hqu : R.eval u = some q)
+theorem hasStableValue_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m}
+    {t} {p} {u} {q : S α.1 m} (hqu : R.eval u = some q)
     {f : Fin n ↪ Fin m} (hfu : f.trans u = t) (hpq : typeMap f q = some p)
-    (Xi : Cell p.scheme.scheme) (γ : ExtOrd) :
+    Xi γ :
     R.HasStableValue u q (mapCell hpq Xi) γ ↔ R.HasStableValue t p Xi γ := by
   have h := fun δ => stabilizesTo_mapCell_iff' hcons hqu hfu hpq Xi δ
   refine or_congr (and_congr_right fun _ => h γ) (and_congr_right fun _ => ?_)
@@ -188,10 +189,10 @@ theorem hasStableValue_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : �
 
 /-- **Face naturality of the stable value from exact consistency alone** (the paper's
 `s_y = p*` coherence): along an actual face, corresponding cells have equal stable values. -/
-theorem stableValue_mapCell' (hcons : R.IsExactParentConsistent) {n m : ℕ}
-    {t : Fin n ↪ M} {p : S α.1 n} {u : Fin m ↪ M} {q : S α.1 m} (hqu : R.eval u = some q)
+theorem stableValue_mapCell' (hcons : R.IsExactParentConsistent) {n m}
+    {t} {p} {u} {q : S α.1 m} (hqu : R.eval u = some q)
     {f : Fin n ↪ Fin m} (hfu : f.trans u = t) (hpq : typeMap f q = some p)
-    (Xi : Cell p.scheme.scheme) :
+    Xi :
     R.stableValue u q (mapCell hpq Xi) = R.stableValue t p Xi :=
   HasStableValue.unique_of_consistent hcons (R.hasStableValue_stableValue u q _)
     ((hasStableValue_mapCell_iff' hcons hqu hfu hpq Xi _).mpr
@@ -202,8 +203,8 @@ set_option linter.unusedVariables false in
 interface.  The covering and face-evaluation hypotheses are no longer used; see
 `stableValue_mapCell'`. -/
 theorem stableValue_mapCell (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) {n m : ℕ} {t : Fin n ↪ M} {p : S α.1 n} {u : Fin m ↪ M}
-    {q : S α.1 m} (hpt : R.eval t = some p) (hqu : R.eval u = some q) {f : Fin n ↪ Fin m}
+    (hcov : R.IsInitialSegmentCovering) {n m : ℕ} {t} {p : S α.1 n} {u}
+    {q : S α.1 m} (hpt : R.eval t = some p) (hqu : R.eval u = some q) {f}
     (hfu : f.trans u = t) (hpq : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
     R.stableValue u q (mapCell hpq Xi) = R.stableValue t p Xi :=
   stableValue_mapCell' hcons hqu hfu hpq Xi

@@ -27,7 +27,6 @@ its rootwise attachment are separate adapters.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedModelReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 open CellScheme.restrictFace

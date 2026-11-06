@@ -19,7 +19,6 @@ controller family and its selected sections are constructed, not supplied.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldLayer
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
 open PairedSlotEncoding PairedSlotComparison
@@ -34,31 +33,27 @@ def Profile := {p : X → ExtOrd // RespectsSemantics sem (p ∘ occ) ∧
 instance : Fintype (Profile sem j X occ) :=
   ((CanonicalPairedProfiles.inventory_finite X j).subset (fun _ h => h.2)).fintype
 
-theorem profile_short (q : Profile sem j X occ) (x : X) : Short j (q.val x) :=
+theorem profile_short (q : Profile sem j X occ) x : Short j (q.val x) :=
   CanonicalPairedProfiles.inventory_short X j q.property.2 x
 
 def ceiling : ExtOrd := ofOrd (Ordinal.omega0 * (2 * Fintype.card X + 1 : ℕ) + j)
 
-theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
+theorem grid_bound {h} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     h ≤ ceiling j X := by
-  classical
   rcases Finset.mem_insert.mp hh with rfl | hh
-  · exact bot_le
+  · simp_all
   · obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hh
-    have hb' : b ≤ 2 * Fintype.card X + 1 := by
-      have := Finset.mem_range.mp hb
-      omega
+    have hb' : b ≤ 2 * Fintype.card X + 1 := by grind
     exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr) le_rfl)
 
-theorem profile_bound (q : Profile sem j X occ) (x : X) : q.val x ≤ ceiling j X := by
+theorem profile_bound (q : Profile sem j X occ) x : q.val x ≤ ceiling j X := by
   apply (CanonicalPairedProfiles.inventory_bound X j q.property.2 x).trans
-  exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
+  exact ofOrd_le_ofOrd.mpr (add_le_add (by simp_all) le_rfl)
 
-theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
+theorem grid_short {h} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     Short j h := by
-  classical
   rcases Finset.mem_insert.mp hh with rfl | hh
-  · exact Or.inl rfl
+  · tauto
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp hh
     exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_mul_add]⟩)
 
@@ -121,10 +116,13 @@ def data : SourcePrefixLayer.Data (scheme sem j X occ hj hA) j X where
       using hag (occ x)
 
 abbrev rows := (data sem j X occ hj hA hproper hg).rows
-abbrev source (q : Profile sem j X occ) :=
+section
+variable (q : Profile sem j X occ)
+
+abbrev source  :=
   (data sem j X occ hj hA hproper hg).profile (controller sem j X occ hj hA q)
 
-theorem source_old (q : Profile sem j X occ) (d : Cell D) :
+theorem source_old d :
     source sem j X occ hj hA hproper hg q (old sem j X occ hj hA d) = q.val (occ d) := by
   rw [source, SourcePrefixLayer.Data.profile_old _ _ (SeparatedSourceLayerCarrier.old_not_full
     D (Profile sem j X occ) j hj hA
@@ -134,7 +132,9 @@ theorem source_old (q : Profile sem j X occ) (d : Cell D) :
   simp only [lower, member, controller, ProperBoundarySourceLayer.member_controller,
     ProperBoundarySourceLayer.lower_old, Function.comp_apply]
 
-theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
+end
+
+theorem inherited_row c d :
     (rows sem j X occ hj hA hproper hg).E (old sem j X occ hj hA c)
       (ownerEquiv sem j X occ hj hA hproper c d) = sem.E c d := by
   rw [SourcePrefixLayer.Data.row_old _ (SeparatedSourceLayerCarrier.old_not_full
@@ -152,10 +152,9 @@ theorem consistent (hs : sem.IsConsistent) : (rows sem j X occ hj hA hproper hg)
       ownerEquiv sem j X occ hj hA hproper c = sem.E c := by
     funext d
     exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
-  rw [he]
-  exact hs c
+  aesop
 
-theorem source_prefix (p q : Profile sem j X occ) {h : ExtOrd}
+theorem source_prefix p q {h}
     (hh : h ∈ sourceGrid j (Fintype.card X)) (hag : Agree p.val q.val h) :
     Agree (source sem j X occ hj hA hproper hg p)
       (source sem j X occ hj hA hproper hg q) h := by
@@ -166,7 +165,7 @@ theorem source_prefix (p q : Profile sem j X occ) {h : ExtOrd}
 
 theorem full_source_short (c : Cell (scheme sem j X occ hj hA))
     (hc : (scheme sem j X occ hj hA).scope c = A)
-    (d : (scheme sem j X occ hj hA).below ((scheme sem j X occ hj hA).cell c)) :
+    d :
     Short ((scheme sem j X occ hj hA).grade c) ((rows sem j X occ hj hA hproper hg).E c d) := by
   apply (data sem j X occ hj hA hproper hg).full_source_short
     (fun _ hh => grid_short j X hh) _ _ c hc d
@@ -225,7 +224,7 @@ theorem section_bound (hC : SelfVis j C) (hb : ∀ x, p x ≤ C)
   obtain ⟨x, hx⟩ := mem_values.mp ha
   simpa only [hx] using hb x
 
-theorem section_supported {K : ℕ} (hjK : j ≤ K) (hCG : C ∈ G)
+theorem section_supported {K} (hjK : j ≤ K) (hCG : C ∈ G)
     (d : Cell (scheme sem j X occ hj hA)) :
     OrbitPrefixSupport.Supported K (G : Set ExtOrd) p
       (sectionOf sem j X occ hj hA hproper hg hp ht G C d) :=
@@ -233,8 +232,8 @@ theorem section_supported {K : ℕ} (hjK : j ≤ K) (hCG : C ∈ G)
 
 /-- Both outer decoder parameters are held fixed. Agreement includes all
 actual new controller coordinates, not just the projected old fields. -/
-theorem section_agreement {q : X → ExtOrd} (hq : RespectsSemantics sem (q ∘ occ))
-    (htq : ∀ x, q x ≠ ⊤) {h : ExtOrd}
+theorem section_agreement {q} hq
+    (htq : ∀ x, q x ≠ ⊤) {h}
     (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem j X occ hj hA hproper hg hp ht G C)

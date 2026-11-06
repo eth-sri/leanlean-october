@@ -18,7 +18,6 @@ selected-section or ambient-extension hypothesis is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NativePrivateFace
 open Transform Value ExtOrd CappedDonor
 noncomputable section

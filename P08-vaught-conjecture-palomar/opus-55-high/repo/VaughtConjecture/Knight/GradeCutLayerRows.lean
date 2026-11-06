@@ -16,8 +16,6 @@ across their exact lower domains; their source values are not renormalized.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GradeCutLayerRows
 
 open Transform Value ExtOrd SourceLayerCarrier GradeCutLayerCarrier
@@ -36,7 +34,7 @@ theorem proper_scope (c : Cell D) : ¬ A ⊆ D.scope c := by
 
 def oldBelow (c : Cell D) := properEquiv D Q j hj hA (D.cell c) (proper_scope D hp c)
 
-def rowAt (x : Cell D ⊕ Q) : (enlarged D Q j hj hA).below (index D Q j x) → ExtOrd :=
+def rowAt x : (enlarged D Q j hj hA).below (index D Q j x) → ExtOrd :=
   match x with
   | .inl c => fun d => sem.E c ((oldBelow D Q j hj hA hp c).symm d)
   | .inr q => fun d => low.E (toCell (GradeCutBoundary.scheme D j) Q j hj hA (.inr q))
@@ -44,7 +42,7 @@ def rowAt (x : Cell D ⊕ Q) : (enlarged D Q j hj hA).below (index D Q j x) → 
         simpa only [cell_toCell, index] using
           ((belowEquiv D Q j hj hA (A, j) le_rfl).symm d).2⟩
 
-theorem oldBelow_cell (c : Cell D) (d : (enlarged D Q j hj hA).below (D.cell c)) :
+theorem oldBelow_cell c d :
     D.cell ((oldBelow D Q j hj hA hp c).symm d).1 =
       (enlarged D Q j hj hA).cell d.1 := by
   have he := congrArg Subtype.val ((oldBelow D Q j hj hA hp c).apply_symm_apply d)
@@ -52,7 +50,7 @@ theorem oldBelow_cell (c : Cell D) (d : (enlarged D Q j hj hA).below (D.cell c))
   rw [← he, cell_toCell]
   rfl
 
-theorem lowBelow_cell (d : (enlarged D Q j hj hA).below (A, j)) :
+theorem lowBelow_cell d :
     (small D Q j hj hA).cell ((belowEquiv D Q j hj hA (A, j) le_rfl).symm d).1 =
       (enlarged D Q j hj hA).cell d.1 := by
   have he := congrArg Subtype.val
@@ -60,8 +58,8 @@ theorem lowBelow_cell (d : (enlarged D Q j hj hA).below (A, j)) :
   change embed D Q j hj hA _ = d.1 at he
   rw [← he, embed_cell]
 
-theorem rowAt_orderly (x : Cell D ⊕ Q)
-    (d : (enlarged D Q j hj hA).below (index D Q j x)) :
+theorem rowAt_orderly x
+    d :
     rowAt D Q j hj hA hp sem low x d =
       extVisibilityReplace (rowAt D Q j hj hA hp sem low x d)
         ((enlarged D Q j hj hA).grade d.1) ((enlarged D Q j hj hA).grade d.1) := by
@@ -69,7 +67,6 @@ theorem rowAt_orderly (x : Cell D ⊕ Q)
   | inl a =>
     have hv := sem.orderly a ((oldBelow D Q j hj hA hp a).symm d)
     have hg := congrArg Prod.snd (oldBelow_cell D Q j hj hA hp a d)
-    change D.grade _ = (enlarged D Q j hj hA).grade d.1 at hg
     exact hv.trans (congrArg (fun i => extVisibilityReplace _ i i) hg)
   | inr q =>
     have hv := low.orderly (toCell (GradeCutBoundary.scheme D j) Q j hj hA (.inr q))
@@ -77,7 +74,6 @@ theorem rowAt_orderly (x : Cell D ⊕ Q)
         rw [cell_toCell]
         exact ((belowEquiv D Q j hj hA (A, j) le_rfl).symm d).2⟩
     have hg := congrArg Prod.snd (lowBelow_cell D Q j hj hA d)
-    change (small D Q j hj hA).grade _ = (enlarged D Q j hj hA).grade d.1 at hg
     exact hv.trans (congrArg (fun i => extVisibilityReplace _ i i) hg)
 
 def rows : Semantics (enlarged D Q j hj hA) where
@@ -85,29 +81,28 @@ def rows : Semantics (enlarged D Q j hj hA) where
     ⟨d.1, by simpa only [← cell_eq] using d.2⟩
   orderly c d := rowAt_orderly D Q j hj hA hp sem low _ _
 
-theorem rowAt_congr {x y : Cell D ⊕ Q} (hxy : x = y)
-    {d : (enlarged D Q j hj hA).below (index D Q j x)}
-    {e : (enlarged D Q j hj hA).below (index D Q j y)} (hde : d.1 = e.1) :
+theorem rowAt_congr {x y} (hxy : x = y)
+    {d}
+    {e} (hde : d.1 = e.1) :
     rowAt D Q j hj hA hp sem low x d = rowAt D Q j hj hA hp sem low y e := by
   subst y
   rw [Subtype.ext hde]
 
-theorem rows_toCell (x : Cell D ⊕ Q)
-    (d : (enlarged D Q j hj hA).below ((enlarged D Q j hj hA).cell
-      (toCell D Q j hj hA x))) :
+theorem rows_toCell x
+    d :
     (rows D Q j hj hA hp sem low).E (toCell D Q j hj hA x) d =
       rowAt D Q j hj hA hp sem low x
         ⟨d.1, by simpa only [cell_toCell] using d.2⟩ :=
   rowAt_congr D Q j hj hA hp sem low (toOcc_toCell D Q j hj hA x) rfl
 
-theorem old_row (c : Cell D) (d : D.below (D.cell c)) :
+theorem old_row c d :
     (rows D Q j hj hA hp sem low).E (toCell D Q j hj hA (.inl c))
       (ownerEquiv D Q j hj hA hp c d) = sem.E c d := by
   rw [rows_toCell]
   change sem.E c ((oldBelow D Q j hj hA hp c).symm ((oldBelow D Q j hj hA hp c) d)) = _
   rw [Equiv.symm_apply_apply]
 
-theorem controller_row (q : Q)
+theorem controller_row q
     (d : (small D Q j hj hA).below (A, j)) :
     (rows D Q j hj hA hp sem low).E (toCell D Q j hj hA (.inr q))
       ⟨embed D Q j hj hA d.1, by
@@ -116,12 +111,11 @@ theorem controller_row (q : Q)
       ⟨d.1, by rw [cell_toCell]; exact d.2⟩ := by
   refine (rows_toCell D Q j hj hA hp sem low (.inr q) _).trans ?_
   apply low.E_congr' rfl
-  exact congrArg (fun z : (small D Q j hj hA).below (A, j) => z.1)
+  exact congrArg (fun z => z.1)
     ((belowEquiv D Q j hj hA (A, j) le_rfl).symm_apply_apply d)
 
-theorem old_respects_iff (c : Cell D)
-    (p : (enlarged D Q j hj hA).below
-      ((enlarged D Q j hj hA).cell (toCell D Q j hj hA (.inl c))) → ExtOrd) :
+theorem old_respects_iff c
+    p :
     RespectsSemanticsBelow (rows D Q j hj hA hp sem low) _ p ↔
       RespectsSemanticsBelow sem (D.cell c) (p ∘ ownerEquiv D Q j hj hA hp c) := by
   have ht := respects_iff_of_equiv (sem' := sem) (sem := rows D Q j hj hA hp sem low)
@@ -137,8 +131,7 @@ theorem old_respects_iff (c : Cell D)
   have he : (p ∘ ownerEquiv D Q j hj hA hp c) ∘
       (ownerEquiv D Q j hj hA hp c).symm = p := by
     funext d; simp only [Function.comp_apply, Equiv.apply_symm_apply]
-  rw [he] at ht
-  exact ht.symm
+  grind
 
 variable (hmatch : ∀ (c : Cell (GradeCutBoundary.scheme D j))
   (d : (GradeCutBoundary.scheme D j).below ((GradeCutBoundary.scheme D j).cell c)),
@@ -189,11 +182,9 @@ theorem lower_respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
     (fun b d _ => (embedded_row D Q j hj hA hp sem low hmatch b.1 d).symm) p
 
 omit hmatch in
-theorem cast_respects {B C : Finset ι × ℕ} (h : B = C)
-    {p : D.below B → ExtOrd} (hr : RespectsSemanticsBelow sem B p) :
-    RespectsSemanticsBelow sem C (fun d => p ⟨d.1, h.symm ▸ d.2⟩) := by
-  subst C
-  exact hr
+theorem cast_respects {B C} (h : B = C)
+    {p} (hr : RespectsSemanticsBelow sem B p) :
+    RespectsSemanticsBelow sem C (fun d => p ⟨d.1, h.symm ▸ d.2⟩) := by aesop
 
 theorem consistent (hs : sem.IsConsistent) (hl : low.IsConsistent) :
     (rows D Q j hj hA hp sem low).IsConsistent := by
@@ -239,13 +230,13 @@ def glue (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
 
 omit hmatch in
 theorem glue_old (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
-    (c : Cell D) : glue D Q j hj hA p r (toCell D Q j hj hA (.inl c)) = p c := by
+    c : glue D Q j hj hA p r (toCell D Q j hj hA (.inl c)) = p c := by
   simp only [glue, toOcc_toCell]
 
 omit hmatch in
 theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
     (hr : ∀ c, r (toCell (GradeCutBoundary.scheme D j) Q j hj hA (.inl c)) =
-      p (GradeCutBoundary.toCell D j c)) (c : Cell (small D Q j hj hA)) :
+      p (GradeCutBoundary.toCell D j c)) c :
     glue D Q j hj hA p r (embed D Q j hj hA c) = r c := by
   obtain ⟨x, rfl⟩ := (enumeration (GradeCutBoundary.scheme D j) Q j hj hA).surjective c
   change glue D Q j hj hA p r (embed D Q j hj hA
@@ -254,7 +245,6 @@ theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → Ext
   cases x with
   | inl c => exact (glue_old D Q j hj hA p r _).trans (hr c).symm
   | inr q =>
-    change glue D Q j hj hA p r (toCell D Q j hj hA (.inr q)) = _
     simp only [glue, toOcc_toCell]
     rfl
 
@@ -277,9 +267,7 @@ theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q j hj hA) → 
     have hBJ : BJ.2 ≤ j := by dsimp only [BJ]; rw [cell_toCell]; exact le_rfl
     have ht := (lower_respects_iff D Q j hj hA hp sem low hmatch BJ hBJ _).mp (hr.toBelow BJ)
     change RespectsSemanticsBelow (rows D Q j hj hA hp sem low) BJ _
-    have heq : (fun d : (enlarged D Q j hj hA).below BJ => glue D Q j hj hA p r d.1) =
-        (fun d : (small D Q j hj hA).below BJ => r d.1) ∘
-          (belowEquiv D Q j hj hA BJ hBJ).symm := by
+    have heq := by
       funext d
       have he := congrArg (fun z : (enlarged D Q j hj hA).below BJ => z.1)
         ((belowEquiv D Q j hj hA BJ hBJ).apply_symm_apply d)

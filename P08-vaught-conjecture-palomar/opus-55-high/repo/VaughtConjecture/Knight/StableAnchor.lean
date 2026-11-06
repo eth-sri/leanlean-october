@@ -52,11 +52,11 @@ open TypeTower StageType KnightRealization Value ExtOrd Transform
 /-- **Source pinning.**  A bottom-preserving map commuting with replacement through `N` that
 sends `x` to `α + j` (`α` a limit, `j < N`) sees `x = ξ + j` for a block start `ξ` that it sends
 to `α`. -/
-theorem source_pinned {τ : ExtOrd → ExtOrd} (hbot : τ ⊥ = ⊥) {N j : ℕ} (hjN : j < N)
+theorem source_pinned {τ : ExtOrd → ExtOrd} (hbot : τ ⊥ = ⊥) {N j} (hjN : j < N)
     (hcomm : ∀ x k i, k ≤ N → i ≤ k →
       τ (extVisibilityReplace x k i) = extVisibilityReplace (τ x) k i)
-    {α : Ordinal.{0}} (hα : limitPart α = α) {x : ExtOrd} (hτx : τ x = ofOrd (α + j)) :
-    ∃ ξ : Ordinal.{0}, limitPart ξ = ξ ∧ x = ofOrd (ξ + j) ∧ τ (ofOrd ξ) = ofOrd α := by
+    {α} (hα : limitPart α = α) {x} (hτx : τ x = ofOrd (α + j)) :
+    ∃ ξ, limitPart ξ = ξ ∧ x = ofOrd (ξ + j) ∧ τ (ofOrd ξ) = ofOrd α := by
   have hevr : ∀ k, k ≤ N → extVisibilityReplace (ofOrd (α + j)) N k = ofOrd (α + k) := by
     intro k _
     rw [extVisibilityReplace_of_finitePart_lt (by
@@ -88,16 +88,16 @@ theorem source_pinned {τ : ExtOrd → ExtOrd} (hbot : τ ⊥ = ⊥) {N j : ℕ}
 
 /-- **Replacement above a block start**: for `y` strictly above the limit `ξ`, its replacement
 at `(j+1, j+1)` is strictly above `ξ + j`. -/
-theorem evr_succ_gt_of_gt_limit {ξ : Ordinal.{0}} (hξ : limitPart ξ = ξ) {y : ExtOrd}
+theorem evr_succ_gt_of_gt_limit {ξ} (hξ : limitPart ξ = ξ) {y}
     (hy : ofOrd ξ < y) (j : ℕ) :
     ofOrd (ξ + j) < extVisibilityReplace y (j + 1) (j + 1) := by
   have hstep : ξ + (j : Ordinal.{0}) < ξ + ((j + 1 : ℕ) : Ordinal.{0}) :=
     add_lt_add_right (Nat.cast_lt.mpr (Nat.lt_succ_self j)) _
   rcases ExtOrd.cases y with rfl | rfl | ⟨η, rfl⟩
-  · exact absurd hy not_lt_bot
-  · rw [extVisibilityReplace_top]; exact ofOrd_lt_top _
+  · simp_all
+  · simp_all
   · rw [ofOrd_lt_ofOrd] at hy
-    have hl : ξ ≤ limitPart η := by
+    have hl := by
       have := limitPart_mono hy.le
       rwa [hξ] at this
     by_cases hfp : j + 1 ≤ finitePart η
@@ -120,8 +120,8 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
 /-- **A finite stable top value is an anchor at infinity** at threshold `j + 1`, with the
 source inequality strict already at owner grade `j + 1`. -/
-theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    (hpt : R.eval t = some p) {Xi : Cell p.scheme.scheme} (hXi : p.label Xi = ⊤) {j : ℕ}
+theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t} {p : S α.1 n}
+    (hpt : R.eval t = some p) {Xi} (hXi : p.label Xi = ⊤) {j : ℕ}
     (hs : R.stableValue t p Xi = ofOrd (α.1 + j)) : R.IsInfinityAnchor t p Xi (j + 1) := by
   refine ⟨hXi, ?_⟩
   intro m s f q hfs hq hpq Θ hΘgr hΘtop Sig hSig hXi'
@@ -175,16 +175,16 @@ theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} 
 /-- **Stable identity in hollow models**: every actual stable label equals its ordinary label.
 The literal `IsHollow` (no anchor at any threshold) is used; the finite-characteristic vacuity
 of anchors above a bounded characteristic arity is not repaired here. -/
-theorem stableValue_eq_label_of_hollow (hM : R.IsModel) (hh : R.IsHollow) {n : ℕ}
-    {t : Fin n ↪ M} {p : S α.1 n} (hpt : R.eval t = some p) (Xi : Cell p.scheme.scheme) :
+theorem stableValue_eq_label_of_hollow (hM : R.IsModel) (hh : R.IsHollow) {n}
+    {t} {p : S α.1 n} (hpt : R.eval t = some p) Xi :
     R.stableValue t p Xi = p.label Xi := by
   by_cases htop : p.label Xi = ⊤
   · rcases R.hasStableValue_stableValue t p Xi with ⟨hlt, -⟩ | ⟨heq, -⟩
     · exfalso
-      have hge := le_stableValue_of_top (R := R) hpt htop
+      have hge := le_stableValue_of_top hpt htop
       obtain ⟨j, hj⟩ := exists_nat_of_band hge hlt
       exact hh ⟨n, t, p, hpt, Xi, j + 1, isInfinityAnchor_of_stable hM hpt htop hj⟩
-    · rw [heq, htop]
+    · grind
   · exact stableValue_of_ne_top hM.consistent hM.covering hpt htop
 
 end VaughtConjecture.Knight

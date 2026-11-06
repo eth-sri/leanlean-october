@@ -46,7 +46,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
   {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 /-- One implication per actual pair of source occurrences. No auxiliary floor values occur. -/
-def RowBlockBottom (sem : Semantics D) (BJ : Finset ι × ℕ)
+def RowBlockBottom (sem : Semantics D) BJ
     (r : D.below BJ → ExtOrd) : Prop :=
   ∀ (c : D.below BJ) (d e : D.below (D.cell c.1)),
     blockFloor (sem.E c.1 d) = blockFloor (sem.E c.1 e) →
@@ -65,7 +65,7 @@ theorem rowBlockBottom_of_respects {q : D.below BJ → ExtOrd}
 /-- For a scalar image of a respecting labelling, the source-block bottom law is exact.
 The test is stated entirely in terms of semantic sources and actual capped target labels. -/
 theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} {ν : ExtOrd → ExtOrd}
+    (hr : RespectsSemanticsBelow sem BJ r) {K} {ν}
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) ↔
       RowBlockBottom sem BJ (fun d => ν (r d)) := by
@@ -116,7 +116,7 @@ theorem rowBlockBottom_of_same_pattern {q r : D.below BJ → ExtOrd}
   exact (he c e).mpr (hq c d e hb ((he c d).mp hz))
 
 /-- Capped agreement at a nonbottom cap preserves the cellwise bottom flag. -/
-theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ : ExtOrd}
+theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ}
     (hγ : γ ≠ ⊥) (hag : ∀ d, min (r d) γ = min (q d) γ) :
     ∀ d, r d = ⊥ ↔ q d = ⊥ := by
   intro d
@@ -129,8 +129,8 @@ theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ : E
 respect is a conclusion, not an assumption. The cap need not satisfy a visibility hypothesis. -/
 theorem map_respects_of_positive_cap_agreement {q r : D.below BJ → ExtOrd}
     (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)
-    {K : ℕ} {ν : ExtOrd → ExtOrd} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
-    (hν : BoundedMap K ν) {γ : ExtOrd} (hγ : γ ≠ ⊥)
+    {K : ℕ} {ν} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
+    (hν : BoundedMap K ν) {γ} (hγ : γ ≠ ⊥)
     (hag : ∀ d, min (ν (r d)) γ = min (q d) γ) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) := by
   apply (map_respects_iff_rowBlockBottom hr hK hν).mpr

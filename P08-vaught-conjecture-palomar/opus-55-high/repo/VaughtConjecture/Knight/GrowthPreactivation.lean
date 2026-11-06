@@ -17,7 +17,6 @@ argument. The activation relation is not weakened; it is inactive at this cutoff
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -32,7 +31,7 @@ theorem complete_lawful (hp : RespectsSemanticsBelow sem (A, j) p) :
   simpa only [complete_present] using hp
 
 theorem complete_visible (hu : ∀ d, SelfVis 1 (u d))
-    (hp : RespectsSemanticsBelow sem (A, j) p) (d : Cell D) : SelfVis 1 (complete u p d) := by
+    (hp : RespectsSemanticsBelow sem (A, j) p) d : SelfVis 1 (complete u p d) := by
   by_cases hd : D.grade d ≤ j
   · let e : D.below (A, j) := ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩
     rw [complete_present u p e]
@@ -41,13 +40,14 @@ theorem complete_visible (hu : ∀ d, SelfVis 1 (u d))
   · rw [complete_future u p d (not_le.mp hd)]
     exact hu d
 
-theorem complete_caps {γ : ExtOrd} (h : ∀ d, min (p d) γ = min (u d.1) γ)
-    (d : Cell D) : min (complete u p d) γ = min (u d) γ := by
+theorem complete_caps {γ} (h : ∀ d, min (p d) γ = min (u d.1) γ)
+    d : min (complete u p d) γ = min (u d) γ := by
   by_cases hd : D.grade d ≤ j
   · let e : D.below (A, j) := ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩
     rw [complete_present u p e]
     exact h e
   · rw [complete_future u p d (not_le.mp hd)]
+
 end Complete
 
 variable {n J r : ℕ} {P : SemScheme (n + 1)} {C : SemScheme J}
@@ -60,10 +60,15 @@ variable {n J r : ℕ} {P : SemScheme (n + 1)} {C : SemScheme J}
 
 namespace RootAttachment
 
-theorem privateIncl (j : ℕ) : GradedLe (Finset.univ.image fC, j) (Finset.univ, j) :=
+section
+variable (j : ℕ)
+
+theorem privateIncl  : GradedLe (Finset.univ.image fC, j) (Finset.univ, j) :=
   ⟨Finset.subset_univ _, le_rfl⟩
-theorem donorIncl (j : ℕ) : GradedLe (Finset.univ.image fP, j) (Finset.univ, j) :=
+theorem donorIncl  : GradedLe (Finset.univ.image fP, j) (Finset.univ, j) :=
   ⟨Finset.subset_univ _, le_rfl⟩
+
+end
 
 local notation "aP" => donorIncl (fP := fP)
 local notation "aC" => privateIncl (fC := fC)
@@ -76,14 +81,17 @@ theorem shared_at {S : State C.scheme P.scheme} {j : ℕ} (hS : Admitted X j S)
   rw [R.at_occurrence a]
   exact hS.shared (R.full a)
 
-def replace {j : ℕ} (S : State C.scheme P.scheme)
+def replace {j} (S : State C.scheme P.scheme)
     (u : C.scheme.below (Finset.univ, j) → ExtOrd)
     (v : P.scheme.below (Finset.univ, j) → ExtOrd) : State C.scheme P.scheme :=
   ⟨complete S.privateValues u, complete S.donorValues v⟩
 
 include R
 
-theorem replace_shared {j : ℕ} {S : State C.scheme P.scheme} (hS : Admitted X j S)
+section
+variable {j : ℕ}
+
+theorem replace_shared {S : State C.scheme P.scheme} (hS : Admitted X j S)
     (u : C.scheme.below (Finset.univ, j) → ExtOrd)
     (v : P.scheme.below (Finset.univ, j) → ExtOrd)
     (he : ∀ a : P.scheme.below (Finset.univ.image fP, j),
@@ -93,8 +101,7 @@ theorem replace_shared {j : ℕ} {S : State C.scheme P.scheme} (hS : Admitted X 
   intro d
   by_cases hd : P.scheme.grade d.1 ≤ j
   · let a := R.filtered d hd
-    have hc : (e j a).1 = (X.κ d).1 := R.at_occurrence a
-    change complete S.donorValues v d.1 = complete S.privateValues u (X.κ d).1
+    have hc := R.at_occurrence a
     exact (complete_present S.donorValues v (CellScheme.below.mono (aP j) a)).trans
       ((he a).trans ((complete_present S.privateValues u
         (CellScheme.below.mono (aC j) (e j a))).symm.trans
@@ -104,7 +111,7 @@ theorem replace_shared {j : ℕ} {S : State C.scheme P.scheme} (hS : Admitted X 
       complete_future S.privateValues u (X.κ d).1 (by rw [R.grade]; exact not_le.mp hd)]
     exact hS.shared d
 
-theorem replace_admitted {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
+theorem replace_admitted (hj : j < X.req.N) {S : State C.scheme P.scheme}
     (hS : Admitted X j S)
     {u : C.scheme.below (Finset.univ, j) → ExtOrd}
     {v : P.scheme.below (Finset.univ, j) → ExtOrd}
@@ -124,7 +131,7 @@ theorem replace_admitted {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.sche
 
 /-- Private pre-activation fibre: literal prescription, all complete caps,
 and literal future fields on both sides. -/
-theorem private_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
+theorem private_before (hj : j < X.req.N) {S : State C.scheme P.scheme}
     (hS : Admitted X j S) {u : C.scheme.below (Finset.univ, j) → ExtOrd}
     (hu : RespectsSemanticsBelow C.rows (Finset.univ, j) u)
     {γ : ExtOrd} (hγ : SelfVis j γ)
@@ -150,7 +157,7 @@ theorem private_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme
 
 /-- Donor pre-activation fibre uses private bountifulness through the inverse
 literal root map. This is not an exchange of the active request relation. -/
-theorem donor_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
+theorem donor_before (hj : j < X.req.N) {S : State C.scheme P.scheme}
     (hS : Admitted X j S) {v : P.scheme.below (Finset.univ, j) → ExtOrd}
     (hv : RespectsSemanticsBelow P.rows (Finset.univ, j) v)
     {γ : ExtOrd} (hγ : SelfVis j γ)
@@ -181,6 +188,8 @@ theorem donor_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
   cases f with
   | inl d => exact complete_caps S.privateValues hcap d
   | inr d => exact complete_caps S.donorValues hag d
+
+end
 
 end RootAttachment
 end

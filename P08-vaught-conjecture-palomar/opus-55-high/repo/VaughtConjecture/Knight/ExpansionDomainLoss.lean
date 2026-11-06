@@ -24,8 +24,11 @@ namespace VaughtConjecture.Knight.ExpansionDomain
 
 open TypeTower KnightRealization Cardinal StoppingRankFiltration
 
+section
+variable {ξ : Ordinal.{0}} (W : TerminalModel ξ)
+
 /-- The counted base of a terminal model reduces back to its block-zero reduct. -/
-theorem terminal_atBlockZero {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
+theorem terminal_atBlockZero  :
     W.toNatModel.atBlockZero = W.1.reduct (blockStage_zero_le ξ) := by
   change (liftBlockZero (W.1.reduct (blockStage_zero_le ξ))).reduct
     blockStage_zero_le_omegaStage = _
@@ -34,7 +37,7 @@ theorem terminal_atBlockZero {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
 
 /-- A terminal model's counted base is lost exactly at the next block. This is
 the direction of the correspondence that uses injectivity of reduction. -/
-theorem terminalModel_mem_loss {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
+theorem terminalModel_mem_loss  :
     Quotient.mk knightModelSetoid W.toNatModel ∈ domain ξ \ domain (ξ + 1) := by
   refine ⟨mem_domain_of_model W.2.1 (terminal_atBlockZero W).symm, ?_⟩
   intro hnext
@@ -43,5 +46,7 @@ theorem terminalModel_mem_loss {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
   apply Realization.ProlongsToOnIn.prolongsToIn
   refine ⟨V, hV, eq_of_reduct_eq_of_le ξ 0 zero_le _ _ (hV.reduct _) W.2.1 ?_⟩
   rw [Realization.reduct_reduct, hVr, terminal_atBlockZero W]
+
+end
 
 end VaughtConjecture.Knight.ExpansionDomain

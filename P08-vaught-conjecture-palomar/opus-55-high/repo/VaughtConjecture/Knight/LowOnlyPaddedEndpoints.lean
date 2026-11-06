@@ -20,7 +20,6 @@ and the separator readback remain separate; no legal probe is packaged here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedEndpoints
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedInstallation
@@ -34,22 +33,21 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-section Step
-variable {I F hroot hA hB hC} {k r : ℕ}
-  (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell I.boundary)
 
-end Step
-
-def original (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell I.boundary) :
+def original  :
     Cell (build I F hroot hA hB hC t ht).carrier :=
   (build I F hroot hA hB hC t ht).baseMap
     (RelativeLadderLayer.old I.boundary (by omega) d)
 
-theorem original_index (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell I.boundary) :
+theorem original_index  :
     (build I F hroot hA hB hC t ht).carrier.cell (original I F hroot hA hB hC t ht d) =
       I.boundary.cell d :=
   ((build I F hroot hA hB hC t ht).base_index _).trans
     (RelativeLadderLayer.old_index I.boundary (by omega) d)
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedEndpoints

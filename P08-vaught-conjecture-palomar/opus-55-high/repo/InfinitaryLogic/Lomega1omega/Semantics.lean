@@ -79,17 +79,13 @@ theorem realize_falsum : (falsum : L.BoundedFormulaω α n).Realize v xs ↔ Fal
   BoundedFormulaInf.realize_falsum
 
 @[simp]
-theorem realize_bot : (⊥ : L.BoundedFormulaω α n).Realize v xs ↔ False :=
-  BoundedFormulaInf.realize_bot
-
-@[simp]
-theorem realize_equal (t₁ t₂ : L.Term (α ⊕ Fin n)) :
+theorem realize_equal t₁ t₂ :
     (equal t₁ t₂ : L.BoundedFormulaω α n).Realize v xs ↔
       t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs) :=
   BoundedFormulaInf.realize_equal
 
 @[simp]
-theorem realize_rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ Fin n)) :
+theorem realize_rel {l} R (ts : Fin l → L.Term (α ⊕ Fin n)) :
     (rel R ts : L.BoundedFormulaω α n).Realize v xs ↔
       RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
   BoundedFormulaInf.realize_rel
@@ -101,7 +97,7 @@ theorem realize_imp (φ ψ : L.BoundedFormulaω α n) :
 
 @[simp]
 theorem realize_all (φ : L.BoundedFormulaω α (n + 1)) :
-    (all φ).Realize v xs ↔ ∀ x : M, φ.Realize v (snoc xs x) :=
+    (all φ).Realize v xs ↔ ∀ x, φ.Realize v (snoc xs x) :=
   BoundedFormulaInf.realize_all
 
 @[simp]
@@ -125,7 +121,7 @@ theorem realize_not (φ : L.BoundedFormulaω α n) :
 
 @[simp]
 theorem realize_ex (φ : L.BoundedFormulaω α (n + 1)) :
-    φ.ex.Realize v xs ↔ ∃ x : M, φ.Realize v (snoc xs x) :=
+    φ.ex.Realize v xs ↔ ∃ x, φ.Realize v (snoc xs x) :=
   BoundedFormulaInf.realize_ex
 
 /-! ### Connectives the project owns -/
@@ -142,54 +138,31 @@ theorem realize_inf (φ ψ : L.BoundedFormulaω α n) :
   realize_and φ ψ
 
 @[simp]
-theorem realize_or (φ ψ : L.BoundedFormulaω α n) :
-    (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs := by
-  simp only [BoundedFormulaω.or, realize_not, realize_imp]
-  tauto
-
-@[simp]
-theorem realize_sup (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊔ ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs :=
-  realize_or φ ψ
-
-@[simp]
-theorem realize_iff (φ ψ : L.BoundedFormulaω α n) :
-    (φ.iff ψ).Realize v xs ↔ (φ.Realize v xs ↔ ψ.Realize v xs) := by
-  simp only [BoundedFormulaω.iff, realize_inf, realize_imp, iff_def]
-
-@[simp]
-theorem realize_einf {ι : Type*} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
+theorem realize_einf {ι} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
     (einf φs).Realize v xs ↔ ∀ i, (φs i).Realize v xs := by
   simp only [einf, realize_iInf]
   constructor
   · intro h i
     simpa only [Encodable.encodek] using h (Encodable.encode i)
-  · intro h k
-    cases hd : Encodable.decode (α := ι) k with
-    | none => simp only [realize_top]
-    | some i => exact h i
+  · aesop
 
 @[simp]
-theorem realize_esup {ι : Type*} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
+theorem realize_esup {ι} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
     (esup φs).Realize v xs ↔ ∃ i, (φs i).Realize v xs := by
   simp only [esup, realize_iSup]
   constructor
-  · rintro ⟨k, hk⟩
-    cases hd : Encodable.decode (α := ι) k with
-    | none => simp only [hd, realize_bot] at hk
-    | some i =>
-      exact ⟨i, by simpa only [hd] using hk⟩
+  · aesop
   · rintro ⟨i, hi⟩
     use Encodable.encode i
     simp only [Encodable.encodek, hi]
 
 /-- Realization of `einfWith`: the supplied encoding does not affect the semantics. -/
-@[simp] theorem realize_einfWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
+@[simp] theorem realize_einfWith {ι} e (φs : ι → L.BoundedFormulaω α n) :
     (einfWith e φs).Realize v xs ↔ ∀ i, (φs i).Realize v xs :=
   @realize_einf L M _ α n v xs ι e φs
 
 /-- Realization of `esupWith`. -/
-@[simp] theorem realize_esupWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
+@[simp] theorem realize_esupWith {ι} e (φs : ι → L.BoundedFormulaω α n) :
     (esupWith e φs).Realize v xs ↔ ∃ i, (φs i).Realize v xs :=
   @realize_esup L M _ α n v xs ι e φs
 
@@ -213,7 +186,7 @@ theorem realize_equal_comp (t₁ t₂ : L.Term (α ⊕ Fin n)) :
   exact f.injective.eq_iff
 
 /-- An embedding preserves and reflects the atomic formula `R ts`. -/
-theorem realize_rel_comp {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ Fin n)) :
+theorem realize_rel_comp {l} R (ts : Fin l → L.Term (α ⊕ Fin n)) :
     (BoundedFormulaω.rel R ts).Realize (⇑f ∘ v) (⇑f ∘ xs) ↔
       (BoundedFormulaω.rel R ts).Realize v xs := by
   simp only [BoundedFormulaω.realize_rel, ← Sum.comp_elim, HomClass.realize_term]
@@ -238,10 +211,8 @@ theorem BoundedFormulaω.realize_equiv.{u_1} {M N : Type w} [L.Structure M] [L.S
   | equal t₁ t₂ => exact (e.toEmbedding.realize_equal_comp t₁ t₂).symm
   | rel R ts => exact (e.toEmbedding.realize_rel_comp R ts).symm
   | imp φ ψ ihφ ihψ =>
-    simp only [BoundedFormulaInf.Realize]
-    exact Iff.imp (ihφ xs) (ihψ xs)
+    simp_all
   | all φ ih =>
-    simp only [BoundedFormulaInf.Realize]
     constructor
     · intro h y
       have h1 := (ih (Fin.snoc xs (e.symm y))).mp (h (e.symm y))
@@ -251,11 +222,9 @@ theorem BoundedFormulaω.realize_equiv.{u_1} {M N : Type w} [L.Structure M] [L.S
       rw [← Fin.comp_snoc] at h1
       exact (ih (Fin.snoc xs x)).mpr h1
   | iSup φs ih =>
-    simp only [BoundedFormulaInf.Realize]
-    exact exists_congr fun i => ih i xs
+    simp_all
   | iInf φs ih =>
-    simp only [BoundedFormulaInf.Realize]
-    exact forall_congr' fun i => ih i xs
+    simp_all
 
 namespace Formulaω
 
@@ -267,38 +236,12 @@ abbrev Realize (φ : L.Formulaω α) (v : α → M) : Prop :=
 
 variable {φ : L.Formulaω α} {v : α → M}
 
-/-- The level-crossing lemma: formula realization *is* bounded-formula realization at the empty
-tuple.
-
-`FormulaInf.Realize` is a plain definition upstream, not a reducible abbreviation (matching the
-finitary `Formula.Realize`), so neither `rw` nor `simp` can see a `BoundedFormulaω` realization
-lemma through it. Supply this lemma explicitly — `simp only [Formulaω.realize_def, realize_not]` —
-in place of unfolding `Formulaω.Realize`, which lands on the opaque `FormulaInf.Realize` and makes
-every bounded-formula lemma inapplicable. Deliberately not `@[simp]`: the formula-level lemmas
-below are the normal interface, and this escape hatch should be visible where it is used. -/
-theorem realize_def (φ : L.Formulaω α) (v : α → M) :
-    Realize φ v ↔ BoundedFormulaω.Realize φ v Fin.elim0 := Iff.rfl
-
 @[simp]
 theorem realize_not : Realize φ.not v ↔ ¬Realize φ v := BoundedFormulaω.realize_not φ
 
 @[simp]
-theorem realize_bot : Realize (⊥ : L.Formulaω α) v ↔ False := BoundedFormulaω.realize_bot
-
-@[simp]
-theorem realize_top : Realize (⊤ : L.Formulaω α) v ↔ True := BoundedFormulaω.realize_top
-
-@[simp]
-theorem realize_imp (φ ψ : L.Formulaω α) :
-    Realize (φ.imp ψ) v ↔ (Realize φ v → Realize ψ v) := BoundedFormulaω.realize_imp φ ψ
-
-@[simp]
 theorem realize_inf (φ ψ : L.Formulaω α) :
     Realize (φ ⊓ ψ) v ↔ Realize φ v ∧ Realize ψ v := BoundedFormulaω.realize_inf φ ψ
-
-@[simp]
-theorem realize_sup (φ ψ : L.Formulaω α) :
-    Realize (φ ⊔ ψ) v ↔ Realize φ v ∨ Realize ψ v := BoundedFormulaω.realize_sup φ ψ
 
 @[simp]
 theorem realize_einf {ι : Type*} [Encodable ι] (φs : ι → L.Formulaω α) :
@@ -314,7 +257,7 @@ namespace Sentenceω
 
 /-- Truth of an Lω₁ω sentence in a structure, as a qualified name. Mathlib's
 `SentenceInf.Realize` is the definition. -/
-abbrev Realize (φ : L.Sentenceω) (M : Type w) [L.Structure M] : Prop :=
+abbrev Realize (φ : L.Sentenceω) M [L.Structure M] : Prop :=
   SentenceInf.Realize φ M
 
 /-- The level-crossing lemma: sentence truth *is* bounded-formula realization at the empty
@@ -334,12 +277,6 @@ Each must close by `Iff.rfl` — no `change`, no rewriting, no explicit cast. Th
 certifies that the qualified ω names *are* Mathlib's semantics rather than a parallel copy of
 it, and that the arity-0 spellings the project has used throughout (`Fin.elim0`, `Empty.elim`)
 still agree with Mathlib's `default`. -/
-
-section Gates
-
-variable {v : α → M} {xs : Fin n → M}
-
-end Gates
 
 end Language
 

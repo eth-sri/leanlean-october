@@ -32,8 +32,6 @@ Construction-private (not root-exported). -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd
@@ -42,16 +40,19 @@ namespace StageType
 
 variable {α : Ordinal.{0}} {n : ℕ}
 
+section
+variable {p : S α n} {Xi : Cell p.scheme.scheme}
+
 /-- A band witness reads the band index off the finite part of an ordinal row value below the
 threshold (extracted from `ProvisionalBand.lt_topGrade`). -/
-theorem ProvisionalBand.exists_ordinal {p : S α n} {Xi : Cell p.scheme.scheme} {i : ℕ}
+theorem ProvisionalBand.exists_ordinal {i}
     (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi)
-    {Θ : Cell p.scheme.scheme} (hXiΘ : GradedLe (p.scheme.scheme.cell Xi) (p.scheme.scheme.cell Θ))
+    {Θ} hXiΘ
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
     (hΘtop : p.label Θ = ⊤)
     (heq : p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ =
       extVisibilityReplace (p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩) p.topGrade i) :
-    ∃ β : Ordinal.{0}, p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ = ofOrd β ∧
+    ∃ β, p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ = ofOrd β ∧
       finitePart β < p.topGrade ∧ i = finitePart β := by
   have hnotself :
       extVisibilityReplace (p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩) p.topGrade p.topGrade ≠
@@ -70,23 +71,22 @@ theorem ProvisionalBand.exists_ordinal {p : S α n} {Xi : Cell p.scheme.scheme} 
       have h0 := ofOrd_inj.mp heq
       unfold visibilityReplace ordinalReplace at h0
       rwa [ite_eq_left hfp] at h0
-    have hcast : (i : Ordinal.{0}) = (finitePart β : Ordinal.{0}) :=
+    have hcast :=
       add_left_cancel (hβeq.symm.trans (decomposition β).symm)
     exact ⟨β, hβ, hfp, by exact_mod_cast hcast⟩
 
 /-- Under `¬` clause 2.(a), the row of a witness `Θ` at `Ξ` lies strictly below its value at
 any other witness `Θ'` (orderliness makes `E(Θ)(Θ')` self-visible at `K^p`). -/
-theorem row_lt_of_not_cap {p : S α n} {Xi : Cell p.scheme.scheme}
-    (hcap : ¬ p.ProvisionalCap Xi)
-    {Θ Θ' : Cell p.scheme.scheme}
-    (hXiΘ : GradedLe (p.scheme.scheme.cell Xi) (p.scheme.scheme.cell Θ))
-    (hΘ'Θ : GradedLe (p.scheme.scheme.cell Θ') (p.scheme.scheme.cell Θ))
+theorem row_lt_of_not_cap (hcap : ¬ p.ProvisionalCap Xi)
+    {Θ Θ'}
+    hXiΘ
+    hΘ'Θ
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
     (hΘtop : p.label Θ = ⊤) (hgr' : p.scheme.scheme.grade Θ' = p.topGrade)
     (hΘ'top : p.label Θ' = ⊤) :
     p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ < p.scheme.rows.E Θ ⟨Θ', hΘ'Θ⟩ := by
   by_contra hle
-  have hle' : p.scheme.rows.E Θ ⟨Θ', hΘ'Θ⟩ ≤ p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ := not_lt.mp hle
+  have hle' := not_lt.mp hle
   have hself := p.scheme.rows.orderly Θ ⟨Θ', hΘ'Θ⟩
   change p.scheme.rows.E Θ ⟨Θ', hΘ'Θ⟩ =
     extVisibilityReplace (p.scheme.rows.E Θ ⟨Θ', hΘ'Θ⟩)
@@ -95,8 +95,7 @@ theorem row_lt_of_not_cap {p : S α n} {Xi : Cell p.scheme.scheme}
   exact hcap ⟨Θ, hXiΘ, ⟨Θ', hΘ'Θ⟩, hsc, hgr, hΘtop, hΘ'top, hself ▸ hle'⟩
 
 /-- **Lemma 5.3.2**: the band index of clause 2.(b) does not depend on the witness. -/
-theorem ProvisionalBand.unique {p : S α n} {Xi : Cell p.scheme.scheme}
-    (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi) {i i' : ℕ}
+theorem ProvisionalBand.unique (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi) {i i'}
     (h : p.ProvisionalBand Xi i) (h' : p.ProvisionalBand Xi i') : i = i' := by
   obtain ⟨Θ, hXiΘ, hsc, hgr, hΘtop, heq⟩ := h
   obtain ⟨Θ', hXiΘ', hsc', hgr', hΘ'top, heq'⟩ := h'
@@ -175,13 +174,13 @@ theorem ProvisionalBand.unique {p : S α n} {Xi : Cell p.scheme.scheme}
   omega
 
 /-- **Def. 5.3.1 is single-valued**: any two provisional values of a cell agree. -/
-theorem IsProvisionalValue.unique {p : S α n} {Xi : Cell p.scheme.scheme} {v v' : ExtOrd}
+theorem IsProvisionalValue.unique {v v'}
     (h : p.IsProvisionalValue Xi v) (h' : p.IsProvisionalValue Xi v') : v = v' := by
   rcases h with ⟨hne, rfl⟩ | ⟨htop, hcap, rfl⟩ | ⟨htop, hcap, i, hband, rfl⟩ <;>
     rcases h' with ⟨hne', rfl⟩ | ⟨htop', hcap', rfl⟩ | ⟨htop', hcap', i', hband', rfl⟩
   · rfl
-  · exact absurd htop' hne
-  · exact absurd htop' hne
+  · grind
+  · grind
   · exact absurd htop hne'
   · rfl
   · exact absurd hcap hcap'
@@ -190,10 +189,12 @@ theorem IsProvisionalValue.unique {p : S α n} {Xi : Cell p.scheme.scheme} {v v'
   · rw [ProvisionalBand.unique htop hcap hband hband']
 
 /-- **The chooser computes the provisional value.** -/
-theorem isProvisionalValue_iff {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd} :
+theorem isProvisionalValue_iff {v} :
     p.IsProvisionalValue Xi v ↔ v = p.someProvisionalValue Xi :=
   ⟨fun h => h.unique (isProvisionalValue_someProvisionalValue p Xi),
     fun h => h ▸ isProvisionalValue_someProvisionalValue p Xi⟩
+
+end
 
 end StageType
 

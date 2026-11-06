@@ -91,39 +91,9 @@ theorem wellFounded_extBelow_iff_not_hasInfiniteBranch (T : tree ℕ) :
 
 /-! ## The Kleene–Brouwer order, via lexicographic order on `WithTop ℕ` -/
 
-/-- Encode a node so that a proper prefix becomes *larger* than its extensions: append `⊤`. -/
-def kbEncode (x : List ℕ) : List ℕ∞ := x.map (fun a : ℕ => (a : ℕ∞)) ++ [⊤]
-
-theorem kbEncode_injective : Function.Injective kbEncode := by
-  intro x y h
-  have := List.append_inj_left' h (by simp)
-  exact (List.map_injective_iff (f := fun a : ℕ => (a : ℕ∞))).mpr
-    (fun _ _ hab => ENat.natCast_inj.mp hab) this
-
-/-- The Kleene–Brouwer order: proper extensions come first, then leftmost-first differences. -/
-def KBLT (x y : List ℕ) : Prop := kbEncode x < kbEncode y
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-/-- The KB order on the nodes of `T`. -/
-def kbLT (T : tree ℕ) (x y : ↥T) : Prop := KBLT (x : List ℕ) y
-
-/-- The nodes of `T`, linearly ordered by KB (pulled back from `List ℕ∞`). -/
-@[instance_reducible] noncomputable def kbLinearOrder (T : tree ℕ) : LinearOrder ↥T :=
-  LinearOrder.lift' (fun x : ↥T => kbEncode (x : List ℕ))
-    (fun _ _ h => Subtype.ext (kbEncode_injective h))
-
 /-! ## Proper extensions are KB-below -/
 
 /-! ## KB is well-founded on a well-founded tree -/
-
-instance (T : tree ℕ) : IsStrictOrder ↥T (kbLT T) where
-  irrefl x h := lt_irrefl (kbEncode (x : List ℕ)) h
-  trans _ _ _ h₁ h₂ := lt_trans (α := List ℕ∞) h₁ h₂
 
 /-- The height of the tree: the strict supremum of the ranks of its nodes under strict
 extension. -/
@@ -135,7 +105,7 @@ noncomputable def treeHeight (T : tree ℕ) [WellFounded (extBelow T)] : Ordinal
 /-- **Branches are sequences**: `T` has an infinite branch iff some `z : ℕ → ℕ` has every finite
 initial segment in `T`.  Forward, the `i`-th entry of the sequence is read off the `(i + 1)`-st
 node of the branch, all of whose nodes are prefixes of one another. -/
-theorem hasInfiniteBranch_iff_exists_seq (T : tree ℕ) :
+theorem hasInfiniteBranch_iff_exists_seq T :
     HasInfiniteBranch T ↔ ∃ z : ℕ → ℕ, ∀ n, List.ofFn (fun i : Fin n ↦ z i) ∈ T := by
   constructor
   · rintro ⟨f, hf, hstep⟩
@@ -163,7 +133,7 @@ theorem hasInfiniteBranch_iff_exists_seq (T : tree ℕ) :
     rw [heq]
     exact Tree.take_mem ⟨f n, hf n⟩
   · rintro ⟨z, hz⟩
-    refine ⟨fun n ↦ List.ofFn (fun i : Fin n ↦ z i), hz, fun n ↦ ⟨?_, fun h ↦ ?_⟩⟩
+    refine ⟨fun n ↦ List.ofFn (fun i ↦ z i), hz, fun n ↦ ⟨?_, fun h ↦ ?_⟩⟩
     · simp only [List.ofFn_succ_last]
       exact List.prefix_append _ _
     · simpa using congrArg List.length h
@@ -180,7 +150,7 @@ theorem treeHeight_le_of_relHom {S T : tree ℕ} [WellFounded (extBelow S)]
     (Ordinal.le_iSup (fun y : ↥T ↦ Order.succ (WellFounded.rank (extBelow T) y)) (f x))
 
 /-- Ranks in a well-founded relation on a countable type are countable. -/
-private theorem rank_lt_omega1 {α : Type} [Countable α] (r : α → α → Prop) [WellFounded r]
+private theorem rank_lt_omega1 {α : Type} [Countable α] r [WellFounded r]
     (a : α) : WellFounded.rank r a < Ordinal.omega 1 := by
   induction a using WellFounded.induction' r with
   | ind a ih =>

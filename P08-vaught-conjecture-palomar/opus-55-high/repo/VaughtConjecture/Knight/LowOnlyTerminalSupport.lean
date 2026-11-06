@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.LowOnlyTerminal
-public import VaughtConjecture.Knight.CappedDonorDecoderStage
+public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ReferenceContext
 
 /-! # Supported literal-top insertion for the LOW catalogue
 
@@ -18,20 +19,22 @@ supported terminal insertion without changing LOW or the existing API.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
 noncomputable section
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
+section
+variable {j : ℕ}
+
 /-- Literal-top insertion with all-output support, including unused decoder
 arguments. The fresh terminal block need not lie below the final model stage. -/
-theorem terminal_insertion_supported {j : ℕ} (hj : 1 ≤ j) {S : State P C}
-    (hS : F.Admissible j S) (h : Ordinal.{0}) :
-    ∃ S₀ Q : State P C, F.Admissible j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
+theorem terminal_insertion_supported (hj : 1 ≤ j) {S}
+    (hS : F.Admissible j S) h :
+    ∃ S₀ Q, F.Admissible j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
       S.CapEq (ofOrd h) S₀ ∧ Q = S₀.normalize j ∧ F.Admissible j Q ∧
       Q.profile ∈ CanonicalPairedProfiles.inventory (Field P C) j ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
+      ∃ δ, Witness (gTop j) δ ∧
         (∀ d, δ (Q.profile d) = S.profile d) ∧
         ∀ x, OrbitPrefixSupport.Supported j ({⊤} : Set ExtOrd) S.profile (δ x) := by
   let l := S.freshFloor h
@@ -88,11 +91,11 @@ theorem terminal_insertion_supported {j : ℕ} (hj : 1 ≤ j) {S : State P C}
 
 /-- A catalogue member and exact decoder with the finite bottom reflection
 needed by the long padded rows, and support on every decoder argument. -/
-theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State P C}
+theorem exists_supported_decoder (hj : 1 ≤ j) {S}
     (hS : F.Admissible j S) :
-    ∃ Q : State P C, F.Admissible j Q ∧
+    ∃ Q, F.Admissible j Q ∧
       Q.profile ∈ CanonicalPairedProfiles.inventory (Field P C) j ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
+      ∃ δ, Witness (gTop j) δ ∧
         (∀ d, δ (Q.profile d) = S.profile d) ∧
         (∀ d, δ (Q.profile d) = ⊥ → Q.profile d = ⊥) ∧
         ∀ x, OrbitPrefixSupport.Supported j ({⊤} : Set ExtOrd) S.profile (δ x) := by
@@ -106,6 +109,8 @@ theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State P C}
   have hS₀ : S₀.profile d = ⊥ := (min_eq_bot.mp he).resolve_right (ofOrd_ne_bot 0)
   rw [hQeq, State.profile_normalize]
   exact (PairedSlotEncoding.normalize_bot_iff j S₀.profile d).mpr hS₀
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnly.Family

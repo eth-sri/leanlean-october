@@ -17,7 +17,6 @@ No source encoding or source-strip separation is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapEncoding
 open Value ExtOrd SharpWitnessComposition
 noncomputable section
@@ -70,7 +69,7 @@ def code : BlockCode :=
     (strip_strict hτ S hS src off hoff hread)
     (by rw [finitePart_limitPart_add_nat]; exact hrL.le)
 
-theorem code_listed {p : Ordinal.{0}} (hp : limitPart p ∈ S) (hfp : finitePart p ≤ L) :
+theorem code_listed {p} (hp : limitPart p ∈ S) (hfp : finitePart p ≤ L) :
     (code hτ hα ha hi hrL S hS hle src off hoff hread).code (ofOrd p) =
       ofOrd (limitPart (src (limitPart p)) + finitePart p) := by
   apply BlockCode.code_listed _ hp

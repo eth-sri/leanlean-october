@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.NormalForm
-public import VaughtConjecture.Knight.Repair
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
 public import VaughtConjecture.Knight.Domain
 public import VaughtConjecture.Knight.CappedLifting
 
@@ -23,8 +24,6 @@ producer, not yet a supported whole-section operator or an amalgam.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
@@ -65,7 +64,6 @@ theorem value_left (d : D.below U) : a.value (left d) = a.onLeft d := by
   rfl
 
 theorem value_right (d : D.below V) : a.value (right d) = a.onRight d := by
-  classical
   by_cases h : GradedLe (D.cell d.1) U
   · simp only [value, right, h, ↓reduceDIte]
     exact a.overlap d.1 h d.2
@@ -74,22 +72,23 @@ theorem value_right (d : D.below V) : a.value (right d) = a.onRight d := by
 
 /-- Read an actual boundary carrier whose every cell belongs to an old face. -/
 noncomputable def whole
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
+    (hcover : ∀ d, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (d : Cell D) : ExtOrd := a.value ⟨d, hcover d⟩
 
+section
+variable (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
+
 theorem whole_left
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (d : D.below U) : a.whole hcover d.1 = a.onLeft d := a.value_left d
 
 theorem whole_right
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (d : D.below V) : a.whole hcover d.1 = a.onRight d := a.value_right d
 
 /-- Lawfulness glues on the actual old boundary. For availability choose
 the face containing the target; the requester and witness lie there too.
 This does not assert lawfulness after adding a new full-scope owner. -/
 theorem whole_respects
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V) :
+     :
     RespectsSemantics sem (a.whole hcover) where
   orderly d := by
     rcases hcover d with hd | hd
@@ -131,6 +130,8 @@ theorem whole_respects
       exact ⟨w.1, hw, (a.whole_right hcover ⟨c, hct.trans ht⟩).trans_le
         (hle.trans_eq (a.whole_right hcover w).symm)⟩
 
+end
+
 end Section
 
 /-- A constructed ambient for bottom-cap boundary completion. -/
@@ -147,16 +148,19 @@ def bottomSection (sem : Semantics D) (U V : Finset ι × ℕ) : Section sem U V
     availability _ t _ _ := ⟨t, rfl, le_rfl⟩ }
   overlap _ _ _ := rfl
 
+section
+variable (hIU : GradedLe I U)
+
 /-- Lift in the left input, then install its overlap in the right input.
 The overlap is an exact lower-domain intersection; no anchor is assumed.
 Both lift premises are old-face clauses, obtainable by `lift_of_restrictFace`.
 The conclusion retains the entire boundary cap vector, not just maxima. -/
 theorem extend_left
-    (hIU : GradedLe I U) (hOU : GradedLe O U) (hOV : GradedLe O V)
-    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
+    (hOU : GradedLe O U) (hOV : GradedLe O V)
+    (hinter : ∀ d, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    (a : Section sem U V) (p : D.below I → ExtOrd) (γ : ExtOrd)
+    (a : Section sem U V) p γ
     (hp : RespectsSemanticsBelow sem I p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
     (hag : ∀ d, min (a.onLeft (CellScheme.below.mono hIU d)) γ = min (p d) γ) :
     ∃ b : Section sem U V,
@@ -165,11 +169,9 @@ theorem extend_left
   obtain ⟨u, hu, hucap, hup⟩ := hleft p a.onLeft γ hp a.left_lawful hγU hag
   let o : D.below O → ExtOrd := fun d => u (CellScheme.below.mono hOU d)
   have ho : RespectsSemanticsBelow sem O o := hu.mono hOU
-  have hocap : ∀ d : D.below O,
+  have hocap : ∀ d,
       min (a.onRight (CellScheme.below.mono hOV d)) γ = min (o d) γ := by
     intro d
-    change min (a.onRight ⟨d.1, d.2.trans hOV⟩) γ =
-      min (u (CellScheme.below.mono hOU d)) γ
     rw [hucap]
     exact congrArg (fun x => min x γ)
       (a.overlap d.1 (d.2.trans hOU) (d.2.trans hOV)).symm
@@ -200,8 +202,8 @@ theorem extend_left
 /-- Bottom-cap completion does not need an independently supplied ambient
 or selected source row. Both old lifting clauses suffice. -/
 theorem section_left
-    (hIU : GradedLe I U) (hOU : GradedLe O U) (hOV : GradedLe O V)
-    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
+    (hOU : GradedLe O U) (hOV : GradedLe O V)
+    (hinter : ∀ d, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
     (p : D.below I → ExtOrd) (hp : RespectsSemanticsBelow sem I p) :
@@ -212,21 +214,23 @@ theorem section_left
     (extVisibilityReplace_bot _ _) (fun _ => by simp)
   exact ⟨b, hread⟩
 
+end
+
 /-- The boundary extension is an actual lawful labelling when the carrier
 contains exactly the old boundary inventory. It preserves every occurrence
 at the original cap, without imposing any whole new-scope lifting premise. -/
 theorem extend_boundary
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
-    (hIU : GradedLe I U) (hOU : GradedLe O U) (hOV : GradedLe O V)
-    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
+    hcover
+    hIU (hOU : GradedLe O U) (hOV : GradedLe O V)
+    (hinter : ∀ d, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    (a : Section sem U V) (p : D.below I → ExtOrd) (γ : ExtOrd)
+    (a : Section sem U V) p γ
     (hp : RespectsSemanticsBelow sem I p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
     (hag : ∀ d, min (a.onLeft (CellScheme.below.mono hIU d)) γ = min (p d) γ) :
-    ∃ r : Cell D → ExtOrd, RespectsSemantics sem r ∧
+    ∃ r, RespectsSemantics sem r ∧
       (∀ d, min (r d) γ = min (a.whole hcover d) γ) ∧
-      ∀ d : D.below I, r d.1 = p d := by
+      ∀ d, r d.1 = p d := by
   obtain ⟨b, hcap, hread⟩ := extend_left hIU hOU hOV hinter hleft hright
     a p γ hp hγU hγV hag
   exact ⟨b.whole hcover, b.whole_respects hcover,
@@ -251,7 +255,7 @@ theorem below_target_iff (d : Cell D) :
   · intro h
     exact ⟨h.trans target_le_left, h.trans target_le_right⟩
   · rintro ⟨hu, hv⟩
-    have hs : D.scope d ⊆ U.1 ∩ V.1 := Finset.subset_inter hu.1 hv.1
+    have hs := Finset.subset_inter hu.1 hv.1
     exact ⟨hs, le_min (le_min hu.2 hv.2)
       ((D.grade_le_card_scope d).trans (Finset.card_le_card hs))⟩
 
@@ -265,7 +269,7 @@ theorem target_mem_gradedPlan (hR : U.1 ∩ V.1 ∈ D.plan)
 their nominal grades. `lift_empty` handles the second lifting step. -/
 theorem target_empty (he : U.1 ∩ V.1 = ∅) : IsEmpty (D.below (overlapTarget U V)) := by
   refine ⟨fun d => ?_⟩
-  have hg : D.grade d.1 ≤ 0 := by
+  have hg := by
     have h := d.2.2
     simpa only [overlapTarget, he, Finset.card_empty, min_zero, CellScheme.grade] using h
   exact (Nat.not_lt_of_ge hg) (D.grade_pos d.1)

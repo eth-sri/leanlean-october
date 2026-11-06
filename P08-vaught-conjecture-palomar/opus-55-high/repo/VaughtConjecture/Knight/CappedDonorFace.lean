@@ -29,47 +29,42 @@ namespace VaughtConjecture.Knight
 open CellScheme.restrictFace
 
 /-- Labels transport along an equality of stage types. -/
-theorem StageType.label_castCell {α : Ordinal.{0}} {n : ℕ} {X Y : S α n} (h : X = Y)
-    (c : Cell X.scheme.scheme) :
+theorem StageType.label_castCell {α} {n} {X Y : S α n} (h : X = Y)
+    c :
     Y.label (SemScheme.castCell (congrArg StageType.scheme h) c) = X.label c := by
   subst h; rfl
 
 namespace CappedDonor
 
 /-- Transport of a lower set along an equality of domains. -/
-def castBelow {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ) :
+def castBelow {n} {X Y : SemScheme n} (h : X = Y) BJ :
     X.scheme.below BJ ≃ Y.scheme.below BJ :=
   Equiv.cast (congrArg (fun Z : SemScheme n => Z.scheme.below BJ) h)
 
-theorem castBelow_val {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
-    (d : X.scheme.below BJ) : (castBelow h BJ d).1 = SemScheme.castCell h d.1 := by
+section
+variable {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
+
+theorem castBelow_val (d : X.scheme.below BJ) : (castBelow h BJ d).1 = SemScheme.castCell h d.1 := by
   subst h; rfl
 
-theorem castBelow_castBelow_symm {n : ℕ} {X Y : SemScheme n} (h : X = Y)
-    (BJ : Finset (Fin n) × ℕ) (d : Y.scheme.below BJ) :
+theorem castBelow_castBelow_symm (d : Y.scheme.below BJ) :
     castBelow h BJ (castBelow h.symm BJ d) = d := by
   subst h; rfl
 
-theorem castBelow_symm_castBelow {n : ℕ} {X Y : SemScheme n} (h : X = Y)
-    (BJ : Finset (Fin n) × ℕ) (d : X.scheme.below BJ) :
+theorem castBelow_symm_castBelow (d : X.scheme.below BJ) :
     castBelow h.symm BJ (castBelow h BJ d) = d := by
   subst h; rfl
 
-theorem castBelow_symm {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ) :
-    (castBelow h BJ).symm = castBelow h.symm BJ := by
-  subst h; rfl
-
 /-- Restricted lawfulness transports along an equality of domains. -/
-theorem castBelow_respects {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
-    (r : Y.scheme.below BJ → ExtOrd) :
+theorem castBelow_respects (r : Y.scheme.below BJ → ExtOrd) :
     RespectsSemanticsBelow Y.rows BJ r ↔
-      RespectsSemanticsBelow X.rows BJ (fun d => r (castBelow h BJ d)) := by
-  subst h; exact Iff.rfl
+      RespectsSemanticsBelow X.rows BJ (fun d => r (castBelow h BJ d)) := by aesop
+
+end
 
 /-- Transport of a cell along an equality of domains keeps its grade. -/
-theorem castCell_grade {n : ℕ} {X Y : SemScheme n} (h : X = Y) (c : Cell X.scheme) :
-    Y.scheme.grade (SemScheme.castCell h c) = X.scheme.grade c := by
-  subst h; rfl
+theorem castCell_grade {n} {X Y : SemScheme n} h c :
+    Y.scheme.grade (SemScheme.castCell h c) = X.scheme.grade c := by aesop
 
 section CommonFace
 
@@ -107,11 +102,13 @@ theorem commonFace_apply (a : P.scheme.below (Finset.univ.image fP, KA)) :
 theorem commonFace_symm_apply (e : C.scheme.below (Finset.univ.image fC, KA)) :
     (commonFace fP hvP hP fC hvC hC KA).symm e =
       bP fP hvP KA (castBelow hP.symm (Finset.univ, KA)
-        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := by
-  simp only [commonFace, Equiv.symm_trans_apply, Equiv.symm_symm, castBelow_symm]
+        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := rfl
+
+section
+variable (a : P.scheme.below (Finset.univ.image fP, KA))
 
 /-- The underlying cell of the identification. -/
-theorem commonFace_val (a : P.scheme.below (Finset.univ.image fP, KA)) :
+theorem commonFace_val  :
     (commonFace fP hvP hP fC hvC hC KA a).1 =
       toCell C.scheme fC hvC (SemScheme.castCell hC.symm (SemScheme.castCell hP
         ((bP fP hvP KA).symm a).1)) := by
@@ -120,7 +117,7 @@ theorem commonFace_val (a : P.scheme.below (Finset.univ.image fP, KA)) :
   rw [castBelow_val, castBelow_val]
 
 /-- The identification preserves grades. -/
-theorem commonFace_grade (a : P.scheme.below (Finset.univ.image fP, KA)) :
+theorem commonFace_grade  :
     C.scheme.grade (commonFace fP hvP hP fC hvC hC KA a).1 = P.scheme.grade a.1 := by
   rw [commonFace_val]
   change (C.restrictFace fC hvC).scheme.grade (SemScheme.castCell hC.symm
@@ -129,9 +126,11 @@ theorem commonFace_grade (a : P.scheme.below (Finset.univ.image fP, KA)) :
   exact congrArg P.scheme.grade (toCell_belowEquiv_symm_val P.scheme fP hvP
     (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fP, KA)) rfl a)
 
+end
+
 /-- The identifications at two grades agree on a common cell. -/
-theorem commonFace_val_congr {KA' : ℕ} (a : P.scheme.below (Finset.univ.image fP, KA))
-    (a' : P.scheme.below (Finset.univ.image fP, KA')) (h : a.1 = a'.1) :
+theorem commonFace_val_congr {KA' : ℕ} a
+    a' (h : a.1 = a'.1) :
     (commonFace fP hvP hP fC hvC hC KA a).1 = (commonFace fP hvP hP fC hvC hC KA' a').1 := by
   have e1 : toCell P.scheme fP hvP ((bP fP hvP KA).symm a).1 = a.1 :=
     toCell_belowEquiv_symm_val P.scheme fP hvP (BJ' := (Finset.univ, KA))
@@ -139,7 +138,7 @@ theorem commonFace_val_congr {KA' : ℕ} (a : P.scheme.below (Finset.univ.image 
   have e2 : toCell P.scheme fP hvP ((bP fP hvP KA').symm a').1 = a'.1 :=
     toCell_belowEquiv_symm_val P.scheme fP hvP (BJ' := (Finset.univ, KA'))
       (BJ := (Finset.univ.image fP, KA')) rfl a'
-  have e : ((bP fP hvP KA).symm a).1 = ((bP fP hvP KA').symm a').1 :=
+  have e :=
     toCell_injective P.scheme fP hvP (e1.trans (h.trans e2.symm))
   rw [commonFace_val, commonFace_val, e]
 
@@ -181,10 +180,7 @@ theorem commonFace_respects (r : C.scheme.below (Finset.univ.image fC, KA) → E
       refine (castBelow_respects hC.symm (Finset.univ, KA) _).mpr ?_
       rw [e2]
       exact h2
-    have h4 : RespectsSemanticsBelow C.rows (Finset.univ.image fC, KA)
-        (fun e => r (commonFace fP hvP hP fC hvC hC KA (bP fP hvP KA
-          (castBelow hP.symm (Finset.univ, KA) (castBelow hC (Finset.univ, KA)
-            ((bC fC hvC KA).symm e)))))) :=
+    have h4 :=
       h3.of_restrictFace (f := fC) (hr := hvC) (BJ' := (Finset.univ, KA)) rfl
     have he : (fun e => r (commonFace fP hvP hP fC hvC hC KA (bP fP hvP KA
         (castBelow hP.symm (Finset.univ, KA) (castBelow hC (Finset.univ, KA)

@@ -16,7 +16,6 @@ mixed-prescription lift on an arbitrary larger plan.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepLedger
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -33,11 +32,10 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-
 variable (hplan : P.carrier.plan = R) (hprev : TargetGradeLifting.Through P.rows k)
   (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
-theorem inherited_lift {U V : Finset ι × ℕ}
+theorem inherited_lift {U V}
     (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
     (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) :
     CappedLift (rows P hk hnext) h := by

@@ -23,7 +23,6 @@ This uses the mute base of `MaximalFullLayer`, not its active-apex operation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateApex
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -41,7 +40,7 @@ abbrev rows := MaximalFullLayer.base F.carrier F.rows N (N + 1) (F.grade_bound h
 abbrev ownerEquiv := MaximalFullLayer.ownerEquiv F.carrier N (N + 1) (F.grade_bound hD)
   (Nat.lt_succ_self N) hcard.ge
 
-theorem old_index (d : Cell F.carrier) : (scheme F hcard).cell (old F hcard d) =
+theorem old_index d : (scheme F hcard).cell (old F hcard d) =
     F.carrier.cell d := MaximalFullLayer.old_index _ _ _ _ _ _
 
 theorem apex_index : (scheme F hcard).cell (apex F hcard) = (A, N + 1) :=
@@ -49,7 +48,7 @@ theorem apex_index : (scheme F hcard).cell (apex F hcard) = (A, N + 1) :=
 
 theorem old_order : StrictMono (old F hcard) := SourceLayerCarrier.old_order _ _ _ _ _
 
-theorem old_row (c : Cell F.carrier) (d : F.carrier.below (F.carrier.cell c)) :
+theorem old_row c d :
     (rows F hD hcard).E (old F hcard c) (ownerEquiv F hD hcard c d) = F.rows.E c d :=
   MaximalFullLayer.inherited_row _ _ _ _ _ _ _ c d
 
@@ -88,21 +87,26 @@ abbrev lowerEquiv : F.carrier.below (A, N) ≃ (scheme F hcard).below (A, N) :=
 def display (p : F.carrier.below (A, N) → ExtOrd) : Cell (scheme F hcard) → ExtOrd :=
   CellScheme.zeroAbove (p ∘ (lowerEquiv F hcard).symm)
 
-theorem display_old (p : F.carrier.below (A, N) → ExtOrd) (d : F.carrier.below (A, N)) :
+section
+variable (p : F.carrier.below (A, N) → ExtOrd)
+
+theorem display_old d :
     display F hcard p (old F hcard d.1) = p d := by
   change CellScheme.zeroAbove (p ∘ (lowerEquiv F hcard).symm)
     ((lowerEquiv F hcard) d).1 = p d
   rw [CellScheme.zeroAbove_low]
   exact congrArg p ((lowerEquiv F hcard).symm_apply_apply d)
 
-theorem display_apex (p : F.carrier.below (A, N) → ExtOrd) :
+theorem display_apex  :
     display F hcard p (apex F hcard) = ⊥ := by
   apply CellScheme.zeroAbove_high
   change ¬ ((scheme F hcard).cell (apex F hcard)).2 ≤ N
   rw [apex_index]
   exact Nat.not_succ_le_self N
 
-theorem display_lawful {p : F.carrier.below (A, N) → ExtOrd}
+end
+
+theorem display_lawful {p}
     (hp : RespectsSemanticsBelow F.rows (A, N) p) :
     RespectsSemantics (rows F hD hcard) (display F hcard p) := by
   apply RespectsSemanticsBelow.zeroAbove

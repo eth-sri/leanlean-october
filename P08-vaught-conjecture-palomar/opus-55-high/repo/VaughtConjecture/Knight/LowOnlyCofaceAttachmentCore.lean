@@ -18,7 +18,6 @@ literal common-root identification. No mixed scopes are added.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyCofaceAttachment
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 open CellScheme.restrictFace FirstLossLowFamily AmalgamationPlan
@@ -27,18 +26,16 @@ universe w
 
 /-- The scheme-equality cast in the generic face map is the canonical
 restriction occurrence, with no re-enumeration. -/
-theorem faceMap_eq {m n : ℕ} (D : SemScheme n) (Q : SemScheme m)
-    (f : Fin m ↪ Fin n) (hv : Finset.univ.image f ∈ D.scheme.plan)
-    (h : D.restrictFace f hv = Q) (d : Cell Q.scheme) :
+theorem faceMap_eq {m n} D Q
+    (f : Fin m ↪ Fin n) hv
+    h d :
     SemSchemeBoundaryInput.faceMap D Q f hv h d =
-      toCell D.scheme f hv (SemScheme.castCell h.symm d) := by
-  subst Q
-  rfl
+      toCell D.scheme f hv (SemScheme.castCell h.symm d) := by aesop
 
 variable {α : LimitStage} {k K : ℕ} {p : StageType α.1 k}
   {P C : StageType α.1 (k + 1)} (hP : IsCoface p P) (hC : IsCoface p C)
 
-def pair (k : ℕ) : CoatomPair k := CoatomPair.step Fin.castSuccEmb
+def pair k : CoatomPair k := CoatomPair.step Fin.castSuccEmb
 
 def data : CoatomBoundaryPresentation.Data (pair k) where
   left := P.scheme
@@ -91,9 +88,6 @@ theorem root_receipt (F : LowOnly.Family P.scheme C.scheme K)
     hC.extendsDomain.visible hC.extendsDomain.restrict i
   let a : P.scheme.scheme.below (rootFace k, (rootFace k).card) :=
     ⟨(I).shared.f i, by
-      change GradedLe (P.scheme.scheme.cell
-        (SemSchemeBoundaryInput.faceMap P.scheme p.scheme Fin.castSuccEmb
-          hP.extendsDomain.visible hP.extendsDomain.restrict i)) _
       have hi := SemSchemeBoundaryInput.faceMap_index P.scheme p.scheme Fin.castSuccEmb
         hP.extendsDomain.visible hP.extendsDomain.restrict i
       have hg : GradedLe ((p.scheme.scheme.scope i).image Fin.castSuccEmb,
@@ -153,10 +147,10 @@ def rebase (F : LowOnly.Family P.scheme C.scheme K)
 
 /-- A supplied LOW family over two cofaces yields an actual copy of the donor
 over their common root. The cutoff, physical scheme, and readback are derived. -/
-theorem receive_of_receiving {M : Type w} {W : KnightRealization α M} (hcons :
+theorem receive_of_receiving {M} {W} (hcons :
     W.IsExactParentConsistent)
     (hFC : FiniteCutReceiving W)
-    (u : Fin (k + 1) ↪ M) (hu : W.eval u = some C)
+    u (hu : W.eval u = some C)
     (F : LowOnly.Family P.scheme C.scheme K)
     (hF : F.root = commonRoot_of_cofaces hP hC) (hp : F.p = P.label)
     (hc : C.label F.gap.c = ⊤) (hr : C.label F.gap.r.1 = ⊤) :
@@ -169,13 +163,11 @@ theorem receive_of_receiving {M : Type w} {W : KnightRealization α M} (hcons :
     LowOnlyPaddedModelReceiving.receive_of_shared_of_receiving (I) F (root_receipt hP hC F hF)
       (by simp) (left_proper hP hC) (right_proper hP hC) (coverage hP hC)
       hcons hFC u C hu rfl hs hc hr (fun d hd => by
-        rw [hp] at hd ⊢
+        simp_all
         exact (P.label_bound d).resolve_right hd)
   have htype : pD = P := by
     apply StageType.eq_of_label heq
-    intro d
-    exact ((hlabel (SemScheme.castCell heq.symm d)).trans (congrFun hp _)).trans
-      (congrArg P.label (SemScheme.castCell_castCell_symm heq d))
+    aesop
   exact ⟨(I).placeLeft.trans v, htype ▸ heval, htuple⟩
 
 include hP hC in

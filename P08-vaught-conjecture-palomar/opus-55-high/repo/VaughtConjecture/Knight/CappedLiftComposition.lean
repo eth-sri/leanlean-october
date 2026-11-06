@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 /-! # Composition of literal original-cap lifting clauses
 
@@ -15,15 +15,13 @@ No whole ambient extension or output bountifulness is assumed.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 open Transform Value ExtOrd
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {I J K : Finset ι × ℕ}
-
+  {sem : Semantics D}
 
 /-- Raise only the target grade after a proved same-grade scope lift. -/
-theorem CappedLift.raise_target {B C : Finset ι} {i j : ℕ}
+theorem CappedLift.raise_target {B C} {i j}
     {h : B ⊆ C} (hl : CappedLift sem (show GradedLe (B, i) (C, i) from ⟨h, le_rfl⟩))
     (hij : i ≤ j) : CappedLift sem (show GradedLe (B, i) (C, j) from ⟨h, hij⟩) :=
   hl.comp (hJK := show GradedLe (C, i) (C, j) from ⟨Finset.Subset.refl _, hij⟩)

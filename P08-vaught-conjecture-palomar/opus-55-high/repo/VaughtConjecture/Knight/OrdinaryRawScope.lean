@@ -16,7 +16,6 @@ is supplied. The binary facets and their common plan come from this plan.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryRawScope
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open OrdinaryScopeOperator AmalgamatedBoundaryPlan
@@ -36,12 +35,12 @@ variable (H : Ready sem) (s : Step A) (hplan : D.plan = s.plan)
 
 include hplan in
 theorem left_mem : A.erase s.a ∈ D.plan := by
-  rw [hplan]
+  simp_all
   exact Finset.mem_union_left _ (Finset.mem_union_left _ s.left_plan.domain_mem)
 
 include hplan in
 theorem right_mem : A.erase s.b ∈ D.plan := by
-  rw [hplan]
+  simp_all
   exact Finset.mem_union_left _ (Finset.mem_union_right _ s.right_plan.domain_mem)
 
 include hplan in
@@ -61,7 +60,7 @@ theorem boundary_grade {k : ℕ} (hA : A.card ≤ k + 1) (d : Cell D) : D.grade 
   have hg := D.grade_le_card_scope d
   omega
 
-private def bottomProfile (j : ℕ) : CanonicalFieldLayer.Profile sem j (Cell D) id := by
+private def bottomProfile j : CanonicalFieldLayer.Profile sem j (Cell D) id := by
   refine ⟨fun _ => ⊥, ⟨?_, ?_, ?_⟩, rfl, fun _ => bot_ne_top⟩
   · intro d; exact (extVisibilityReplace_bot _ _).symm
   · intro c
@@ -218,7 +217,7 @@ def higher (n : ℕ) (hA : n + 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤
 
 /-- Construct the operation on this raw boundary; derive the binary facets
 from its actual plan, rather than requesting legal copies of those facets. -/
-def build (k : ℕ) (hk : 0 < k) (hcard : A.card = k + 1) :
+def build k (hk : 0 < k) (hcard : A.card = k + 1) :
     OrdinaryScopeOperator.Core sem k := by
   let s := Classical.choose (exists_step D.isPlan (by omega : 2 ≤ A.card))
   have hplan := Classical.choose_spec (exists_step D.isPlan (by omega : 2 ≤ A.card))
@@ -237,10 +236,10 @@ section Mute
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable {sem : Semantics D} {k : ℕ} (S : OrdinaryScopeOperator.Core sem k)
 
-theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
-    (c : Cell (S.finish hk hcard).carrier)
+theorem completed_highest_row hk hcard
+    c
     (hc : (S.finish hk hcard).carrier.grade c = k + 1)
-    (d : (S.finish hk hcard).carrier.below ((S.finish hk hcard).carrier.cell c)) :
+    d :
     (S.finish hk hcard).rows.E c d = ⊥ := by
   rcases OrdinaryScopeMute.covered S.carrier k (k + 1) (Nat.lt_succ_self k) hcard.ge c with
     ⟨c, rfl⟩ | rfl

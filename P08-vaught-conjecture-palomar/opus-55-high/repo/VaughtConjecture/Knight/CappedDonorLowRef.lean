@@ -60,7 +60,7 @@ open Transform Value ExtOrd AmalgamationPlan
 /-! ## Order facts about visibility replacement -/
 
 /-- A `k`-visible value strictly below `x` stays strictly below every `k`-replacement of `x`. -/
-theorem lt_evr_of_selfVis_lt {k i : ℕ} {a x : ExtOrd} (ha : SelfVis k a) (hax : a < x) :
+theorem lt_evr_of_selfVis_lt {k i} {a x} (ha : SelfVis k a) (hax : a < x) :
     a < extVisibilityReplace x k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
   · exact absurd hax not_lt_bot
@@ -90,12 +90,15 @@ theorem lt_evr_of_selfVis_lt {k i : ℕ} {a x : ExtOrd} (ha : SelfVis k a) (hax 
     · exact hax
 
 /-- A replacement through `k ≤ K` of a value at most a `K`-visible `b` stays at most `b`. -/
-theorem evr_le_of_le_selfVis {K k i : ℕ} {b x : ExtOrd} (hb : SelfVis K b) (hk : k ≤ K)
+theorem evr_le_of_le_selfVis {K k i} {b x} (hb : SelfVis K b) (hk : k ≤ K)
     (hi : i ≤ k) (hx : x ≤ b) : extVisibilityReplace x k i ≤ b :=
   extVisibilityReplace_le_of_le_selfVis hi (hb.mono hk) hx
 
+section
+variable {x y γ : ExtOrd}
+
 /-- Cap agreement below a cap pins every value strictly below the cap. -/
-theorem eq_of_capAgree_of_lt {x y γ : ExtOrd} (h : min x γ = min y γ) (hx : x < γ) : y = x := by
+theorem eq_of_capAgree_of_lt (h : min x γ = min y γ) (hx : x < γ) : y = x := by
   rw [min_eq_left hx.le] at h
   rcases le_total y γ with hy | hy
   · rw [min_eq_left hy] at h
@@ -105,9 +108,11 @@ theorem eq_of_capAgree_of_lt {x y γ : ExtOrd} (h : min x γ = min y γ) (hx : x
 
 /-- Cap agreement below a cap and a value at least the cap force the other value at least the
 cap. -/
-theorem le_of_capAgree_of_le {x y γ : ExtOrd} (h : min x γ = min y γ) (hx : γ ≤ x) : γ ≤ y := by
+theorem le_of_capAgree_of_le (h : min x γ = min y γ) (hx : γ ≤ x) : γ ≤ y := by
   rw [min_eq_right hx] at h
   exact h.symm ▸ min_le_left _ _
+
+end
 
 namespace CappedDonor
 
@@ -148,102 +153,11 @@ structure LowRef (K : ℕ) where
     (h : GradedLe (C.scheme.cell (R.face a).1) (C.scheme.cell c)),
     R.p a.1 = ⊤ → extVisibilityReplace (C.rows.E c r) K K < C.rows.E c ⟨(R.face a).1, h⟩
 
-namespace LowRef
-
-variable {R} {K : ℕ} (L : R.LowRef K)
-
-/-- The lower domain of the low reference owner. -/
-abbrev Dom : Type := C.scheme.below (C.scheme.cell L.c)
-
-/-- The owner in its own lower domain. -/
-def cL : L.Dom := ⟨L.c, GradedLe.refl _⟩
-
-/-- The rounded source of the low reference. -/
-noncomputable def h : ExtOrd := extVisibilityReplace (C.rows.E L.c L.r) K K
-
-/-! ## The frontier -/
-
-/-- The frontier `e v = v c ∧ R_K (v r)`. -/
-noncomputable def e (v : L.Dom → ExtOrd) : ExtOrd :=
-  min (v L.cL) (extVisibilityReplace (v L.r) K K)
-
-section Lawful
-
-variable {v : L.Dom → ExtOrd} (hv : RespectsSemanticsBelow C.rows (C.scheme.cell L.c) v)
-include hv
-
-end Lawful
-
-/-! ## The frontier at a cutoff -/
-
-theorem domLe {j : ℕ} (hj : K ≤ j) : GradedLe (C.scheme.cell L.c) (effC J j) :=
-  ⟨Finset.subset_univ _, by
-    change C.scheme.grade L.c ≤ min j J
-    rw [L.c_grade]; exact le_min hj (L.K_lt_N.le.trans R.N_le)⟩
-
-/-- The restriction of a present private section to the owner's lower domain. -/
-def lowD {j : ℕ} (hj : K ≤ j) (v : C.scheme.below (effC J j) → ExtOrd) (d : L.Dom) : ExtOrd :=
-  v (CellScheme.below.mono (L.domLe hj) d)
-
-/-- The frontier of a present private section. -/
-noncomputable def eC {j : ℕ} (hj : K ≤ j) (v : C.scheme.below (effC J j) → ExtOrd) : ExtOrd :=
-  L.e (L.lowD hj v)
-
-end LowRef
-
 /-! ## Two-threshold states -/
-
-/-- A two-threshold state: a receiving state and the stored cutoff. -/
-structure TState (R : Ref I nP N J P C) (j : ℕ) where
-  /-- The receiving state. -/
-  st : R.State j
-  /-- The stored cutoff. -/
-  b : ExtOrd
 
 variable {R}
 
-open Classical in
-/-- The maximum of the request fields with a non-top donor label, present or future (empty
-maximum bottom). -/
-noncomputable def State.nonTopMax {j : ℕ} (st : R.State j) : ExtOrd :=
-  (Finset.univ.filter fun d : Cell P.scheme => R.p d ≠ ⊤).sup fun d => st.sourceProfile (.req d)
-
-/-- The cap field: numerical once present, persistent before. -/
-noncomputable def State.capField {j : ℕ} (st : R.State j) : ExtOrd := st.sourceProfile (.priv R.cap)
-
-/-- **Two-threshold admissibility**: receiving admissibility, `K`-visibility of the stored
-cutoff, LOW from grade `K` and HIGH from grade `N` (its selector half is the receiving
-relation). -/
-structure LowRef.TAdmissible {K : ℕ} (L : R.LowRef K) {j : ℕ} (S : R.TState j) : Prop where
-  adm : R.Admissible S.st
-  /-- The stored cutoff's persistent grade-one observation. -/
-  b_vis : SelfVis 1 S.b
-  /-- The stored cutoff is `K`-visible once numerically present. -/
-  b_visK : K ≤ j → SelfVis K S.b
-  low : ∀ hj : K ≤ j, S.st.gate ≠ ⊥ → S.st.nonTopMax < S.b → S.b < S.st.capField →
-    ∀ t (ht : R.p t = ⊤),
-      max S.b (L.eC hj S.st.v) ≤ S.st.u (reqCell t ((L.top_grade t ht).trans hj))
-  high : ∀ hj : N ≤ j, S.st.gate ≠ ⊥ → min S.b (S.st.v (R.capC hj)) = R.cut (R.lowC hj S.st.v)
-
 /-! ## The actual state -/
-
-variable (R) in
-/-- The actual two-threshold state: the actual pair with the stored cutoff the actual cut. -/
-noncomputable def actualTState (j : ℕ) : R.TState j := ⟨R.actualState j, R.cut R.vactL⟩
-
-/-- The actual state is admissible: HIGH because the actual cut is below the actual cap, LOW
-because every donor-top field is literally top — no physical history is imposed. -/
-theorem LowRef.actual_tadmissible {K : ℕ} (L : R.LowRef K) (j : ℕ) :
-    L.TAdmissible (R.actualTState j) where
-  adm := R.actual_admissible j
-  b_vis := (R.selfVis_cut (Active.selfVis_cap R R.actual_active)).mono (L.K_pos.trans L.K_lt_N.le)
-  b_visK _ := (R.selfVis_cut (Active.selfVis_cap R R.actual_active)).mono L.K_lt_N.le
-  low _ _ _ _ t ht := by
-    change _ ≤ R.p t
-    rw [ht]; exact le_top
-  high _ _ := by
-    change min (R.cut R.vactL) (R.vact R.cap) = R.cut R.vactL
-    exact min_eq_left (R.cut_le_cap _)
 
 end Ref
 

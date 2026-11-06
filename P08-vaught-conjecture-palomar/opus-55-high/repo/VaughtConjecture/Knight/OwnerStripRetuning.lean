@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.PairedMixedAmbient
+public import VaughtConjecture.Knight.GradeCutLayerRows
+public import VaughtConjecture.Knight.PairedCoupledSections
+public import VaughtConjecture.Knight.SourcePrefixAmbient
 
 /-! # Retuning a saturated strip from its owner's actual witness
 
@@ -18,16 +20,17 @@ faithful transformations is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OwnerStripRetuning
 
 open Transform Value ExtOrd SharpWitnessComposition
 
-theorem invisible_preimage {K i : ℕ} {α : ExtOrd → ExtOrd}
-    (hα : Witness (gTop K) α) {x : ExtOrd} {u : Ordinal.{0}} (hi : i < K)
+section
+variable {K i : ℕ}
+
+theorem invisible_preimage {α}
+    (hα : Witness (gTop K) α) {x} {u} (hi : i < K)
     (hx : α x = ofOrd (limitPart u + i)) :
-    ∃ v : Ordinal.{0}, x = ofOrd (limitPart v + i) ∧
+    ∃ v, x = ofOrd (limitPart v + i) ∧
       ∀ n ≤ K, α (ofOrd (limitPart v + n)) = ofOrd (limitPart u + n) := by
   have hinvis : ¬ SelfVis K (α x) := by
     rw [hx, selfVis_ofOrd_iff, finitePart_limitPart_add_nat]
@@ -59,9 +62,9 @@ theorem invisible_preimage {K i : ℕ} {α : ExtOrd → ExtOrd}
 
 /-- A visible lower bound at an invisible source already holds at its floor.
 This includes a plateau whose interior output equals the agreement cap. -/
-theorem floor_bound {K i : ℕ} {β : ExtOrd → ExtOrd}
-    (hβ : Witness (gTop K) β) {v : Ordinal.{0}} (hi : i < K)
-    {γ : ExtOrd} (hγ : SelfVis K γ)
+theorem floor_bound {β}
+    (hβ : Witness (gTop K) β) {v} (hi : i < K)
+    {γ} (hγ : SelfVis K γ)
     (hb : γ ≤ β (ofOrd (limitPart v + i))) : γ ≤ β (ofOrd (limitPart v)) := by
   have he := hβ.clause5 (ofOrd (limitPart v + i)) K
     (by rw [gTop_of_le le_rfl]; exact le_top) 0 (Nat.zero_le _)
@@ -71,10 +74,15 @@ theorem floor_bound {K i : ℕ} {β : ExtOrd → ExtOrd}
   rw [he, ← evr_eq_self_of_selfVis hγ 0]
   exact evr_mono hb (Nat.zero_le _)
 
+end
+
+section
+variable {K : ℕ} {α : ExtOrd → ExtOrd}
+
 /-- Distinct original strips cannot both map affinely onto the same strip.
 This is proved from the actual monotone witness, not a source-order record. -/
-theorem strip_unique {K : ℕ} {α : ExtOrd → ExtOrd} (hα : Witness (gTop K) α)
-    (hK : 0 < K) {u v w : Ordinal.{0}}
+theorem strip_unique (hα : Witness (gTop K) α)
+    (hK : 0 < K) {u v w}
     (hv : ∀ n ≤ K, α (ofOrd (limitPart v + n)) = ofOrd (limitPart u + n))
     (hw : ∀ n ≤ K, α (ofOrd (limitPart w + n)) = ofOrd (limitPart u + n)) :
     limitPart v = limitPart w := by
@@ -85,44 +93,41 @@ theorem strip_unique {K : ℕ} {α : ExtOrd → ExtOrd} (hα : Witness (gTop K) 
     intro hlt
     have he := hα.mono (ofOrd_le_ofOrd.mpr (limitPart_add_nat_le_of_lt hlt K))
     have hz := hw 0 (Nat.zero_le K)
-    simp only [Nat.cast_zero, add_zero] at hz
-    rw [hv K le_rfl, hz, ofOrd_le_ofOrd] at he
-    have hh : limitPart u < limitPart u + K := by
-      have hk : (0 : Ordinal.{0}) < (K : Ordinal.{0}) := Nat.cast_lt.mpr hK
-      simpa only [add_zero] using add_lt_add_right hk (limitPart u)
-    exact not_lt_of_ge he hh
+    simp_all
   exact le_antisymm (not_lt.mp (no_lt w v hw hv)) (not_lt.mp (no_lt v w hv hw))
 
 /-- The affine endpoint reflects order even though the witness need not be
 injective elsewhere. -/
-theorem endpoint_reflects {K : ℕ} {α : ExtOrd → ExtOrd} (hα : Witness (gTop K) α)
-    (hK : 0 < K) {u v : Ordinal.{0}}
+theorem endpoint_reflects (hα : Witness (gTop K) α)
+    (hK : 0 < K) {u v}
     (hv : ∀ n ≤ K, α (ofOrd (limitPart v + n)) = ofOrd (limitPart u + n))
-    {z : ExtOrd} (hz : ofOrd (limitPart u + K) ≤ α z) :
+    {z} (hz : ofOrd (limitPart u + K) ≤ α z) :
     ofOrd (limitPart v + K) ≤ z := by
   by_contra hn
   have hlt := not_le.mp hn
   rcases ExtOrd.cases z with rfl | rfl | ⟨w, rfl⟩
   · exact not_ofOrd_le_bot _ (hα.bot ▸ hz)
-  · exact (not_lt_of_ge le_top hlt).elim
+  · simp_all
   · have hKn : (K : Ordinal.{0}) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.ne_of_gt hK)
     obtain ⟨t, ht, hwt⟩ := Ordinal.lt_add_iff hKn |>.mp (ofOrd_lt_ofOrd.mp hlt)
     obtain ⟨n, rfl⟩ := Ordinal.lt_omega0.mp (ht.trans (Ordinal.natCast_lt_omega0 K))
-    have hnK : n < K := Nat.cast_lt.mp ht
+    have hnK := Nat.cast_lt.mp ht
     have he := hz.trans (hα.mono (ofOrd_le_ofOrd.mpr hwt))
     rw [hv n hnK.le, ofOrd_le_ofOrd] at he
     exact not_lt_of_ge he (add_lt_add_right ht (limitPart u))
 
-theorem invisible_readback {K n : ℕ} {α : ExtOrd → ExtOrd}
-    (hα : Witness (gTop K) α) {u v : Ordinal.{0}}
+end
+
+theorem invisible_readback {K n} {α}
+    (hα : Witness (gTop K) α) {u v}
     (hv : ∀ m ≤ K, α (ofOrd (limitPart v + m)) = ofOrd (limitPart u + m))
-    {z : ExtOrd} (hn : n < K) (hz : α z = ofOrd (limitPart u + n)) :
+    {z} (hn : n < K) (hz : α z = ofOrd (limitPart u + n)) :
     z = ofOrd (limitPart v + n) := by
   obtain ⟨w, hw, hwo⟩ := invisible_preimage hα hn hz
   have he := strip_unique hα (Nat.zero_le n |>.trans_lt hn) hv hwo
   simpa only [he] using hw
 
-private theorem ray_cases (K : ℕ) (u v : Ordinal.{0}) (x : ExtOrd) :
+private theorem ray_cases K u v x :
     FiniteOrbitEmbedding.ray K (limitPart u) (limitPart v) x = ⊥ ∨
       ofOrd (limitPart u) ≤ x ∧ ofOrd (limitPart v) ≤
         FiniteOrbitEmbedding.ray K (limitPart u) (limitPart v) x := by
@@ -132,21 +137,23 @@ private theorem ray_cases (K : ℕ) (u v : Ordinal.{0}) (x : ExtOrd) :
   · exact Or.inr ⟨le_top, ofOrd_le_ofOrd.mpr le_self_add⟩
   · rw [FiniteOrbitEmbedding.ray_ofOrd]
     by_cases hw : limitPart w < limitPart u
-    · exact Or.inl (ite_eq_left hw)
+    · grind
     · rw [ite_eq_right hw]
       refine Or.inr ⟨ofOrd_le_ofOrd.mpr ((not_lt.mp hw).trans (limitPart_le w)), ?_⟩
       split_ifs <;> exact ofOrd_le_ofOrd.mpr le_self_add
 
+section
+variable {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
+
 /-- Construct the replacement strip directly from two owner witnesses and a
 saturated invisible incidence. Every short source retains its ORIGINAL cap,
 including unused strip points and all supported controller coordinates. -/
-theorem exists_retuning {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
-    (hα : Witness (gTop K) α) (hβ : Witness (gTop K) β) (hτ : Witness (gTop K) τ)
-    {x γ M : ExtOrd} {u : Ordinal.{0}} (hi : i < K)
+theorem exists_retuning (hα : Witness (gTop K) α) (hβ : Witness (gTop K) β) (hτ : Witness (gTop K) τ)
+    {x γ M} {u} (hi : i < K)
     (hx : α x = ofOrd (limitPart u + i))
     (hγ : SelfVis K γ) (hτbound : ∀ z, τ z ≤ γ) (hsat : τ (α x) = γ)
     (hp : γ ≤ β x) (hβbound : ∀ z, β z ≤ M) :
-    ∃ (v : Ordinal.{0}) (ρ : ExtOrd → ExtOrd) (δ : ExtOrd),
+    ∃ v ρ δ,
       x = ofOrd (limitPart v + i) ∧ Witness (gTop K) ρ ∧
       γ ≤ δ ∧ δ ≤ M ∧ SelfVis K δ ∧
       ρ (ofOrd (limitPart u + K)) = δ ∧
@@ -205,13 +212,12 @@ theorem exists_retuning {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
 /-- The same constructed retuning reads EVERY occurrence from the saturated
 strip, not just the occurrence used to choose it. Values beyond the endpoint
 have the required prescribed-witness lower bound, derived from source order. -/
-theorem exists_retuning_with_transfer {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
-    (hα : Witness (gTop K) α) (hβ : Witness (gTop K) β) (hτ : Witness (gTop K) τ)
-    {x γ M : ExtOrd} {u : Ordinal.{0}} (hi : i < K)
+theorem exists_retuning_with_transfer (hα : Witness (gTop K) α) (hβ : Witness (gTop K) β) (hτ : Witness (gTop K) τ)
+    {x γ M} {u} (hi : i < K)
     (hx : α x = ofOrd (limitPart u + i))
     (hγ : SelfVis K γ) (hτbound : ∀ z, τ z ≤ γ) (hsat : τ (α x) = γ)
     (hp : γ ≤ β x) (hβbound : ∀ z, β z ≤ M) :
-    ∃ (ρ : ExtOrd → ExtOrd) (δ : ExtOrd), Witness (gTop K) ρ ∧
+    ∃ ρ δ, Witness (gTop K) ρ ∧
       γ ≤ δ ∧ δ ≤ M ∧ SelfVis K δ ∧ ρ (ofOrd (limitPart u + K)) = δ ∧
       (∀ z n, n < K → α z = ofOrd (limitPart u + n) → ρ (α z) = β z) ∧
       (∀ z, ofOrd (limitPart u + K) ≤ α z → δ ≤ β z) ∧
@@ -232,5 +238,7 @@ theorem exists_retuning_with_transfer {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
   · intro z hz
     have hlow := endpoint_reflects hα (Nat.zero_le i |>.trans_lt hi) horbit hz
     exact (hend.symm.trans (hstrip K le_rfl)).le.trans (hβ.mono hlow)
+
+end
 
 end VaughtConjecture.Knight.OwnerStripRetuning

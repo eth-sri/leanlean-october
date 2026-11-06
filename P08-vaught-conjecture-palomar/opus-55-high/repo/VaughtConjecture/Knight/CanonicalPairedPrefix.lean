@@ -17,7 +17,6 @@ The canonical fixed-point hypothesis supplies exactly this relative slot bound.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedPrefix
 open Transform Value ExtOrd PairedSlotEncoding CanonicalPairedEncoding
 noncomputable section
@@ -27,7 +26,7 @@ def lowerGroups (j : ℕ) (S : Finset Ordinal.{0}) (h : Ordinal.{0}) : ℕ :=
 
 /-- If a canonical field reaches a grid cut, the unchanged lower groups leave
 enough room for a new point group at or above that cut. -/
-theorem cut_le_next_slot {j B : ℕ} {S : Finset Ordinal.{0}}
+theorem cut_le_next_slot {j B : ℕ} {S}
     (hc : ∀ a ∈ S, encode j S a = ofOrd a)
     (hu : ∃ a ∈ S, Ordinal.omega0 * B + j ≤ a) :
     (Ordinal.omega0 : Ordinal.{0}) * B + j ≤
@@ -102,14 +101,16 @@ theorem cut_le_next_slot {j B : ℕ} {S : Finset Ordinal.{0}}
 section Profile
 variable {X : Type*} [Fintype X]
 
-theorem fixed_values {j : ℕ} {p : X → ExtOrd}
+theorem fixed_values {j} {p : X → ExtOrd}
     (hc : normalize j p = p) : ∀ a ∈ values p, encode j (values p) a = ofOrd a := by
   intro a ha
   obtain ⟨d, hd⟩ := mem_values.mp ha
   exact (normalize_ofOrd hd).symm.trans ((congrFun hc d).trans hd)
 
-theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
-    (hc : normalize j p = p) (hp : ∀ d, p d ≠ ⊤)
+section
+variable {j B : ℕ} {p q : X → ExtOrd}
+
+theorem normalize_upper (hc : normalize j p = p) (hp : ∀ d, p d ≠ ⊤)
     (hag : ∀ d, min (p d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (q d) (ofOrd (Ordinal.omega0 * B + j)))
     (d : X) (hd : ofOrd (Ordinal.omega0 * B + j) ≤ q d) :
@@ -190,19 +191,18 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
 
 /-- Relative normalization retains the entire original cut, not only the
 coordinates strictly below it. The ambient must be a proper canonical fixed point. -/
-theorem normalize_cap {j B : ℕ} {p q : X → ExtOrd}
-    (hc : normalize j p = p) (hp : ∀ d, p d ≠ ⊤)
+theorem normalize_cap (hc : normalize j p = p) (hp : ∀ d, p d ≠ ⊤)
     (hag : ∀ d, min (p d) (ofOrd (Ordinal.omega0 * B + j)) =
-      min (q d) (ofOrd (Ordinal.omega0 * B + j))) (d : X) :
+      min (q d) (ofOrd (Ordinal.omega0 * B + j))) d :
     min (normalize j q d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (p d) (ofOrd (Ordinal.omega0 * B + j)) := by
   by_cases hd : p d < ofOrd (Ordinal.omega0 * B + j)
   · rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, hc]
   · have hqd : ofOrd (Ordinal.omega0 * B + j) ≤ q d := by
-      have he := hag d
-      rw [min_eq_right (not_lt.mp hd)] at he
-      exact min_eq_right_iff.mp he.symm
+      grind
     rw [min_eq_right (normalize_upper hc hp hag d hqd), min_eq_right (not_lt.mp hd)]
+
+end
 
 end Profile
 end

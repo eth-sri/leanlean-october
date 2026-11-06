@@ -19,7 +19,6 @@ it does not construct that chart or prove mixed-scope lawfulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
 noncomputable section

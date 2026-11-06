@@ -25,7 +25,6 @@ In particular this does not construct the shorter encoding or donor template.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCarrierReceiving
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open Growth CellScheme.restrictFace

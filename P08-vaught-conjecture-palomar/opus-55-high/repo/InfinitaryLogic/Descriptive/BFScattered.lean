@@ -147,9 +147,9 @@ attribute [local instance] t2Space_structureSpace
 pairwise non-isomorphic codes there is `η < ω₁` at which no two distinct points of `P` are
 back-and-forth equivalent.  This is `exists_uniform_bfSeparation` for the off-diagonal of `P`,
 and the level is the one it returns.  No countability of the relation symbols is assumed. -/
-theorem exists_forall_not_codeBFEquiv_of_analyticSet {P : Set (StructureSpace L)}
+theorem exists_forall_not_codeBFEquiv_of_analyticSet {P}
     (hP : AnalyticSet P) (hanti : ∀ x ∈ P, ∀ y ∈ P, (structureIsoSetoid L).r x y → x = y) :
-    ∃ η : Ordinal.{0}, η < Ordinal.omega 1 ∧
+    ∃ η, η < Ordinal.omega 1 ∧
       ∀ x ∈ P, ∀ y ∈ P, x ≠ y → ¬ CodeBFEquiv η x y := by
   obtain ⟨η, hη, hsep⟩ :=
     exists_uniform_bfSeparation hP.offDiag (not_structureIso_of_mem_offDiag hanti)
@@ -225,7 +225,7 @@ The target universe `w'` is independent of the universes of the language. -/
 theorem bfScattered_of_countable_bfObservations (C : Set (StructureSpace L))
     {Q : Ordinal.{0} → Type w'} (obs : ∀ η, C → Q η)
     (hc : ∀ η < Ordinal.omega 1, (Set.range (obs η)).Countable)
-    (hobs : ∀ η < Ordinal.omega 1, ∀ c d : C, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
+    (hobs : ∀ η < Ordinal.omega 1, ∀ c d, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
     BFScattered C := fun η hη ↦
   countable_quotient_of_countable_range _ (obs η) (hc η hη) (hobs η hη)
 

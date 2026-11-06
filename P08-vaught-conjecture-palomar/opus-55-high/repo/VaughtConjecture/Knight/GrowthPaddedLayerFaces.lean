@@ -16,7 +16,6 @@ occurrences and rows. No selected-rendering equality or LOW fibre is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedLayerFaces
 open Transform Value ExtOrd Growth GrowthOrderedBase
 open GrowthPaddedContract AmalgamationPlan CoatomBoundaryExtension
@@ -31,7 +30,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   (P : Layer I X T hA hB hC k)
 
 /-- Literal faces survive the entire installed tower, not just its field readings. -/
-def layerFace {S : Finset ι} {E : CellScheme S} {oldRows : Semantics E}
+def layerFace {S} {E : CellScheme S} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ S) :
     ExactSemanticFace oldRows P.rows := by
   let L := SeparatedLayerFace.face I.boundary
@@ -59,7 +58,7 @@ def privateFace : ExactSemanticFace I.rightRows P.rows :=
 def donorFace : ExactSemanticFace I.leftRows P.rows :=
   layerFace P I.leftFace hB.not_ge
 
-theorem inherited_lift {U V : Finset ι × ℕ}
+theorem inherited_lift {U V}
     (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
     (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) :
     CappedLift P.rows h := by
@@ -79,8 +78,11 @@ variable {κ : Type*} [DecidableEq κ] {U V : Finset κ} {a : ℕ}
   {D : CellScheme U} {sem : Semantics D}
   (G : ExactSemanticFace (PointImageSemantics.rows S.scheme e he S.rows) sem)
 
+section
+variable (j : ℕ)
+
 /-- Literal full original face at a nominal cutoff, even above its arity. -/
-def fullEquiv (j : ℕ) : S.scheme.below (Finset.univ, j) ≃ D.below (V, j) :=
+def fullEquiv  : S.scheme.below (Finset.univ, j) ≃ D.below (V, j) :=
   (show S.scheme.below (Finset.univ, j) ≃
       (AmalgamatedBoundary.pointImage S.scheme e he).below (V, j) from {
     toFun := fun d => ⟨d.1,
@@ -89,7 +91,7 @@ def fullEquiv (j : ℕ) : S.scheme.below (Finset.univ, j) ≃ D.below (V, j) :=
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl }).trans (G.belowEquiv (V, j) (Finset.Subset.refl _))
 
-theorem full_respects_iff (j : ℕ) (q : D.below (V, j) → ExtOrd) :
+theorem full_respects_iff q :
     RespectsSemanticsBelow sem (V, j) q ↔
       RespectsSemanticsBelow S.rows (Finset.univ, j) (q ∘ fullEquiv S e he G j) := by
   have h := respects_iff_of_equiv (sem' := S.rows) (sem := sem)
@@ -103,6 +105,8 @@ theorem full_respects_iff (j : ℕ) (q : D.below (V, j) → ExtOrd) :
     rw [G.index d.1, G.index f.1]
     exact (Finset.image_subset_image_iff e.injective).symm
   · exact (G.row c.1 (PointImageSemantics.belowEquiv S.scheme e he c.1 d)).symm
+
+end
 end FullFace
 
 end

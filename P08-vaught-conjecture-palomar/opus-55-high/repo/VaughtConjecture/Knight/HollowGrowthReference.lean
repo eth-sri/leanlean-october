@@ -18,7 +18,6 @@ No receiving scheme or stable model is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthReference
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -55,9 +54,9 @@ structure Data {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
 /-- The joint context is constructed, including empty roots and empty request
 lists. The requested offset and threshold floor precede the final growth step. -/
 theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    (reqs : List BlockRequest)
-    (hreqs : ∀ r ∈ reqs, IsNonSuccessor r.block ∧ r.block < α.1) (R Nmin : ℕ) :
+    {n} t (p : S α.1 n) (hp : W.eval t = some p)
+    reqs
+    (hreqs : ∀ r ∈ reqs, IsNonSuccessor r.block ∧ r.block < α.1) R Nmin :
     Nonempty (Data (W := W) t p reqs R Nmin) := by
   obtain ⟨C, hCN, -, -⟩ := exists_referenceContext_margin hM p hp reqs hreqs
     (max (max n R) Nmin)

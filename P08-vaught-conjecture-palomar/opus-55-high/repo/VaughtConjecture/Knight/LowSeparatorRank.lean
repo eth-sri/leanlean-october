@@ -54,22 +54,27 @@ variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
 def rankPartner [DecidableEq X] (s : X → ExtOrd) : X → ExtOrd :=
   Function.update s b (donorMax N s)
 
-theorem rankPartner_apply_self [DecidableEq X] (s : X → ExtOrd) :
+section
+variable [DecidableEq X] (s : X → ExtOrd)
+
+theorem rankPartner_apply_self  :
     rankPartner N b s b = donorMax N s := Function.update_self b _ s
 
-theorem rankPartner_apply_of_ne [DecidableEq X] (s : X → ExtOrd) {d : X} (hdb : d ≠ b) :
+theorem rankPartner_apply_of_ne {d} (hdb : d ≠ b) :
     rankPartner N b s d = s d := Function.update_of_ne hdb _ s
+
+end
 
 /-- The cutoff rank of the partner: the rank of the non-top maximum in `s`. -/
 def rankCut (s : X → ExtOrd) : ℕ := LadderScalarRendering.rank (values s) (donorMax N s)
 
-theorem donorMax_mem_values {s : X → ExtOrd} (hne : donorMax N s ≠ ⊥) :
+theorem donorMax_mem_values {s} (hne : donorMax N s ≠ ⊥) :
     donorMax N s ∈ values s := by
   rcases donorMax_cases N s with h | ⟨d, -, hd⟩
-  · exact absurd h hne
+  · grind
   · exact mem_values.mpr ⟨hne, d, hd⟩
 
-theorem rankCut_le (s : X → ExtOrd) : rankCut N s ≤ Fintype.card X :=
+theorem rankCut_le s : rankCut N s ≤ Fintype.card X :=
   (rank_le_card _ _).trans (values_card_le s)
 
 variable {s : X → ExtOrd} (hlt : donorMax N s < s b)
@@ -104,8 +109,7 @@ theorem values_rankPartner_below :
   · rintro ⟨hz, d, hd⟩
     refine ⟨hz, ?_⟩
     by_cases hdb : d = b
-    · subst hdb
-      exact absurd (hd ▸ hy) (lt_irrefl _)
+    · grind
     · exact ⟨d, by rw [rankPartner_apply_of_ne N b s hdb]; exact hd⟩
 
 include hlt in
@@ -131,8 +135,7 @@ theorem rankPartner_agree :
         (rankCut_lt_cutoff N b hlt).le.trans (rank_mono _ (not_lt.mp hsd))
       have h2 : rankCut N s ≤ LadderScalarRendering.rank (values (rankPartner N b s)) (s d) := by
         have h := rank_mono (values (rankPartner N b s)) (hlt.le.trans (not_lt.mp hsd))
-        have hk : LadderScalarRendering.rank (values (rankPartner N b s)) (donorMax N s) =
-            rankCut N s := by
+        have hk := by
           have := rankPartner_cutoff N b hlt
           unfold fieldRank at this
           rw [rankPartner_apply_self N b] at this
@@ -151,9 +154,6 @@ theorem cut_rankPartner {H : ℕ} (hH : Fintype.card X ≤ H) :
     have hag := agree_cut H (fieldRank s) (fieldRank (rankPartner N b s)) b
     rw [rankPartner_cutoff N b hlt, min_eq_left hgt.le] at hag
     have h1 := rankCut_lt_cutoff N b hlt
-    have : rankCut N s <
-        min (fieldRank s b) (cut H (fieldRank s) (fieldRank (rankPartner N b s))) :=
-      lt_min h1 hgt
     omega
   · exact le_cut ((rankCut_le N s).trans hH) (rankPartner_agree N b hlt)
 
@@ -166,7 +166,6 @@ theorem cut_rankPartner_eq_of_lt {H : ℕ} (hH : Fintype.card X ≤ H) {a : X �
   have hst := cut_rankPartner N b hlt hH
   have h1 := cut_triangle H a (fieldRank s) (fieldRank (rankPartner N b s))
   have h2 := cut_triangle H (fieldRank s) a (fieldRank (rankPartner N b s))
-  rw [hst] at h1 h2
   rw [cut_symm H (fieldRank s) a] at h2
   omega
 
@@ -190,7 +189,7 @@ end Partner
 
 /-- **Activation at the actual source**: a source whose rank profile has every non-top donor
 rank at most `k` and cutoff rank above `k` has its non-top maximum strictly below its cutoff. -/
-theorem activation_of_source {k : ℕ} (a : X → ExtOrd)
+theorem activation_of_source {k} a
     (hlow : ∀ d, N d → fieldRank a d ≤ k) (hb : k < fieldRank a b) :
     donorMax N a < a b := by
   have hab : ⊥ < a b := by
@@ -214,15 +213,6 @@ end Scalar
 
 /-! ## The two-spare-tip separator on the actual ladder -/
 
-section Ladder
-
-variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
-  {Q : Type*} [Finite Q] {H : ℕ} (profile : Q → X → ℕ)
-  (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
-  (src : Q → X → ExtOrd) (hsrc : ∀ a, profile a = fieldRank (src a))
-
-end Ladder
-
 /-! ## The selected rendered readings -/
 
 section Selected
@@ -233,9 +223,9 @@ variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
 omit [Finite Q] in
 include hH in
 /-- The rendering of `s` reads the partner's tip at the non-top maximum. -/
-theorem render_tip_partner [DecidableEq X] {s : X → ExtOrd} (hlt : donorMax N s < s b)
-    (hHX : Fintype.card X ≤ H) {qs qt : Q} (hqs : profile qs = fieldRank s)
-    (hqt : profile qt = fieldRank (rankPartner N b s)) (C : ExtOrd) :
+theorem render_tip_partner [DecidableEq X] {s} (hlt : donorMax N s < s b)
+    (hHX : Fintype.card X ≤ H) {qs qt} (hqs : profile qs = fieldRank s)
+    (hqt : profile qt = fieldRank (rankPartner N b s)) C :
     render profile qs s C (leaf hH qt) = donorMax N s := by
   unfold render
   rw [image, index_leaf, hqs, hqt, cut_rankPartner N b hlt hHX]
@@ -247,9 +237,8 @@ theorem render_tip_partner [DecidableEq X] {s : X → ExtOrd} (hlt : donorMax N 
 omit [DecidablePred N] [Finite Q] in
 include hH in
 /-- The rendering of `s` reads its own tip at the ceiling. -/
-theorem render_tip_self (s : X → ExtOrd) (hHX : Fintype.card X < H) (qs : Q) (C : ExtOrd) :
+theorem render_tip_self s (hHX : Fintype.card X < H) qs C :
     render profile qs s C (leaf hH qs) = C := by
-  classical
   unfold render
   rw [image, index_leaf, cut_refl, LadderScalarRendering.level,
     ite_eq_left ((values_card_le s).trans_lt hHX)]
@@ -266,16 +255,15 @@ variable {n : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C 1)
 
 /-- At grade one, the LOW bound of an active admitted state is the plain minimum of the private
 owner and low source. -/
-theorem low_min_le {A : State P C} (hA : F.Admissible 1 A) (hm : F.maximum A < A.b)
-    (d : Cell P.scheme) (hd : F.p d = ⊤) : min (A.v F.gap.c) (A.v F.gap.r.1) ≤ A.u d := by
+theorem low_min_le {A} (hA : F.Admissible 1 A) (hm : F.maximum A < A.b)
+    d (hd : F.p d = ⊤) : min (A.v F.gap.c) (A.v F.gap.r.1) ≤ A.u d := by
   have hlow := hA.low le_rfl hm d hd
   change max A.b (min (A.v F.gap.c) (extVisibilityReplace (A.v F.gap.r.1) 1 1)) ≤ A.u d at hlow
-  have hvis : SelfVis 1 (A.v F.gap.r.1) := by
+  have hvis := by
     have h := (hA.lawfulC.orderly (CellScheme.below.mono (F.gap.domLe le_rfl) F.gap.r)).symm
     change SelfVis (C.scheme.grade F.gap.r.1) (A.v F.gap.r.1) at h
     exact h.mono (C.scheme.grade_pos _)
-  rw [evr_eq_self_of_selfVis hvis] at hlow
-  exact (le_max_right _ _).trans hlow
+  grind
 
 end Family
 

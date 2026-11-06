@@ -17,7 +17,6 @@ readback then determines every original. This is uniqueness, not extension.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration
@@ -34,8 +33,8 @@ local notation "P" => tower I X T hA hB hC t ht
 local notation "D" => carrier I X T hA hB hC t ht
 local notation "Rows" => rows I X T hA hB hC t ht
 
-theorem original_or_full (c : Cell (P).carrier) :
-    (∃ d : Cell I.boundary, c = original I X T hA hB hC t ht d) ∨ (P).carrier.scope c = A := by
+theorem original_or_full c :
+    (∃ d, c = original I X T hA hB hC t ht d) ∨ (P).carrier.scope c = A := by
   rcases (P).cases c with ⟨b, rfl⟩ | ⟨hs, _, _⟩
   · rcases RelativeLadderLayer.cell_cases I.boundary (by omega : 0 < A.card) b with
       ⟨d, rfl⟩ | ⟨v, rfl⟩

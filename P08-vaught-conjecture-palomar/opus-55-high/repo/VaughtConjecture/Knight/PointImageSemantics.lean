@@ -16,8 +16,6 @@ coding without changing labels or composing transformations.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PointImageSemantics
 
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundary
@@ -44,7 +42,7 @@ def rows : Semantics K where
   E c d := sem.E c ((belowEquiv D e he c).symm d)
   orderly c d := sem.orderly c ((belowEquiv D e he c).symm d)
 
-theorem row (c : Cell D) (d : D.below (D.cell c)) :
+theorem row (c : Cell D) d :
     (rows D e he sem).E c (belowEquiv D e he c d) = sem.E c d := by
   change sem.E c ((belowEquiv D e he c).symm (belowEquiv D e he c d)) = _
   rw [Equiv.symm_apply_apply]
@@ -85,7 +83,7 @@ theorem respects_iff (p : Cell D → ExtOrd) :
       refine ⟨z, ?_, hle⟩
       apply Prod.ext
       · exact Finset.image_injective e.injective (congrArg Prod.fst hz)
-      · exact congrArg (fun x : Finset κ × ℕ => x.2) hz
+      · exact congrArg (fun x => x.2) hz
   · intro hp
     refine ⟨hp.orderly, ?_, ?_⟩
     · intro c
@@ -95,6 +93,6 @@ theorem respects_iff (p : Cell D → ExtOrd) :
         ((Finset.image_subset_image_iff e.injective).mp hs) hg
       refine ⟨z, ?_, hle⟩
       exact Prod.ext (congrArg (Finset.image e) (congrArg Prod.fst hz))
-        (congrArg (fun x : Finset ι × ℕ => x.2) hz)
+        (congrArg (fun x => x.2) hz)
 
 end VaughtConjecture.Knight.PointImageSemantics

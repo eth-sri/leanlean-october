@@ -21,7 +21,6 @@ separate construction obligations.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TargetGradeLifting
 open Transform Value ExtOrd AmalgamationPlan CoatomBoundaryExtension
 noncomputable section
@@ -33,14 +32,10 @@ def Through (r : ℕ) : Prop :=
   ∀ {I J : Finset ι × ℕ}, I ∈ Plan.gradedPlan D.plan →
     J ∈ Plan.gradedPlan D.plan → (h : GradedLe I J) → J.2 ≤ r → CappedLift sem h
 
-theorem zero : Through sem 0 := by
-  intro I J _ hJ _ hj
-  exact False.elim ((not_lt_of_ge hj) (Plan.mem_gradedPlan.mp hJ).2.1)
-
 /-- The successor ledger requires only the genuinely new same-grade clauses.
 All lower-source grade changes are constructed using the lawful upper ambient. -/
-theorem successor {r : ℕ} (hprev : Through sem r)
-    (hnext : ∀ (C B : Finset ι), (C, r + 1) ∈ Plan.gradedPlan D.plan →
+theorem successor {r} (hprev : Through sem r)
+    (hnext : ∀ C B, (C, r + 1) ∈ Plan.gradedPlan D.plan →
       (B, r + 1) ∈ Plan.gradedPlan D.plan → (h : C ⊆ B) →
       CappedLift sem (show GradedLe (C, r + 1) (B, r + 1) from ⟨h, le_rfl⟩)) :
     Through sem (r + 1) := by
@@ -60,16 +55,16 @@ theorem successor {r : ℕ} (hprev : Through sem r)
 induction hypothesis. The lower ambient is constructed by the splice theorem.
 The lawful owner-capped repair is an internal composition input, not a claim
 that its source producer has been supplied. -/
-theorem restore {C B : Finset ι} {j : ℕ} (hprev : Through sem j)
+theorem restore {C B} {j} (hprev : Through sem j)
     (hC : (C, j) ∈ Plan.gradedPlan D.plan) (hB : (B, j) ∈ Plan.gradedPlan D.plan)
     (hCB : C ⊆ B)
-    {p : D.below (C, j + 1) → ExtOrd} {u q : D.below (B, j + 1) → ExtOrd}
+    {p} {u q : D.below (B, j + 1) → ExtOrd}
     (hp : RespectsSemanticsBelow sem (C, j + 1) p)
     (hu : RespectsSemanticsBelow sem (B, j + 1) u)
-    {M γ : ExtOrd} (hM : SelfVis (j + 1) M) (hγM : γ ≤ M)
+    {M γ} (hM : SelfVis (j + 1) M) (hγM : γ ≤ M)
     (hread : ∀ d, u (CellScheme.below.mono
       (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) d) = min (p d) M)
-    (hmax : ∀ d : D.below (C, j + 1), D.grade d.1 = j + 1 → p d ≤ M)
+    (hmax : ∀ d, D.grade d.1 = j + 1 → p d ≤ M)
     (hcap : ∀ d, min (u d) γ = min (q d) γ) :
     ∃ r, RespectsSemanticsBelow sem (B, j + 1) r ∧
       (∀ d, min (r d) γ = min (q d) γ) ∧

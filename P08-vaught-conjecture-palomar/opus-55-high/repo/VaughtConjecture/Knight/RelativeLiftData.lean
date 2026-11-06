@@ -60,18 +60,21 @@ open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 
 /-! ## Replacement under a visible cap -/
 
-theorem evr_monotone (k i : ℕ) (hi : i ≤ k) :
-    Monotone (fun x : ExtOrd => extVisibilityReplace x k i) :=
+theorem evr_monotone k i (hi : i ≤ k) :
+    Monotone (fun x => extVisibilityReplace x k i) :=
   fun _ _ h => evr_mono h hi
 
 /-- Replacement at grade at most `N` commutes with meets against an `N`-visible value. -/
-theorem evr_min_of_selfVis {γ : ExtOrd} {N : ℕ} (hγ : SelfVis N γ) {k i : ℕ} (hk : k ≤ N)
-    (hi : i ≤ k) (x : ExtOrd) :
+theorem evr_min_of_selfVis {γ} {N} (hγ : SelfVis N γ) {k i} (hk : k ≤ N)
+    (hi : i ≤ k) x :
     extVisibilityReplace (min x γ) k i = min (extVisibilityReplace x k i) γ := by
   rw [(evr_monotone k i hi).map_min, evr_eq_self_of_selfVis (hγ.mono hk) i]
 
+section
+variable {x γ : ExtOrd}
+
 /-- A replacement strictly below an `N`-visible value comes from a value strictly below it. -/
-theorem lt_of_evr_lt {x γ : ExtOrd} {N i : ℕ} (hγ : SelfVis N γ)
+theorem lt_of_evr_lt {N i} (hγ : SelfVis N γ)
     (h : extVisibilityReplace x N i < γ) : x < γ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rwa [extVisibilityReplace_bot] at h
@@ -99,7 +102,7 @@ theorem lt_of_evr_lt {x γ : ExtOrd} {N i : ℕ} (hγ : SelfVis N γ)
           rwa [heq, limitPart_add_finitePart] at h1
 
 /-- Above an `N`-visible value, every replacement at grade `N` stays above it. -/
-theorem le_evr_of_le {x γ : ExtOrd} {N : ℕ} (hγ : SelfVis N γ) (hx : γ ≤ x) (R : ℕ) :
+theorem le_evr_of_le {N} (hγ : SelfVis N γ) (hx : γ ≤ x) R :
     γ ≤ extVisibilityReplace x N R := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rw [extVisibilityReplace_bot]; exact hx
@@ -127,7 +130,7 @@ theorem le_evr_of_le {x γ : ExtOrd} {N : ℕ} (hγ : SelfVis N γ) (hx : γ ≤
           exact hfp (hγ.trans h2)
 
 /-- An `N`-visible value below a replacement at offset `R < N` is below the value itself. -/
-theorem le_of_le_evr {x γ : ExtOrd} {N R : ℕ} (hγ : SelfVis N γ) (hR : R < N)
+theorem le_of_le_evr {N R} (hγ : SelfVis N γ) (hR : R < N)
     (h : γ ≤ extVisibilityReplace x N R) : γ ≤ x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rwa [extVisibilityReplace_bot] at h
@@ -154,6 +157,8 @@ theorem le_of_le_evr {x γ : ExtOrd} {N R : ℕ} (hγ : SelfVis N γ) (hR : R < 
           have h2 : finitePart g ≤ R := Nat.cast_le.mp (le_of_add_le_add_left h1)
           omega
 
+end
+
 /-! ## A whole labelling from a section below the top index -/
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
@@ -171,9 +176,9 @@ theorem RespectsSemantics.of_below_top {top : Finset ι × ℕ} (htop : ∀ d, G
 /-- **Same-bottom-pattern transport** (the reviewer's helper, notes3): a bounded
 replacement-commuting image of a lawful section having the bottom flags of a lawful section is
 lawful.  No bottom reflection of the scalar map is needed. -/
-theorem map_respects_of_same_bottom_pattern {BJ : Finset ι × ℕ} {r q : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q) {K : ℕ}
-    {ν : ExtOrd → ExtOrd} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν)
+theorem map_respects_of_same_bottom_pattern {BJ} {r q}
+    (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q) {K}
+    {ν} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν)
     (hpattern : ∀ d, ν (r d) = ⊥ ↔ q d = ⊥) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) :=
   (map_respects_iff_rowBlockBottom hr hK hν).mpr
@@ -218,30 +223,40 @@ def capCell : DA.below (DA.cell r.C) := ⟨r.C, GradedLe.refl _⟩
 /-- The restriction of an old labelling to the cap's lower domain. -/
 def sec (u : Cell DA → ExtOrd) (d : DA.below (DA.cell r.C)) : ExtOrd := u d.1
 
-@[simp] theorem sec_apply (u : Cell DA → ExtOrd) (d : DA.below (DA.cell r.C)) :
+section
+variable (u : Cell DA → ExtOrd)
+
+@[simp] theorem sec_apply (d : DA.below (DA.cell r.C)) :
     r.sec u d = u d.1 := rfl
 
-@[simp] theorem sec_capCell (u : Cell DA → ExtOrd) : r.sec u r.capCell = u r.C := rfl
+@[simp] theorem sec_capCell  : r.sec u r.capCell = u r.C := rfl
+
+end
+
+section
+variable (s : DA.below (DA.cell r.C) → ExtOrd)
 
 /-- `t_f(s)`: the capped replacement of the reference, for a section `s` below the cap. -/
-noncomputable def tOf (s : DA.below (DA.cell r.C) → ExtOrd) (f : Cell DQ) : ExtOrd :=
+noncomputable def tOf (f : Cell DQ) : ExtOrd :=
   min (extVisibilityReplace (s (r.ρ f)) r.N (r.off f)) (s r.capCell)
 
 /-- `d(s)`: the capped offset-`R` replacement of the marker. -/
-noncomputable def dOf (s : DA.below (DA.cell r.C) → ExtOrd) : ExtOrd :=
+noncomputable def dOf  : ExtOrd :=
   min (extVisibilityReplace (s r.a) r.N r.R) (s r.capCell)
 
 /-- **The target relations** between an old section `s` below the cap and a candidate
 labelling `v`. -/
-def Correct (s : DA.below (DA.cell r.C) → ExtOrd) (v : Cell DQ → ExtOrd) : Prop :=
+def Correct (v : Cell DQ → ExtOrd) : Prop :=
   (∀ z ∈ r.Z, min (v z) (s r.capCell) = ⊥) ∧
     (∀ f ∈ r.F, min (v f) (s r.capCell) = r.tOf s f) ∧
     ∀ y ∈ r.T, r.dOf s ≤ min (v y) (s r.capCell)
 
+end
+
 end Requests
 
 /-- The distinguished old bottom-pattern class, tested on a lower domain only. -/
-def InClass {DA : CellScheme A} {BJ : Finset ιA × ℕ} (ZA : Set (DA.below BJ))
+def InClass {DA : CellScheme A} {BJ} (ZA : Set (DA.below BJ))
     (u : Cell DA → ExtOrd) : Prop :=
   ∀ d : DA.below BJ, u d.1 = ⊥ ↔ d ∈ ZA
 
@@ -303,11 +318,11 @@ def Allowed (u : Cell DA → ExtOrd) (v : Cell DQ → ExtOrd) : Prop :=
     (∀ r : DQ.below X.root, v r.1 = u (X.κ r).1) ∧
     (InClass X.ZA u → X.req.Correct (X.req.sec u) v)
 
-theorem grade_le (d : Cell DQ) : DQ.grade d ≤ X.req.N :=
+theorem grade_le d : DQ.grade d ≤ X.req.N :=
   (X.below_top d).2.trans X.top_le_N
 
 /-- Lawful old labellings pull back to lawful root sections. -/
-theorem hroot' (u : Cell DA → ExtOrd) (hu : RespectsSemantics semA u) :
+theorem hroot' u (hu : RespectsSemantics semA u) :
     RespectsSemanticsBelow semQ X.root (fun d => u (X.κ d).1) :=
   X.hroot (fun d => u d.1) (hu.toBelow _)
 
@@ -317,27 +332,28 @@ theorem cap_ne_bot {u : Cell DA → ExtOrd} (hcls : InClass X.ZA u) : u X.req.C 
 
 /-! ## The selector -/
 
+section
+variable {u' : Cell DA → ExtOrd}
+
 /-- **The root lift**: candidate bountifulness at the root–top pair installs a lawful old root
 into a lawful candidate ambient at any `N`-visible cap, retaining the ambient's cap reading. -/
-theorem lift_root {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
-    {w : Cell DQ → ExtOrd} (hw : RespectsSemantics semQ w) {γ : ExtOrd}
+theorem lift_root (hu' : RespectsSemantics semA u')
+    {w} (hw : RespectsSemantics semQ w) {γ}
     (hγ : SelfVis X.req.N γ)
-    (hagr : ∀ r : DQ.below X.root, min (w r.1) γ = min (u' (X.κ r).1) γ) :
-    ∃ v' : Cell DQ → ExtOrd, RespectsSemantics semQ v' ∧
-      (∀ r : DQ.below X.root, v' r.1 = u' (X.κ r).1) ∧ ∀ d, min (v' d) γ = min (w d) γ := by
+    (hagr : ∀ r, min (w r.1) γ = min (u' (X.κ r).1) γ) :
+    ∃ v', RespectsSemantics semQ v' ∧
+      (∀ r, v' r.1 = u' (X.κ r).1) ∧ ∀ d, min (v' d) γ = min (w d) γ := by
   obtain ⟨q', hq', hcap, hface⟩ := X.bountiful X.root X.top X.root_mem X.top_mem X.root_le
     X.root_ne (fun d => u' (X.κ d).1) (fun d => w d.1) γ (X.hroot' u' hu') (hw.toBelow X.top)
     (hγ.mono X.top_le_N) (fun d => hagr d)
   refine ⟨fun d => q' ⟨d, X.below_top d⟩, RespectsSemantics.of_below_top X.below_top hq', ?_, ?_⟩
-  · intro r
-    exact hface r
-  · intro d
-    exact hcap ⟨d, X.below_top d⟩
+  · aesop
+  · grind
 
 /-- **The capped decoder** of a lawful old labelling at the cap: the exact capped shifter of its
 locality at the cap's row, capped at the cap's label — a bounded map reading the donor as the
 capped labelling on the distinguished class. -/
-theorem decoder {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
+theorem decoder (hu' : RespectsSemantics semA u')
     (hcls : InClass X.ZA u') :
     ∃ θ : ExtOrd → ExtOrd, BoundedMap X.req.N θ ∧ (∀ x, θ x ≤ u' X.req.C) ∧
       ∀ d, θ (X.e d) = min (X.req.sec u' d) (u' X.req.C) := by
@@ -357,8 +373,10 @@ theorem decoder {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
       have h2 : u' d.1 = ⊥ := (hcls d).mpr hd
       simp only [h1, h2, hbot, Requests.sec_apply]
     · rw [X.e_eq d hd]
-      change min (τ (semA.E X.req.C d)) (u' X.req.C) = min (u' d.1) (u' X.req.C)
+      simp_all
       rw [hread d, min_assoc, min_self]
+
+end
 
 end RelativeData
 

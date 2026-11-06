@@ -5,7 +5,14 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueSources
+public import VaughtConjecture.Knight.PrivateRowFactorization
+public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.PairedSlotComparison
+public import VaughtConjecture.Knight.OrbitPrefixSupport
+public import VaughtConjecture.Knight.LadderScalarRendering
+public import VaughtConjecture.Knight.SourcePrefixRows
+public import VaughtConjecture.Knight.AmbientGradeCharts
 
 /-! # Rank-row incidences with retained private owners
 
@@ -16,17 +23,16 @@ long lower ladder rows against original owners, not just upper-row locality.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueIncidences
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref ReceivingLadderCarrier
-open ReceivingCatalogueSources LadderScalarRendering
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref
+open LadderScalarRendering
 noncomputable section
 
 /-- Visible postprocessing needs bottom reflection only on the actual target
 table. This is a constructed faithful witness, not transformation transitivity. -/
-theorem postprocess {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
-    (h : TransformsTo (fun _ : Y => 1) E t) (hE : ∀ d, SelfVis 1 (E d))
-    {f : ExtOrd → ExtOrd} (hm : Monotone f) (h0 : f ⊥ = ⊥)
+theorem postprocess {Y} [Finite Y] {E t}
+    (h : TransformsTo (fun _ => 1) E t) (hE : ∀ d, SelfVis 1 (E d))
+    {f} (hm : Monotone f) (h0 : f ⊥ = ⊥)
     (hv : ∀ d, SelfVis 1 (f (t d))) (hb : ∀ d, f (t d) = ⊥ ↔ t d = ⊥) :
     TransformsTo (fun _ : Y => 1) E (fun d => f (t d)) := by
   apply LongGuardRows.transforms_of_visible_table hE hv
@@ -40,17 +46,6 @@ theorem postprocess {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
     rw [hr d, hd, hσ, min_bot_left, h0]
   · intro d e he hd
     exact (hb e).mpr (LongGuardRows.bottom_of_same_block h he ((hb d).mp hd))
-
-variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
-  {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
-
-variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)
-
-local notation "H" => ReceivingCatalogueSources.ceiling (P := P) (C := C)
-local notation "G" => grid (P := P) (C := C)
-local notation "D" => carrier L hC
-local notation "T" => SupportLadderRows.Point (rungs (P := P) (C := C))
-  (TField P C) (Controller L)
 
 end
 end VaughtConjecture.Knight.ReceivingCatalogueIncidences

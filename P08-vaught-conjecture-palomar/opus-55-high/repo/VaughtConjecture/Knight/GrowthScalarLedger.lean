@@ -19,7 +19,6 @@ No physical lifting or renderer lawfulness is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CanonicalPairedInverse
 noncomputable section
@@ -53,10 +52,13 @@ theorem private_all {j : ℕ} {S : State C.scheme P.scheme} (hS : Admitted X j S
     exact ⟨T, hT, hread, hcap, hfuture,
       fun d hd => (not_lt.mpr ((X.grade_le d).trans (not_lt.mp hj)) hd).elim⟩
 
+section
+variable {j B : ℕ}
+
 /-- A fixed canonical private source is repaired at every positive encoding
 grade, with protected unused endpoints and supported orbits supplied by the
 constructed `ProtectedRepair`. -/
-theorem private_protected_all {j B : ℕ} (hj : 1 ≤ j) {S : State C.scheme P.scheme}
+theorem private_protected_all (hj : 1 ≤ j) {S : State C.scheme P.scheme}
     (hS : Admitted X j S)
     (hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field C.scheme P.scheme) j)
     {u : C.scheme.below (Finset.univ, j) → ExtOrd}
@@ -72,7 +74,7 @@ theorem private_protected_all {j B : ℕ} (hj : 1 ≤ j) {S : State C.scheme P.s
   exact ⟨T, hT, hread, hcap, hfa, hfq,
     exists_protected_repair X hj hcanon hT (fun f => (hcap f).symm)⟩
 
-theorem donor_protected_before {j B : ℕ} (hj : 1 ≤ j) (hN : j < X.req.N)
+theorem donor_protected_before (hj : 1 ≤ j) (hN : j < X.req.N)
     {S : State C.scheme P.scheme} (hS : Admitted X j S)
     (hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field C.scheme P.scheme) j)
     {v : P.scheme.below (Finset.univ, j) → ExtOrd}
@@ -88,9 +90,13 @@ theorem donor_protected_before {j B : ℕ} (hj : 1 ≤ j) (hN : j < X.req.N)
   exact ⟨T, hT, hread, hcap, hfa, hfq,
     exists_protected_repair X hj hcanon hT (fun f => (hcap f).symm)⟩
 
+end
+
+section
+variable {j : ℕ}
+
 /-- Independent scalar bottom supply, before any catalogue insertion or decoding. -/
-theorem private_bottom_state {j : ℕ}
-    {u : C.scheme.below (Finset.univ, j) → ExtOrd}
+theorem private_bottom_state {u : C.scheme.below (Finset.univ, j) → ExtOrd}
     (hu : RespectsSemanticsBelow C.rows (Finset.univ, j) u) :
     ∃ T : State C.scheme P.scheme, Admitted X j T ∧
       ∀ d : C.scheme.below (Finset.univ, j), T.privateValues d.1 = u d := by
@@ -99,7 +105,7 @@ theorem private_bottom_state {j : ℕ}
   exact ⟨T, hT, hread⟩
 
 /-- Donor scalar bottom supply at a preactivation cutoff. -/
-theorem donor_bottom_state {j : ℕ} (hN : j < X.req.N)
+theorem donor_bottom_state (hN : j < X.req.N)
     {v : P.scheme.below (Finset.univ, j) → ExtOrd}
     (hv : RespectsSemanticsBelow P.rows (Finset.univ, j) v) :
     ∃ T : State C.scheme P.scheme, Admitted X j T ∧
@@ -108,11 +114,13 @@ theorem donor_bottom_state {j : ℕ} (hN : j < X.req.N)
     (selfVis_bot j) (fun _ => by simp)
   exact ⟨T, hT, hread⟩
 
+end
+
 end RootAttachment
 
 /-- Strict donor arity is an independent geometric input, not a consequence
 of the weak `RelativeData.grade_le` bound. -/
-theorem donor_grade_lt {m N : ℕ} (D : SemScheme m) (hm : m < N) (d : Cell D.scheme) :
+theorem donor_grade_lt {m N} (D : SemScheme m) (hm : m < N) d :
     D.scheme.grade d < N :=
   ((D.scheme.grade_le_card_scope d).trans
     (by simpa only [Finset.card_univ, Fintype.card_fin] using

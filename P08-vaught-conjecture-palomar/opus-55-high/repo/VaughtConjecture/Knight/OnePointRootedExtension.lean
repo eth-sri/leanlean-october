@@ -49,7 +49,7 @@ variable {α : LimitStage} {M : Type w}
 /-- **Literal one-point rooted transfer** (Prop. 7.3.3's shape): over every evaluated tuple
 containing the root, every admissible one-point extension of the realized label is realized
 (the new point is the last coordinate). -/
-def OnePointRootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : Fin c ↪ M)
+def OnePointRootedExtensionOver (W : KnightRealization α M) {c} (core : Fin c ↪ M)
     (Adm : RootedAdmissibility α) : Prop :=
   ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (∃ e : Fin c ↪ Fin n, e.trans t = core) →
     W.eval t = some p →
@@ -61,17 +61,17 @@ def OnePointRootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : F
 open AmalgamationPlan
 
 /-- The trivial admissibility predicate. -/
-def AdmTop (α : LimitStage) : RootedAdmissibility α := fun _ _ _ => True
+def AdmTop α : RootedAdmissibility α := fun _ _ _ => True
 
-theorem image_snoc_univ {n N : ℕ} (e : Fin n ↪ Fin N) (x : Fin N) (hx : x ∉ Set.range e) :
+theorem image_snoc_univ {n N} (e : Fin n ↪ Fin N) x hx :
     (Finset.univ : Finset (Fin (n + 1))).image (snoc e x hx) =
       insert x (Finset.univ.image e) := by
   ext y
-  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_insert]
+  simp_all
   constructor
   · rintro ⟨i, rfl⟩
     rcases eq_or_ne i (Fin.last n) with rfl | h
-    · left; exact snoc_apply_last e x hx
+    · simp_all
     · obtain ⟨j, rfl⟩ := Fin.exists_castSucc_eq.mpr h
       right; exact ⟨j, (snoc_apply_castSucc e x hx j).symm⟩
   · rintro (hy | ⟨j, rfl⟩)
@@ -93,9 +93,9 @@ structure FaceRealization (W : KnightRealization α M) {n N : ℕ} (t : Fin n �
   eval_u : W.eval u = some (P.restrictFace e hvis)
 
 /-- The chain step: a visible superface with one more coordinate. -/
-theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core : Fin c₀ ↪ M}
-    (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N : ℕ} {t : Fin n ↪ M}
-    (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f : Fin n ↪ Fin N} {P : S α.1 N}
+theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core}
+    (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N} {t}
+    (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f} {P}
     {B C : Finset (Fin N)} (R : FaceRealization W t f P B) (hC : C ∈ P.scheme.scheme.plan)
     (hBC : B ⊂ C) (hcard : C.card = B.card + 1) : Nonempty (FaceRealization W t f P C) := by
   classical
@@ -128,10 +128,10 @@ theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core : F
   · rw [Function.Embedding.trans_assoc, hu'u, R.c_u]
 
 /-- A maximal realized face is full: every proper face admits a strict extension. -/
-theorem FaceRealization.exists_full {α : LimitStage} {M : Type*}
-    {W : KnightRealization α M} {c₀ : ℕ} {core : Fin c₀ ↪ M}
-    (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N : ℕ} {t : Fin n ↪ M}
-    (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f : Fin n ↪ Fin N} {P : S α.1 N}
+theorem FaceRealization.exists_full {α} {M}
+    {W : KnightRealization α M} {c₀} {core}
+    (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N} {t : Fin n ↪ M}
+    (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f} {P}
     {B : Finset (Fin N)} (hB : B ∈ P.scheme.scheme.plan)
     (R : FaceRealization W t f P B) : Nonempty (FaceRealization W t f P Finset.univ) := by
   classical
@@ -146,13 +146,12 @@ theorem FaceRealization.exists_full {α : LimitStage} {M : Type*}
     P.scheme.scheme.isPlan.exists_visible_card_succ_superface hCvis hfull
   have hDmem : D ∈ faces := Finset.mem_filter.mpr
     ⟨Finset.mem_univ _, hD, RC.step hone hroot hD hCD hcard⟩
-  have hle := hmax D hDmem
-  omega
+  grind
 
 /-- **One-point rooted transfer iterates to finite-extension rooted transfer** (trivial
 admissibility). -/
 theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
-    (hcons : W.IsExactParentConsistent) {c₀ : ℕ} {core : Fin c₀ ↪ M}
+    (hcons : W.IsExactParentConsistent) {c₀} {core : Fin c₀ ↪ M}
     (hone : OnePointRootedExtensionOver W core (AdmTop α)) :
     RootedExtensionOver W core (AdmTop α) := by
   intro n t p hroot ht N f P hfP _

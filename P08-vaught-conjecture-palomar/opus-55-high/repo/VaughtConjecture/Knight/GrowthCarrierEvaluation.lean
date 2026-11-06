@@ -20,7 +20,6 @@ The evaluator need not be a model, and its values need not lie below the stage.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthCarrierEvaluation
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open Growth CellScheme.restrictFace
@@ -45,14 +44,14 @@ theorem extendsDomain : ExtendsDomain C E :=
   ⟨GrowthAttachedCarrier.private_visible C.scheme P Q e hvC hvP hC hP X T hsmall,
     GrowthAttachedCarrier.restrict_private C.scheme P Q e hvC hvP hC hP X T hsmall⟩
 
-theorem private_cellOf (d : Cell C.scheme.scheme) :
+theorem private_cellOf d :
     (extendsDomain C P Q e hvC hvP hC hP X T hsmall).cellOf d = (F).map d :=
   GrowthAttachedCarrier.private_occurrence C.scheme P Q e hvC hvP hC hP X T hsmall d
 
 variable (L : W.ActualLabelling) {u : Fin J ↪ M}
 
 /-- Restriction compatibility retains the evaluated private face literally. -/
-theorem private_label {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
+theorem private_label {y} {hy} {r : S α.1 (J + 1)}
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r)
     (d : Cell C.scheme.scheme) :
     L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((F).map d)) = L.label u C d := by
@@ -64,7 +63,7 @@ theorem private_label {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
 
 /-- Physical readback applies to any lawful evaluator in the required bottom class. -/
 theorem correct_of_coface (hclass : InClass X.ZA (L.label u C))
-    {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
+    {y} {hy} {r}
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r) :
     X.req.Correct (X.req.sec (L.label u C))
       (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := by
@@ -88,7 +87,7 @@ theorem exists_correct_coface (hM : W.IsModel) (hu : W.eval u = some C)
   exact ⟨y, hy, r, hr, hco, hev,
     correct_of_coface C P Q e hvC hvP hC hP X T hsmall L hclass hr hco hev⟩
 
-theorem donor_restriction {r : S α.1 (J + 1)} (hr : r.scheme = E) :
+theorem donor_restriction {r} (hr : r.scheme = E) :
     ∃ s : S α.1 (n + 1), ∃ hs : typeMap (onePointProj e) r = some s,
       ∃ he : s.scheme = P, ∀ d,
         mapCell hs (SemScheme.castCell he.symm d) = SemScheme.castCell hr.symm ((G).map d) :=

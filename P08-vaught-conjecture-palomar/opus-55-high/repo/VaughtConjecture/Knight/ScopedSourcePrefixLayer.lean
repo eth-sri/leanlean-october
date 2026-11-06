@@ -18,7 +18,6 @@ other old rows. Construction of the selected profiles is a separate producer.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopedSourcePrefixLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
 noncomputable section
@@ -60,22 +59,33 @@ include F in
 theorem below_old {c : Cell D} (hc : D.cell c ≠ (A, k)) (d : D.below (D.cell c)) :
     D.cell d.1 ≠ (A, k) := fun hd => F.separated c hc (hd ▸ d.2)
 
-def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
+section
+variable (q : Controller D k)
+
+def profile (d : Cell D) : ExtOrd :=
   if hd : D.cell d = (A, k) then cut F.grid (F.boundary q) (F.boundary ⟨d, hd⟩)
   else F.lower q d
 
-theorem profile_old (q : Controller D k) {d : Cell D} (hd : D.cell d ≠ (A, k)) :
+theorem profile_old {d} (hd : D.cell d ≠ (A, k)) :
     F.profile q d = F.lower q d := by simp only [profile, hd, ↓reduceDIte]
 
-theorem profile_new (q p : Controller D k) :
+end
+
+theorem profile_new q p :
     F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by
   simp only [profile, p.2, ↓reduceDIte]
 
-theorem profile_diagonal (q : Controller D k) : F.profile q q.1 = F.ceiling := by
+section
+variable (q : Controller D k)
+
+theorem profile_diagonal  : F.profile q q.1 = F.ceiling := by
   rw [F.profile_new]
   exact cut_refl F.ceiling_mem F.grid_bound _
 
-theorem profile_bound (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
+section
+variable (d : Cell D)
+
+theorem profile_bound (hd : D.grade d ≤ k) :
     F.profile q d ≤ F.ceiling := by
   by_cases he : D.cell d = (A, k)
   · rw [show d = (⟨d, he⟩ : Controller D k).1 from rfl, F.profile_new]
@@ -83,7 +93,7 @@ theorem profile_bound (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
   · rw [F.profile_old q he]
     exact F.lower_bound q d hd he
 
-theorem profile_visible (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
+theorem profile_visible (hd : D.grade d ≤ k) :
     SelfVis (D.grade d) (F.profile q d) := by
   by_cases he : D.cell d = (A, k)
   · rw [show D.grade d = k from congrArg Prod.snd he,
@@ -92,7 +102,11 @@ theorem profile_visible (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k)
   · rw [F.profile_old q he]
     exact ((F.lower_lawful q d hd he).orderly ⟨d, GradedLe.refl _⟩).symm
 
-theorem profile_agreement (p q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
+end
+
+end
+
+theorem profile_agreement p q d (hd : D.grade d ≤ k) :
     min (F.profile p d) (cut F.grid (F.boundary p) (F.boundary q)) =
       min (F.profile q d) (cut F.grid (F.boundary p) (F.boundary q)) := by
   by_cases he : D.cell d = (A, k)
@@ -101,11 +115,11 @@ theorem profile_agreement (p q : Controller D k) (d : Cell D) (hd : D.grade d �
   · rw [F.profile_old p he, F.profile_old q he]
     exact F.grid_agreement p q _ (cut_mem F.bot_mem _ _) (agree_cut F.bot_mem _ _) d hd he
 
-theorem profile_prefix {p q : Controller D k} {h : ExtOrd}
+theorem profile_prefix {p q} {h}
     (hh : h ∈ F.grid) (hpq : Agree (F.boundary p) (F.boundary q) h) :
-    Agree (fun d : D.below (A, k) => F.profile p d.1)
+    Agree (fun d => F.profile p d.1)
       (fun d : D.below (A, k) => F.profile q d.1) h := by
-  have ha : Agree (fun d : D.below (A, k) => F.profile p d.1)
+  have ha : Agree (fun d => F.profile p d.1)
       (fun d : D.below (A, k) => F.profile q d.1)
       (cut F.grid (F.boundary p) (F.boundary q)) :=
     fun d => F.profile_agreement p q d.1 d.2.2
@@ -120,14 +134,13 @@ def rows : Semantics D where
         (by simpa only [CellScheme.grade, hc] using d.2.2)).symm
     · exact F.base.orderly c d
 
-theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
-  funext d
+theorem row_old {c} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
   simp only [rows, hc, ↓reduceDIte]
 
-theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
+theorem row_new q d :
     F.rows.E q.1 d = F.profile q d.1 := by simp only [rows, q.2, ↓reduceDIte]
 
-theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
+theorem old_respects_iff {c} (hc : D.cell c ≠ (A, k))
     {r : D.below (D.cell c) → ExtOrd} :
     RespectsSemanticsBelow F.rows (D.cell c) r ↔
       RespectsSemanticsBelow F.base (D.cell c) r := by
@@ -139,14 +152,14 @@ theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     exact hr.locality d
 
 theorem new_locality (q p : Controller D k) :
-    TransformsTo (fun d : D.below (D.cell p.1) => D.grade d.1)
+    TransformsTo (fun d => D.grade d.1)
       (F.rows.E p.1) (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
   have hb (d : D.below (D.cell p.1)) : D.grade d.1 ≤ k := by
     simpa only [CellScheme.grade, p.2] using d.2.2
   have ht := (TransformsTo.refl
-    (grade := fun d : D.below (D.cell p.1) => D.grade d.1) (F.rows.E p.1)).cap
+    (grade := fun d => D.grade d.1) (F.rows.E p.1)).cap
     hb (F.grid_visible _ (cut_mem F.bot_mem (F.boundary q) (F.boundary p)))
-  have he : (fun d : D.below (D.cell p.1) =>
+  have he : (fun d =>
       min (F.rows.E p.1 d) (cut F.grid (F.boundary q) (F.boundary p))) =
       (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
     funext d
@@ -154,7 +167,10 @@ theorem new_locality (q p : Controller D k) :
     exact (F.profile_agreement q p d.1 (hb d)).symm
   rwa [he] at ht
 
-theorem profile_respects (q : Controller D k) :
+section
+variable (q : Controller D k)
+
+theorem profile_respects  :
     RespectsSemanticsBelow F.rows (A, k) (fun d => F.profile q d.1) where
   orderly d := (F.profile_visible q d.1 d.2.2).symm
   locality c := by
@@ -165,7 +181,7 @@ theorem profile_respects (q : Controller D k) :
         F.profile_old q (F.below_old hc _), CellScheme.below.incl] using ht
   availability c t hs hg := by
     by_cases ht : D.cell t.1 = (A, k)
-    · refine ⟨⟨q.1, by rw [q.2]; exact GradedLe.refl _⟩, q.2.trans ht.symm, ?_⟩
+    · refine ⟨⟨q.1, by grind⟩, q.2.trans ht.symm, ?_⟩
       rw [F.profile_diagonal]
       exact F.profile_bound q c.1 c.2.2
     · have hc : GradedLe (D.cell c.1) (D.cell t.1) := ⟨hs, hg.le⟩
@@ -175,7 +191,7 @@ theorem profile_respects (q : Controller D k) :
       simpa only [F.profile_old q (F.below_old ht ⟨c.1, hc⟩),
         F.profile_old q (F.below_old ht w)] using hle
 
-theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
+theorem decoded_respects {K : ℕ} (hkK : k ≤ K)
     {ν : ExtOrd → ExtOrd} (hν : Witness (gTop K) ν)
     (hproper : ∀ c : D.below (A, k), D.scope c.1 ≠ A →
       RespectsSemanticsBelow F.base (D.cell c.1) (fun d => ν (F.lower q d.1)))
@@ -203,7 +219,9 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
     obtain ⟨w, hw, hle⟩ := (F.profile_respects q).availability c t hs hg
     exact ⟨w, hw, hν.mono hle⟩
 
-theorem consistent (hbase : ∀ c : Cell D, D.cell c ≠ (A, k) →
+end
+
+theorem consistent (hbase : ∀ c, D.cell c ≠ (A, k) →
     RespectsSemanticsBelow F.base (D.cell c) (F.base.E c)) : F.rows.IsConsistent := by
   intro c
   by_cases hc : D.cell c = (A, k)

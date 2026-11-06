@@ -29,7 +29,7 @@ variable {α : Ordinal.{0}} {n : ℕ}
 
 /-- A positive top grade is attained by a full-scope `∞`-cell. -/
 theorem exists_topCell_of_topGrade_pos (p : S α n) (hpos : 0 < p.topGrade) :
-    ∃ Θ : Cell p.scheme.scheme, p.scheme.scheme.scope Θ = Finset.univ ∧
+    ∃ Θ, p.scheme.scheme.scope Θ = Finset.univ ∧
       p.scheme.scheme.grade Θ = p.topGrade ∧ p.label Θ = ⊤ := by
   have hne : p.topGrades.Nonempty := by
     by_contra hn
@@ -50,16 +50,16 @@ open StageType
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
 /-- Every cell has a stable value (classical totality of the graph `HasStableValue`). -/
-theorem exists_hasStableValue {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (Xi : Cell p.scheme.scheme) : ∃ γ, R.HasStableValue t p Xi γ := by
-  by_cases h : ∃ δ : ExtOrd, δ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi δ
+theorem exists_hasStableValue {n} t (p : S α.1 n)
+    Xi : ∃ γ, R.HasStableValue t p Xi γ := by
+  by_cases h : ∃ δ, δ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi δ
   · obtain ⟨δ, hδ, hs⟩ := h
     exact ⟨δ, Or.inl ⟨hδ, hs⟩⟩
   · push Not at h
     exact ⟨⊤, Or.inr ⟨rfl, h⟩⟩
 
 /-- A cell whose label is not `∞` stabilizes at its label. -/
-theorem stabilizesTo_label_of_ne_top (x : R.LabelledExt) {Xi : Cell x.type.scheme.scheme}
+theorem stabilizesTo_label_of_ne_top (x : R.LabelledExt) {Xi}
     (hne : x.type.label Xi ≠ ⊤) (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) :
     R.StabilizesTo x.tuple x.type Xi (x.type.label Xi) := by

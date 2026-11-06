@@ -16,7 +16,6 @@ agreement properties. This does not assert arbitrary-ambient lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveSuccessorSections
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
 open CanonicalRecursiveSuccessorRows SharpWitnessComposition
@@ -26,12 +25,14 @@ variable (sem : Semantics D) (n : ℕ) (hA : n + 4 ≤ A.card)
 variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 variable (P : CanonicalRecursiveContract.State sem n (Nat.le_of_succ_le hA))
 
-abbrev equiv (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, (n + 4)) J) :=
+section
+variable (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, (n + 4)) J)
+
+abbrev equiv  :=
   HighLayerBountiful.equiv (predecessor sem n hA) (Profile sem n)
     (n + 4) (Nat.succ_pos (n + 3)) hA J hJ
 
-theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, (n + 4)) J)
-    (p : (predecessor sem n hA).below J → ExtOrd) :
+theorem respects_iff (p : (predecessor sem n hA).below J → ExtOrd) :
     RespectsSemanticsBelow P.rows J p ↔
       RespectsSemanticsBelow (rows sem n hA hp P) J (p ∘ (equiv sem n hA J hJ).symm) := by
   apply respects_iff_of_equiv (equiv sem n hA J hJ)
@@ -40,24 +41,25 @@ theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, (n + 4)) J)
     (fun d e => ?_) (fun b d _ => (inherited_row sem n hA hp P b.1 d).symm) p
   simp only [CellScheme.scope, equiv, HighLayerBountiful.equiv_cell]
 
-theorem proper_lawful {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1) {p : Cell D → ExtOrd}
+end
+
+theorem proper_lawful {J} (hJ : ¬ A ⊆ J.1) {p : Cell D → ExtOrd}
     (hpr : RespectsSemanticsBelow sem J (fun d => p d.1))
     {r : Cell (carrier sem n hA) → ExtOrd}
     (hread : ∀ d, r (boundary sem n hA d) = p d) :
     RespectsSemanticsBelow (rows sem n hA hp P) J (fun d => r d.1) := by
   have hl := P.proper_lawful hJ hpr (r := fun d => r (old sem n hA d)) hread
   let e := equiv sem n hA J (fun h => hJ h.1)
-  have he : (fun d : (carrier sem n hA).below J => r d.1) =
-      (fun d : (predecessor sem n hA).below J => r (old sem n hA d.1)) ∘ e.symm := by
+  have he : (fun d => r d.1) =
+      (fun d => r (old sem n hA d.1)) ∘ e.symm := by
     funext d
     obtain ⟨a, rfl⟩ := e.surjective d
-    simp only [Function.comp_apply, Equiv.symm_apply_apply]
-    rfl
-  rw [he]
+    aesop
+  simp_all
   exact (respects_iff sem n hA hp P J (fun h => hJ h.1) _).mp hl
 
-theorem full_source_short (c : Cell (carrier sem n hA)) (hc : (carrier sem n hA).scope c = A)
-    (d : (carrier sem n hA).below ((carrier sem n hA).cell c)) :
+theorem full_source_short c (hc : (carrier sem n hA).scope c = A)
+    d :
     Short ((carrier sem n hA).grade c) ((rows sem n hA hp P).E c d) := by
   by_cases he : (carrier sem n hA).cell c = (A, (n + 4))
   · have q := (controllerEquiv sem n hA hp).surjective ⟨c, he⟩
@@ -76,7 +78,6 @@ theorem full_source_short (c : Cell (carrier sem n hA)) (hc : (carrier sem n hA)
     rw [inherited_row]
     have hi := SourceLayerCarrier.cell_toCell (predecessor sem n hA) (Profile sem n)
       (n + 4) (Nat.succ_pos (n + 3)) hA (.inl x)
-    change Short ((carrier sem n hA).grade (old sem n hA x)) _
     rw [show (carrier sem n hA).grade (old sem n hA x) = (predecessor sem n hA).grade x
       from congrArg Prod.snd hi]
     exact P.full_short x ((congrArg Prod.fst hi).symm.trans hc) e
@@ -133,19 +134,19 @@ theorem section_lawful (hG : ∀ z ∈ G, SelfVis (n + 4) z) (hC : SelfVis (n + 
   · exact hproper c.1 hc c.2.2
 
 theorem section_bound (hC : SelfVis (n + 4) C) (hb : ∀ d, p d ≤ C)
-    (d : Cell (carrier sem n hA)) : sectionOf sem n hA hp P hK hpr ht G C d ≤ C := by
+    d : sectionOf sem n hA hp P hK hpr ht G C d ≤ C := by
   apply PairedSlotDecoder.decode_le hC
   intro a ha
   obtain ⟨d, hd⟩ := mem_values.mp ha
   simpa only [hd] using hb d
 
-theorem section_supported {L : ℕ} (hL : (n + 4) ≤ L) (hCG : C ∈ G)
-    (d : Cell (carrier sem n hA)) :
+theorem section_supported {L} (hL : (n + 4) ≤ L) (hCG : C ∈ G)
+    d :
     OrbitPrefixSupport.Supported L (G : Set ExtOrd) p
       (sectionOf sem n hA hp P hK hpr ht G C d) := PairedSlotDecoder.decode_supported hL hCG _
 
-theorem section_agreement {q : Cell D → ExtOrd}
-    (hqr : RespectsSemanticsBelow sem (A, K) (fun d => q d.1)) (htq : ∀ d, q d ≠ ⊤)
+theorem section_agreement {q}
+    hqr (htq : ∀ d, q d ≠ ⊤)
     {h : ExtOrd} (hG : ∀ z ∈ G, SelfVis (n + 4) z) (hC : SelfVis (n + 4) C)
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem n hA hp P hK hpr ht G C) (sectionOf sem n hA hp P hK hqr htq G C) h := by

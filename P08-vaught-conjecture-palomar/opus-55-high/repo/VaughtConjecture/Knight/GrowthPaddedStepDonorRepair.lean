@@ -17,7 +17,6 @@ and supported decoder construct the replacement and every external-cap receipt.
 /- Adapted from LowOnlyPaddedStepPrivateRepair using growth admission. -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepDonorRepair
 open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
 open GrowthPaddedContract GrowthPaddedStepRows GrowthOrderedBase
@@ -32,7 +31,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I X T hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-theorem donor_grade (d : I.left.scheme.below (Finset.univ, k + 1)) :
+theorem donor_grade d :
     (carrier P hnext).grade (donorAt P hnext d).1 =
       I.left.scheme.grade d.1 := by
   exact (congrArg Prod.snd (original_index P hnext
@@ -41,13 +40,13 @@ theorem donor_grade (d : I.left.scheme.below (Finset.univ, k + 1)) :
 /-- A supplied original owner identifies the actual donor lower domain.
 The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped (hN : k + 1 < X.req.N)
-    (c : I.left.scheme.below (Finset.univ, k + 1))
+    c
     (hc : I.left.scheme.cell c.1 = (Finset.univ, k + 1)) (hg : I.left.scheme.grade c.1 = (k + 1))
-    {p : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, (k + 1)) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, k + 1) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ) (hactive : γ < p c)
+    {γ} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
     ∃ u, RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) u ∧
       (∀ d, u (donorAt P hnext d) = min (p d) (p c)) ∧
@@ -80,7 +79,7 @@ theorem owner_capped (hN : k + 1 < X.req.N)
   let fromEff := CellScheme.below.mono (D := I.left.scheme)
     (show GradedLe (Finset.univ, k + 1) (I.left.scheme.cell c.1) from by
       rw [hc]; exact GradedLe.refl _)
-  let s := (fun d : I.left.scheme.below (Finset.univ, k + 1) =>
+  let s := (fun d =>
     S.donorValues d.1) ∘ toEff
   let p' := p ∘ toEff
   have hs' : RespectsSemanticsBelow I.left.rows (I.left.scheme.cell c.1) s :=
@@ -124,7 +123,6 @@ theorem owner_capped (hN : k + 1 < X.req.N)
       (boundedMap_of_witness hν) (ne_of_gt hpos) hcap, ?_, hcap, fun _ => fac.bounded _⟩
   intro d
   exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
-
 
 end
 end VaughtConjecture.Knight.GrowthPaddedStepDonorRepair

@@ -16,14 +16,13 @@ fields, and coded grids. The statement is uniform in the constructed height.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveCoding
 open Transform Value ExtOrd CanonicalCodingSupport
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
-theorem seed (hA : 3 ≤ A.card) (hc : sem.IsCoded) :
+theorem seed hA (hc : sem.IsCoded) :
     (CanonicalRecursiveSeedRows.rows sem hA hp).IsCoded := by
   apply layer (CanonicalRecursiveSeedRows.predecessor sem hA) _ 3 (by decide) hA
     (CanonicalRecursiveSeedRows.separation sem hA hp)
@@ -38,8 +37,8 @@ theorem seed (hA : 3 ≤ A.card) (hc : sem.IsCoded) :
     (field (GradeCutBoundary.rows D 3 sem) 3 (GradeCutBoundary.toCell D 3) q)
   exact CanonicalRecursiveSeedRows.source_supported sem hA hp q d.1
 
-theorem successor (n : ℕ) (hA : n + 4 ≤ A.card)
-    (P : CanonicalRecursiveContract.State sem n (Nat.le_of_succ_le hA))
+theorem successor n hA
+    P
     (hc : P.rows.IsCoded) : (CanonicalRecursiveSuccessorRows.rows sem n hA hp P).IsCoded := by
   apply layer (CanonicalRecursiveSuccessorRows.predecessor sem n hA) _
     (n + 4) (Nat.succ_pos (n + 3)) hA (CanonicalRecursiveSuccessorRows.separation sem n hA hp)
@@ -54,7 +53,7 @@ theorem successor (n : ℕ) (hA : n + 4 ≤ A.card)
       (GradeCutBoundary.toCell D (n + 4)) q)
   exact CanonicalRecursiveSuccessorRows.source_supported sem n hA hp P q d.1
 
-theorem coded (hc : sem.IsCoded) (n : ℕ) (hA : n + 3 ≤ A.card) :
+theorem coded (hc : sem.IsCoded) n hA :
     (CanonicalRecursiveSemantics.rows sem hp n hA).IsCoded := by
   induction n with
   | zero => exact seed sem hp hA hc
@@ -64,7 +63,7 @@ theorem coded (hc : sem.IsCoded) (n : ℕ) (hA : n + 3 ≤ A.card) :
       (ih (Nat.le_of_succ_le hA))
 
 /-- The old coding premise comes from the two legal input schemes. -/
-theorem coatom {s : AmalgamatedBoundaryPlan.Step A} {m n : ℕ}
+theorem coatom {s : AmalgamatedBoundaryPlan.Step A} {m n}
     (I : SemSchemeBoundaryInput.Input s m (n + 3) (n + 3)) :
     (CoatomRecursiveInput.rows I).IsCoded :=
   coded I.rows I.proper I.coded n (CoatomRecursiveInput.height_le I)

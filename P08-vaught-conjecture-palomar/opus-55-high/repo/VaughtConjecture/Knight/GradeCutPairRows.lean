@@ -17,7 +17,6 @@ The overlap equation concerns existing inherited rows, not future locality.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeCutPairRows
 open Transform Value ExtOrd GradeCutPairCarrier
 noncomputable section
@@ -31,15 +30,16 @@ variable (sem : Semantics D) (low : Semantics (small D Q R j k hj hjA hk hkA))
 def ownerEquiv (c : Cell D) :=
   properEquiv D Q R j k hj hjA hk hkA (D.cell c) (GradeCutLayerRows.proper_scope D hp c)
 
-def liftedRow (c : Cell (small D Q R j k hj hjA hk hkA)) :
+section
+variable (c : Cell (small D Q R j k hj hjA hk hkA))
+
+def liftedRow  :
     (enlarged D Q R j k hj hjA hk hkA).below
       ((small D Q R j k hj hjA hk hkA).cell c) → ExtOrd :=
   low.E c ∘ (belowEquiv D Q R j k hj hjA hk hkA _
     (small_grade D Q R j k hj hjA hk hkA hjk c)).symm
 
-theorem liftedRow_orderly (c : Cell (small D Q R j k hj hjA hk hkA))
-    (d : (enlarged D Q R j k hj hjA hk hkA).below
-      ((small D Q R j k hj hjA hk hkA).cell c)) :
+theorem liftedRow_orderly d :
     SelfVis ((enlarged D Q R j k hj hjA hk hkA).grade d.1)
       (liftedRow D Q R j k hj hjA hk hkA hjk low c d) := by
   let e := belowEquiv D Q R j k hj hjA hk hkA _
@@ -50,10 +50,15 @@ theorem liftedRow_orderly (c : Cell (small D Q R j k hj hjA hk hkA))
   rw [he] at hg
   change (enlarged D Q R j k hj hjA hk hkA).grade d.1 =
     (small D Q R j k hj hjA hk hkA).grade (e.symm d).1 at hg
-  rw [hg]
+  simp_all
   exact (low.orderly c (e.symm d)).symm
 
-def rowAt (x : (Cell D ⊕ Q) ⊕ R) :
+end
+
+section
+variable (x : (Cell D ⊕ Q) ⊕ R)
+
+def rowAt  :
     (enlarged D Q R j k hj hjA hk hkA).below (idx D Q R j k x) → ExtOrd :=
   match x with
   | .inl (.inl c) => sem.E c ∘ (ownerEquiv D Q R j k hj hjA hk hkA hp c).symm
@@ -66,8 +71,7 @@ def rowAt (x : (Cell D ⊕ Q) ⊕ R) :
         (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr r))
         ⟨d.1, by simpa only [cell_idx, GradeCutPairCarrier.idx] using d.2⟩
 
-theorem rowAt_orderly (x : (Cell D ⊕ Q) ⊕ R)
-    (d : (enlarged D Q R j k hj hjA hk hkA).below (idx D Q R j k x)) :
+theorem rowAt_orderly d :
     SelfVis ((enlarged D Q R j k hj hjA hk hkA).grade d.1)
       (rowAt D Q R j k hj hjA hk hkA hp hjk sem low x d) := by
   rcases x with (c | q) | r
@@ -78,7 +82,7 @@ theorem rowAt_orderly (x : (Cell D ⊕ Q) ⊕ R)
     change (enlarged D Q R j k hj hjA hk hkA).grade
       (old D Q R j k hj hjA hk hkA (e.symm d).1) = D.grade (e.symm d).1 at hg
     rw [he] at hg
-    rw [hg]
+    simp_all
     exact (sem.orderly c (e.symm d)).symm
   · dsimp only [rowAt]
     exact liftedRow_orderly D Q R j k hj hjA hk hkA hjk low
@@ -86,6 +90,8 @@ theorem rowAt_orderly (x : (Cell D ⊕ Q) ⊕ R)
   · dsimp only [rowAt]
     exact liftedRow_orderly D Q R j k hj hjA hk hkA hjk low
       (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr r)) _
+
+end
 
 def rows : Semantics (enlarged D Q R j k hj hjA hk hkA) where
   E c d := rowAt D Q R j k hj hjA hk hkA hp hjk sem low
@@ -99,25 +105,24 @@ def rows : Semantics (enlarged D Q R j k hj hjA hk hkA) where
       exact d.2⟩
   orderly c d := (rowAt_orderly D Q R j k hj hjA hk hkA hp hjk sem low _ _).symm
 
-theorem rowAt_congr {x y : (Cell D ⊕ Q) ⊕ R} (hxy : x = y)
-    {d : (enlarged D Q R j k hj hjA hk hkA).below (GradeCutPairCarrier.idx D Q R j k x)}
-    {e : (enlarged D Q R j k hj hjA hk hkA).below (GradeCutPairCarrier.idx D Q R j k y)}
+theorem rowAt_congr {x y} (hxy : x = y)
+    {d}
+    {e}
     (hde : d.1 = e.1) :
     rowAt D Q R j k hj hjA hk hkA hp hjk sem low x d =
       rowAt D Q R j k hj hjA hk hkA hp hjk sem low y e := by
   subst y
   rw [Subtype.ext hde]
 
-theorem rows_cell (x : (Cell D ⊕ Q) ⊕ R)
-    (d : (enlarged D Q R j k hj hjA hk hkA).below
-      ((enlarged D Q R j k hj hjA hk hkA).cell (cell D Q R j k hj hjA hk hkA x))) :
+theorem rows_cell x
+    d :
     (rows D Q R j k hj hjA hk hkA hp hjk sem low).E (cell D Q R j k hj hjA hk hkA x) d =
       rowAt D Q R j k hj hjA hk hkA hp hjk sem low x
         ⟨d.1, by simpa only [cell_idx] using d.2⟩ :=
   rowAt_congr D Q R j k hj hjA hk hkA hp hjk sem low
     ((occEquiv D Q R j k hj hjA hk hkA).symm_apply_apply x) rfl
 
-theorem old_row (c : Cell D) (d : D.below (D.cell c)) :
+theorem old_row c d :
     (rows D Q R j k hj hjA hk hkA hp hjk sem low).E
       (old D Q R j k hj hjA hk hkA c)
       ⟨(ownerEquiv D Q R j k hj hjA hk hkA hp c d).1, by
@@ -193,8 +198,8 @@ theorem embedded_row (c : Cell (small D Q R j k hj hjA hk hkA))
     exact (rows_cell D Q R j k hj hjA hk hkA hp hjk sem low (.inr r) _).trans
       (helper _ d)
 
-theorem proper_respects_iff (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1)
-    (p : D.below BJ → ExtOrd) :
+theorem proper_respects_iff BJ hB
+    p :
     RespectsSemanticsBelow sem BJ p ↔
       RespectsSemanticsBelow (rows D Q R j k hj hjA hk hkA hp hjk sem low) BJ
         (p ∘ (properEquiv D Q R j k hj hjA hk hkA BJ hB).symm) := by
@@ -286,12 +291,13 @@ def glue (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → E
   | .inl (.inr q) => r (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inl (.inr q)))
   | .inr q => r (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr q))
 
-theorem glue_old (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd)
-    (d : Cell D) : glue D Q R j k hj hjA hk hkA p r (old D Q R j k hj hjA hk hkA d) = p d := by
+section
+variable (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd)
+
+theorem glue_old (d : Cell D) : glue D Q R j k hj hjA hk hkA p r (old D Q R j k hj hjA hk hkA d) = p d := by
   simp only [glue, old, cell, Equiv.symm_apply_apply]
 
-theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd)
-    (hag : ∀ c, r (old (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA c) =
+theorem glue_embed (hag : ∀ c, r (old (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA c) =
       p (GradeCutBoundary.toCell D k c)) (d : Cell (small D Q R j k hj hjA hk hkA)) :
     glue D Q R j k hj hjA hk hkA p r (embed D Q R j k hj hjA hk hkA d) = r d := by
   obtain ⟨x, rfl⟩ := (occEquiv (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA).surjective d
@@ -302,6 +308,8 @@ theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk 
   · exact (glue_old D Q R j k hj hjA hk hkA p r _).trans (hag d).symm
   · simp only [Sum.map_inl, Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
   · simp only [Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
+
+end
 
 include hmatch in
 theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd}

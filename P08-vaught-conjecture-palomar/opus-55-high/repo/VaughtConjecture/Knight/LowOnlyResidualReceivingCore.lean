@@ -23,7 +23,6 @@ receiving; no realization covering or modelhood is needed. The growth branch is 
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 noncomputable section
@@ -31,12 +30,12 @@ universe w
 
 /-- In the residual finite-characteristic branch, every legal donor coface
 whose tops have grade at most the characteristic occurs exactly over its root. -/
-theorem receive_of_tail {M : Type w} {α : LimitStage} {W : KnightRealization α M}
-    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {K : ℕ}
+theorem receive_of_tail {M} {α} {W : KnightRealization α M}
+    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {K}
     (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = K}) (hKpos : 0 <
       K)
     (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
+    {n} t (p : S α.1 n) (hp : W.eval t = some p)
     (q : S α.1 (n + 1)) (hq : IsCoface p q)
     (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :
     ∃ (y : M) (hy : y ∉ Set.range t), W.eval (snoc t y hy) = some q := by

@@ -18,7 +18,6 @@ used to obtain bottom supply.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSupply
 open Transform Value ExtOrd CappedDonor LowOnly
 open LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedCharts
@@ -32,7 +31,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem decoded_lower (a : F.Anchor 2) {δ : ExtOrd → ExtOrd}
+theorem decoded_lower a {δ}
     (hδ : Witness (gTop 2) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, 2)
@@ -83,7 +82,7 @@ theorem decoded_lower (a : F.Anchor 2) {δ : ExtOrd → ExtOrd}
 
 /-- Retained proper owners can have grade two or higher. Separation, rather
 than a false global predecessor grade bound, identifies their domains. -/
-theorem old_respects_iff (c : Cell (input I F hroot hA hB hC).lower)
+theorem old_respects_iff c
     (p : (carrier I F hroot hA hB hC).below
       ((carrier I F hroot hA hB hC).cell (old I F hroot hA hB hC c)) → ExtOrd) :
     RespectsSemanticsBelow (rows I F hroot hA hB hC)
@@ -106,7 +105,7 @@ theorem old_respects_iff (c : Cell (input I F hroot hA hB hC).lower)
     (fun b d _ => (inherited_row I F hroot hA hB hC b.1 d).symm) (p ∘ e)
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hh.symm
 
-theorem decoded_lawful (a : F.Anchor 2) {δ : ExtOrd → ExtOrd}
+theorem decoded_lawful a {δ}
     (hδ : Witness (gTop 2) δ)
     (hreflect : ∀ f, δ (a.val f) = ⊥ → a.val f = ⊥)
     (horiginal : RespectsSemanticsBelow I.rows (A, 2)
@@ -142,7 +141,7 @@ theorem decoded_lawful (a : F.Anchor 2) {δ : ExtOrd → ExtOrd}
 
 /-- Terminal insertion constructs the finite bottom reflection needed by the
 long ladder rows. No global bottom-reflecting decoder is assumed. -/
-theorem exists_section {S : State I.left I.right} (hS : F.Admissible 2 S) :
+theorem exists_section {S} (hS : F.Admissible 2 S) :
     ∃ w, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) w ∧
       ∀ d : I.boundary.below (A, 2),
         w ⟨original I F hroot hA hB hC d.1, by rw [original_index]; exact d.2⟩ =
@@ -164,7 +163,6 @@ theorem exists_section {S : State I.left I.right} (hS : F.Admissible 2 S) :
     simpa only [a, hread] using LowOnlyOrderedSources.boundary_lawful_at I F hroot 2 S hS
   refine ⟨_, decoded_lawful I F hroot hA hB hC a hδ hreflect horiginal, ?_⟩
   intro d
-  change δ (source I F hroot hA hB hC a (original I F hroot hA hB hC d.1)) = _
   rw [original_readback]
   exact hread _
 

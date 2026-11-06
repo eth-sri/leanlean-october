@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthNormalization
-public import VaughtConjecture.Knight.CappedDonorDecoderStage
+public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ReferenceContext
 public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
 public import VaughtConjecture.Knight.CanonicalPairedInverse
 
@@ -21,7 +22,6 @@ terminal block is collapsed. No physical renderer lawfulness is assumed or claim
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
 open CanonicalPairedInverse
@@ -36,38 +36,45 @@ namespace State
 def freshFloor (S : State DA DQ) (h : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * ((insert h (PairedSlotEncoding.values S.profile)).sup id + 1)
 
-theorem freshFloor_limit (S : State DA DQ) (h : Ordinal.{0}) :
+section
+variable (S : State DA DQ) (h : Ordinal.{0})
+
+theorem freshFloor_limit  :
     limitPart (S.freshFloor h) = S.freshFloor h := limitPart_omega0_mul _
 
-theorem lt_freshFloor (S : State DA DQ) (h : Ordinal.{0}) {a : Ordinal.{0}}
+theorem lt_freshFloor {a : Ordinal.{0}}
     (ha : a ∈ insert h (PairedSlotEncoding.values S.profile)) : a < S.freshFloor h := by
-  unfold freshFloor
   set m := (insert h (PairedSlotEncoding.values S.profile)).sup id
-  exact (Order.lt_add_one_iff.mpr (Finset.le_sup (f := id) ha)).trans_le
+  exact (Order.lt_add_one_iff.mpr (Finset.le_sup ha)).trans_le
     (Ordinal.le_mul_right (m + 1) Ordinal.omega0_pos)
 
-theorem profile_lt_freshFloor (S : State DA DQ) (h : Ordinal.{0}) (d : Field DA DQ) :
+theorem profile_lt_freshFloor (d : Field DA DQ) :
     S.profile d < ofOrd (S.freshFloor h) ∨ S.profile d = ⊤ := by
   rcases ExtOrd.cases (S.profile d) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
-  · exact Or.inr ht
+  · simp_all
+  · grind
   · refine Or.inl ?_
-    rw [ha, ofOrd_lt_ofOrd]
+    simp_all
     exact S.lt_freshFloor h (Finset.mem_insert_of_mem
       (PairedSlotEncoding.mem_values.mpr ⟨d, ha⟩))
+
+end
 
 end State
 
 variable (X : RelativeData DA semA DQ semQ)
 
+section
+variable {j : ℕ}
+
 /-- Literal-top insertion with all-output support, including unused decoder
 arguments. The fresh terminal block need not lie below the final model stage. -/
-theorem terminal_insertion_supported {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
-    (hS : Admitted X j S) (h : Ordinal.{0}) :
-    ∃ S₀ Q : State DA DQ, Admitted X j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
+theorem terminal_insertion_supported (hj : 1 ≤ j) {S}
+    (hS : Admitted X j S) h :
+    ∃ S₀ Q, Admitted X j S₀ ∧ (∀ d, S₀.profile d ≠ ⊤) ∧
       S.CapEq (ofOrd h) S₀ ∧ Q = S₀.normalize j ∧ Admitted X j Q ∧
       Q.profile ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
+      ∃ δ, Witness (gTop j) δ ∧
         (∀ d, δ (Q.profile d) = S.profile d) ∧
         ∀ x, OrbitPrefixSupport.Supported j ({⊤} : Set ExtOrd) S.profile (δ x) := by
   let l := S.freshFloor h
@@ -123,11 +130,11 @@ theorem terminal_insertion_supported {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
 
 /-- A catalogue member and exact decoder with the finite bottom reflection
 needed by the long padded rows, and support on every decoder argument. -/
-theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
+theorem exists_supported_decoder (hj : 1 ≤ j) {S}
     (hS : Admitted X j S) :
-    ∃ Q : State DA DQ, Admitted X j Q ∧
+    ∃ Q, Admitted X j Q ∧
       Q.profile ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
+      ∃ δ, Witness (gTop j) δ ∧
         (∀ d, δ (Q.profile d) = S.profile d) ∧
         (∀ d, δ (Q.profile d) = ⊥ → Q.profile d = ⊥) ∧
         ∀ x, OrbitPrefixSupport.Supported j ({⊤} : Set ExtOrd) S.profile (δ x) := by
@@ -135,12 +142,14 @@ theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
     terminal_insertion_supported X hj hS 0
   refine ⟨Q, hQ, hcanon, δ, hδ, hread, ?_, hsupp⟩
   intro d hd
-  have hSd : S.profile d = ⊥ := (hread d).symm.trans hd
+  have hSd := (hread d).symm.trans hd
   have he := hcap d
   rw [hSd, min_bot_left] at he
-  have hS₀ : S₀.profile d = ⊥ := (min_eq_bot.mp he).resolve_right (ofOrd_ne_bot 0)
+  have hS₀ := (min_eq_bot.mp he).resolve_right (ofOrd_ne_bot 0)
   rw [hQeq, State.profile_normalize]
   exact (PairedSlotEncoding.normalize_bot_iff j S₀.profile d).mpr hS₀
+
+end
 
 /-- Constructed source repair, including protected unused grid endpoints. -/
 structure ProtectedRepair (a : Field DA DQ → ExtOrd) (S : State DA DQ) (j B : ℕ) where
@@ -159,7 +168,7 @@ structure ProtectedRepair (a : Field DA DQ → ExtOrd) (S : State DA DQ) (j B : 
 terminal block. Literal top does not sacrifice any protected grid point. -/
 theorem exists_protected_repair (hj : 1 ≤ j) {a : Field DA DQ → ExtOrd}
     (ha : a ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j)
-    {S : State DA DQ} (hS : Admitted X j S)
+    {S} (hS : Admitted X j S)
     (hag : ∀ d, min (a d) (grid j B) = min (S.profile d) (grid j B)) :
     Nonempty (ProtectedRepair X a S j B) := by
   let h : Ordinal.{0} := Ordinal.omega0 * B + j

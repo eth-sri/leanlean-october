@@ -18,12 +18,11 @@ and band-valued arguments separately on their actual rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthMarkerCalibration
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
 noncomputable section
 
-private theorem evr_offset_mono (x : ExtOrd) (N : ℕ) {i j : ℕ} (h : i ≤ j) :
+private theorem evr_offset_mono x N {i j} (h : i ≤ j) :
     extVisibilityReplace x N i ≤ extVisibilityReplace x N j := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · simp
@@ -41,11 +40,11 @@ variable {α : Ordinal.{0}} {n : ℕ} {p : S α n} {c : Cell p.scheme.scheme}
 provisional lower bound. No physical receiver is used. -/
 theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
     (hgr : p.scheme.scheme.grade c = p.topGrade) (hc : p.label c = ⊤)
-    (r : p.scheme.scheme.below (p.scheme.scheme.cell c))
-    (hmin : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label d.1 = ⊤ →
+    r
+    (hmin : ∀ d, p.label d.1 = ⊤ →
       p.scheme.rows.E c r ≤ p.scheme.rows.E c d)
-    (d : p.scheme.scheme.below (p.scheme.scheme.cell c)) (hd : p.label d.1 = ⊤)
-    {L : ℕ} (hL : L ≤ p.topGrade) (hv : ofOrd (α + L) ≤ p.someProvisionalValue d.1) :
+    d (hd : p.label d.1 = ⊤)
+    {L} (hL : L ≤ p.topGrade) (hv : ofOrd (α + L) ≤ p.someProvisionalValue d.1) :
     extVisibilityReplace (p.scheme.rows.E c r) p.topGrade L ≤ p.scheme.rows.E c d := by
   by_cases hcap : p.ProvisionalCap d.1
   · obtain ⟨s, hs, hsd⟩ := hcap.transport d.2 hsc hgr hc
@@ -54,7 +53,7 @@ theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
   · have hnotself : extVisibilityReplace (p.scheme.rows.E c d) p.topGrade p.topGrade ≠
         p.scheme.rows.E c d := fun h =>
       hcap ⟨c, d.2, d, hsc, hgr, hc, hd, h.le⟩
-    obtain ⟨a, ha, hfp⟩ : ∃ a : Ordinal.{0}, p.scheme.rows.E c d = ofOrd a ∧
+    obtain ⟨a, ha, hfp⟩ : ∃ a, p.scheme.rows.E c d = ofOrd a ∧
         finitePart a < p.topGrade := by
       rcases ExtOrd.cases (p.scheme.rows.E c d) with hb | ht | ⟨a, ha⟩
       · simp [hb] at hnotself
@@ -80,9 +79,9 @@ theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
 set of arguments of the maximal top owner. -/
 theorem exists_marker (hsc : p.scheme.scheme.scope c = Finset.univ)
     (hgr : p.scheme.scheme.grade c = p.topGrade) (hc : p.label c = ⊤) :
-    ∃ r : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label r.1 = ⊤ ∧
-      ∀ (L : ℕ), L ≤ p.topGrade →
-        ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label d.1 = ⊤ →
+    ∃ r, p.label r.1 = ⊤ ∧
+      ∀ L, L ≤ p.topGrade →
+        ∀ d, p.label d.1 = ⊤ →
           ofOrd (α + L) ≤ p.someProvisionalValue d.1 →
             extVisibilityReplace (p.scheme.rows.E c r) p.topGrade L ≤ p.scheme.rows.E c d := by
   classical
@@ -98,10 +97,10 @@ theorem exists_marker (hsc : p.scheme.scheme.scope c = Finset.univ)
 /-- An actual hollow-growth context with its marker and root source inequalities.
 The top grade exceeds both requested floors. This constructs calibration data,
 not the physical receiving scheme which would consume it. -/
-theorem exists_hollow_marker_context {M : Type*} {α : LimitStage}
+theorem exists_hollow_marker_context {M} {α}
     {W : KnightRealization α M} (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (hp : W.eval t = some p) (K L : ℕ) :
+    (hh : W.IsHollow) {n} t (p : S α.1 n)
+    (hp : W.eval t = some p) K L :
     ∃ (y : W.LabelledExt) (f : Fin n ↪ Fin y.arity) (_hf : f.trans y.tuple = t)
       (hpy : typeMap f y.type = some p) (c : Cell y.type.scheme.scheme)
       (r : y.type.scheme.scheme.below (y.type.scheme.scheme.cell c)),

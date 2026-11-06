@@ -17,7 +17,6 @@ No ambient lifting or upward admission is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepRows
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyPaddedContract
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
@@ -40,7 +39,10 @@ def selected (a : F.Anchor (k + 1)) : Cell P.carrier → ExtOrd :=
   P.render (Nat.le_succ k) (state F a) (state_admissible F a) (state_proper F a)
     (grid P) (ceiling P)
 
-theorem selected_lawful (a : F.Anchor (k + 1)) :
+section
+variable (a : F.Anchor (k + 1))
+
+theorem selected_lawful  :
     RespectsSemanticsBelow P.rows (A, k + 1) (fun d => selected P a d.1) := by
   apply P.lawful (Nat.le_succ k) (state F a) (state_admissible F a) (state_proper F a)
     (fun _ hz => (sourceGrid_visible hz).mono (Nat.le_succ k))
@@ -49,7 +51,10 @@ theorem selected_lawful (a : F.Anchor (k + 1)) :
   rw [state_profile]
   exact LowOnlyRecursiveCharts.anchor_bound F a d
 
-theorem selected_bound (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
+section
+variable (d : Cell P.carrier)
+
+theorem selected_bound  :
     selected P a d ≤ ceiling P := by
   apply P.bound (Nat.le_succ k) (state F a) (state_admissible F a) (state_proper F a)
     ((sourceGrid_visible (sourceGrid_endpoint le_rfl)).mono (Nat.le_succ k))
@@ -57,14 +62,18 @@ theorem selected_bound (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
   rw [state_profile]
   exact LowOnlyRecursiveCharts.anchor_bound F a f
 
-theorem selected_supported (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
+theorem selected_supported  :
     OrbitPrefixSupport.Supported (k + 1) (grid P : Set ExtOrd) (F.fields (k + 1) a)
       (selected P a d) := by
   simpa only [selected, state_profile] using P.supported (Nat.le_succ k) (state F a)
     (state_admissible F a) (state_proper F a) (Nat.le_succ k)
-    (G := grid P) (H := ceiling P) (sourceGrid_endpoint le_rfl) d
+    (H := ceiling P) (sourceGrid_endpoint le_rfl) d
 
-theorem selected_agreement (a b : F.Anchor (k + 1)) {h : ExtOrd}
+end
+
+end
+
+theorem selected_agreement a b {h}
     (hh : h ∈ grid P) (hab : Agree (F.fields (k + 1) a) (F.fields (k + 1) b) h) :
     Agree (selected P a) (selected P b) h := by
   apply P.agreement (Nat.le_succ k) (state F a) (state F b)
@@ -86,21 +95,26 @@ abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv P.carrier (F.Anchor 
 abbrev member := (SeparatedSourceLayerCarrier.controllerEquiv P.carrier (F.Anchor (k + 1))
   (k + 1) (Nat.succ_pos k) hnext (P.separated I F hroot hA hB hC (by omega))).symm
 
-theorem member_controller (a : F.Anchor (k + 1)) :
+section
+variable (a : F.Anchor (k + 1))
+
+theorem member_controller  :
     member P hk hnext (controller P hnext a) = a :=
   (SeparatedSourceLayerCarrier.controllerEquiv P.carrier (F.Anchor (k + 1))
     (k + 1) (Nat.succ_pos k) hnext
     (P.separated I F hroot hA hB hC (by omega))).symm_apply_apply a
 
-def lower (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) : ExtOrd :=
+def lower (d : Cell (carrier P hnext)) : ExtOrd :=
   match SourceLayerCarrier.toOcc P.carrier (F.Anchor (k + 1))
       (k + 1) (Nat.succ_pos k) hnext d with
   | .inl x => selected P a x
   | .inr _ => ⊥
 
-theorem lower_old (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
+theorem lower_old d :
     lower P hnext a (old P hnext d) = selected P a d := by
   simp only [lower, old, SourceLayerCarrier.toOcc_toCell]
+
+end
 
 include hk in
 theorem old_not_full (d : Cell P.carrier) :
@@ -147,26 +161,37 @@ def data : ScopedSourcePrefixLayer.Data (carrier P hnext) (k + 1) (Field I.left 
     simpa only [lower_old] using selected_agreement P _ _ hh hag x
 
 abbrev rows := (data P hk hnext).rows
-abbrev source (a : F.Anchor (k + 1)) := (data P hk hnext).profile (controller P hnext a)
+section
+variable (a : F.Anchor (k + 1))
 
-theorem source_old (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
+abbrev source  := (data P hk hnext).profile (controller P hnext a)
+
+theorem source_old d :
     source P hk hnext a (old P hnext d) = selected P a d := by
   rw [source, ScopedSourcePrefixLayer.Data.profile_old _ _ (old_not_full P hk hnext d)]
   change lower P hnext (member P hk hnext (controller P hnext a)) _ = _
   rw [member_controller, lower_old]
 
-theorem source_new (a b : F.Anchor (k + 1)) :
+end
+
+theorem source_new a b :
     source P hk hnext a (controller P hnext b).1 =
       cut (grid P) (F.fields (k + 1) a) (F.fields (k + 1) b) := by
   change (data P hk hnext).profile _ _ = _
   rw [ScopedSourcePrefixLayer.Data.profile_new]
   simp only [data, member_controller]
 
-theorem source_lawful (a : F.Anchor (k + 1)) :
+section
+variable (a : F.Anchor (k + 1))
+
+theorem source_lawful  :
     RespectsSemanticsBelow (rows P hk hnext) (A, k + 1)
       (fun d => source P hk hnext a d.1) := (data P hk hnext).profile_respects _
 
-theorem source_supported (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) :
+section
+variable (d : Cell (carrier P hnext))
+
+theorem source_supported  :
     OrbitPrefixSupport.Supported (k + 1) (grid P : Set ExtOrd) (F.fields (k + 1) a)
       (source P hk hnext a d) := by
   by_cases hd : (carrier P hnext).cell d = (A, k + 1)
@@ -179,13 +204,13 @@ theorem source_supported (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) :
     rw [source_old]
     exact selected_supported P a x
 
-theorem source_short (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) :
+theorem source_short  :
     Short (k + 1) (source P hk hnext a d) :=
   PairedCoupledSections.supported_short
     (fun _ hh => CanonicalFieldLayer.grid_short _ _ hh)
     (LowOnlyRecursiveCharts.anchor_short F a) (source_supported P hk hnext a d)
 
-theorem source_bound (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) :
+theorem source_bound  :
     source P hk hnext a d ≤ ceiling P := by
   by_cases hd : (carrier P hnext).cell d = (A, k + 1)
   · exact (data P hk hnext).profile_bound _ d (congrArg Prod.snd hd).le
@@ -194,7 +219,11 @@ theorem source_bound (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) :
     rw [source_old]
     exact selected_bound P a x
 
-theorem source_agreement (a b : F.Anchor (k + 1)) {h : ExtOrd}
+end
+
+end
+
+theorem source_agreement a b {h}
     (hh : h ∈ grid P) (hab : Agree (F.fields (k + 1) a) (F.fields (k + 1) b) h) :
     Agree (source P hk hnext a) (source P hk hnext b) h := by
   intro d
@@ -206,18 +235,23 @@ theorem source_agreement (a b : F.Anchor (k + 1)) {h : ExtOrd}
       (k + 1) (Nat.succ_pos k) hnext d hd
     simpa only [source_old] using selected_agreement P a b hh hab x
 
-theorem inherited_row (c : Cell P.carrier) (d : P.carrier.below (P.carrier.cell c)) :
+section
+variable (c : Cell P.carrier)
+
+theorem inherited_row d :
     (rows P hk hnext).E (old P hnext c) (ownerEquiv P hk hnext c d) = P.rows.E c d := by
   rw [ScopedSourcePrefixLayer.Data.row_old _ (old_not_full P hk hnext c)]
   exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
 
-theorem old_respects (c : Cell P.carrier) (p : Cell (carrier P hnext) → ExtOrd) :
+theorem old_respects (p : Cell (carrier P hnext) → ExtOrd) :
     RespectsSemanticsBelow (rows P hk hnext) ((carrier P hnext).cell (old P hnext c))
       (fun d => p d.1) ↔
       RespectsSemanticsBelow P.rows (P.carrier.cell c) (fun d => p (old P hnext d.1)) := by
   rw [(data P hk hnext).old_respects_iff (old_not_full P hk hnext c)]
   exact SeparatedSourceLayerCarrier.base_respects_iff P.carrier (F.Anchor (k + 1))
     (k + 1) (Nat.succ_pos k) hnext (P.separated I F hroot hA hB hC (by omega)) P.rows c _
+
+end
 
 theorem consistent : (rows P hk hnext).IsConsistent := by
   apply (data P hk hnext).consistent
@@ -228,7 +262,7 @@ theorem consistent : (rows P hk hnext).IsConsistent := by
     (k + 1) (Nat.succ_pos k) hnext (P.separated I F hroot hA hB hC (by omega)) P.rows x _).mpr
   have he : (data P hk hnext).base.E (old P hnext x) ∘ ownerEquiv P hk hnext x = P.rows.E x :=
     funext (SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ x)
-  rw [he]
+  simp_all
   exact P.consistent x
 
 end

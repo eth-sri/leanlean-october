@@ -18,8 +18,6 @@ the carrier without entering this domain.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CanonicalSeedAmbient
 
 open Transform Value ExtOrd SourcePrefixRows CanonicalRecursiveSeedRows
@@ -39,16 +37,16 @@ abbrev target := (carrier sem hA).below (A, 3)
 at the original cap, with a constructed first reaching grid cut. -/
 theorem exists_capped_source {q : target sem hA → ExtOrd}
     (hq : RespectsSemanticsBelow (rows sem hA hp) (A, 3) q)
-    (d : target sem hA)
+    d
     (hd : (carrier sem hA).grade d.1 = 3)
-    {γ : ExtOrd} (hγ : SelfVis 3 γ) (hb : γ ≠ ⊥) (hactive : γ ≤ q d) :
+    {γ} (hγ : SelfVis 3 γ) (hb : γ ≠ ⊥) (hactive : γ ≤ q d) :
     ∃ (a : Profile sem) (τ : ExtOrd → ExtOrd) (h : ExtOrd),
       Witness (gTop 3) τ ∧ (∀ x, τ x ≤ γ) ∧
       τ (ceiling (D := D)) = γ ∧
       h ∈ grid (D := D) ∧ SelfVis 3 h ∧ ⊥ < h ∧
       h ≤ ceiling (D := D) ∧ τ h = γ ∧
       (∀ z ∈ grid (D := D), z < h → τ z < γ) ∧
-      (∀ x : target sem hA,
+      (∀ x,
         τ (source sem hA hp a x.1) = min (q x) γ) ∧
       RespectsSemanticsBelow (rows sem hA hp) (A, 3)
         (fun x => τ (source sem hA hp a x.1)) := by
@@ -66,7 +64,7 @@ theorem exists_capped_source {q : target sem hA → ExtOrd}
   obtain ⟨h, hh, hv, hpos, hc, he, hm⟩ :=
     ScopedSourcePrefixAmbient.exists_first_cut F hτ hb hbound hC
   refine ⟨a, τ, h, hτ, hbound, hC, hh, hv, hpos, hc, he, hm, hr, ?_⟩
-  have hf : (fun x : target sem hA =>
+  have hf : (fun x =>
       τ (source sem hA hp a x.1)) =
       (fun x => min (q x) γ) := funext hr
   rw [hf]

@@ -12,13 +12,12 @@ public import VaughtConjecture.Knight.CoatomBoundaryExtension
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeCutLifting
 open Transform Value ExtOrd CoatomBoundaryExtension GradeCutBoundary
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (k : ℕ)
 
-theorem lift_iff {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ k) :
+theorem lift_iff {I J} (h : GradedLe I J) (hJ : J.2 ≤ k) :
     CappedLift (rows D k sem) h ↔ CappedLift sem h := by
   let eI := belowEquiv D k I (h.2.trans hJ)
   let eJ := belowEquiv D k J hJ

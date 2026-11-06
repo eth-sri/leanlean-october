@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.Data.Fin.SuccPred
-public import VaughtConjecture.Knight.ModelAssembly
+public import VaughtConjecture.Knight.Coface
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.OnePointSuccessor
 
 /-! # Coatom amalgamation: the faithful receiver for Cor. 4.3.22
@@ -103,11 +104,14 @@ structure CoatomPair (n : ℕ) where
 
 namespace CoatomPair
 
+section
+variable (a : Fin (n + 2)) (b' : Fin (n + 1))
+
 /-- The canonical coatom pair at a point `a : Fin (n+2)` and a point `b'` of the `a`-face:
 the coatoms omit `a` and `b := a.succAbove b'`; the lower face omits `b'` inside the first and
 `b'.predAbove a` inside the second.  Commutation is
 `Fin.succAbove_succAbove_succAbove_predAbove`. -/
-def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
+def ofPoints  : CoatomPair n where
   f₁ := Fin.succAboveEmb a
   f₂ := Fin.succAboveEmb (a.succAbove b')
   g₁ := Fin.succAboveEmb b'
@@ -124,17 +128,10 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
     exact Fin.succAbove_ne _ k hk
 
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
-
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
-
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
-
-@[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
+@[simp] theorem ofPoints_g₂  :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl
+
+end
 
 /-- **Compatibility** on the common lower face: both inputs restrict, along their lower-face
 embeddings, to one and the same type (`(pa)_b = (pb)_a`). -/
@@ -169,15 +166,12 @@ def MaximalCoatomAmalgamationSupply (α : Ordinal.{0}) : Prop :=
 
 /-- The range of `Fin.succAboveEmb p` is the coatom omitting `p`. -/
 theorem image_succAboveEmb (p : Fin (n + 1)) :
-    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by
-  apply Finset.coe_injective
-  rw [Finset.coe_image, Finset.coe_univ, Set.image_univ, Finset.coe_erase, Finset.coe_univ,
-    Fin.coe_succAboveEmb, Fin.range_succAbove, Set.compl_eq_univ_sdiff]
+    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by aesop
 
 /-- Every plan on `Fin (n+1)` has a visible coatom: for `n = 0` the empty face, otherwise a
 pivot of the step decomposition (`IsPlan.pivot_pair`). -/
 theorem exists_erase_mem_plan (C : CellScheme (ι := Fin (n + 1)) Finset.univ) :
-    ∃ b' : Fin (n + 1), Finset.univ.erase b' ∈ C.plan := by
+    ∃ b', Finset.univ.erase b' ∈ C.plan := by
   cases n with
   | zero => exact ⟨0, by simpa using C.isPlan.empty_mem⟩
   | succ n =>
@@ -188,19 +182,17 @@ theorem exists_erase_mem_plan (C : CellScheme (ι := Fin (n + 1)) Finset.univ) :
 def pointEmb (a : Fin n) : Fin 1 ↪ Fin n :=
   ⟨fun _ => a, fun i j _ => Subsingleton.elim i j⟩
 
-theorem pointEmb_fin_one (a : Fin 1) : pointEmb a = Function.Embedding.refl (Fin 1) :=
-  Function.Embedding.ext fun _ => Subsingleton.elim _ _
+theorem pointEmb_fin_one a : pointEmb a = Function.Embedding.refl (Fin 1) := by aesop
 
 /-- The one-point face at `a` factors through the second coatom of the canonical pair at
 `(a, b')` (`Fin.succAbove_succAbove_predAbove`). -/
-theorem pointEmb_eq_trans (a : Fin (n + 2)) (b' : Fin (n + 1)) :
+theorem pointEmb_eq_trans (a : Fin (n + 2)) b' :
     pointEmb a = (pointEmb (b'.predAbove a)).trans (Fin.succAboveEmb (a.succAbove b')) :=
   Function.Embedding.ext fun _ => (Fin.succAbove_succAbove_predAbove a b').symm
 
 /-- The initial face `Fin.castSuccEmb` is the coatom omitting the last point. -/
 theorem castSuccEmb_eq_succAboveEmb_last :
-    (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)) = Fin.succAboveEmb (Fin.last n) :=
-  Function.Embedding.ext fun i => (Fin.succAbove_last_apply i).symm
+    (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)) = Fin.succAboveEmb (Fin.last n) := by aesop
 
 /-- The empty face is visible in every plan. -/
 theorem image_fin_zero_mem_plan (f : Fin 0 ↪ Fin n)
@@ -214,7 +206,7 @@ theorem image_fin_zero_mem_plan (f : Fin 0 ↪ Fin n)
 `r : S α 1`, there is `q : S α (n+2)` with `q ↾ (A∖{a}) = p`, `q ↾ {a} = r` and a maximal
 full cell.  Induction on `n`; the second coatom is a pivot of `dom p`. -/
 theorem exists_amalgam_point (H : MaximalCoatomAmalgamationSupply α) :
-    ∀ (n : ℕ) (a : Fin (n + 2)) (p : S α (n + 1)) (r : S α 1),
+    ∀ n (a : Fin (n + 2)) p r,
       ∃ q : S α (n + 2), typeMap (Fin.succAboveEmb a) q = some p ∧
         typeMap (pointEmb a) q = some r ∧ q.HasMaximalFullCell := by
   intro n
@@ -249,12 +241,12 @@ theorem exists_amalgam_point (H : MaximalCoatomAmalgamationSupply α) :
 /-! ### The uniformity and high-grade dominance candidates (Lemmas 4.4.2/4.4.3) -/
 
 /-- Every `r : S α 1` is a coface of the unique `p : S α 0`. -/
-theorem isCoface_zero (p : S α 0) (r : S α 1) : IsCoface p r := by
+theorem isCoface_zero p (r : S α 1) : IsCoface p r := by
   rw [IsCoface, typeMap_eq_some _ r (image_fin_zero_mem_plan _ _)]
   exact congrArg some (Subsingleton.elim _ _)
 
 /-- A one-point type's cells have grade `1`. -/
-theorem grade_eq_one (r : S α 1) (Sig : Cell r.scheme.scheme) :
+theorem grade_eq_one (r : S α 1) Sig :
     r.scheme.scheme.grade Sig = 1 := by
   have h₁ := r.scheme.scheme.grade_pos Sig
   have h₂ := r.scheme.scheme.grade_le_card_scope Sig
@@ -264,14 +256,13 @@ theorem grade_eq_one (r : S α 1) (Sig : Cell r.scheme.scheme) :
 
 /-- A label of the `{a}`-face of `q` is a label of `q`: the amalgam's cells include the cells
 of its one-point face, with the same labels (`restrictFace_label`). -/
-theorem exists_label_eq_of_typeMap_point {q : S α (n + 2)} {a : Fin (n + 2)} {r : S α 1}
-    (h : typeMap (pointEmb a) q = some r) (Sig : Cell r.scheme.scheme) :
-    ∃ d : Cell q.scheme.scheme, q.label d = r.label Sig := by
-  have hvis : Finset.univ.image (pointEmb a) ∈ q.scheme.scheme.plan :=
+theorem exists_label_eq_of_typeMap_point {q} {a : Fin (n + 2)} {r : S α 1}
+    (h : typeMap (pointEmb a) q = some r) Sig :
+    ∃ d, q.label d = r.label Sig := by
+  have hvis :=
     (typeMap_isSome_iff _ q).mp (by rw [h]; rfl)
   rw [typeMap_eq_some _ q hvis, Option.some.injEq] at h
-  subst h
-  exact ⟨_, rfl⟩
+  aesop
 
 /-- **Uniformity candidate** (Lemma 4.4.2's amalgamation step): from the supply and a one-point
 type with a label in `[γ, γ + ω)`, every `p : S α n` has a coface in `UniformityFamily γ`. -/

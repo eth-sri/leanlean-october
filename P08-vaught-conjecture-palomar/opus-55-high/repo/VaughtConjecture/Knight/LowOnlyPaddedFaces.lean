@@ -16,7 +16,6 @@ owner domain. No bound on the grades of the old schemes is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedFaces
 open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension
 open LowOnlyPaddedSuccessor
@@ -28,8 +27,11 @@ variable {ι : Type*} [DecidableEq ι] {A B : Finset ι} {n : ℕ}
   {D : CellScheme A} {sem : Semantics D}
   (G : ExactSemanticFace (PointImageSemantics.rows P.scheme e he P.rows) sem)
 
+section
+variable (j : ℕ)
+
 /-- Effective full-face domain, retaining the actual occurrence order and values. -/
-def fullEquiv (j : ℕ) : P.scheme.below (effC n j) ≃ D.below (B, j) :=
+def fullEquiv  : P.scheme.below (effC n j) ≃ D.below (B, j) :=
   (show P.scheme.below (effC n j) ≃
       (AmalgamatedBoundary.pointImage P.scheme e he).below (B, j) from {
     toFun := fun d => ⟨d.1,
@@ -39,7 +41,7 @@ def fullEquiv (j : ℕ) : P.scheme.below (effC n j) ≃ D.below (B, j) :=
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl }).trans (G.belowEquiv (B, j) (Finset.Subset.refl _))
 
-theorem full_respects_iff (j : ℕ) (q : D.below (B, j) → ExtOrd) :
+theorem full_respects_iff q :
     RespectsSemanticsBelow sem (B, j) q ↔
       RespectsSemanticsBelow P.rows (effC n j) (q ∘ fullEquiv P e he G j) := by
   have h := respects_iff_of_equiv (sem' := P.rows) (sem := sem)
@@ -55,6 +57,8 @@ theorem full_respects_iff (j : ℕ) (q : D.below (B, j) → ExtOrd) :
     exact (Finset.image_subset_image_iff e.injective).symm
   · exact (G.row c.1 (PointImageSemantics.belowEquiv P.scheme e he c.1 d)).symm
 
+end
+
 end FullFace
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -65,7 +69,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+def face {T} {E : CellScheme T} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T) :
     ExactSemanticFace oldRows (rows I F hroot hA hB hC) := by
   let J := input I F hroot hA hB hC
@@ -86,7 +90,7 @@ def privateFace : ExactSemanticFace I.rightRows (rows I F hroot hA hB hC) :=
   face I F hroot hA hB hC I.rightFace hC.not_ge
 
 /-- All caps, all inherited target grades, and equal indices. -/
-theorem inherited_lift {U V : Finset ι × ℕ}
+theorem inherited_lift {U V}
     (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
     (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) :
     CappedLift (rows I F hroot hA hB hC) h := by

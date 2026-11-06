@@ -77,29 +77,31 @@ theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtO
     · by_cases he : d.1 = F.high
       · refine ⟨d, ?_, le_rfl⟩
         rw [he]
-        exact F.high_index (by simpa only [he] using hs) (by simpa only [he] using hg)
-      · exact ⟨e, rfl, by rw [hmute d hd he]; exact bot_le⟩
+        exact F.high_index (by grind) (by grind)
+      · exact ⟨e, rfl, by simp_all⟩
 
 def fill (r : D.below (cut BJ k) → ExtOrd) (η : ExtOrd) (d : D.below BJ) : ExtOrd :=
   if hd : D.grade d.1 ≤ k then r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ else
     if d.1 = F.high then η else ⊥
 
-theorem fill_old {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
-    (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
+section
+variable {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
+
+theorem fill_old (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
     F.fill r η d = r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ := by
   simp only [fill, hd, ↓reduceDIte]
 
-theorem fill_high {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
-    (hc : GradedLe (D.cell F.high) BJ) : F.fill r η ⟨F.high, hc⟩ = η := by
+theorem fill_high (hc : GradedLe (D.cell F.high) BJ) : F.fill r η ⟨F.high, hc⟩ = η := by
   simp only [fill, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte]
 
-theorem fill_mute {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
-    (d : D.below BJ) (hd : ¬D.grade d.1 ≤ k) (he : d.1 ≠ F.high) :
+theorem fill_mute (d : D.below BJ) (hd : ¬D.grade d.1 ≤ k) (he : d.1 ≠ F.high) :
     F.fill r η d = ⊥ := by simp only [fill, hd, he, ↓reduceDIte, ↓reduceIte]
+
+end
 
 private theorem base_lift (hb : F.base.IsBountiful)
     (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan)
-    (h : GradedLe CI BJ) (p : D.below CI → ExtOrd) (q : D.below BJ → ExtOrd) (γ : ExtOrd)
+    h p q γ
     (hp : RespectsSemanticsBelow F.base CI p) (hq : RespectsSemanticsBelow F.base BJ q)
     (hγ : SelfVis BJ.2 γ)
     (hag : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
@@ -109,10 +111,10 @@ private theorem base_lift (hb : F.base.IsBountiful)
   by_cases he : CI = BJ
   · subst BJ
     exact ⟨p, hp, fun d => (hag d).symm, fun _ => rfl⟩
-  · exact hb CI BJ hCI hBJ h he p q γ hp hq hγ hag
+  · aesop
 
 private theorem below_eta (d : D.below BJ) (hd : GradedLe (D.cell d.1) BJ) :
-    (⟨d.1, hd⟩ : D.below BJ) = d := Subtype.ext rfl
+    (⟨d.1, hd⟩ : D.below BJ) = d := rfl
 
 /-- Whole-scheme bountifulness follows from the old bountifulness. The
 new grade is above the retained bound, while its scope is the whole carrier. -/

@@ -17,7 +17,6 @@ bound on retained proper owners.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepFaces
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -32,9 +31,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
+section
+variable {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E} (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T)
+
 /-- Literal faces survive the entire installed tower, not just its field readings. -/
-def layerFace {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
-    (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T) :
+def layerFace  :
     ExactSemanticFace oldRows P.rows := by
   let L := SeparatedLayerFace.face I.boundary
     (RelativeLadderLayer.Point (X := Field I.left I.right) (Q := F.Anchor 1))
@@ -55,12 +56,13 @@ def layerFace {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
     row := fun c d => (P.base_row (L.map c)
       ⟨L.map d.1, by rw [L.index, L.index]; exact d.2⟩).trans (L.row c d) }
 
-def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
-    (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T) :
+def face  :
     ExactSemanticFace oldRows (rows P hk hnext) :=
   SeparatedLayerFace.face P.carrier (F.Anchor (k + 1)) (k + 1) (Nat.succ_pos k) hnext
     (P.separated I F hroot hA hB hC (by omega)) P.rows (rows P hk hnext)
     (inherited_row P hk hnext) (layerFace P G hT) hT
+
+end
 
 def privateFace : ExactSemanticFace I.rightRows (rows P hk hnext) :=
   face P hk hnext I.rightFace hC.not_ge

@@ -16,7 +16,6 @@ In particular a grade-one face may retain arbitrary distinct values and top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalInactiveLift
 open Transform Value ExtOrd CanonicalMixedGradeLayers CanonicalMixedOwnerLift
 open CoatomBoundaryExtension GradeTailRestoration
@@ -29,18 +28,18 @@ variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.gra
 /-- The inactive branch includes grade-one sources, empty lower domains,
 and grade-two prescriptions with no active owner. Only old grade-one face
 lifts are consumed; the ambient need not extend outside its actual target. -/
-theorem exists_lift {C : Finset ι} {n : ℕ} (hn : 1 ≤ n)
+theorem exists_lift {C} {n} (hn : 1 ≤ n)
     (hfull₁ : IsEmpty (D.below (C, 1)) ∨ ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
-    {p : D.below (C, n) → ExtOrd} (hp : RespectsSemanticsBelow sem (C, n) p)
+    {p} (hp : RespectsSemanticsBelow sem (C, n) p)
     {q : CanonicalMixedAmbient.target sem 1 (by decide) (by omega) 2 (by decide) hA → ExtOrd}
     (hq : RespectsSemanticsBelow
       (rows sem 1 (by decide) (by omega) hproper 2 hg (by decide) hA (by decide)) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis 2 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (C, n), min (p e) γ =
       min (q (oldTarget sem 1 (by decide) (by omega) hproper 2 hg
         (by decide) hA (by decide) e.1)) γ)
     (hinactive : ∀ e : D.below (C, n), D.grade e.1 = 2 → p e ≤ γ)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell D, D.grade d ≤ 1 →
       GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hCU : GradedLe (C, 1) U) (hOU : GradedLe O U) (hOV : GradedLe O V)

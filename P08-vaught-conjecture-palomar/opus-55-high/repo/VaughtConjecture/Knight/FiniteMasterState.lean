@@ -52,31 +52,41 @@ structure RunState (β : LimitStage) (M : Type w) where
   /-- The master discipline. -/
   hM : MasteredBy A tup
 
+section
+variable (st : RunState β M)
+
 /-- The historical run state is literally the face diagram of its master. -/
-theorem RunState.eq_masterChart (st : RunState β M) :
+theorem RunState.eq_masterChart  :
     st.A = masterChart st.tup st.P :=
   FixedHeight.eq_masterChart st.hA.consistent st.tup st.P st.htup st.hM
 
 /-- The data actually scheduled; all partial-state bookkeeping is derived from it. -/
-def RunState.master (st : RunState β M) : FiniteMaster knightTower β M :=
+def RunState.master  : FiniteMaster knightTower β M :=
   ⟨st.N, st.tup, st.P⟩
 
-theorem RunState.chart_eq (st : RunState β M) : st.master.chart = st.A :=
+theorem RunState.chart_eq  : st.master.chart = st.A :=
   st.eq_masterChart.symm
 
-theorem RunState.master_extends {st st' : RunState β M} (h : Extends st.A st'.A) :
+end
+
+section
+variable {st st' : RunState β M}
+
+theorem RunState.master_extends (h : Extends st.A st'.A) :
     st.master ≤ st'.master := by
   apply (st.master.extends_iff st'.master).mpr
   intro n t p hp
   rw [RunState.chart_eq] at hp ⊢
   exact h t p hp
 
-theorem RunState.extends_of_master {st st' : RunState β M} (h : st.master ≤ st'.master) :
+theorem RunState.extends_of_master (h : st.master ≤ st'.master) :
     Extends st.A st'.A := by
   intro n t p hp
   rw [← st.chart_eq] at hp
   rw [← st'.chart_eq]
   exact ((st.master.extends_iff st'.master).mp h) t p hp
+
+end
 
 /-- Compatibility adapter from a finite master to the historical partial-state record. -/
 noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunState β M where
@@ -99,7 +109,7 @@ noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunSta
 
 /-- The first master event: an arbitrary arity-0 stage type at the empty tuple over the
 mute seed. -/
-noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
+noncomputable def initState β M : RunState β M := by
   exact RunState.ofMaster
     ⟨0, Function.Embedding.ofIsEmpty, Classical.choice (StageType.nonempty β.2 0)⟩
 

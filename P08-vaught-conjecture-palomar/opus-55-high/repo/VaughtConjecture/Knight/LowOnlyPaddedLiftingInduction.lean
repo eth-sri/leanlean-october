@@ -17,7 +17,6 @@ output is bountiful and complete.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
@@ -35,8 +34,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 open LowOnlyPaddedIteration TargetGradeLifting AmalgamationPlan CoatomBoundaryExtension
 include hcover
 
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
 /-- Closed induction on integration's actual installed recursion. -/
-theorem build_lifting (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_lifting  :
     Through (build I F hroot hA hB hC t ht).rows (t + 2) := by
   induction t with
   | zero => exact LowOnlyPaddedLiftingReady.through_two I F hroot hA hB hC hcover
@@ -47,7 +49,7 @@ theorem build_lifting (t : ℕ) (ht : t + 2 ≤ A.card) :
 
 /-- Completeness is asserted only at filled grades. Proper original owners
 above this height are retained but no missing full owners are postulated. -/
-theorem complete_through (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ}
+theorem complete_through {J : Finset ι × ℕ}
     (hJ : J ∈ Plan.gradedPlan R) (hj : J.2 ≤ t + 2) :
     ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = J := by
   let L := build I F hroot hA hB hC t ht
@@ -70,6 +72,8 @@ theorem complete_through (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ
     refine ⟨L.baseMap (RelativeLadderLayer.old I.boundary (by omega) d), ?_⟩
     exact (L.base_index _).trans
       ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd)
+
+end
 
 /-- At the ambient height every permitted graded pair is covered. -/
 theorem full_bountiful :

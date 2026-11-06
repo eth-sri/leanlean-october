@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CappedDonorLowHighFibres
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
 
 /-! # The HIGH/LOW readback consumer from explicit chart receipts (newapproach2 §7 of new4)
 
@@ -72,8 +73,6 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 theorem cut_actual_lt_cap : R.cut R.vactL < R.vact R.cap := by
   rw [R.cut_actual]
   exact (Finset.sup_lt_iff R.cap_pos).mpr fun i _ => R.margin i
-
-variable {K : ℕ} (L : R.LowRef K)
 
 end Ref
 

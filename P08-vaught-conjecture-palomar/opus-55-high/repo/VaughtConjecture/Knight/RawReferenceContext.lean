@@ -17,7 +17,6 @@ cell. Clients choose a final cap only after observing the reference offsets.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section
@@ -38,7 +37,7 @@ variable {blocks : Finset Ordinal.{0}} (C : RawReferenceContext R t blocks)
 /-- A finite bound chosen after the actual offsets have been obtained. -/
 def offsetBound : ℕ := Finset.univ.sup C.repOff
 
-theorem rep_off_le (μ : blocks) : C.repOff μ ≤ C.offsetBound :=
+theorem rep_off_le μ : C.repOff μ ≤ C.offsetBound :=
   Finset.le_sup (f := C.repOff) (Finset.mem_univ μ)
 
 end RawReferenceContext
@@ -46,7 +45,7 @@ end RawReferenceContext
 /-- Acquire the root and raw representatives only. In particular the empty
 request set performs no padding or high-grade dominance step. -/
 theorem exists_rawReferenceContext (hM : R.IsModel) (p : S α.1 n)
-    (hp : R.eval t = some p) (blocks : Finset Ordinal.{0})
+    (hp : R.eval t = some p) blocks
     (hblocks : ∀ μ ∈ blocks, IsNonSuccessor μ ∧ μ < α.1) :
     Nonempty (RawReferenceContext R t blocks) := by
   classical

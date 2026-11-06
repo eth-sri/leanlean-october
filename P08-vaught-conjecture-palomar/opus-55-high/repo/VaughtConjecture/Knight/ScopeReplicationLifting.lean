@@ -19,7 +19,6 @@ original-face lift is assumed proved by this module.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationLifting
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
 open ScopeReplicationSemantics CoatomBoundaryExtension
@@ -29,21 +28,24 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
   (sem : Semantics D)
 
-def fullErase (j : ℕ) (d : (scheme D B C).below (A, j)) : D.below (A, j) :=
+def fullErase j (d : (scheme D B C).below (A, j)) : D.below (A, j) :=
   ⟨erase D B C d.1, D.isPlan.subset_of_mem (D.scope_mem_plan _),
     (erase_grade D B C d.1).le.trans d.2.2⟩
 
-def duplicate {j : ℕ} (p : D.below (A, j) → ExtOrd) : (scheme D B C).below (A, j) → ExtOrd :=
+def duplicate {j} (p : D.below (A, j) → ExtOrd) : (scheme D B C).below (A, j) → ExtOrd :=
   p ∘ fullErase D B C j
 
-theorem duplicate_lawful {j : ℕ} {p : D.below (A, j) → ExtOrd}
+section
+variable {j : ℕ}
+
+theorem duplicate_lawful {p : D.below (A, j) → ExtOrd}
     (hp : RespectsSemanticsBelow sem (A, j) p) :
     RespectsSemanticsBelow (rows D B C hcover sem) (A, j) (duplicate D B C p) :=
   duplicateBelow_respects D B C hcover sem (fun d => (fullErase D B C j d).2) hp
 
 /-- Every auxiliary copy is retained individually, not reconstructed from
 field readouts or a selected profile. -/
-theorem duplicate_restrict {j : ℕ} {p : (scheme D B C).below (A, j) → ExtOrd}
+theorem duplicate_restrict {p : (scheme D B C).below (A, j) → ExtOrd}
     (hp : RespectsSemanticsBelow (rows D B C hcover sem) (A, j) p) :
     duplicate D B C (p ∘ oldBelow D B C (A, j)) = p := by
   funext d
@@ -53,9 +55,11 @@ theorem duplicate_restrict {j : ℕ} {p : (scheme D B C).below (A, j) → ExtOrd
     simpa only [CellScheme.scope, old_index] using scope_le_erase D B C d.1
   · exact (erase_old D B C (erase D B C d.1)).symm
 
+end
+
 /-- A single-copy original-face lift gives a replicated full-target lift at
 the same external cap, bottom and top included. -/
-theorem lift_to_full {I : Finset ι × ℕ} {j : ℕ} (h : GradedLe I (A, j))
+theorem lift_to_full {I} {j} (h : GradedLe I (A, j))
     (hside : I.1 ⊆ B ∨ I.1 ⊆ C) (hl : CappedLift sem h) :
     CappedLift (rows D B C hcover sem) h := by
   intro p q γ hp hq hγ hag

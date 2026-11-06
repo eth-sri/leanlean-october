@@ -17,7 +17,6 @@ The missing full grade N and apex belong to the final installer, not this output
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryPredecessorSupply
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open SourcePrefixRows OrbitPrefixSupport
@@ -71,7 +70,7 @@ variable {N G θ}
 /-- Construct every proper scope on the actual boundary, then the full scope
 through N-1. The two tall facets used by lifting are obtained from the completed
 plan; neither is assumed to be the smaller original donor. -/
-def build (n : ℕ) (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
+def build n (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
     (hcard : A.card = n + 5) (hB : B.card = n + 4) (hC : C.card < n + 4)
     (hG : ∀ z ∈ G, SelfVis (n + 4) z) (hθ : SelfVis (n + 4) θ)
     (htθ : θ ≠ ⊤) (hθG : θ ∈ G) : Output I (n + 4) G θ := by
@@ -116,9 +115,5 @@ def build (n : ℕ) (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
   · intro p q hp hb hq hqb γ hγ hγθ he
     exact OrdinaryGlobalPredecessor.agreement I n X hcard hG hθ htθ hp hb hq hqb hγ hγθ he
 
-namespace Output
-variable (O : Output I N G θ)
-
-end Output
 end
 end VaughtConjecture.Knight.OrdinaryPredecessorSupply

@@ -17,29 +17,38 @@ destroy the invisible observations. This is separate from right-filled decoding.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedInverse
 open Transform Value ExtOrd PairedSlotEncoding
 noncomputable section
 
 def grid (j b : ℕ) : ExtOrd := ofOrd (Ordinal.omega0 * b + j)
 
-def freeBlocks (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) : Finset ℕ := by
+section
+variable (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ)
+
+def freeBlocks  : Finset ℕ := by
   classical
   exact (Finset.range (B + 1)).filter
     (fun b => ¬ ∃ a ∈ S, Orbit j S a ∧ block j S a = b)
 
-def patch (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) (x : ExtOrd) : ExtOrd :=
+section
+variable (x : ExtOrd)
+
+def patch  : ExtOrd :=
   (freeBlocks j S B).sup (fun b => stepShifter b ⊥ (grid j b) x)
 
-def inverse (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) (x : ExtOrd) : ExtOrd :=
+def inverse  : ExtOrd :=
   max (PairedSlotDecoder.occupied j S x) (patch j S B x)
+
+end
+
+end
 
 theorem grid_visible (j b : ℕ) : SelfVis j (grid j b) := by
   apply selfVis_ofOrd_iff.mpr
   simp only [finitePart_mul_add, le_refl]
 
-theorem inverse_witness (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) :
+theorem inverse_witness j S B :
     Witness (gTop j) (inverse j S B) :=
   (PairedSlotDecoder.occupied_witness j S).max
     (Witness.finset_sup (MixedGradeInterpolation.zero_witness j) (freeBlocks j S B)
@@ -50,10 +59,13 @@ variable {j B : ℕ} {S : Finset Ordinal.{0}}
   (hc : ∀ a ∈ S, min (encode j S a) (grid j B) = min (ofOrd a) (grid j B))
 include hc
 
-theorem encoded_low {a : Ordinal.{0}} (ha : a ∈ S) (hl : encode j S a < grid j B) :
+section
+variable {a : Ordinal.{0}}
+
+theorem encoded_low (ha : a ∈ S) (hl : encode j S a < grid j B) :
     encode j S a = ofOrd a := eq_of_cap_eq_lt (hc a ha) hl
 
-theorem original_reaches {a : Ordinal.{0}} (ha : a ∈ S) {b : ℕ}
+theorem original_reaches (ha : a ∈ S) {b : ℕ}
     (hb : b ≤ B) (he : grid j b ≤ encode j S a) : grid j b ≤ ofOrd a := by
   have hcut : grid j b ≤ grid j B := ofOrd_le_ofOrd.mpr (by
     apply add_le_add
@@ -61,13 +73,13 @@ theorem original_reaches {a : Ordinal.{0}} (ha : a ∈ S) {b : ℕ}
     · exact le_rfl)
   exact (le_min he hcut).trans ((hc a ha) ▸ min_le_left (ofOrd a) (grid j B))
 
-theorem patch_encode_le {a : Ordinal.{0}} (ha : a ∈ S) :
+theorem patch_encode_le (ha : a ∈ S) :
     patch j S B (encode j S a) ≤ ofOrd a := by
   classical
   apply Finset.sup_le
   intro b hb
   obtain ⟨hbB, hbfree⟩ := Finset.mem_filter.mp hb
-  have hbB : b ≤ B := by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hbB
+  have hbB : b ≤ B := by grind
   by_cases hba : b ≤ block j S a
   · apply (PairedSlotDecoder.step_zero_le _ _ _).trans
     apply original_reaches hc ha hbB
@@ -80,9 +92,11 @@ theorem patch_encode_le {a : Ordinal.{0}} (ha : a ∈ S) :
       (ofOrd_lt_ofOrd.mpr (code_add_lt_mul (Nat.cast_lt.mpr (not_le.mp hba)) _))]
     exact bot_le
 
-theorem inverse_encode {a : Ordinal.{0}} (ha : a ∈ S) :
+theorem inverse_encode (ha : a ∈ S) :
     inverse j S B (encode j S a) = ofOrd a := by
   rw [inverse, PairedSlotDecoder.occupied_encode ha, max_eq_left (patch_encode_le hc ha)]
+
+end
 
 theorem occupied_grid_le {b : ℕ} (hb : b < B) :
     PairedSlotDecoder.occupied j S (grid j b) ≤ grid j b := by
@@ -103,8 +117,7 @@ theorem occupied_grid_le {b : ℕ} (hb : b < B) :
     unfold PairedSlotDecoder.piece
     split_ifs
     · rw [grid, FiniteOrbitEmbedding.ray_ofOrd, limitPart_mul_add,
-        ite_eq_left (by simpa only [Nat.cast_zero, add_zero] using
-          code_add_lt_mul (Nat.cast_lt.mpr (not_le.mp hab)) 0)]
+        ite_eq_left (by simp_all)]
       exact bot_le
     · change stepShifter (block j S a) ⊥ (ofOrd a)
         (ofOrd (Ordinal.omega0 * b + j)) ≤ grid j b
@@ -113,7 +126,6 @@ theorem occupied_grid_le {b : ℕ} (hb : b < B) :
 
 omit hc in
 theorem patch_grid_le (b : ℕ) : patch j S B (grid j b) ≤ grid j b := by
-  classical
   apply Finset.sup_le
   intro n _
   by_cases hn : n ≤ b
@@ -124,9 +136,12 @@ theorem patch_grid_le (b : ℕ) : patch j S B (grid j b) ≤ grid j b := by
       (ofOrd_lt_ofOrd.mpr (code_add_lt_mul (Nat.cast_lt.mpr (not_le.mp hn)) j))]
     exact bot_le
 
+section
+variable {b : ℕ}
+
 /-- Every retained grid point is reached. A hosted block is supplied by its
 actual invisible anchor, not by a constant patch over that anchor. -/
-theorem grid_reaches {b : ℕ} (hb : b ≤ B) : grid j b ≤ inverse j S B (grid j b) := by
+theorem grid_reaches (hb : b ≤ B) : grid j b ≤ inverse j S B (grid j b) := by
   classical
   by_cases hh : ∃ a ∈ S, Orbit j S a ∧ block j S a = b
   · obtain ⟨a, ha, ho, hab⟩ := hh
@@ -161,8 +176,10 @@ theorem grid_reaches {b : ℕ} (hb : b ≤ B) : grid j b ≤ inverse j S B (grid
         stepShifter n ⊥ (grid j n) (grid j b)) hm
       _ ≤ inverse j S B (grid j b) := le_max_right _ _
 
-theorem inverse_grid {b : ℕ} (hb : b < B) : inverse j S B (grid j b) = grid j b :=
+theorem inverse_grid (hb : b < B) : inverse j S B (grid j b) = grid j b :=
   le_antisymm (max_le (occupied_grid_le hc hb) (patch_grid_le b)) (grid_reaches hc hb.le)
+
+end
 
 end Relative
 
@@ -182,11 +199,11 @@ theorem encoded_cap
 
 theorem inverse_normalize
     (ha : a ∈ CanonicalPairedProfiles.inventory X j) (hp : ∀ d, p d ≠ ⊤)
-    (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B)) (d : X) :
+    (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B)) d :
     inverse j (values p) B (PairedSlotEncoding.normalize j p d) = p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨v, hv⟩
   · simp only [PairedSlotEncoding.normalize, hb, (inverse_witness j (values p) B).bot]
-  · exact (hp d ht).elim
+  · grind
   · rw [normalize_ofOrd hv, inverse_encode (encoded_cap ha hag) (mem_values.mpr ⟨d, hv⟩), hv]
 
 /-- Only represented low anchors and their replacement orbits are fixed.
@@ -194,13 +211,13 @@ There is deliberately no identity assertion for unhosted invisible sources. -/
 theorem inverse_supported
     (ha : a ∈ CanonicalPairedProfiles.inventory X j) (hp : ∀ d, p d ≠ ⊤)
     (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B))
-    (d : X) (hd : a d < grid j B) {k i : ℕ} (hk : k ≤ j) (hi : i ≤ k) :
+    d (hd : a d < grid j B) {k i} (hk : k ≤ j) (hi : i ≤ k) :
     inverse j (values p) B (extVisibilityReplace (a d) k i) =
       extVisibilityReplace (a d) k i := by
-  have he : a d = p d := eq_of_cap_eq_lt (hag d) hd
+  have he := eq_of_cap_eq_lt (hag d) hd
   have hn : PairedSlotEncoding.normalize j p d = a d := by
     rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, ha.1]
-  have hr : inverse j (values p) B (a d) = a d := by
+  have hr := by
     calc
       inverse j (values p) B (a d) =
           inverse j (values p) B (PairedSlotEncoding.normalize j p d) := congrArg _ hn.symm
@@ -215,7 +232,7 @@ original grid cut. The whole field inventory determines the normalizer. -/
 theorem exists_supported_inverse
     (ha : a ∈ CanonicalPairedProfiles.inventory X j) (hp : ∀ d, p d ≠ ⊤)
     (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B)) :
-    ∃ κ : ExtOrd → ExtOrd,
+    ∃ κ,
       Witness (gTop j) κ ∧
       (∀ d, κ (PairedSlotEncoding.normalize j p d) = p d) ∧
       (∀ b < B, κ (grid j b) = grid j b) ∧

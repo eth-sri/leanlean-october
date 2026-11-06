@@ -18,7 +18,6 @@ No realization of a selected display is inferred from bottom patterns alone.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedIteration LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
@@ -38,17 +37,17 @@ local notation "donor" => LowOnlyPaddedLegal.donor I F hroot hA hB hC hcover
 local notation "priv" => LowOnlyPaddedLegal.privateFace I F hroot hA hB hC hcover
 
 /-- A raw supported display and exact readback certificate, before imposing a stage bound. -/
-theorem exists_supported_certificate {S : State I.left I.right}
+theorem exists_supported_certificate {S}
     (hS : F.Admissible (Finset.univ : Finset (Fin l)).card S)
     (hdonor : S.u = F.p) (hc : S.v F.gap.c = ⊤) (hr : S.v F.gap.r.1 = ⊤)
     (hactive : LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (E).scheme → ExtOrd,
+    ∃ w,
       RespectsSemantics (E).rows w ∧
       (∀ d, w ((donor).map d) = F.p d) ∧
       (∀ d, w ((priv).map d) = S.v d) ∧
       (∀ d, OrbitPrefixSupport.Supported (Finset.univ : Finset (Fin l)).card
         ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∀ q : Cell (E).scheme → ExtOrd,
+      ∀ q,
         RespectsSemantics (E).rows q →
         (∀ d, q ((priv).map d) = S.v d) →
         ∀ δ, LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < δ →

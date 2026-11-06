@@ -17,8 +17,6 @@ lifts transport along its actual lower-domain equivalences.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
@@ -42,7 +40,10 @@ variable {semD semK} (F : ExactSemanticFace semD semK)
 def belowMap (c : Cell D) (d : D.below (D.cell c)) : K.below (K.cell (F.map c)) :=
   ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩
 
-noncomputable def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
+section
+variable (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B)
+
+noncomputable def belowEquiv  :
     D.below BJ ≃ K.below BJ :=
   Equiv.ofBijective (fun d => ⟨F.map d.1, by rw [F.index]; exact d.2⟩) ⟨by
     intro d e h
@@ -52,22 +53,21 @@ noncomputable def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
     have hh : GradedLe (D.cell d) BJ := by rw [← F.index, hd]; exact z.2
     exact ⟨⟨d, hh⟩, Subtype.ext hd⟩⟩
 
-theorem respects_below_iff (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B)
-    (q : K.below BJ → ExtOrd) :
+theorem respects_below_iff (q : K.below BJ → ExtOrd) :
     RespectsSemanticsBelow semK BJ q ↔
       RespectsSemanticsBelow semD BJ (q ∘ F.belowEquiv BJ hB) := by
   have h := respects_iff_of_equiv (sem' := semD) (sem := semK)
     (F.belowEquiv BJ hB) (fun d => (congrArg Prod.snd (F.index d.1)).symm)
     (fun d e => ?_) (fun c d hd => ?_) (q ∘ F.belowEquiv BJ hB)
   · have he : (q ∘ F.belowEquiv BJ hB) ∘ (F.belowEquiv BJ hB).symm = q := by
-      funext d
-      simp only [Function.comp_apply, Equiv.apply_symm_apply]
-    rw [he] at h
-    exact h.symm
+      grind
+    grind
   · change D.scope d.1 ⊆ D.scope e.1 ↔ (K.cell (F.map d.1)).1 ⊆ (K.cell (F.map e.1)).1
     rw [F.index, F.index]
     rfl
   · exact (F.row c.1 d).symm
+
+end
 
 /-- Restriction includes arbitrary whole ambient labellings. -/
 theorem restrict {q : Cell K → ExtOrd} (hq : RespectsSemantics semK q) :
@@ -115,9 +115,9 @@ noncomputable def ownerEquiv (c : Cell D) :
 
 /-- Old locality is also sufficient at the copied owner, on its whole
 actual lower domain rather than only on named occurrences. -/
-theorem locality_of_restrict {q : Cell K → ExtOrd}
-    (hq : RespectsSemantics semD (q ∘ F.map)) (c : Cell D) :
-    TransformsTo (fun d : K.below (K.cell (F.map c)) => K.grade d.1)
+theorem locality_of_restrict {q}
+    (hq : RespectsSemantics semD (q ∘ F.map)) c :
+    TransformsTo (fun d => K.grade d.1)
       (semK.E (F.map c)) (fun d => min (q d.1) (q (F.map c))) := by
   exact TransformsTo.of_equiv (F.ownerEquiv c)
     (fun d => congrArg Prod.snd (F.index d.1))
@@ -142,7 +142,7 @@ theorem consistent_at (hc : semD.IsConsistent) (c : Cell D) :
     rfl
   · exact (F.row c.1 d).symm
 
-theorem coded_at (hc : semD.IsCoded) (c : Cell D)
+theorem coded_at (hc : semD.IsCoded) c
     (d : K.below (K.cell (F.map c))) :
     IsCodedLabel (K.grade (F.map c)) (semK.E (F.map c) d) := by
   obtain ⟨e, rfl⟩ := (F.ownerEquiv c).surjective d
@@ -154,8 +154,8 @@ theorem coded_at (hc : semD.IsCoded) (c : Cell D)
 
 /-- Availability toward an inherited index is supplied inside that same
 face; no witness from outside the target face is used. -/
-theorem availability_at {q : Cell K → ExtOrd}
-    (hq : RespectsSemantics semD (q ∘ F.map)) (z : Cell K) (c : Cell D)
+theorem availability_at {q}
+    (hq : RespectsSemantics semD (q ∘ F.map)) z c
     (hs : K.scope z ⊆ K.scope (F.map c)) (hg : K.grade z = K.grade (F.map c)) :
     ∃ d, K.cell d = K.cell (F.map c) ∧ q z ≤ q d := by
   have hzb : K.scope z ⊆ B := hs.trans (by
@@ -188,11 +188,11 @@ theorem lift {CI BJ : Finset ι × ℕ} (hB : BJ.1 ⊆ B)
       ∀ d, q' (CellScheme.below.mono h d) = p d := by
   let eB := F.belowEquiv BJ hB
   let eC := F.belowEquiv CI (h.1.trans hB)
-  apply bountiful_of_equiv (sem' := semK) (sem := semD) h h eB.symm eC.symm
+  apply bountiful_of_equiv h h eB.symm eC.symm
     ?_ ?_ ?_ (hb CI BJ hCI hBJ h hne) rfl p q γ hp hq hγ hc
   · intro d
     apply eB.injective
-    rw [Equiv.apply_symm_apply]
+    simp_all
     apply Subtype.ext
     exact (congrArg Subtype.val (eC.apply_symm_apply d)).symm
   · intro q

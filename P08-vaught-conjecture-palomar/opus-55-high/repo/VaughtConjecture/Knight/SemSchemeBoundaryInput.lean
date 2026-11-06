@@ -19,8 +19,6 @@ at proper indices. It has no full-scope cells and is not yet an amalgam.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SemSchemeBoundaryInput
 
 open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary
@@ -38,24 +36,23 @@ def faceMap : Cell F.scheme ↪o Cell D.scheme := by
   subst F
   exact CellScheme.restrictFace.toCell D.scheme f hv
 
-theorem faceMap_index (d : Cell F.scheme) :
+theorem faceMap_index d :
     D.scheme.cell (faceMap D F f hv hf d) =
       ((F.scheme.scope d).image f, F.scheme.grade d) := by
   subst F
   exact (CellScheme.restrictFace.pushGraded_cell D.scheme f hv d).symm
 
-theorem faceMap_exhaustive (d : Cell D.scheme)
+theorem faceMap_exhaustive d
     (hd : D.scheme.scope d ⊆ Finset.univ.image f) :
     ∃ i, faceMap D F f hv hf i = d := by
   subst F
   exact CellScheme.restrictFace.exists_toCell_eq D.scheme f hv hd
 
 /-- Equality includes every actual shared row argument, and bottom outside its lower set. -/
-theorem faceMap_total (c d : Cell F.scheme) :
+theorem faceMap_total c d :
     AmalgamatedBoundaryRows.total D.rows (faceMap D F f hv hf c)
       (faceMap D F f hv hf d) = AmalgamatedBoundaryRows.total F.rows c d := by
   subst F
-  classical
   change AmalgamatedBoundaryRows.total D.rows
       (CellScheme.restrictFace.toCell D.scheme f hv c)
       (CellScheme.restrictFace.toCell D.scheme f hv d) = _
@@ -182,30 +179,30 @@ theorem coded : I.rows.IsCoded :=
     (PointImageSemantics.coded _ _ _ _ I.left.rows_coded)
     (PointImageSemantics.coded _ _ _ _ I.right.rows_coded)
 
-theorem proper (d : Cell I.boundary) : I.boundary.scope d ≠ A :=
+theorem proper d : I.boundary.scope d ≠ A :=
   AmalgamatedBoundary.scope_proper s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight d
 
-theorem complete_proper {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan I.boundary.plan)
+theorem complete_proper {J} (hJ : J ∈ Plan.gradedPlan I.boundary.plan)
     (hproper : J.1 ≠ A) : ∃ d, I.boundary.cell d = J :=
   AmalgamatedBoundary.complete_proper s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight
     (pointImage_complete _ _ _ I.left.complete)
     (pointImage_complete _ _ _ I.right.complete) hJ hproper
 
-theorem grade_le (d : Cell I.boundary) : I.boundary.grade d ≤ max nL nR := by
+theorem grade_le d : I.boundary.grade d ≤ max nL nR := by
   rcases AmalgamatedBoundaryRows.covered s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight d with ⟨d, rfl⟩ | ⟨d, rfl⟩
   · change (I.boundary.cell _).2 ≤ _
     rw [AmalgamatedBoundary.left_index s I.leftScheme I.rightScheme I.shared
       I.planLeft I.planRight d]
-    have hd : I.left.scheme.grade d ≤ nL := by
+    have hd := by
       simpa using (I.left.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
     exact hd.trans (le_max_left _ _)
   · change (I.boundary.cell _).2 ≤ _
     rw [AmalgamatedBoundary.right_index s I.leftScheme I.rightScheme I.shared
       I.planLeft I.planRight d]
-    have hd : I.right.scheme.grade d ≤ nR := by
+    have hd := by
       simpa using (I.right.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
     exact hd.trans (le_max_right _ _)
 
@@ -229,19 +226,18 @@ theorem intersection_visible : A.erase s.a ∩ A.erase s.b ∈ I.boundary.plan :
   rw [AmalgamatedBoundaryPlan.erased_inter s]
   exact Finset.mem_union_left _ (Finset.mem_union_left _ s.common_left)
 
-theorem proper_scope_cover {C : Finset ι} (hC : C ∈ I.boundary.plan) (hne : C ≠ A) :
+theorem proper_scope_cover {C} (hC : C ∈ I.boundary.plan) (hne : C ≠ A) :
     C ⊆ A.erase s.a ∨ C ⊆ A.erase s.b := by
-  change C ∈ s.left ∪ s.right ∪ {A} at hC
   rcases Finset.mem_union.mp hC with hC | hC
-  · exact (Finset.mem_union.mp hC).imp s.left_plan.subset_of_mem s.right_plan.subset_of_mem
-  · exact False.elim (hne (Finset.mem_singleton.mp hC))
+  · grind
+  · grind
 
 /-- The proper-target lifting hypotheses come from the original legal inputs. -/
-theorem proper_lift {CI BJ : Finset ι × ℕ}
+theorem proper_lift {CI BJ}
     (hCI : CI ∈ Plan.gradedPlan I.boundary.plan)
-    (hBJ : BJ ∈ Plan.gradedPlan I.boundary.plan) (h : GradedLe CI BJ)
+    (hBJ : BJ ∈ Plan.gradedPlan I.boundary.plan) h
     (hne : CI ≠ BJ) (hB : BJ.1 ≠ A)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
+    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) γ
     (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :

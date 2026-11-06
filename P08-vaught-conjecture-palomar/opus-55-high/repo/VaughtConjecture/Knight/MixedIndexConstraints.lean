@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.MixedIndexSection
-public import VaughtConjecture.Knight.CoupledRepairSufficiency

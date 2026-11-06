@@ -37,16 +37,19 @@ namespace FiniteMaster
 variable (s : FiniteMaster T α M)
 
 /-- Supported means inside the master, whether or not the face is visible. -/
-def Supported {n : ℕ} (t : Fin n ↪ M) : Prop :=
+def Supported {n} (t : Fin n ↪ M) : Prop :=
   ∃ f : Fin n ↪ Fin s.n, f.trans s.tuple = t
 
-theorem factor_unique {n : ℕ} {t : Fin n ↪ M} {f g : Fin n ↪ Fin s.n}
+section
+variable {n : ℕ}
+
+theorem factor_unique {t} {f g : Fin n ↪ Fin s.n}
     (hf : f.trans s.tuple = t) (hg : g.trans s.tuple = t) : f = g := by
   apply Function.Embedding.ext
   intro i
-  exact s.tuple.injective (congrArg (fun e : Fin n ↪ M => e i) (hf.trans hg.symm))
+  exact s.tuple.injective (congrArg (fun e => e i) (hf.trans hg.symm))
 
-theorem supported_iff {n : ℕ} (t : Fin n ↪ M) :
+theorem supported_iff (t : Fin n ↪ M) :
     s.Supported t ↔ ∀ i, t i ∈ Set.range s.tuple := by
   classical
   constructor
@@ -59,24 +62,31 @@ theorem supported_iff {n : ℕ} (t : Fin n ↪ M) :
     · ext i
       exact hf i
 
+end
+
 open Classical in
 /-- The face diagram of a master, undefined outside its support. -/
 noncomputable def chart : T.Realization α M where
   eval t := if h : s.Supported t then T.pull h.choose s.type else none
 
-theorem chart_factor {n : ℕ} (f : Fin n ↪ Fin s.n) :
+section
+variable {n : ℕ}
+
+theorem chart_factor (f : Fin n ↪ Fin s.n) :
     s.chart.eval (f.trans s.tuple) = T.pull f s.type := by
   have h : s.Supported (f.trans s.tuple) := ⟨f, rfl⟩
   have hf : h.choose = f := s.factor_unique h.choose_spec rfl
   simp only [chart, dite_eq_left h, hf]
 
-theorem chart_nonfactor {n : ℕ} (t : Fin n ↪ M) (h : ¬ s.Supported t) :
+theorem chart_nonfactor (t : Fin n ↪ M) (h : ¬ s.Supported t) :
     s.chart.eval t = none := dite_eq_right h
+
+end
 
 @[simp] theorem chart_self : s.chart.eval s.tuple = some s.type := by
   simpa using (s.chart_factor (Function.Embedding.refl _)).trans (T.pull_refl s.type)
 
-theorem supported_of_eval {n : ℕ} {t : Fin n ↪ M} {p : T.Ty α n}
+theorem supported_of_eval {n} {t} {p : T.Ty α n}
     (h : s.chart.eval t = some p) : s.Supported t := by
   by_contra ht
   rw [s.chart_nonfactor t ht] at h
@@ -90,7 +100,7 @@ theorem consistent : s.chart.IsExactParentConsistent := by
   exact T.pull_trans g f s.type p hp
 
 /-- Exact consistency and support determine the chart uniquely. -/
-theorem eq_chart {A : T.Realization α M} (hA : A.IsExactParentConsistent)
+theorem eq_chart {A} (hA : A.IsExactParentConsistent)
     (hs : A.eval s.tuple = some s.type)
     (hsupport : ∀ {n} (t : Fin n ↪ M), (A.eval t).isSome → s.Supported t) :
     A = s.chart := by
@@ -124,23 +134,28 @@ instance : Preorder (FiniteMaster T α M) where
   le_refl := Extends.refl
   le_trans _ _ _ := Extends.trans
 
-theorem Extends.range_mono {s t : FiniteMaster T α M} (h : s.Extends t) :
+section
+variable {s t : FiniteMaster T α M}
+
+theorem Extends.range_mono (h : s.Extends t) :
     Set.range s.tuple ⊆ Set.range t.tuple := by
   obtain ⟨f, hf, _⟩ := h
   rintro x ⟨i, rfl⟩
   exact ⟨f i, congrArg (fun e : Fin s.n ↪ M => e i) hf⟩
 
-theorem Extends.supported {s t : FiniteMaster T α M} (h : s.Extends t)
-    {n : ℕ} {a : Fin n ↪ M} (ha : s.Supported a) : t.Supported a :=
+theorem Extends.supported (h : s.Extends t)
+    {n} {a : Fin n ↪ M} (ha : s.Supported a) : t.Supported a :=
   (t.supported_iff a).mpr fun i => h.range_mono ((s.supported_iff a).mp ha i)
 
 /-- Both visible labels and decided invisible faces persist. -/
-theorem Extends.eval_eq {s t : FiniteMaster T α M} (h : s.Extends t)
-    {n : ℕ} {a : Fin n ↪ M} (ha : s.Supported a) : t.chart.eval a = s.chart.eval a := by
+theorem Extends.eval_eq (h : s.Extends t)
+    {n} {a : Fin n ↪ M} (ha : s.Supported a) : t.chart.eval a = s.chart.eval a := by
   obtain ⟨f, hf, hp⟩ := h
   obtain ⟨g, rfl⟩ := ha
   rw [s.chart_factor, ← hf, ← Function.Embedding.trans_assoc, t.chart_factor]
   exact T.pull_trans f g t.type s.type hp
+
+end
 
 /-- Positive chart extension already forces literal retention of the full master. -/
 theorem extends_iff (t : FiniteMaster T α M) : s.Extends t ↔ s.chart.Extends t.chart := by

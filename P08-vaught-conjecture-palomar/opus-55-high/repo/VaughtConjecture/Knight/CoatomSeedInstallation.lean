@@ -14,7 +14,6 @@ on each seed, not assumptions of the final all-arity supplier.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomSeedInstallation
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
 noncomputable section
@@ -46,15 +45,20 @@ abbrev old := MaximalFullLayer.old F.scheme (n + 1) (n + 2) (by omega) (height (
 abbrev apex := MaximalFullLayer.apex F.scheme (n + 1) (n + 2) (by omega) (height (n := n))
 abbrev ownerEquiv := MaximalFullLayer.ownerEquiv F.scheme (n + 1) (n + 2) F.grade
   (by omega) (height (n := n))
-abbrev boundary (d : Cell I.boundary) := old I F (F.boundary d)
+section
+variable (d : Cell I.boundary)
 
-theorem boundary_index (d : Cell I.boundary) : (scheme I F).cell (boundary I F d) =
+abbrev boundary  := old I F (F.boundary d)
+
+theorem boundary_index  : (scheme I F).cell (boundary I F d) =
     I.boundary.cell d := (MaximalFullLayer.old_index _ _ _ _ _ _).trans (F.index d)
+
+end
 theorem boundary_order : StrictMono (boundary I F) :=
   (SourceLayerCarrier.old_order _ _ _ _ _).comp F.boundary.strictMono
 
 theorem complete : (scheme I F).IsComplete := by
-  apply MaximalFullLayer.complete F.scheme (n + 1) (n + 2) (by omega) (height (n := n))
+  apply MaximalFullLayer.complete F.scheme (n + 1) (n + 2) (by omega) (height)
   intro J hJ hne
   apply F.complete J hJ
   have hg := (Plan.mem_gradedPlan.mp hJ).2.2
@@ -62,18 +66,16 @@ theorem complete : (scheme I F).IsComplete := by
   have hc := Finset.card_le_card hs
   have ha : (Finset.univ : Finset (Fin (n + 2))).card = n + 2 := by simp
   by_contra hh
-  have he : J.1 = Finset.univ := Finset.eq_of_subset_of_card_le hs (by omega)
-  exact hne (Prod.ext he (by dsimp only; omega))
+  have he := Finset.eq_of_subset_of_card_le hs (by omega)
+  exact hne (Prod.ext he (by grind))
 
-theorem boundary_exhaustive (B : Finset (Fin (n + 2))) (hB : ¬ Finset.univ ⊆ B)
-    (z : Cell (scheme I F)) (hz : (scheme I F).scope z ⊆ B) :
+theorem boundary_exhaustive B (hB : ¬ Finset.univ ⊆ B)
+    z (hz : (scheme I F).scope z ⊆ B) :
     ∃ d, boundary I F d = z := by
-  have hn : (scheme I F).cell z ≠ (Finset.univ, n + 2) := fun hh => hB (by
-    change ((scheme I F).cell z).1 ⊆ B at hz
-    simpa only [hh] using hz)
+  have hn : (scheme I F).cell z ≠ (Finset.univ, n + 2) := fun hh => hB (by simp_all)
   obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence F.scheme Unit (n + 2)
-    (by omega) (height (n := n)) z hn
-  have hx : F.scheme.scope x ⊆ B := by
+    (by omega) (height) z hn
+  have hx := by
     change ((scheme I F).cell (old I F x)).1 ⊆ B at hz
     rwa [MaximalFullLayer.old_index] at hz
   obtain ⟨d, hd⟩ := F.exhaustive B hB x hx
@@ -100,10 +102,10 @@ def face {B : Finset (Fin (n + 2))} {D : CellScheme B} {sem : Semantics D}
     exact (hrow (F.boundary (G.map c)) e').trans ((F.row (G.map c) e).trans (G.row c d))
 
 /-- The already-lawful compatible old displays are glued without cap histories. -/
-theorem joint_section {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem joint_section {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (ha : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
-    ∃ r : Cell F.scheme → ExtOrd, RespectsSemantics F.rows r ∧
+    ∃ r, RespectsSemantics F.rows r ∧
       (∀ d, r (F.boundary (I.leftFace.map d)) = p d) ∧
       ∀ d, r (F.boundary (I.rightFace.map d)) = q d := by
   have hl := (PointImageSemantics.respects_iff I.left.scheme I.placeLeft I.imageLeft

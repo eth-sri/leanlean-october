@@ -16,7 +16,6 @@ lawfulness transport. These are row facts, independent of higher lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRestriction
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration
@@ -40,10 +39,12 @@ def belowEquiv : (r : ℕ) → (hr : t + r + 2 ≤ A.card) →
         (F.Anchor (t + r + 2 + 1)) (t + r + 2 + 1) (by omega) (by omega) J
         (fun h => by have := h.2; omega))
 
+section
+variable (r : ℕ) (hr : t + r + 2 ≤ A.card)
+
 /-- Pullback of an arbitrary lawful section along the actual occurrence map.
 No agreement of independently selected renderings is used. -/
-theorem pullback (r : ℕ) (hr : t + r + 2 ≤ A.card)
-    {q : (build I F hroot hA hB hC (t + r) hr).carrier.below J → ExtOrd}
+theorem pullback {q}
     (hq : RespectsSemanticsBelow (build I F hroot hA hB hC (t + r) hr).rows J q) :
     RespectsSemanticsBelow (build I F hroot hA hB hC t ht).rows J
       (q ∘ belowEquiv I F hroot hA hB hC t ht J hJ r hr) := by
@@ -67,19 +68,20 @@ theorem pullback (r : ℕ) (hr : t + r + 2 ≤ A.card)
     exact ih (by omega) hp
 
 /-- A whole lawful section restricts lawfully to every earlier native target. -/
-theorem whole_pullback (r : ℕ) (hr : t + r + 2 ≤ A.card)
-    {q : Cell (build I F hroot hA hB hC (t + r) hr).carrier → ExtOrd}
+theorem whole_pullback {q}
     (hq : RespectsSemantics (build I F hroot hA hB hC (t + r) hr).rows q) :
     RespectsSemanticsBelow (build I F hroot hA hB hC t ht).rows J
       (fun d => q (belowEquiv I F hroot hA hB hC t ht J hJ r hr d).1) :=
   pullback I F hroot hA hB hC t ht J hJ r hr (hq.toBelow J)
 
+end
+
 variable {t ht J hJ}
 
 /-- Earlier original occurrences remain the same original occurrences after
 transport through all later layers. -/
-theorem belowEquiv_original (t : ℕ) (ht : t + 2 ≤ A.card) (J : Finset ι × ℕ)
-    (hJ : J.2 ≤ t + 2) (r : ℕ) (hr : t + r + 2 ≤ A.card)
+theorem belowEquiv_original t ht J
+    hJ r hr
     (d : I.boundary.below J) :
     (belowEquiv I F hroot hA hB hC t ht J hJ r hr
       ⟨LowOnlyPaddedEndpoints.original I F hroot hA hB hC t ht d.1,
@@ -97,8 +99,8 @@ theorem belowEquiv_original (t : ℕ) (ht : t + 2 ≤ A.card) (J : Finset ι × 
 
 /-- The retained long grade-one base of any constructed layer is lawful on
 restriction. Availability is supplied by an actual full-scope base tip. -/
-theorem base_pullback {k : ℕ} (P : Layer I F hroot hA hB hC k)
-    {q : Cell P.carrier → ExtOrd} (hq : RespectsSemantics P.rows q) :
+theorem base_pullback {k} (P : Layer I F hroot hA hB hC k)
+    {q} (hq : RespectsSemantics P.rows q) :
     RespectsSemanticsBelow (baseRows I F hroot hA hB hC) (A, 1)
       (fun d => q (P.baseMap d.1)) := by
   obtain ⟨a, _⟩ := F.exists_rank_anchor le_rfl (F.zero_admissible 1)

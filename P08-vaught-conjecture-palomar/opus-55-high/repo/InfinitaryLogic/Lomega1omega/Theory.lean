@@ -51,24 +51,6 @@ open FirstOrder Structure
 
 /-! ### Theories -/
 
-/-- A theory in Lω₁ω is a set of Lω₁ω sentences. -/
-abbrev Theoryω (L : Language.{u, v}) := Set L.Sentenceω
-
-namespace Theoryω
-
-variable {T T' : L.Theoryω} {φ : L.Sentenceω}
-
-/-- A structure M is a model of theory T if it satisfies all sentences in T. -/
-def Model (T : L.Theoryω) (M : Type w) [L.Structure M] : Prop :=
-  ∀ φ ∈ T, Sentenceω.Realize φ M
-
-/-- The empty theory has every structure as a model. -/
-theorem Model.empty (M : Type w) [L.Structure M] : Model (∅ : L.Theoryω) M := by
-  intro φ hφ
-  exact False.elim (Set.notMem_empty φ hφ)
-
-end Theoryω
-
 /-! ### Isomorphism Invariance of Realization -/
 
 /-! ### Lω₁ω Elementary Equivalence -/
@@ -81,10 +63,6 @@ namespace LomegaEquiv
 
 variable {M : Type w} [L.Structure M]
 variable {N : Type w'} [L.Structure N]
-variable {P : Type*} [L.Structure P]
-
-/-- Lω₁ω-equivalence is symmetric. -/
-theorem symm (h : LomegaEquiv L M N) : LomegaEquiv L N M := fun φ => (h φ).symm
 
 /-- Isomorphic structures are Lω₁ω-equivalent.
 

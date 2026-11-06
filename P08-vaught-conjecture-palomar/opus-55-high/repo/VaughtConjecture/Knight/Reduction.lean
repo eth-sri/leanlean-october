@@ -55,26 +55,17 @@ noncomputable def reduceType (hα : Order.IsSuccLimit α) (_h : α ≤ β) (t : 
   label_bound d := truncExt_bound α (t.label d)
   respects := t.respects.truncate hα
 
-@[simp] theorem reduceType_scheme (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n) :
-    (reduceType hα h t).scheme = t.scheme :=
-  rfl
-
-@[simp] theorem reduceType_label (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n)
-    (d : Cell t.scheme.scheme) : (reduceType hα h t).label d = truncExt α (t.label d) := rfl
-
-/-- The rows are fixed under reduction (the paper's Def. 3.1.2: only `p` is truncated). -/
-@[simp] theorem reduceType_rows_E (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n)
-    (Sig : Cell t.scheme.scheme) (d : t.scheme.scheme.below (t.scheme.scheme.cell Sig)) :
-    (reduceType hα h t).scheme.rows.E Sig d = t.scheme.rows.E Sig d := rfl
+section
+variable (hα : Order.IsSuccLimit α)
 
 /-- Reduction to the stage of the type is the identity: labels are already strictly bounded
 at `α` (`< ofOrd α` or `⊤`), and `truncExt α` fixes them (`truncExt_id_of_bound`). -/
-theorem reduceType_refl (hα : Order.IsSuccLimit α) (t : S α n) : reduceType hα le_rfl t = t :=
+theorem reduceType_refl (t : S α n) : reduceType hα le_rfl t = t :=
   StageType.ext rfl (heq_of_eq (funext fun d => truncExt_id_of_bound (t.label_bound d)))
 
 /-- Reductions compose (`truncExt_compose`). -/
-theorem reduceType_trans (hα : Order.IsSuccLimit α) (hβ : Order.IsSuccLimit β)
-    (hαβ : α ≤ β) (hβγ : β ≤ γ) (t : S γ n) :
+theorem reduceType_trans hβ
+    hαβ (hβγ : β ≤ γ) (t : S γ n) :
     reduceType hα hαβ (reduceType hβ hβγ t) = reduceType hα (hαβ.trans hβγ) t :=
   StageType.ext rfl (heq_of_eq (funext fun d => truncExt_compose hαβ (t.label d)))
 
@@ -82,11 +73,13 @@ theorem reduceType_trans (hα : Order.IsSuccLimit α) (hβ : Order.IsSuccLimit �
 `typeMap_truncateType_comm`): reduction does not change the scheme, so a face is visible in
 `reduceType hα h t` iff it is visible in `t`, and on a visible face the two operations
 commute on the nose. -/
-theorem typeMap_reduceType_comm (hα : Order.IsSuccLimit α) (h : α ≤ β) (f : Fin m ↪ Fin n)
+theorem typeMap_reduceType_comm h (f : Fin m ↪ Fin n)
     (t : S β n) : typeMap f (reduceType hα h t) = (typeMap f t).map (reduceType hα h) := by
   by_cases hr : Finset.univ.image f ∈ t.scheme.scheme.plan
   · rw [typeMap_eq_some f t hr, typeMap_eq_some f (reduceType hα h t) hr, Option.map_some]
     rfl
   · rw [typeMap_eq_none f t hr, typeMap_eq_none f (reduceType hα h t) hr, Option.map_none]
+
+end
 
 end VaughtConjecture.Knight

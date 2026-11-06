@@ -17,7 +17,6 @@ renderer contract on its actual installed output, without lifting premises.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepRendering
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison LowOnlyPaddedStepRows
@@ -31,28 +30,36 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-abbrev baseMap (d : Cell (base I F hroot hA hB hC)) := old P hnext (P.baseMap d)
+section
+variable (d : Cell (base I F hroot hA hB hC))
 
-theorem base_index (d : Cell (base I F hroot hA hB hC)) :
+abbrev baseMap  := old P hnext (P.baseMap d)
+
+theorem base_index  :
     (carrier P hnext).cell (baseMap P hnext d) = (base I F hroot hA hB hC).cell d :=
   (SourceLayerCarrier.cell_toCell _ _ _ _ _ _).trans (P.base_index d)
 
-theorem base_row (c : Cell (base I F hroot hA hB hC))
-    (d : (base I F hroot hA hB hC).below ((base I F hroot hA hB hC).cell c)) :
+end
+
+section
+variable (c : Cell (base I F hroot hA hB hC))
+
+theorem base_row d :
     (rows P hk hnext).E (baseMap P hnext c)
       ⟨baseMap P hnext d.1, by simpa only [base_index] using d.2⟩ =
         (baseRows I F hroot hA hB hC).E c d :=
   (inherited_row P hk hnext (P.baseMap c)
     ⟨P.baseMap d.1, by simpa only [P.base_index] using d.2⟩).trans (P.base_row c d)
 
-theorem base_respects (c : Cell (base I F hroot hA hB hC))
-    (p : Cell (carrier P hnext) → ExtOrd) :
+theorem base_respects (p : Cell (carrier P hnext) → ExtOrd) :
     RespectsSemanticsBelow (rows P hk hnext) ((carrier P hnext).cell (baseMap P hnext c))
       (fun d => p d.1) ↔
       RespectsSemanticsBelow (baseRows I F hroot hA hB hC)
         ((base I F hroot hA hB hC).cell c) (fun d => p (baseMap P hnext d.1)) :=
   (old_respects P hk hnext (P.baseMap c) p).trans
     (P.base_respects c (fun d => p (old P hnext d)))
+
+end
 
 include hk in
 theorem cell_cases (d : Cell (carrier P hnext)) :
@@ -63,7 +70,7 @@ theorem cell_cases (d : Cell (carrier P hnext)) :
     (k + 1) (Nat.succ_pos k) hnext).surjective d
   rcases x with x | a
   · rcases P.cases x with ⟨c, rfl⟩ | ⟨hs, hl, hu⟩
-    · exact Or.inl ⟨c, rfl⟩
+    · aesop
     · have he := SourceLayerCarrier.cell_toCell P.carrier (F.Anchor (k + 1))
         (k + 1) (Nat.succ_pos k) hnext (.inl x)
       exact Or.inr ⟨(congrArg Prod.fst he).trans hs,
@@ -75,9 +82,9 @@ theorem cell_cases (d : Cell (carrier P hnext)) :
       (show 2 ≤ k + 1 by omega).trans_eq (congrArg Prod.snd he).symm,
       (congrArg Prod.snd he).le⟩
 
-theorem higher_short (c : Cell (carrier P hnext)) (hc : (carrier P hnext).scope c = A)
+theorem higher_short c (hc : (carrier P hnext).scope c = A)
     (hg : 2 ≤ (carrier P hnext).grade c)
-    (d : (carrier P hnext).below ((carrier P hnext).cell c)) :
+    d :
     Short ((carrier P hnext).grade c) ((rows P hk hnext).E c d) := by
   by_cases he : (carrier P hnext).cell c = (A, k + 1)
   · let a := member P hk hnext ⟨c, he⟩
@@ -94,7 +101,6 @@ theorem higher_short (c : Cell (carrier P hnext)) (hc : (carrier P hnext).scope 
     rw [inherited_row]
     have hi := SourceLayerCarrier.cell_toCell P.carrier (F.Anchor (k + 1))
       (k + 1) (Nat.succ_pos k) hnext (.inl x)
-    change Short ((carrier P hnext).grade (old P hnext x)) _
     rw [show (carrier P hnext).grade (old P hnext x) = P.carrier.grade x from
       congrArg Prod.snd hi]
     exact P.higher_short x ((congrArg Prod.fst hi).symm.trans hc)
@@ -113,7 +119,7 @@ theorem normalized_fields : F.fields (k + 1) (normalized hj S hS hp) =
 def birth : F.Anchor 1 := P.birth (Nat.le_succ k) (state F (normalized hj S hS hp))
   (state_admissible F _) (state_proper F _)
 
-theorem birth_ranks (d : Field I.left I.right) :
+theorem birth_ranks d :
     RelativeLadderLayer.ranks (F.fields 1) (birth P hj S hS hp) d =
       LadderScalarRendering.fieldRank S.profile d := by
   rw [birth, P.birth_ranks, state_profile, normalized_fields]
@@ -126,13 +132,12 @@ def render (G : Finset ExtOrd) (H : ExtOrd) (d : Cell (carrier P hnext)) : ExtOr
 variable {G : Finset ExtOrd} {H : ExtOrd}
 
 theorem render_base (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1) H)
-    (hb : ∀ d, S.profile d ≤ H) (d : Cell (base I F hroot hA hB hC)) :
+    (hb : ∀ d, S.profile d ≤ H) d :
     render P hk hnext hj S hS hp G H (baseMap P hnext d) =
       RelativeLadderLayer.renderWith I.boundary (by omega : 0 < A.card)
         (field I) (F.fields 1) (birth P hj S hS hp) S.profile H d := by
   unfold render baseMap
   rw [source_old]
-  unfold selected
   have he := P.render_base (Nat.le_succ k) (state F (normalized hj S hS hp))
     (state_admissible F _) (state_proper F _) (G := grid P) (H := ceiling P)
     (fun _ hz => (sourceGrid_visible hz).mono (Nat.le_succ k))
@@ -140,21 +145,18 @@ theorem render_base (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1) 
     (fun f => by rw [state_profile]; exact LowOnlyRecursiveCharts.anchor_bound F _ f) d
   refine (congrArg (PairedSlotDecoder.decode (k + 1)
     (PairedSlotEncoding.values S.profile) G H) he).trans ?_
-  change PairedSlotDecoder.decode (k + 1) (PairedSlotEncoding.values S.profile) G H
-    (RelativeLadderLayer.renderWith I.boundary (by omega) (field I) (F.fields 1)
-      (birth P hj S hS hp) (state F (normalized hj S hS hp)).profile (ceiling P) d) = _
   rw [state_profile, normalized_fields]
   exact RelativeLadderLayer.renderWith_decode_normalized I.boundary (by omega)
     (field I) (F.fields 1) (k + 1) _ S.profile hp hG hH (decode_reserved_ceiling hH hb) d
 
 theorem render_base_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1) H)
-    (hb : ∀ d, S.profile d ≤ H) (c : Cell (base I F hroot hA hB hC))
+    (hb : ∀ d, S.profile d ≤ H) c
     (hc : (base I F hroot hA hB hC).grade c ≤ j) :
     RespectsSemanticsBelow (rows P hk hnext) ((carrier P hnext).cell (baseMap P hnext c))
       (fun d => render P hk hnext hj S hS hp G H d.1) := by
   apply (base_respects P hk hnext c _).mpr
   simp only [render_base P hk hnext hj S hS hp hG hH hb]
-  have ht := RelativeLadderLayer.renderWith_respects I.boundary I.rows (by omega : 0 < A.card)
+  have ht := RelativeLadderLayer.renderWith_respects I.boundary I.rows (by grind)
     (field I) (F.fields 1) (proper I hB hC) (birth P hj S hS hp) S.profile
     (birth_ranks P hj S hS hp) hb (LowOnlyRecursiveCharts.profile_visible_one F (by omega) hS)
     (hH.mono (Nat.succ_pos k)) (LowOnlyOrderedSources.boundary_lawful_at I F hroot j S hS)
@@ -171,7 +173,7 @@ theorem render_native_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis
   intro c
   rcases cell_cases P hk hnext c.1 with ⟨b, he⟩ | ⟨hs, hl, _⟩
   · right
-    have hb' : (base I F hroot hA hB hC).grade b ≤ j := by
+    have hb' := by
       have hc : (carrier P hnext).grade c.1 ≤ j := c.2.2.trans hj
       simpa only [he, CellScheme.grade, base_index] using hc
     have hrb := render_base_lawful P hk hnext hj S hS hp hG hH hb b hb'
@@ -198,19 +200,19 @@ theorem render_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1
       ⟨(carrier P hnext).isPlan.subset_of_mem ((carrier P hnext).scope_mem_plan c.1), hu⟩
 
 theorem render_bound (hH : SelfVis (k + 1) H) (hb : ∀ d, S.profile d ≤ H)
-    (d : Cell (carrier P hnext)) : render P hk hnext hj S hS hp G H d ≤ H := by
+    d : render P hk hnext hj S hS hp G H d ≤ H := by
   apply PairedSlotDecoder.decode_le hH
   intro a ha
   obtain ⟨f, hf⟩ := PairedSlotEncoding.mem_values.mp ha
   simpa only [hf] using hb f
 
-theorem render_supported {l : ℕ} (hl : k + 1 ≤ l) (hH : H ∈ G)
-    (d : Cell (carrier P hnext)) :
+theorem render_supported {l} (hl : k + 1 ≤ l) (hH : H ∈ G)
+    d :
     OrbitPrefixSupport.Supported l (G : Set ExtOrd) S.profile
       (render P hk hnext hj S hS hp G H d) := PairedSlotDecoder.decode_supported hl hH _
 
-theorem render_agreement {T : State I.left I.right} (hT : F.Admissible j T)
-    (ht : ∀ d, T.profile d ≠ ⊤) {h : ExtOrd}
+theorem render_agreement {T} hT
+    ht {h}
     (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1) H)
     (hh : h ∈ G) (hhH : h ≤ H) (hab : Agree S.profile T.profile h) :
     Agree (render P hk hnext hj S hS hp G H) (render P hk hnext hj T hT ht G H) h := by
@@ -230,8 +232,8 @@ theorem render_ceiling (hH : SelfVis (k + 1) H) (hb : ∀ d, S.profile d ≤ H) 
   exact decode_reserved_ceiling hH hb
 
 theorem render_ceiling_at (_hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1) H)
-    (hb : ∀ d, S.profile d ≤ H) (i : ℕ) (hi : 1 ≤ i) (hik : i ≤ k + 1) :
-    ∃ c : Cell (carrier P hnext), (carrier P hnext).cell c = (A, i) ∧
+    (hb : ∀ d, S.profile d ≤ H) i (hi : 1 ≤ i) (hik : i ≤ k + 1) :
+    ∃ c, (carrier P hnext).cell c = (A, i) ∧
       render P hk hnext hj S hS hp G H c = H := by
   by_cases he : i = k + 1
   · subst i
@@ -246,8 +248,6 @@ theorem render_ceiling_at (_hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (
     refine ⟨old P hnext c, (SourceLayerCarrier.cell_toCell _ _ _ _ _ _).trans hc, ?_⟩
     unfold render
     rw [source_old]
-    change PairedSlotDecoder.decode (k + 1) (PairedSlotEncoding.values S.profile) G H
-      (P.render _ _ _ _ _ _ c) = H
     exact (congrArg (PairedSlotDecoder.decode (k + 1)
       (PairedSlotEncoding.values S.profile) G H) hv).trans (decode_reserved_ceiling hH hb)
 

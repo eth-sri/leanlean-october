@@ -15,7 +15,6 @@ their boundary fields and supported grid/orbit values are coded.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedCoding
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer CanonicalCodingSupport
 open PairedSlotComparison
@@ -23,9 +22,12 @@ noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
-theorem fieldLayer (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X]
-    (occ : Cell D → X) (hj : 0 < j) (hA : j ≤ A.card)
-    (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
+section
+variable (sem : Semantics D) (j : ℕ)
+
+theorem fieldLayer X [Fintype X]
+    occ hj hA
+    hp hg
     (hc : sem.IsCoded) : (CanonicalFieldLayer.rows sem j X occ hj hA hp hg).IsCoded := by
   apply layer D _ j hj hA (SeparatedSourceLayerCarrier.separated_of_proper D j hp)
     sem _ hc (CanonicalFieldLayer.inherited_row sem j X occ hj hA hp hg)
@@ -42,8 +44,11 @@ theorem fieldLayer (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X]
     rw [hx, CanonicalFieldLayer.source_old]
     exact field sem j occ q (occ x)
 
-theorem cutLayer (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hA : j ≤ A.card)
-    (hp : ∀ d : Cell D, D.scope d ≠ A) (hc : sem.IsCoded) :
+section
+variable (hj : 0 < j)
+
+theorem cutLayer hA
+    hp (hc : sem.IsCoded) :
     (CanonicalGradeCutSections.rows sem j hj hA hp).IsCoded := by
   let Q := CanonicalGradeCutSections.Profiles sem j
   have low := fieldLayer (GradeCutBoundary.rows D j sem) j (Cell D)
@@ -61,9 +66,9 @@ theorem cutLayer (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hA : j ≤ A.card)
   apply at_grade he
   exact low (SourceLayerCarrier.toCell (GradeCutBoundary.scheme D j) Q j hj hA (.inr q)) _
 
-theorem mixed (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-    (hp : ∀ d : Cell D, D.scope d ≠ A) (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
-    (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k) (hc : sem.IsCoded) :
+theorem mixed hjA
+    hp k hg
+    hk hkA hjk (hc : sem.IsCoded) :
     (CanonicalMixedGradeLayers.rows sem j hj hjA hp k hg hk hkA hjk).IsCoded := by
   apply layer (CanonicalMixedGradeLayers.lowerScheme sem j hj hjA) _ k hk hkA
     (CanonicalMixedGradeLayers.lower_separated sem j hj hjA hp k hjk)
@@ -78,10 +83,14 @@ theorem mixed (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
   apply supported (fun _ hh => grid k _ hh) (field sem k id q)
   exact CanonicalMixedGradeLayers.source_supported sem j hj hjA hp k hg hk hkA hjk q d.1
 
-theorem pairSplice (D : CellScheme A) (Q R : Type*) [Fintype Q] [Fintype R]
-    (j k : ℕ) (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
-    (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j ≤ k)
-    (sem : Semantics D) (low : Semantics (GradeCutPairCarrier.small D Q R j k hj hjA hk hkA))
+end
+
+end
+
+theorem pairSplice D Q R [Fintype Q] [Fintype R]
+    j k hj hjA hk hkA
+    (hp : ∀ d : Cell D, D.scope d ≠ A) hjk
+    sem low
     (hc : sem.IsCoded) (hl : low.IsCoded) :
     (GradeCutPairRows.rows D Q R j k hj hjA hk hkA hp hjk sem low).IsCoded := by
   intro c d
@@ -100,8 +109,8 @@ theorem pairSplice (D : CellScheme A) (Q R : Type*) [Fintype Q] [Fintype R]
   · exact at_grade (congrArg Prod.snd (GradeCutPairCarrier.cell_idx
       (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr r))) (hl _ _)
 
-theorem pair (sem : Semantics D) (hA : 2 ≤ A.card)
-    (hp : ∀ d : Cell D, D.scope d ≠ A) (hc : sem.IsCoded) :
+theorem pair sem hA
+    (hp : ∀ d, D.scope d ≠ A) (hc : sem.IsCoded) :
     (CanonicalPairLocalSections.semantics sem hA hp).IsCoded := by
   apply pairSplice D _ _ 1 2 (by decide) _ (by decide) hA hp (by decide) sem _ hc
   exact mixed (GradeCutBoundary.rows D 2 sem) 1 (by decide) _

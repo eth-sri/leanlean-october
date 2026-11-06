@@ -17,8 +17,6 @@ full-grade layer; it does not fill missing indices of the support plan.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProperBoundarySourceLayer
 
 open Transform Value ExtOrd SourcePrefixRows
@@ -28,7 +26,6 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 variable (D : CellScheme A) (sem : Semantics D)
 variable (Q : Type*) [Fintype Q] (k : ℕ) (hk : 0 < k) (hA : k ≤ A.card)
 variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (hgrade : ∀ d : Cell D, D.grade d ≤ k)
 
 noncomputable abbrev carrier := SourceLayerCarrier.scheme D Q k hk hA
 
@@ -47,26 +44,23 @@ noncomputable def member (c : SourcePrefixLayer.Controller (carrier D Q k hk hA)
   (SeparatedSourceLayerCarrier.controllerEquiv D Q k hk hA
     (SeparatedSourceLayerCarrier.separated_of_proper D k hproper)).symm c
 
-theorem member_controller (q : Q) :
+theorem member_controller q :
     member D Q k hk hA hproper (controller D Q k hk hA q) = q :=
   (SeparatedSourceLayerCarrier.controllerEquiv D Q k hk hA
     (SeparatedSourceLayerCarrier.separated_of_proper D k hproper)).symm_apply_apply q
 
-noncomputable def lower (p : Q → Cell D → ExtOrd) (q : Q)
-    (d : Cell (carrier D Q k hk hA)) : ExtOrd :=
+section
+variable (p : Q → Cell D → ExtOrd) (q : Q)
+
+noncomputable def lower (d : Cell (carrier D Q k hk hA)) : ExtOrd :=
   match toOcc D Q k hk hA d with
   | .inl x => p q x
   | .inr _ => ⊥
 
-theorem lower_old (p : Q → Cell D → ExtOrd) (q : Q) (d : Cell D) :
+theorem lower_old d :
     lower D Q k hk hA p q (old D Q k hk hA d) = p q d := by
   simp only [lower, old, toOcc_toCell]
 
-variable (G : Finset ExtOrd) (C : ExtOrd)
-variable (hbot : ⊥ ∈ G) (hC : C ∈ G) (hG : ∀ h ∈ G, h ≤ C)
-variable (hvis : ∀ h ∈ G, SelfVis k h)
-variable (p : Q → Cell D → ExtOrd)
-variable (hp : ∀ q, RespectsSemantics sem (p q))
-variable (hb : ∀ q d, p q d ≤ C)
+end
 
 end VaughtConjecture.Knight.ProperBoundarySourceLayer

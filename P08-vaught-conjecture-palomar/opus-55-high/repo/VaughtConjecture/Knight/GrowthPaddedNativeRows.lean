@@ -16,7 +16,6 @@ follows the grade-two calculation in V-C's GrowthLeafRecognition.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedNativeRows
 open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration
@@ -50,24 +49,24 @@ def anchor : (t : ℕ) → (ht : t + 2 ≤ A.card) → Catalogue X (t + 2) → C
 def ceiling (t : ℕ) : ExtOrd := CanonicalFieldLayer.ceiling (t + 2)
   (Field I.right.scheme I.left.scheme)
 
-theorem owner_index (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2)) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
+
+theorem owner_index  :
     (build I X T hA hB hC t ht).carrier.cell (owner I X T hA hB hC t ht a) =
       (A, t + 2) := by
   cases t with
   | zero => exact GrowthPaddedSuccessor.leaf_index I X T hA hB hC a
   | succ t => exact (GrowthPaddedStepRows.controller _ _ a).2
 
-theorem owner_row (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (d : (build I X T hA hB hC t ht).carrier.below
-      ((build I X T hA hB hC t ht).carrier.cell (owner I X T hA hB hC t ht a))) :
+theorem owner_row d :
     (build I X T hA hB hC t ht).rows.E (owner I X T hA hB hC t ht a) d =
       source I X T hA hB hC t ht a d.1 := by
   cases t with
   | zero => exact GrowthPaddedSuccessor.leaf_row I X T hA hB hC a d
   | succ t => exact ScopedSourcePrefixLayer.Data.row_new _ _ d
 
-theorem anchor_ranks (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (f : Field I.right.scheme I.left.scheme) :
+theorem anchor_ranks f :
     RelativeLadderLayer.ranks (fields X 1) (anchor I X T hA hB hC t ht a) f =
       LadderScalarRendering.fieldRank (fields X (t + 2) a) f := by
   cases t with
@@ -75,8 +74,7 @@ theorem anchor_ranks (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
   | succ t => exact GrowthPaddedStepSupply.birth_ranks _ a f
 
 /-- The complete table, including unused ranks and every foreign shadow. -/
-theorem source_base (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (d : Cell (base I X T hA hB hC)) :
+theorem source_base d :
     source I X T hA hB hC t ht a ((build I X T hA hB hC t ht).baseMap d) =
       RelativeLadderLayer.renderWith I.boundary (by omega : 0 < A.card)
         (field I) (fields X 1) (anchor I X T hA hB hC t ht a)
@@ -85,20 +83,21 @@ theorem source_base (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
   | zero => exact LadderWeightedSuccessor.Input.source_old _ a d
   | succ t => exact GrowthPaddedStepSupply.source_base _ _ _ a d
 
-theorem source_diagonal (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2)) :
+theorem source_diagonal  :
     source I X T hA hB hC t ht a (owner I X T hA hB hC t ht a) =
       ceiling I t := by
   cases t with
   | zero => exact GrowthPaddedSuccessor.source_ceiling I X T hA hB hC a
   | succ t => exact ScopedSourcePrefixLayer.Data.profile_diagonal _ _
 
-theorem source_original (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (d : Cell I.boundary) :
+theorem source_original d :
     source I X T hA hB hC t ht a ((build I X T hA hB hC t ht).baseMap
       (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)) =
         fields X (t + 2) a (field I d) := by
   rw [source_base]
   exact RelativeLadderLayer.renderWith_old _ _ _ _ _ _ _ (anchor_ranks I X T hA hB hC t ht a) d
+
+end
 
 abbrev ladder (t : ℕ) (ht : t + 2 ≤ A.card)
     (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
@@ -106,14 +105,18 @@ abbrev ladder (t : ℕ) (ht : t + 2 ≤ A.card)
   (build I X T hA hB hC t ht).baseMap
     (RelativeLadderLayer.added I.boundary (by omega : 0 < A.card) v)
 
-theorem ladder_index (t : ℕ) (ht : t + 2 ≤ A.card)
-    (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+theorem ladder_index (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
       (Q := Catalogue X 1)) :
     (build I X T hA hB hC t ht).carrier.cell (ladder I X T hA hB hC t ht v) = (A, 1) := by
   rw [ladder, Layer.base_index, RelativeLadderLayer.added_index]
 
-theorem source_ladder (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
+section
+variable (a : Catalogue X (t + 2))
+
+theorem source_ladder (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
       (Q := Catalogue X 1)) :
     source I X T hA hB hC t ht a (ladder I X T hA hB hC t ht v) =
       SupportLadderRows.image (RelativeLadderLayer.ranks (fields X 1))
@@ -126,26 +129,22 @@ theorem source_ladder (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2)
   rfl
 
 /-- Complete fields, including hidden/future fields, are actual shadow maxima. -/
-theorem source_shadow_sup (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (f : Field I.right.scheme I.left.scheme) :
+theorem source_shadow_sup f :
     (Finset.univ : Finset (Catalogue X 1)).sup (fun b =>
       source I X T hA hB hC t ht a
         (ladder I X T hA hB hC t ht (SupportLadderRows.shadow b f))) =
           fields X (t + 2) a f := by
-  classical
   have he := SupportLadderRows.readout_image
-    (H := RelativeLadderLayer.rungs (X := Field I.right.scheme I.left.scheme))
+   
     (fun b f => le_of_lt (RelativeLadderLayer.rank_bound (fields X 1) b f))
     (anchor I X T hA hB hC t ht a)
     (LadderScalarRendering.level_mono (LadderScalarRendering.values_bound (anchor_bound X a))) f
   simp only [SupportLadderRows.readout] at he
-  rw [show Fintype.ofFinite (Catalogue X 1) = (inferInstance : Fintype (Catalogue X 1))
-    from Subsingleton.elim _ _] at he
   simp only [source_ladder]
   unfold ceiling
   rw [he, anchor_ranks, LadderScalarRendering.field_readback]
 
-theorem source_spare (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2)) :
+theorem source_spare  :
     source I X T hA hB hC t ht a (ladder I X T hA hB hC t ht
       (SupportLadderRows.leaf (by exact Nat.succ_pos _) (anchor I X T hA hB hC t ht a))) =
         ceiling I t := by
@@ -163,8 +162,7 @@ theorem source_spare (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
 
 /-- Every earlier grade has a real ceiling occurrence in this native row.
 The lower renderer is invoked with this row's fixed outer grid and ceiling. -/
-theorem source_ceiling_at (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2))
-    (i : ℕ) (hi : 1 ≤ i) (hit : i ≤ t + 2) :
+theorem source_ceiling_at i (hi : 1 ≤ i) (hit : i ≤ t + 2) :
     ∃ c : Cell (build I X T hA hB hC t ht).carrier,
       (build I X T hA hB hC t ht).carrier.cell c = (A, i) ∧
         source I X T hA hB hC t ht a c = ceiling I t := by
@@ -180,7 +178,7 @@ theorem source_ceiling_at (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t 
     let P := build I X T hA hB hC t (by omega)
     obtain ⟨c, hc, hv⟩ := P.ceiling_at (Nat.le_succ (t + 2))
       (state X a) (state_admitted X a) (state_proper X a)
-      (G := GrowthPaddedStepRows.grid P) (H := GrowthPaddedStepRows.ceiling P)
+     
       (fun _ hz => (PairedSlotComparison.sourceGrid_visible hz).mono (Nat.le_succ _))
       ((PairedSlotComparison.sourceGrid_visible
         (PairedSlotComparison.sourceGrid_endpoint le_rfl)).mono (Nat.le_succ _))
@@ -190,6 +188,10 @@ theorem source_ceiling_at (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t 
     change GrowthPaddedStepRows.source P _ _ a (GrowthPaddedStepRows.old P _ c) = _
     rw [GrowthPaddedStepRows.source_old]
     exact hv
+
+end
+
+end
 
 end
 end VaughtConjecture.Knight.GrowthPaddedNativeRows

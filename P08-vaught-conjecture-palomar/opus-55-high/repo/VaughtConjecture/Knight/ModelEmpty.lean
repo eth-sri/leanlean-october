@@ -21,10 +21,12 @@ namespace KnightRealization
 
 variable {α : LimitStage} {M : Type*}
 
+section
+variable {R : KnightRealization α M}
+
 /-- Stage-generic empty evaluation, the only missing adapter in the preserved pair-local
 terminal-code draft. -/
-theorem exists_eval_empty_of_structural {R : KnightRealization α M}
-    (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering) :
+theorem exists_eval_empty_of_structural (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering) :
     ∃ p₀ : S α.1 0,
       R.eval (Function.Embedding.ofIsEmpty : Fin 0 ↪ M) = some p₀ := by
   obtain ⟨k, s, -, hsome⟩ := hcov (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
@@ -44,10 +46,12 @@ theorem exists_eval_empty_of_structural {R : KnightRealization α M}
   exact ⟨p₀, by rw [← hft, heval, hp₀]; rfl⟩
 
 /-- Compatibility wrapper for models. -/
-theorem exists_eval_empty_at {R : KnightRealization α M} (hR : R.IsModel) :
+theorem exists_eval_empty_at (hR : R.IsModel) :
     ∃ p₀ : S α.1 0,
       R.eval (Function.Embedding.ofIsEmpty : Fin 0 ↪ M) = some p₀ :=
   exists_eval_empty_of_structural hR.consistent hR.covering
+
+end
 
 end KnightRealization
 

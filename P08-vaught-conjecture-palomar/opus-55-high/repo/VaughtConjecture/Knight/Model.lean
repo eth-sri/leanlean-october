@@ -79,22 +79,26 @@ variable {M : Type w} {n : ℕ}
 
 /-- The concatenation `t⌢y` of an injective `n`-tuple `t` with a point `y` not on it, as an
 injective `(n+1)`-tuple: `y` sits at the last position (`Fin.snoc`). -/
-def snoc (t : Fin n ↪ M) (y : M) (hy : y ∉ Set.range t) : Fin (n + 1) ↪ M :=
+def snoc (t : Fin n ↪ M) y (hy : y ∉ Set.range t) : Fin (n + 1) ↪ M :=
   ⟨Fin.snoc (α := fun _ => M) t y, Fin.snoc_injective_of_injective t.injective hy⟩
 
-@[simp] theorem snoc_apply_castSucc (t : Fin n ↪ M) (y : M) (hy : y ∉ Set.range t)
-    (i : Fin n) : snoc t y hy (Fin.castSucc i) = t i := by
+section
+variable (t : Fin n ↪ M) (y : M) (hy : y ∉ Set.range t)
+
+@[simp] theorem snoc_apply_castSucc i : snoc t y hy (Fin.castSucc i) = t i := by
   simp [snoc]
 
-@[simp] theorem snoc_apply_last (t : Fin n ↪ M) (y : M) (hy : y ∉ Set.range t) :
+@[simp] theorem snoc_apply_last  :
     snoc t y hy (Fin.last n) = y := by
   simp [snoc]
 
 /-- The old tuple is the initial segment of its concatenation: `(t⌢y) ∘ ι_{n,n+1} = t`. -/
-@[simp] theorem castSuccEmb_trans_snoc (t : Fin n ↪ M) (y : M) (hy : y ∉ Set.range t) :
+@[simp] theorem castSuccEmb_trans_snoc  :
     Fin.castSuccEmb.trans (snoc t y hy) = t := by
   ext i
   exact snoc_apply_castSucc t y hy i
+
+end
 
 variable {α : Ordinal.{0}}
 
@@ -119,25 +123,29 @@ def SemScheme.castCell {X Y : SemScheme n} (h : X = Y) : Cell X.scheme → Cell 
   Fin.cast (congrArg (fun Z : SemScheme n => Z.scheme.card) h)
 
 /-- Cell transport along a self-equality is the identity (proof irrelevance). -/
-theorem SemScheme.castCell_self {n : ℕ} {X : SemScheme n} (h : X = X) (d : Cell X.scheme) :
+theorem SemScheme.castCell_self {n} {X : SemScheme n} h (d : Cell X.scheme) :
     SemScheme.castCell h d = d := rfl
+
+section
+variable {p : S α n}
 
 /-- The cell map `dom p → D` of an extension of domains: the cell `d` of `dom p = D⟨n,n⟩` as
 a cell of `D` (through the cell map of the face restriction, `toCell`). -/
-noncomputable def ExtendsDomain.cellOf {p : S α n} {D : SemScheme (n + 1)}
+noncomputable def ExtendsDomain.cellOf {D : SemScheme (n + 1)}
     (h : ExtendsDomain p D) (d : Cell p.scheme.scheme) : Cell D.scheme :=
   toCell D.scheme Fin.castSuccEmb h.visible (SemScheme.castCell h.restrict.symm d)
 
 /-- The domain of a coface of `p` extends the domain of `p`. -/
-theorem IsCoface.extendsDomain {p : S α n} {q : S α (n + 1)} (h : IsCoface p q) :
+theorem IsCoface.extendsDomain {q : S α (n + 1)} (h : IsCoface p q) :
     ExtendsDomain p q.scheme := by
-  have hvis : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan :=
+  have hvis :=
     (typeMap_isSome_iff _ q).mp (by rw [h]; rfl)
   refine ⟨hvis, ?_⟩
   unfold IsCoface at h
   rw [typeMap_eq_some _ q hvis, Option.some.injEq] at h
-  subst h
-  rfl
+  aesop
+
+end
 
 /-! ### The four request families of Def. 3.2.1(4)
 
@@ -147,31 +155,41 @@ member be realized over the old tuple *as a coface of `p`* (the paper's `U ⊆ (
 The parameter side conditions (`ExtendsDomain`, `RespectsSemantics`, `IsNonSuccessor`, `γ <
 α`) are hypotheses of the corresponding `IsModel` clause. -/
 
+section
+variable (D : SemScheme (n + 1))
+
 /-- **(a)(i) Generalised saturation**: the cofaces with domain `D` (for `D` a domain on `n+1`
 with `D⟨n,n⟩ = dom p`, the side condition `ExtendsDomain p D`). -/
-def GenSatFamily (D : SemScheme (n + 1)) : Set (S α (n + 1)) :=
+def GenSatFamily  : Set (S α (n + 1)) :=
   {q | q.scheme = D}
 
 /-- **(a)(ii) Prescribed `−∞`-pattern**: for `D` as in (a)(i) and a labelling `q' : D → ExtOrd`
 respecting the semantics of `D` (faithfully, with **no stage bound**) and extending `p`, the
 cofaces `q` with domain `D` whose `−∞`-pattern on `D^{≤ n} = D⟨A, n⟩` — the cells of grade
 `≤ n`, `D.scheme.below (univ, n)` — is that of `q'`: `q Θ = ⊥ ↔ q' Θ = ⊥`. -/
-def BottomPatternFamily (D : SemScheme (n + 1)) (q' : Cell D.scheme → ExtOrd) :
+def BottomPatternFamily (q' : Cell D.scheme → ExtOrd) :
     Set (S α (n + 1)) :=
   {q | ∃ h : q.scheme = D, ∀ Θ : D.scheme.below (Finset.univ, n),
     q.label (SemScheme.castCell h.symm Θ.1) = ⊥ ↔ q' Θ.1 = ⊥}
 
+end
+
+section
+variable (γ : Ordinal.{0})
+
 /-- **(b) Uniformity**: for a non-successor `γ` with `0 ≤ γ < α`, the cofaces with a cell
 labelled in `[γ, γ + ω)`. -/
-def UniformityFamily (γ : Ordinal.{0}) : Set (S α (n + 1)) :=
+def UniformityFamily  : Set (S α (n + 1)) :=
   {q | ∃ Sig : Cell q.scheme.scheme,
     ExtOrd.ofOrd γ ≤ q.label Sig ∧ q.label Sig < ExtOrd.ofOrd (γ + Ordinal.omega0)}
 
 /-- **(c) High-grade dominance** (Knight: "high-arity"): for `γ < α`, the cofaces with a cell
 of grade `n+1` labelled strictly above `γ`. -/
-def HighGradeDominanceFamily (γ : Ordinal.{0}) : Set (S α (n + 1)) :=
+def HighGradeDominanceFamily  : Set (S α (n + 1)) :=
   {q | ∃ Sig : Cell q.scheme.scheme,
     q.scheme.scheme.grade Sig = n + 1 ∧ ExtOrd.ofOrd γ < q.label Sig}
+
+end
 
 /-! ### Models -/
 
@@ -226,10 +244,10 @@ variable {R}
 coface of the label of `t`: the coface condition in the existential-closure clauses is then
 redundant, and is kept only to transcribe the paper's `U ⊆ (S^α ι_{n,n+1})⁻¹(p)`. -/
 theorem isCoface_of_consistent (hR : R.IsExactParentConsistent) {t : Fin n ↪ M}
-    {p : S α.1 n} {y : M} {hy : y ∉ Set.range t} {q : S α.1 (n + 1)}
+    {p : S α.1 n} {y} {hy} {q : S α.1 (n + 1)}
     (hp : R.eval t = some p) (hq : R.eval (snoc t y hy) = some q) : IsCoface p q := by
   have h := hR (snoc t y hy) q Fin.castSuccEmb hq
-  rw [castSuccEmb_trans_snoc, hp] at h
+  simp_all
   exact h.symm
 
 /-- A model is covering in the generic sense. -/
@@ -238,14 +256,14 @@ theorem IsModel.isCovering (h : R.IsModel) : R.IsCovering :=
 
 /-- The reduct of a model to a lower limit stage is exactly consistent (clause (2) is preserved
 under reduction; generic). -/
-theorem IsModel.consistent_reduct (h : R.IsModel) {β : LimitStage} (hβ : β ≤ α) :
+theorem IsModel.consistent_reduct (h : R.IsModel) {β} (hβ : β ≤ α) :
     (R.reduct hβ).IsExactParentConsistent :=
   h.consistent.reduct hβ
 
 /-- The reduct of a model to a lower limit stage is initial-segment covering (clause (3) is
 preserved under reduction; generic).  The existential-closure clauses are preserved too
 (`IsModel.reduct`, `Knight/ReductModel.lean`). -/
-theorem IsModel.covering_reduct (h : R.IsModel) {β : LimitStage} (hβ : β ≤ α) :
+theorem IsModel.covering_reduct (h : R.IsModel) {β} (hβ : β ≤ α) :
     (R.reduct hβ).IsInitialSegmentCovering :=
   h.covering.reduct hβ
 
@@ -260,20 +278,20 @@ same two clauses and counting for `α = ω₁`). -/
 
 /-- From a labelled `m`-tuple, a labelled `(m + k)`-tuple for every `k` (clause (4)(c) at `0`). -/
 theorem IsModel.exists_labelled_add (h : R.IsModel) {m : ℕ} (t : Fin m ↪ M)
-    (ht : (R.eval t).isSome) (k : ℕ) : ∃ s : Fin (m + k) ↪ M, (R.eval s).isSome := by
+    (ht : (R.eval t).isSome) k : ∃ s : Fin (m + k) ↪ M, (R.eval s).isSome := by
   induction k with
   | zero => exact ⟨t, ht⟩
   | succ k ih =>
     obtain ⟨s, hs⟩ := ih
     obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp hs
-    have h0 : (0 : Ordinal.{0}) < α.1 := by
+    have h0 := by
       simpa [Ordinal.bot_eq_zero] using α.2.bot_lt
     obtain ⟨y, hy, q, -, -, hq⟩ := h.highGradeDominance s p hp 0 h0
-    exact ⟨snoc s y hy, by rw [hq]; rfl⟩
+    exact ⟨snoc s y hy, by aesop⟩
 
 /-- A labelled injective tuple of every sufficiently large arity. -/
 theorem IsModel.exists_labelled_ge (h : R.IsModel) :
-    ∃ m : ℕ, ∀ k : ℕ, ∃ s : Fin (m + k) ↪ M, (R.eval s).isSome := by
+    ∃ m, ∀ k, ∃ s : Fin (m + k) ↪ M, (R.eval s).isSome := by
   obtain ⟨k, s, -, hs⟩ := h.covering (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
   exact ⟨0 + k, fun j => h.exists_labelled_add s hs j⟩
 
@@ -281,12 +299,12 @@ theorem IsModel.exists_labelled_ge (h : R.IsModel) :
 finite models" (Prop. 3.3.5 / `HasNoFiniteModels` in `Knight/Sentence.lean`). -/
 theorem IsModel.infinite_carrier (h : R.IsModel) : Infinite M := by
   by_contra hfin
-  rw [not_infinite_iff_finite] at hfin
+  simp_all
   obtain ⟨m, hm⟩ := h.exists_labelled_ge
   letI := Fintype.ofFinite M
   obtain ⟨s, -⟩ := hm (Fintype.card M + 1)
   have := Fintype.card_le_of_embedding s
-  simp only [Fintype.card_fin] at this
+  simp_all
   omega
 
 end KnightRealization

@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 public import VaughtConjecture.Knight.GradeCutLifting
 
 /-! # Recursive lifting: inherited targets and vertical pasting
@@ -19,7 +19,6 @@ The active new-grade proper-face lift is not asserted here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedLifting
 open Transform Value ExtOrd CoatomBoundaryExtension
 noncomputable section
@@ -28,10 +27,12 @@ variable (sem : Semantics D) (hA : 3 ≤ A.card)
 variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 open CanonicalRecursiveSeedRows CanonicalRecursiveSeedSections
 
+section
+variable {I J : Finset ι × ℕ} (h : GradedLe I J)
+
 /-- Every target omitting the new controller index transports its full
 single-face lifting clause from the actual predecessor semantics. -/
-theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, 3) J) (hb : CappedLift (predecessorRows sem hA hp) h) :
+theorem inherited_lift (hJ : ¬ GradedLe (A, 3) J) (hb : CappedLift (predecessorRows sem hA hp) h) :
     CappedLift (rows sem hA hp) h := by
   intro p q γ hpr hqr hγ hag
   have hI : ¬ GradedLe (A, 3) I := fun hi => hJ (hi.trans h)
@@ -57,14 +58,16 @@ theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
     rw [Function.comp_apply, hd, hread]
     exact congrArg p (eI.apply_symm_apply d)
 
-theorem lower_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ 2)
+theorem lower_lift (hJ : J.2 ≤ 2)
     (hb : CappedLift (predecessorRows sem hA hp) h) : CappedLift (rows sem hA hp) h :=
   inherited_lift sem hA hp h (fun he => by have := he.2; omega) hb
+
+end
 
 /-- Actual lower-pair bountifulness comes from the banked two-grade theorem
 through its proved row transport, not from a catalogue identification. -/
 theorem predecessor_bountiful (hold : CanonicalCoatomBountiful.OldLifts sem)
-    {L R : Finset ι} (hL : L ∈ D.plan) (hR : R ∈ D.plan)
+    {L R} (hL : L ∈ D.plan) (hR : R ∈ D.plan)
     (hLA : L ≠ A) (hRA : R ≠ A) (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card)
     (hO : L ∩ R ∈ D.plan)
     (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)

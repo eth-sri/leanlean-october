@@ -18,7 +18,6 @@ this is not yet a lawful physical display or a receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace Transform
@@ -50,7 +49,7 @@ theorem exists_input (hn : 0 < n) (hq : IsCoface p q) : Nonempty (Input q D) := 
 /-- A model supplies every scalar input; no reference or template existence
 assumption is left. Positive root arity remains explicit. -/
 theorem acquire (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
-    (hn : 0 < n) (hp : W.eval t = some p) (hq : IsCoface p q) (floor : ℕ) :
+    (hn : 0 < n) (hp : W.eval t = some p) (hq : IsCoface p q) floor :
     ∃ D : HollowGrowthReference.Data (W := W) t p (donorRequests q) (n + 1) floor,
       Nonempty (Input q D) := by
   obtain ⟨D⟩ := HollowGrowthReference.exists_data hM hg hh t p hp
@@ -60,10 +59,10 @@ theorem acquire (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
 namespace Input
 variable {q D} (I : Input q D)
 
-private theorem inClass_iff_of_heq {ι : Type*} [DecidableEq ι] {A : Finset ι}
+private theorem inClass_iff_of_heq {ι} [DecidableEq ι] {A}
     {DA : CellScheme A} {B C : Finset ι × ℕ} (hBC : B = C)
     {ZA : Set (DA.below B)} {ZC : Set (DA.below C)} (hZ : HEq ZA ZC)
-    (u : Cell DA → ExtOrd) : InClass ZA u ↔ InClass ZC u := by
+    u : InClass ZA u ↔ InClass ZC u := by
   subst C
   rw [eq_of_heq hZ]
 
@@ -85,7 +84,7 @@ theorem donor_arity_lt : n + 1 < I.relative.req.N := by
 
 /-- Correctness, if extracted from the eventual physical rows over this actual
 private face, reads the entire donor literally. It is not assumed extracted. -/
-theorem exact_of_correct {v : Cell q.scheme.scheme → ExtOrd}
+theorem exact_of_correct {v}
     (h : I.relative.req.Correct (I.relative.req.sec D.context.type.label) v) : v = q.label := by
   rw [I.req_eq] at h
   exact (correct_iff_eq_actual q D v).mp h

@@ -18,7 +18,6 @@ chart. This is a whole lawful, supported display, not a model occurrence.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSelectedPair
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
@@ -29,8 +28,11 @@ noncomputable section
 section Scalar
 variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N]
 
-theorem map_donorMax {k : ℕ} {σ : ExtOrd → ExtOrd} (hσ : BoundedMap k σ)
-    {a s : X → ExtOrd} (hf : ∀ f, σ (a f) = s f) :
+section
+variable {k : ℕ} {σ : ExtOrd → ExtOrd}
+
+theorem map_donorMax (hσ : BoundedMap k σ)
+    {a s} (hf : ∀ f, σ (a f) = s f) :
     σ (LowSeparator.donorMax N a) = LowSeparator.donorMax N s := by
   apply le_antisymm
   · rcases LowSeparator.donorMax_cases N a with hz | ⟨d, hd, he⟩
@@ -43,11 +45,13 @@ theorem map_donorMax {k : ℕ} {σ : ExtOrd → ExtOrd} (hσ : BoundedMap k σ)
     rw [← hf]
     exact hσ.mono (LowSeparator.le_donorMax N a hd)
 
-theorem map_cutoffCut {k : ℕ} {σ : ExtOrd → ExtOrd} (hσ : BoundedMap k σ)
-    {a s : X → ExtOrd} (hf : ∀ f, σ (a f) = s f) :
+theorem map_cutoffCut (hσ : BoundedMap k σ)
+    {a s} (hf : ∀ f, σ (a f) = s f) :
     σ (LowSeparator.cutoffCut k N a) = LowSeparator.cutoffCut k N s := by
   unfold LowSeparator.cutoffCut
   rw [hσ.comm _ k k le_rfl le_rfl, map_donorMax N hσ hf]
+
+end
 end Scalar
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -65,23 +69,28 @@ def leafAt : (t : ℕ) → (ht : t + 2 ≤ A.card) → F.Anchor (t + 2) →
   | t + 1, ht, a => LowOnlyPaddedStepChart.leafAt
       (build I F hroot hA hB hC t (by omega)) ht a
 
-theorem source_leaf (t : ℕ) (ht : t + 2 ≤ A.card) (a b : F.Anchor (t + 2)) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+theorem source_leaf a b :
     nativeSource I F hroot hA hB hC t ht a (leafAt I F hroot hA hB hC t ht b).1 =
       cut (LowSeparator.grid (X := Field I.left I.right) (t + 2)) a.val b.val := by
   cases t with
   | zero => exact LowOnlyPaddedSuccessor.source_leaf I F hroot hA hB hC a b
   | succ t => exact LowOnlyPaddedStepRows.source_new _ _ _ a b
 
-theorem source_self (t : ℕ) (ht : t + 2 ≤ A.card) (a : F.Anchor (t + 2)) :
+theorem source_self a :
     nativeSource I F hroot hA hB hC t ht a (leafAt I F hroot hA hB hC t ht a).1 =
       CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right) := by
   rw [source_leaf]
   exact cut_refl (sourceGrid_endpoint le_rfl)
     (fun z hz => CanonicalFieldLayer.grid_bound (t + 2) (Field I.left I.right) hz) a.val
 
+end
+
 variable {I F}
 
-def partner (t : ℕ) (ht : K = t + 2) (a : F.Anchor K)
+def partner t (ht : K = t + 2) (a : F.Anchor K)
     (hlt : LowSeparator.cutoffCut K (LowSeparator.donorField F) (state F a).profile <
       (state F a).b) : F.Anchor K :=
   ⟨(LowSeparator.partnerState F (state F a)).profile,
@@ -93,22 +102,18 @@ variable {hroot hA hB hC}
 
 /-- Native grades at least two have a simultaneous selected pair on the
 whole carrier, with all original fields and stage support retained. -/
-theorem exists_whole_pair (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (ht : t + 2 ≤ A.card) (r : ℕ) (hr : t + r + 2 ≤ A.card)
+theorem exists_whole_pair t F
+    hroot
+    ht r hr
     (hfull : t + r + 2 = A.card)
-    {S : State I.left I.right} (hS : F.Admissible (t + r + 2) S)
+    {S} (hS : F.Admissible (t + r + 2) S)
     (htop : ∃ f, S.profile f = ⊤)
     (hactive : LowSeparator.cutoffCut (t + 2) (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (build I F hroot hA hB hC (t + r) hr).carrier → ExtOrd,
+    ∃ w,
       RespectsSemantics (build I F hroot hA hB hC (t + r) hr).rows w ∧
       (∀ d, w (original I F hroot hA hB hC (t + r) hr d) = S.profile (field I d)) ∧
       (∀ d, OrbitPrefixSupport.Supported (t + r + 2) ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∃ a : F.Anchor (t + 2), ∃ hlt :
-          LowSeparator.cutoffCut (t + 2) (LowSeparator.donorField F) (state F a).profile <
-            (state F a).b,
+      ∃ a, ∃ hlt,
         w (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hr
           (leafAt I F hroot hA hB hC t ht a)).1 = ⊤ ∧
         w (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hr
@@ -142,20 +147,18 @@ theorem exists_whole_pair (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
 /-- The separate grade-one mechanism survives terminal collapse and every
 later layer as well: use rank partners, not paired-slot source cuts. -/
 theorem exists_whole_rank_pair (F : LowOnly.Family I.left I.right 1)
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (t : ℕ) (ht : t + 2 ≤ A.card) (hfull : t + 2 = A.card)
-    {S : State I.left I.right} (hS : F.Admissible (t + 2) S)
+    hroot
+    t ht (hfull : t + 2 = A.card)
+    {S} (hS : F.Admissible (t + 2) S)
     (htop : ∃ f, S.profile f = ⊤)
     (hactive : LowSeparator.donorMax (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (build I F hroot hA hB hC t ht).carrier → ExtOrd,
+    ∃ w,
       RespectsSemantics (build I F hroot hA hB hC t ht).rows w ∧
       (∀ d, w (original I F hroot hA hB hC t ht d) = S.profile (field I d)) ∧
       (∀ d, OrbitPrefixSupport.Supported (t + 2) ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∃ T : State I.left I.right, F.Admissible 1 T ∧
+      ∃ T, F.Admissible 1 T ∧
         LowSeparator.donorMax (LowSeparator.donorField F) T.profile < T.b ∧
-        ∃ qs qt : F.Anchor 1,
+        ∃ qs qt,
           RelativeLadderLayer.ranks (F.fields 1) qs = LadderScalarRendering.fieldRank T.profile ∧
           RelativeLadderLayer.ranks (F.fields 1) qt = LadderScalarRendering.fieldRank
             (LowSeparatorRank.rankPartner (LowSeparator.donorField F)

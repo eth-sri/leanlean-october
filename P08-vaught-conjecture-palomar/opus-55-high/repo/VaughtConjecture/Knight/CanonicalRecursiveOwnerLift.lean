@@ -19,7 +19,6 @@ Literal lower restoration is the next composition step.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveOwnerLift
 open Transform Value ExtOrd SharpWitnessComposition CoatomBoundaryExtension
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveCutPrefix
@@ -35,10 +34,10 @@ theorem exists_owner_capped_lift
     (hp : RespectsSemanticsBelow (cutRows sem n) ((cut (D := D) n).cell c) p)
     {q : CanonicalRecursiveAmbient.target sem n hA → ExtOrd}
     (hq : RespectsSemanticsBelow (rows sem n hA hproper P) (A, n + 4) q)
-    {γ : ExtOrd} (hγ : SelfVis (n + 4) γ) (hγb : γ ≠ ⊥)
+    {γ} (hγ : SelfVis (n + 4) γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e, min (p e) γ = min (q (oldTarget sem n hA e.1)) γ)
     (hpc : γ < p ⟨c, GradedLe.refl _⟩)
-    {U V O : Finset ι × ℕ}
+    {U V O}
     (hcover : ∀ d : Cell (cut (D := D) n),
       GradedLe ((cut (D := D) n).cell d) U ∨ GradedLe ((cut (D := D) n).cell d) V)
     (hcU : GradedLe ((cut (D := D) n).cell c) U) (hOU : GradedLe O U) (hOV : GradedLe O V)

@@ -18,7 +18,6 @@ cap. This finite theorem does not assert a model occurrence of the display.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
@@ -27,28 +26,16 @@ noncomputable section
 
 /-- A proper negative reading and a top positive reading remain strictly
 ordered after receiving below a larger cutoff. -/
-theorem separator_of_cap {D : Type*} {w q : D → ExtOrd} {lo hi : D} {a δ : ExtOrd}
+theorem separator_of_cap {D : Type*} {w q : D → ExtOrd} {lo hi} {a δ}
     (hwlo : w lo = a) (hwhi : w hi = ⊤) (hδ : a < δ)
-    (hcap : ∀ d, min (q d) δ = min (w d) δ) : q lo < q hi := by
-  have hlo : q lo = a := (AmbientGradeCharts.eq_of_cap_below (hcap lo)
-    (hwlo.trans_lt hδ)).trans hwlo
-  have hhi : δ ≤ q hi := by
-    have he := hcap hi
-    rw [hwhi, min_top_left] at he
-    exact min_eq_right_iff.mp he
-  exact hlo.trans_lt (hδ.trans_le hhi)
+    (hcap : ∀ d, min (q d) δ = min (w d) δ) : q lo < q hi := by grind
 
 /-- Proper donor values are recovered by ordinary cap cancellation. -/
 theorem exact_of_cap_and_top {D X : Type*} {w q : D → ExtOrd} {p : X → ExtOrd}
-    (f : X → D) {δ : ExtOrd} (hw : ∀ d, w (f d) = p d)
+    (f : X → D) {δ} (hw : ∀ d, w (f d) = p d)
     (hcap : ∀ d, min (q d) δ = min (w d) δ)
     (hproper : ∀ d, p d ≠ ⊤ → p d < δ)
-    (htop : ∀ d, p d = ⊤ → q (f d) = ⊤) : ∀ d, q (f d) = p d := by
-  intro d
-  by_cases hd : p d = ⊤
-  · exact (htop d hd).trans hd.symm
-  · exact (AmbientGradeCharts.eq_of_cap_below (hcap (f d))
-      ((hw d).trans_lt (hproper d hd))).trans (hw d)
+    (htop : ∀ d, p d = ⊤ → q (f d) = ⊤) : ∀ d, q (f d) = p d := by grind
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n : ℕ}
@@ -58,19 +45,19 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 /-- The paired mechanism gives a supported whole display and an arbitrary-
 section exact readback certificate, at every native grade at least two. -/
 theorem paired_certificate (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
+    (hroot : ∀ i,
+      ∃ a,
         a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    (ht : t + 2 ≤ A.card) (r : ℕ) (hr : t + r + 2 ≤ A.card)
+    (ht : t + 2 ≤ A.card) r hr
     (hfull : t + r + 2 = A.card)
-    {S : State I.left I.right} (hS : F.Admissible (t + r + 2) S)
+    {S} (hS : F.Admissible (t + r + 2) S)
     (hdonor : S.u = F.p) (htop : S.v F.gap.c = ⊤)
     (hactive : LowSeparator.cutoffCut (t + 2) (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (build I F hroot hA hB hC (t + r) hr).carrier → ExtOrd,
+    ∃ w,
       RespectsSemantics (build I F hroot hA hB hC (t + r) hr).rows w ∧
       (∀ d, w (original I F hroot hA hB hC (t + r) hr d) = S.profile (field I d)) ∧
       (∀ d, OrbitPrefixSupport.Supported (t + r + 2) ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∀ q : Cell (build I F hroot hA hB hC (t + r) hr).carrier → ExtOrd,
+      ∀ q,
         RespectsSemantics (build I F hroot hA hB hC (t + r) hr).rows q →
         q (original I F hroot hA hB hC (t + r) hr (I.rightFace.map F.gap.c)) = ⊤ →
         q (original I F hroot hA hB hC (t + r) hr (I.rightFace.map F.gap.r.1)) = ⊤ →
@@ -100,18 +87,18 @@ theorem paired_certificate (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
 /-- Grade one has the same finite certificate, with the distinct rank-tip
 separator and the unrounded donor maximum. -/
 theorem rank_certificate (F : LowOnly.Family I.left I.right 1)
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
+    (hroot : ∀ i,
+      ∃ a,
         a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
     (t : ℕ) (ht : t + 2 ≤ A.card) (hfull : t + 2 = A.card)
-    {S : State I.left I.right} (hS : F.Admissible (t + 2) S)
+    {S} (hS : F.Admissible (t + 2) S)
     (hdonor : S.u = F.p) (htop : S.v F.gap.c = ⊤)
     (hactive : LowSeparator.donorMax (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (build I F hroot hA hB hC t ht).carrier → ExtOrd,
+    ∃ w,
       RespectsSemantics (build I F hroot hA hB hC t ht).rows w ∧
       (∀ d, w (original I F hroot hA hB hC t ht d) = S.profile (field I d)) ∧
       (∀ d, OrbitPrefixSupport.Supported (t + 2) ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∀ q : Cell (build I F hroot hA hB hC t ht).carrier → ExtOrd,
+      ∀ q,
         RespectsSemantics (build I F hroot hA hB hC t ht).rows q →
         q (original I F hroot hA hB hC t ht (I.rightFace.map F.gap.c)) = ⊤ →
         q (original I F hroot hA hB hC t ht (I.rightFace.map F.gap.r.1)) = ⊤ →
@@ -132,8 +119,7 @@ theorem rank_certificate (F : LowOnly.Family I.left I.right 1)
     have hm := LowSeparator.le_donorMax (LowSeparator.donorField F) S.profile
       (d := Sum.inl d) hd
     change S.u d ≤ _ at hm
-    rw [hdonor] at hm
-    exact hm.trans_lt hδ
+    grind
   · intro d hd
     let d' : I.left.scheme.below (effC n 1) :=
       ⟨d, Finset.subset_univ _, le_min (F.top_grade d hd) (gradeC_le d)⟩
@@ -152,10 +138,8 @@ theorem family_height {K : ℕ} (F : LowOnly.Family I.left I.right K) : K ≤ A.
 /-- Uniform finite certificate for every positive native grade, including
 the separate grade-one base. Both branches use the unchanged full carrier. -/
 theorem certificate {K : ℕ} (F : LowOnly.Family I.left I.right K)
-    (hroot : ∀ i : Cell I.common.scheme,
-      ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-        a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-    {S : State I.left I.right} (hS : F.Admissible A.card S)
+    hroot
+    {S} (hS : F.Admissible A.card S)
     (hdonor : S.u = F.p) (htop : S.v F.gap.c = ⊤)
     (hactive : LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < S.b) :
     ∃ w : Cell (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier → ExtOrd,

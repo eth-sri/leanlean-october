@@ -21,7 +21,6 @@ claim arbitrary cap-preserving extension of a joint boundary/controller history.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairBoundary
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotComparison SourcePrefixRows
 noncomputable section
@@ -76,13 +75,11 @@ theorem lower_row (c : Cell (lower sem j k hj hjA hk hkA))
   GradeCutPairRows.embedded_row D _ _ j k hj hjA hk hkA hp hjk.le sem _
     (overlap sem j k hj hjA hk hkA hp hjk) c d
 
-variable {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-
-variable {G : Finset ExtOrd} {C : ExtOrd}
+variable {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p)
 
 /-- Ordinary whole-boundary sections also allow literal top, independently
 of the proper-profile selected operator. There is no ambient-cap conclusion. -/
-theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
+theorem exists_whole {p} (hpr : RespectsSemantics sem p) :
     ∃ r : Cell (scheme sem j k hj hjA hk hkA) → ExtOrd,
       RespectsSemantics (rows sem j k hj hjA hk hkA hp hjk) r ∧
       ∀ d, r (old sem j k hj hjA hk hkA d) = p d := by

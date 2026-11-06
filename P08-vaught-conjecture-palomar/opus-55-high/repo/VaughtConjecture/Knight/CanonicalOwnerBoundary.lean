@@ -19,15 +19,14 @@ completion. No prospective new controller or new-domain lifting is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalOwnerBoundary
 open Transform Value ExtOrd SharpWitnessComposition OwnerLocalEndpoint
 open CanonicalPairedProfiles CoatomBoundaryExtension
 noncomputable section
 
-theorem endpoint_grid {X : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
-    (ha : a ∈ CanonicalPairedProfiles.inventory X j) (d : X) (hd : a d ≠ ⊥) :
-    ∃ b : ℕ, b ≤ 2 * Fintype.card X ∧
+theorem endpoint_grid {X} [Fintype X] {j} {a}
+    (ha : a ∈ CanonicalPairedProfiles.inventory X j) d (hd : a d ≠ ⊥) :
+    ∃ b, b ≤ 2 * Fintype.card X ∧
       endpoint j (a d) = CanonicalPairedInverse.grid j b := by
   rcases mem_codedAlphabet_iff.mp (inventory_coded X j ha d) with hb | ⟨b, n, hb, _, he⟩
   · exact (hd hb).elim
@@ -46,16 +45,13 @@ theorem endpoint_grid {X : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
       (by simp only [finitePart_mul_add, le_refl])]
     rfl
 
-theorem local_endpoint_grid {X Y : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
+theorem local_endpoint_grid {X Y} [Fintype X] {j} {a}
     (ha : a ∈ CanonicalPairedProfiles.inventory X j) (occ : Y → X)
-    {τ : ExtOrd → ExtOrd} {γ h : ExtOrd}
+    {τ} {γ h}
     (H : IsEndpoint j (a ∘ occ) τ γ h) (hpos : ⊥ < h) :
-    ∃ b : ℕ, b ≤ 2 * Fintype.card X ∧ h = CanonicalPairedInverse.grid j b := by
+    ∃ b, b ≤ 2 * Fintype.card X ∧ h = CanonicalPairedInverse.grid j b := by
   obtain ⟨d, _, hd⟩ := H.exists_witness
-  have hbot : a (occ d) ≠ ⊥ := by
-    intro hb
-    have he : h = ⊥ := hd.symm.trans (by rw [Function.comp_apply, hb]; rfl)
-    exact hpos.ne he.symm
+  have hbot : a (occ d) ≠ ⊥ := by aesop
   obtain ⟨b, hb, he⟩ := endpoint_grid ha (occ d) hbot
   exact ⟨b, hb, hd.symm.trans he⟩
 
@@ -64,8 +60,8 @@ The only lifting inputs are two actual old graded-pair clauses. They can be
 obtained from the respective old faces by `lift_of_restrictFace`; no new
 full-scope bountifulness is an input. -/
 theorem exists_completion
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {X : Type*} [Fintype X]
+    {ι : Type*} [DecidableEq ι] {A} {D : CellScheme A}
+    {sem} {X} [Fintype X]
     (c : Cell D) [Fintype (D.below (D.cell c))]
     {a : X → ExtOrd} (ha : a ∈ CanonicalPairedProfiles.inventory X (D.grade c))
     (occ : Cell D → X) (hs : RespectsSemantics sem (a ∘ occ))
@@ -120,12 +116,8 @@ theorem exists_completion
       · exact old.whole_left hcover ⟨d, hu⟩
       · exact old.whole_right hcover ⟨d, hv⟩
     exact (hrcap d).trans (congrArg (fun z => min z h) hold)
-  · intro e
-    rw [hrread, hfeq]
-    rfl
-  · intro e
-    rw [hrread]
-    exact hfread e
+  · simp_all
+  · grind
 
 end
 end VaughtConjecture.Knight.CanonicalOwnerBoundary

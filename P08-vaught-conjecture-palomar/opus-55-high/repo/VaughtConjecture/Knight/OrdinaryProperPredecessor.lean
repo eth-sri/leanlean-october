@@ -16,7 +16,6 @@ The full ambient scope is deliberately not completed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryProperPredecessor
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open OrdinaryScopeIteration
@@ -26,10 +25,10 @@ variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
 
 def initialScopes : Finset (Finset ι) := I.boundary.plan.filter (fun S => S ⊆ B ∨ S ⊆ C)
 
-theorem mem_initial {S : Finset ι} : S ∈ initialScopes I ↔ S ∈ R ∧ (S ⊆ B ∨ S ⊆ C) :=
+theorem mem_initial {S} : S ∈ initialScopes I ↔ S ∈ R ∧ (S ⊆ B ∨ S ⊆ C) :=
   Finset.mem_filter
 
-theorem initial_occupied (d : Cell I.boundary) : I.boundary.scope d ∈ initialScopes I :=
+theorem initial_occupied d : I.boundary.scope d ∈ initialScopes I :=
   mem_initial I |>.mpr ⟨I.boundary.scope_mem_plan d,
     (I.occupied_iff (I.boundary.cell_mem d)).mp ⟨d, rfl⟩⟩
 
@@ -61,7 +60,7 @@ def seed : State I.rows (initialScopes I) N G θ (initialScopes I) :=
       · subst BJ; exact lift_refl
       · exact I.inherited_lift hCI hBJ h he (mem_initial I |>.mp hscope).2)
 
-theorem small_scopes (hunion : A = B ∪ C) {S : Finset ι}
+theorem small_scopes (hunion : A = B ∪ C) {S}
     (hS : S ∈ R) (hcard : S.card ≤ 1) : S ∈ initialScopes I := by
   refine (mem_initial I).mpr ⟨hS, ?_⟩
   by_cases hs : S.Nonempty
@@ -96,13 +95,13 @@ def construct (hunion : A = B ∪ C) (hcard : A.card = N + 1)
 
 variable {N G θ} (X : Completed I N G θ)
 
-theorem proper (d : Cell X.state.carrier) : X.state.carrier.scope d ≠ A := by
+theorem proper d : X.state.carrier.scope d ≠ A := by
   intro he
   have hm := X.state.occupied d
   rw [he] at hm
   exact X.state.proper hm
 
-theorem complete {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hJA : J.1 ≠ A) :
+theorem complete {J} (hJ : J ∈ Plan.gradedPlan R) (hJA : J.1 ≠ A) :
     ∃ d, X.state.carrier.cell d = J :=
   X.state.complete J hJ (X.done J.1 (Plan.mem_gradedPlan.mp hJ).1 hJA)
 
@@ -151,7 +150,7 @@ theorem right_order : StrictMono (rightFace I X).map :=
 /-- Newly completed grade-N proper owners are mute; the private face is
 excluded explicitly, while its actual grade-N owners remain in the inventory. -/
 theorem nonprivate_mute (hcard : A.card = N + 1) (hB : B.card = N) (hC : C.card < N)
-    (d : Cell X.state.carrier) (hg : X.state.carrier.grade d = N)
+    d (hg : X.state.carrier.grade d = N)
     (hd : X.state.carrier.scope d ≠ B) : X.state.rows.E d ⟨d, GradedLe.refl _⟩ = ⊥ := by
   have hs := X.state.carrier.isPlan.subset_of_mem (X.state.carrier.scope_mem_plan d)
   have hlt := Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr ⟨hs, proper I X d⟩)

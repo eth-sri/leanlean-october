@@ -28,8 +28,6 @@ the preservation theorem, not a hidden finite-extension supply assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 
 open Transform Value ExtOrd
@@ -44,14 +42,17 @@ def Supported (K : ℕ) (grid : Set ExtOrd) (p : D → ExtOrd) (x : ExtOrd) : Pr
 
 /-- A replacement below a self-visible cut has its supporting value below that
 cut too. This supplies the strict inequality needed to use boundary fixation. -/
-theorem boundary_lt_of_orbit_lt {h : ExtOrd} (hh : SelfVis K h)
-    {d : D} {i : ℕ} (hx : extVisibilityReplace (p d) K i < h) : p d < h := by
+theorem boundary_lt_of_orbit_lt {h} (hh : SelfVis K h)
+    {d} {i} (hx : extVisibilityReplace (p d) K i < h) : p d < h := by
   by_contra hn
   exact (not_le_of_gt hx) (le_extVisibilityReplace_of_selfVis_le hh (le_of_not_gt hn))
 
+section
+variable {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd}
+
 /-- Clause 5 propagates fixation from the protected boundary to every supported
 hidden value below the cut, including replacement endpoints. -/
-theorem fixed_below {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
+theorem fixed_below (hw : Witness g σ)
     {h x : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
@@ -65,7 +66,7 @@ theorem fixed_below {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness 
 
 /-- Below the cut there is exact fixation; at and above it monotonicity and the
 cut's image preserve the capped reading. Literal top and bottom are included. -/
-theorem cap_fixed {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
+theorem cap_fixed (hw : Witness g σ)
     {h x : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
@@ -75,11 +76,13 @@ theorem cap_fixed {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g 
   · have hle := le_of_not_gt hx
     rw [min_eq_right hle, min_eq_right (hreach.trans (hw.mono hle))]
 
+end
+
 /-- A second row with the same source prefix keeps that prefix after decoding.
 Support is needed only for the protected row, not for the replacement row. -/
 theorem decode_agree {X : Type*} {a b : X → ExtOrd}
-    {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
-    {h : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K) (hreach : h ≤ σ h)
+    {g : ℕ → ExtOrd} {σ} (hw : Witness g σ)
+    {h} (hh : SelfVis K h) (hguard : h ≤ g K) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
     (hs : ∀ x, Supported K grid p (a x))
@@ -99,12 +102,12 @@ on arbitrary inherited rows. No short-source hypothesis or composition of
 faithful transformations is used. Existence of the lawful coded row remains an
 input; this theorem only decodes it and proves its legality and full cap agreement. -/
 theorem decode_respects_of_positive_cut
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {S : CellScheme A}
-    {sem : Semantics S} {BJ : Finset ι × ℕ} {a b : S.below BJ → ExtOrd}
-    {σ : ExtOrd → ExtOrd} (hw : Witness (gTop K) σ)
+    {ι} [DecidableEq ι] {A} {S : CellScheme A}
+    {sem : Semantics S} {BJ : Finset ι × ℕ} {a b}
+    {σ} (hw : Witness (gTop K) σ)
     (ha : RespectsSemanticsBelow sem BJ a) (hb : RespectsSemanticsBelow sem BJ b)
     (hK : ∀ d : S.below BJ, S.grade d.1 ≤ K)
-    {h : ExtOrd} (hh : SelfVis K h) (hpos : h ≠ ⊥) (hreach : h ≤ σ h)
+    {h} (hh : SelfVis K h) (hpos : h ≠ ⊥) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
     (hs : ∀ d, Supported K grid p (a d))

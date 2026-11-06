@@ -17,7 +17,6 @@ grade-dependent original projection. No cross-grade rendering equality occurs.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
@@ -40,7 +39,7 @@ variable (U : Finset ι) (hU : U ∈ R)
   (j : ℕ) (hj : j ≤ U.card) (hj0 : 1 ≤ j)
   {p : CellScheme.below (carrier I X T hA hB hC t ht) (U, j) → ExtOrd}
 
-def nativeArgument (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
+def nativeArgument c (hc : (P).carrier.scope c = A)
     (z : (D).below (U, j)) (hz : (D).grade z.1 ≤ (P).carrier.grade c) :
     (P).carrier.below ((P).carrier.cell c) :=
   ⟨erase I X T hA hB hC t ht z.1,
@@ -48,9 +47,9 @@ def nativeArgument (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
     (ScopeReplicationCarrier.erase_grade (P).carrier B C z.1).le.trans hz⟩
 
 theorem exists_owner_chart (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (c : Cell (P).carrier) (hc : (P).carrier.scope c = A) (hg : (P).carrier.grade c ≤ j) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop ((P).carrier.grade c)) τ ∧
-      ∀ (z : (D).below (U, j)) (hz : (D).grade z.1 ≤ (P).carrier.grade c),
+    c (hc : (P).carrier.scope c = A) (hg : (P).carrier.grade c ≤ j) :
+    ∃ τ, Witness (gTop ((P).carrier.grade c)) τ ∧
+      ∀ z hz,
         τ ((P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc z hz)) =
           min (p z) (p (place I X T hA hB hC t ht U hU hm j hj c hc hg)) := by
   let q := place I X T hA hB hC t ht U hU hm j hj c hc hg
@@ -59,7 +58,7 @@ theorem exists_owner_chart (hp : RespectsSemanticsBelow Rows (U, j) p)
     (c := self) (fun d => d.2.2) (hp.orderly q).symm (hp.locality q)
   have hgrade := congrArg Prod.snd (place_index I X T hA hB hC t ht U hU hm j hj c hc hg)
   change (D).grade q.1 = (P).carrier.grade c at hgrade
-  change Witness (gTop ((D).grade q.1)) τ at hτ
+  simp_all
   rw [hgrade] at hτ
   refine ⟨τ, hτ, ?_⟩
   intro z hz
@@ -104,8 +103,7 @@ theorem owner_recognition (f : Fld) :
 include hread in
 theorem owner_ceiling : τ (GrowthPaddedNativeRows.ceiling I O.birth) =
     p (place I X T hA hB hC t ht U hU hm j hj c hc hg) := by
-  have hz : (D).grade (place I X T hA hB hC t ht U hU hm j hj c hc hg).1 ≤
-      (P).carrier.grade c :=
+  have hz :=
     (congrArg Prod.snd (place_index I X T hA hB hC t ht U hU hm j hj c hc hg)).le
   have hr := hread (place I X T hA hB hC t ht U hU hm j hj c hc hg) hz
   have he : (P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc
@@ -113,8 +111,7 @@ theorem owner_ceiling : τ (GrowthPaddedNativeRows.ceiling I O.birth) =
         GrowthPaddedNativeRows.ceiling I O.birth :=
     ((P).rows.E_congr rfl (erase_place I X T hA hB hC t ht U hU hm j hj c hc hg)).trans
       O.row_diagonal
-  rw [he, min_self] at hr
-  exact hr
+  grind
 
 include O hread in
 /-- An actual earlier-grade occurrence, not just a numerical height bound. -/
@@ -122,7 +119,6 @@ theorem exists_lower_dominator (i : ℕ) (hi : 1 ≤ i) (hic : i ≤ (P).carrier
     ∃ d : (D).below (U, j), (D).cell d.1 = (U, i) ∧
       p (place I X T hA hB hC t ht U hU hm j hj c hc hg) ≤ p d := by
   have hbirth := congrArg Prod.snd O.owner_index
-  change (P).carrier.grade c = O.birth + 2 at hbirth
   obtain ⟨d, hd, hv⟩ := O.row_ceiling_at i hi (hic.trans_eq hbirth)
   have hds : (P).carrier.scope d.1 = A := congrArg Prod.fst hd
   have hdg : (P).carrier.grade d.1 = i := congrArg Prod.snd hd
@@ -130,7 +126,7 @@ theorem exists_lower_dominator (i : ℕ) (hi : 1 ≤ i) (hic : i ≤ (P).carrier
   have hzi : (D).cell z.1 = (U, i) :=
     (place_index I X T hA hB hC t ht U hU hm j hj _ _ _).trans
       (congrArg (fun k => (U, k)) hdg)
-  have hzg : (D).grade z.1 ≤ (P).carrier.grade c := (congrArg Prod.snd hzi).le.trans hic
+  have hzg := (congrArg Prod.snd hzi).le.trans hic
   have he : (P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc z hzg) =
       GrowthPaddedNativeRows.ceiling I O.birth :=
     ((P).rows.E_congr rfl (erase_place I X T hA hB hC t ht U hU hm j hj _ _ _)).trans hv
@@ -151,8 +147,7 @@ theorem owner_original_readback (z : (D).below (U, j)) (d : Cell I.boundary)
     rw [hz] at he
     have hi := congrArg Prod.snd (original_index I X T hA hB hC t ht d)
     have hb := congrArg Prod.snd O.owner_index
-    change (P).carrier.grade c = O.birth + 2 at hb
-    exact hi.symm.le.trans (he.le.trans (hzc.trans_eq hb))
+    simp_all
   have hd : GradedLe (I.boundary.cell d) (A, O.birth + 2) :=
     ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan d), hdg⟩
   have he : (P).rows.E c (nativeArgument I X T hA hB hC t ht U j c hc z hzc) =
@@ -170,10 +165,9 @@ def gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ) : ExtOrd := by
   exact (Finset.univ : Finset ((D).below (U, j))).sup fun z =>
     if (D).grade z.1 = i then p z else ⊥
 
-theorem le_gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ)
-    (z : (D).below (U, j)) (hz : (D).grade z.1 = i) :
+theorem le_gradeMax (p : (D).below (U, j) → ExtOrd) i
+    z (hz : (D).grade z.1 = i) :
     p z ≤ gradeMax I X T hA hB hC t ht U j p i := by
-  classical
   let _ := Fintype.ofFinite ((D).below (U, j))
   have h := Finset.le_sup (s := (Finset.univ : Finset ((D).below (U, j))))
     (f := fun w => if (D).grade w.1 = i then p w else ⊥) (Finset.mem_univ z)
@@ -181,14 +175,12 @@ theorem le_gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ)
 
 theorem chart_gradeMax {i : ℕ} (Ch : AmbientGradeCharts.Chart Rows (U, j) p i) :
     p Ch.owner = gradeMax I X T hA hB hC t ht U j p i := by
-  classical
-  let _ := Fintype.ofFinite ((D).below (U, j))
   refine le_antisymm (le_gradeMax I X T hA hB hC t ht U j p i _ Ch.grade) ?_
   apply Finset.sup_le
   intro z _
   split_ifs with hz
   · exact Ch.dominates z hz
-  · exact bot_le
+  · simp_all
 
 include hU hj in
 theorem exists_grade_chart (hp : RespectsSemanticsBelow Rows (U, j) p)
@@ -200,7 +192,7 @@ theorem exists_grade_chart (hp : RespectsSemanticsBelow Rows (U, j) p)
     ⟨⟨c, by rw [hc]; exact ⟨le_rfl, hij⟩⟩, hc⟩
 
 theorem exists_maximal_owner (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (i : ℕ) (hi : 1 ≤ i) (hij : i ≤ j) (hit : i ≤ t + 2) :
+    (i : ℕ) (hi : 1 ≤ i) hij (hit : i ≤ t + 2) :
     ∃ (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
       (hg : (P).carrier.grade c = i),
       p (place I X T hA hB hC t ht U hU hm j hj c hc (hg.le.trans hij)) =
@@ -239,7 +231,7 @@ theorem gradeMax_antitone (hp : RespectsSemanticsBelow Rows (U, j) p)
 /-- Exact present-original readback at every grade at least two on the fixed
 final carrier. Lower values are not clipped to a higher owner's maximum. -/
 theorem original_readback (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (z : (D).below (U, j)) (d : Cell I.boundary)
+    (z : (D).below (U, j)) d
     (hz : erase I X T hA hB hC t ht z.1 = original I X T hA hB hC t ht d)
     (hg2 : 2 ≤ (D).grade z.1) (hgt : (D).grade z.1 ≤ t + 2) :
     p z = min (shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d))

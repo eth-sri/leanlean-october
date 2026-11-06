@@ -16,7 +16,6 @@ No higher proper owner, lower controller, or occurrence is discarded.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeCutPairCarrier
 open Transform Value ExtOrd SourceLayerCarrier
 noncomputable section
@@ -40,7 +39,7 @@ def idx : (Cell D ⊕ Q) ⊕ R → Finset ι × ℕ
   | .inl (.inr _) => (A, j)
   | .inr _ => (A, k)
 
-theorem cell_idx (x : (Cell D ⊕ Q) ⊕ R) :
+theorem cell_idx x :
     (enlarged D Q R j k hj hjA hk hkA).cell (cell D Q R j k hj hjA hk hkA x) =
       idx D Q R j k x := by
   rcases x with (d | q) | r
@@ -59,13 +58,13 @@ def embed (d : Cell (small D Q R j k hj hjA hk hkA)) :=
     (Sum.map (Sum.map (GradeCutBoundary.toCell D k) id) id
       ((occEquiv (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA).symm d))
 
-theorem embed_cell (x : (Cell (GradeCutBoundary.scheme D k) ⊕ Q) ⊕ R) :
+theorem embed_cell x :
     embed D Q R j k hj hjA hk hkA
       (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA x) =
     cell D Q R j k hj hjA hk hkA (Sum.map (Sum.map (GradeCutBoundary.toCell D k) id) id x) := by
   simp only [embed, cell, Equiv.symm_apply_apply]
 
-theorem embed_index (d : Cell (small D Q R j k hj hjA hk hkA)) :
+theorem embed_index d :
     (enlarged D Q R j k hj hjA hk hkA).cell (embed D Q R j k hj hjA hk hkA d) =
       (small D Q R j k hj hjA hk hkA).cell d := by
   obtain ⟨x, rfl⟩ := (occEquiv (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA).surjective d
@@ -82,7 +81,7 @@ theorem embed_injective : Function.Injective (embed D Q R j k hj hjA hk hkA) := 
     ⟨(GradeCutBoundary.toCell D k).injective, Function.injective_id⟩,
       Function.injective_id⟩) ((occEquiv D Q R j k hj hjA hk hkA).injective h)
 
-theorem exhaustive (d : Cell (enlarged D Q R j k hj hjA hk hkA))
+theorem exhaustive d
     (hd : (enlarged D Q R j k hj hjA hk hkA).grade d ≤ k) :
     ∃ c, embed D Q R j k hj hjA hk hkA c = d := by
   obtain ⟨x, rfl⟩ := (occEquiv D Q R j k hj hjA hk hkA).surjective d
@@ -92,14 +91,16 @@ theorem exhaustive (d : Cell (enlarged D Q R j k hj hjA hk hkA))
   · obtain ⟨c, hc⟩ := GradeCutBoundary.exhaustive D k hd
     refine ⟨cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inl (.inl c)), ?_⟩
     rw [embed_cell]
-    change cell _ _ _ _ _ _ _ _ _ (.inl (.inl (GradeCutBoundary.toCell D k c))) = _
-    rw [hc]; rfl
+    aesop
   · exact ⟨cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inl (.inr q)),
       embed_cell D Q R j k hj hjA hk hkA _⟩
   · exact ⟨cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr r),
       embed_cell D Q R j k hj hjA hk hkA _⟩
 
-def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ k) :
+section
+variable (BJ : Finset ι × ℕ)
+
+def belowEquiv (hBJ : BJ.2 ≤ k) :
     (small D Q R j k hj hjA hk hkA).below BJ ≃
       (enlarged D Q R j k hj hjA hk hkA).below BJ :=
   Equiv.ofBijective (fun d => ⟨embed D Q R j k hj hjA hk hkA d.1, by
@@ -111,20 +112,22 @@ def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ k) :
       refine ⟨⟨c, ?_⟩, Subtype.ext hc⟩
       simpa only [← embed_index D Q R j k hj hjA hk hkA c, hc] using d.2⟩
 
-def properEquiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
+def properEquiv (hB : ¬ A ⊆ BJ.1) :
     D.below BJ ≃ (enlarged D Q R j k hj hjA hk hkA).below BJ :=
   (GradeCutLayerCarrier.properEquiv D Q j hj hjA BJ hB).trans
     (GradeCutLayerCarrier.properEquiv (lower D Q j hj hjA) R k hk hkA BJ hB)
 
-theorem small_grade (hjk : j ≤ k) (d : Cell (small D Q R j k hj hjA hk hkA)) :
+end
+
+theorem small_grade (hjk : j ≤ k) d :
     (small D Q R j k hj hjA hk hkA).grade d ≤ k := by
   obtain ⟨x, rfl⟩ := (occEquiv (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA).surjective d
   change (small D Q R j k hj hjA hk hkA).grade (cell _ _ _ _ _ _ _ _ _ x) ≤ k
   rw [CellScheme.grade, cell_idx]
   rcases x with (d | q) | r
   · exact GradeCutBoundary.grade_bound D k d
-  · exact hjk
-  · exact le_rfl
+  · aesop
+  · aesop
 
 end
 end VaughtConjecture.Knight.GradeCutPairCarrier

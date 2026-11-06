@@ -16,8 +16,6 @@ supplies it even when the old owner has the new controller's grade.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SeparatedSourceLayerCarrier
 
 open AmalgamationPlan Transform Value ExtOrd SourceLayerCarrier
@@ -26,7 +24,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 variable (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
 variable (hk : 0 < k) (hA : k ≤ A.card)
 
-theorem separated_of_proper (hp : ∀ d : Cell D, D.scope d ≠ A) :
+theorem separated_of_proper (hp : ∀ d, D.scope d ≠ A) :
     ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d) := by
   intro d hd
   exact hp d (Finset.Subset.antisymm
@@ -43,7 +41,10 @@ theorem below_old (x : Cell D ⊕ Q) (c : Cell D)
   | inl d => exact ⟨⟨d, h⟩, rfl⟩
   | inr q => exact False.elim (hseparated c h)
 
-noncomputable def ownerEquiv (c : Cell D) : D.below (D.cell c) ≃
+section
+variable (c : Cell D)
+
+noncomputable def ownerEquiv  : D.below (D.cell c) ≃
     (scheme D Q k hk hA).below ((scheme D Q k hk hA).cell (toCell D Q k hk hA (.inl c))) :=
   Equiv.ofBijective
     (fun d => ⟨toCell D Q k hk hA (.inl d.1), by
@@ -59,8 +60,10 @@ noncomputable def ownerEquiv (c : Cell D) : D.below (D.cell c) ≃
       change toCell D Q k hk hA (.inl d.1) = e.1
       rw [← hd, toCell_toOcc]⟩
 
-theorem ownerEquiv_val (c : Cell D) (d : D.below (D.cell c)) :
+theorem ownerEquiv_val (d : D.below (D.cell c)) :
     (ownerEquiv D Q k hk hA hseparated c d).1 = toCell D Q k hk hA (.inl d.1) := rfl
+
+end
 
 include hseparated in
 theorem old_not_full (d : Cell D) :
@@ -118,7 +121,10 @@ noncomputable def base : Semantics (scheme D Q k hk hA) where
         ((scheme D Q k hk hA).cell d.1).2 ((scheme D Q k hk hA).cell d.1).2
     simpa only [cell_eq] using hv.symm
 
-theorem base_old (c : Cell D) (d : D.below (D.cell c)) :
+section
+variable (c : Cell D)
+
+theorem base_old (d : D.below (D.cell c)) :
     (base D Q k hk hA hseparated sem).E (toCell D Q k hk hA (.inl c))
       (ownerEquiv D Q k hk hA hseparated c d) = sem.E c d := by
   change oldTable D Q sem (toOcc D Q k hk hA (toCell D Q k hk hA (.inl c)))
@@ -126,8 +132,7 @@ theorem base_old (c : Cell D) (d : D.below (D.cell c)) :
   rw [ownerEquiv_val, toOcc_toCell, toOcc_toCell]
   exact AmalgamatedBoundaryRows.total_below sem c d
 
-theorem base_respects_iff (c : Cell D)
-    (p : (scheme D Q k hk hA).below
+theorem base_respects_iff (p : (scheme D Q k hk hA).below
       ((scheme D Q k hk hA).cell (toCell D Q k hk hA (.inl c))) → ExtOrd) :
     RespectsSemanticsBelow (base D Q k hk hA hseparated sem) _ p ↔
       RespectsSemanticsBelow sem (D.cell c) (p ∘ ownerEquiv D Q k hk hA hseparated c) := by
@@ -138,12 +143,13 @@ theorem base_respects_iff (c : Cell D)
   · have he : (p ∘ ownerEquiv D Q k hk hA hseparated c) ∘
         (ownerEquiv D Q k hk hA hseparated c).symm = p := by
       funext d; simp only [Function.comp_apply, Equiv.apply_symm_apply]
-    rw [he] at h
-    exact h.symm
+    grind
   · change D.scope d.1 ⊆ D.scope e.1 ↔
       ((scheme D Q k hk hA).cell (toCell D Q k hk hA (.inl d.1))).1 ⊆
       ((scheme D Q k hk hA).cell (toCell D Q k hk hA (.inl e.1))).1
     rw [cell_toCell, cell_toCell]
     rfl
   · exact (base_old D Q k hk hA hseparated sem b.1 d).symm
+
+end
 end VaughtConjecture.Knight.SeparatedSourceLayerCarrier

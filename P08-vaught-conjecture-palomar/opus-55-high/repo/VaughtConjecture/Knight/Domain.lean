@@ -78,32 +78,32 @@ open CellScheme.restrictFace (toCell belowMap)
 
 /-! ### Extensionality by components -/
 
+section
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D₁ D₂ : CellScheme A}
+
 /-- Two cell schemes are equal when their plans, sizes and cells agree, the cells of the
 first read through `Fin.cast` (so no `HEq` on the cell function). -/
-theorem CellScheme.ext_of_components {ι : Type*} [DecidableEq ι] {A : Finset ι}
-    {D₁ D₂ : CellScheme A} (h_plan : D₁.plan = D₂.plan) (h_card : D₁.card = D₂.card)
+theorem CellScheme.ext_of_components (h_plan : D₁.plan = D₂.plan) (h_card : D₁.card = D₂.card)
     (h_cell : ∀ i, D₁.cell (Fin.cast h_card.symm i) = D₂.cell i) : D₁ = D₂ := by
   obtain ⟨P₁, ip₁, c₁, cl₁, cm₁⟩ := D₁
   obtain ⟨P₂, ip₂, c₂, cl₂, cm₂⟩ := D₂
   dsimp only at h_plan h_card h_cell
-  subst h_plan h_card
-  simp only [Fin.cast_eq_self] at h_cell
-  obtain rfl := funext h_cell
-  rfl
+  aesop
 
 /-- The cells of propositionally equal schemes correspond along `Fin.cast`. -/
-theorem CellScheme.cell_cast_of_eq {ι : Type*} [DecidableEq ι] {A : Finset ι}
-    {D₁ D₂ : CellScheme A} (h : D₁ = D₂) (i : Cell D₂) :
+theorem CellScheme.cell_cast_of_eq h (i : Cell D₂) :
     D₁.cell (Fin.cast (congrArg CellScheme.card h).symm i) = D₂.cell i := by
   subst h; rfl
+
+end
 
 /-- Two domains with associated semantics are equal when their plans, sizes, cells and rows
 agree, the components of the first read through `Fin.cast` (the analogue of
 `StageType.ext_of_components`; no `HEq`). -/
-theorem SemScheme.ext_of_components {n : ℕ} {D₁ D₂ : SemScheme n}
+theorem SemScheme.ext_of_components {n} {D₁ D₂ : SemScheme n}
     (h_plan : D₁.scheme.plan = D₂.scheme.plan) (h_card : D₁.scheme.card = D₂.scheme.card)
     (h_cell : ∀ i, D₁.scheme.cell (Fin.cast h_card.symm i) = D₂.scheme.cell i)
-    (h_row : ∀ (Sig : Cell D₂.scheme) (d : D₂.scheme.below (D₂.scheme.cell Sig)),
+    (h_row : ∀ (Sig : Cell D₂.scheme) d,
       D₁.rows.E (Fin.cast h_card.symm Sig)
         ⟨Fin.cast h_card.symm d.1, by rw [h_cell d.1, h_cell Sig]; exact d.2⟩ =
       D₂.rows.E Sig d) :
@@ -114,8 +114,7 @@ theorem SemScheme.ext_of_components {n : ℕ} {D₁ D₂ : SemScheme n}
   subst h_plan h_card
   simp only [Fin.cast_eq_self] at h_cell h_row
   obtain rfl := funext h_cell
-  obtain rfl : s₁ = s₂ := Semantics.ext (funext fun Sig => funext fun d => h_row Sig d)
-  rfl
+  aesop
 
 /-! ### One-point extension of a plan on `Fin n` -/
 
@@ -129,8 +128,8 @@ variable {n : ℕ}
 new point; `Plan.isPlan_extend_one` transported to `Fin`): a plan on `Fin (n+1)` in which the
 initial segment `ι_{n,n+1}[Fin n]` is visible and the visible faces inside it are exactly the
 pushed-forward faces of `P`. -/
-theorem exists_extendOne_fin {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.univ P) :
-    ∃ Q : Finset (Finset (Fin (n + 1))), IsPlan Finset.univ Q ∧
+theorem exists_extendOne_fin {P} (hP : IsPlan Finset.univ P) :
+    ∃ Q, IsPlan Finset.univ Q ∧
       Finset.univ.image Fin.castSuccEmb ∈ Q ∧
       ∀ C : Finset (Fin n), C.image Fin.castSuccEmb ∈ Q ↔ C ∈ P := by
   set A : Finset (Fin (n + 1)) := Finset.univ.image Fin.castSuccEmb with hA
@@ -140,13 +139,7 @@ theorem exists_extendOne_fin {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.u
     exact fun i => Fin.castSucc_ne_last i
   have hP₀ : IsPlan A (P.image (Finset.image Fin.castSuccEmb)) := isPlan_image _ hP
   obtain ⟨Q, hQ, hAQ, hres⟩ := isPlan_extend_one hx hP₀
-  have huniv : A ∪ {Fin.last n} = Finset.univ := by
-    ext y
-    simp only [Finset.mem_union, Finset.mem_singleton, Finset.mem_univ, iff_true, hA,
-      Finset.mem_image, Finset.mem_univ, true_and, Fin.coe_castSuccEmb]
-    rcases Fin.eq_castSucc_or_eq_last y with ⟨j, rfl⟩ | rfl
-    · exact Or.inl ⟨j, rfl⟩
-    · exact Or.inr rfl
+  have huniv : A ∪ {Fin.last n} = Finset.univ := by simp_all
   refine ⟨Q, huniv ▸ hQ, hAQ, fun C => ?_⟩
   have hsub : C.image Fin.castSuccEmb ⊆ A :=
     Finset.image_subset_image (Finset.subset_univ _)
@@ -227,14 +220,6 @@ noncomputable def extendOne : CellScheme (ι := Fin (n + 1)) Finset.univ where
   Fin.append_left (fun i => pushGraded Fin.castSuccEmb (C.cell i))
     (fun j => (C.newPairs.equivFin.symm j).1) i
 
-@[simp] theorem extendOne_scope_castAdd (i : Cell C) :
-    C.extendOne.scope (Fin.castAdd C.newPairs.card i) = (C.scope i).image Fin.castSuccEmb :=
-  congrArg Prod.fst (extendOne_cell_castAdd C i)
-
-@[simp] theorem extendOne_grade_castAdd (i : Cell C) :
-    C.extendOne.grade (Fin.castAdd C.newPairs.card i) = C.grade i :=
-  congrArg Prod.snd (extendOne_cell_castAdd C i)
-
 @[simp] theorem extendOne_cell_natAdd (j : Fin C.newPairs.card) :
     C.extendOne.cell (Fin.natAdd C.card j) = (C.newPairs.equivFin.symm j).1 :=
   Fin.append_right (fun i => pushGraded Fin.castSuccEmb (C.cell i))
@@ -286,23 +271,16 @@ def Semantics.mute (D : CellScheme A) : Semantics D where
   E _ _ := ⊥
   orderly _ _ := (extVisibilityReplace_bot _ _).symm
 
-@[simp] theorem Semantics.mute_E (Sig : Cell D) (d : D.below (D.cell Sig)) :
-    (Semantics.mute D).E Sig d = ⊥ := rfl
-
 /-- The constantly-`−∞` labelling of a lower set respects the mute semantics there. -/
-theorem RespectsSemanticsBelow.mute (BJ : Finset ι × ℕ) :
+theorem RespectsSemanticsBelow.mute BJ :
     RespectsSemanticsBelow (Semantics.mute D) BJ (fun _ => ⊥) :=
   RespectsSemanticsBelow.bot _ _
-
-/-- The constantly-`−∞` labelling respects the mute semantics. -/
-theorem RespectsSemantics.mute : RespectsSemantics (Semantics.mute D) (fun _ => ⊥) :=
-  RespectsSemantics.bot _
 
 /-- A cell whose row is `−∞` on its own diagonal is forced to the label `−∞`: locality at the
 cell itself reads `min (r Σ) (r Σ) = min (σ ⊥) (g _) = ⊥`.  So the only labelling of a lower set
 respecting the mute semantics is `−∞`. -/
-theorem RespectsSemanticsBelow.eq_bot_of_mute {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    (h : RespectsSemanticsBelow (Semantics.mute D) BJ r) (d : D.below BJ) : r d = ⊥ :=
+theorem RespectsSemanticsBelow.eq_bot_of_mute {BJ} {r}
+    (h : RespectsSemanticsBelow (Semantics.mute D) BJ r) d : r d = ⊥ :=
   h.eq_bot_of_diagonal d rfl
 
 end Mute
@@ -328,16 +306,6 @@ noncomputable def mute (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComp
       fun d => (hp.eq_bot_of_mute d).symm⟩
   complete := hC
 
-@[simp] theorem mute_scheme (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComplete) :
-    (mute C hC).scheme = C := rfl
-
-/-- A domain is **mute** when all its rows are constantly `−∞`. -/
-def IsMute (D : SemScheme n) : Prop :=
-  ∀ (Sig : Cell D.scheme) (d : D.scheme.below (D.scheme.cell Sig)), D.rows.E Sig d = ⊥
-
-theorem IsMute.rows_eq {D : SemScheme n} (hD : D.IsMute) : D.rows = Semantics.mute D.scheme :=
-  Semantics.ext (funext fun Sig => funext fun d => hD Sig d)
-
 /-- **One-point extension**: the mute domain on the one-point extension of the cell scheme of
 `D` (`CellScheme.extendOne`).  It is a domain on `n+1` whose face restriction along the initial
 segment is the mute domain on `D`'s scheme — so it extends `D` itself (`ExtendsDomain`) exactly
@@ -350,17 +318,11 @@ noncomputable def muteExtendOne (D : SemScheme n) : SemScheme (n + 1) :=
 
 variable (D : SemScheme n)
 
-@[simp] theorem muteExtendOne_scheme : D.muteExtendOne.scheme = D.scheme.extendOne := rfl
-
 /-- The chain of mute domains `D₀ ⊂ D₁ ⊂ ⋯`: the empty domain, extended one point at a
 time. -/
 noncomputable def muteChain : (n : ℕ) → SemScheme n
   | 0 => StageType.emptySemScheme
   | n + 1 => (muteChain n).muteExtendOne
-
-/-- Domains with associated semantics exist at every arity (the positive-arity obligation of
-#41; Knight: Lemma 4.2.2 at arity 1, amalgamation beyond). -/
-instance nonempty (n : ℕ) : Nonempty (SemScheme n) := ⟨muteChain n⟩
 
 end SemScheme
 
@@ -370,16 +332,21 @@ namespace StageType
 
 variable {α : Ordinal.{0}} {n : ℕ}
 
+section
+variable (C : CellScheme (ι := Fin (n + 1)) Finset.univ)
+
 /-- Every cell of a scheme on `Fin (n+1)` lies below the full-grade pair `(univ, n+1)`. -/
-theorem gradedLe_univ_succ (C : CellScheme (ι := Fin (n + 1)) Finset.univ) (d : Cell C) :
+theorem gradedLe_univ_succ (d : Cell C) :
     GradedLe (C.cell d) (Finset.univ, n + 1) :=
   ⟨Finset.subset_univ _, (C.grade_le_card_scope d).trans
     (by simpa using Finset.card_le_univ (C.scope d))⟩
 
 /-- The full-grade pair `(univ, n+1)` lies in the graded plan of every scheme on `Fin (n+1)`. -/
-theorem univ_succ_mem_gradedPlan (C : CellScheme (ι := Fin (n + 1)) Finset.univ) :
+theorem univ_succ_mem_gradedPlan  :
     (Finset.univ, n + 1) ∈ Plan.gradedPlan C.plan :=
   Plan.mem_gradedPlan.mpr ⟨C.isPlan.domain_mem, Nat.succ_pos _, by simp⟩
+
+end
 
 /-- **Every domain carries a stage type** (Knight, Prop. 4.3.24): for a domain `D` on
 `Fin (n+1)` and a limit stage `α`, the row `E(Σ)` of a full-grade cell `Σ ∈ D^{A,|A|}` (which
@@ -397,25 +364,12 @@ noncomputable def ofScheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) 
     label_bound := fun _ => truncExt_bound α _
     respects := ((D.consistent Sig).toRespects hall).truncate hα }
 
-@[simp] theorem ofScheme_scheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) :
-    (ofScheme hα D).scheme = D := rfl
-
 /-- The stage types of every arity are nonempty at every limit stage: `emptyType` at arity 0,
 `ofScheme` on the mute domain `SemScheme.muteChain` beyond. -/
-theorem nonempty (hα : Order.IsSuccLimit α) (n : ℕ) : Nonempty (S α n) := by
+theorem nonempty (hα : Order.IsSuccLimit α) n : Nonempty (S α n) := by
   cases n with
   | zero => exact ⟨emptyType⟩
   | succ n => exact ⟨ofScheme hα (SemScheme.muteChain (n + 1))⟩
-
-/-- The stage type on a mute domain at any stage: all labels `−∞`. -/
-noncomputable def mute (D : SemScheme n) (hD : D.IsMute) : S α n where
-  scheme := D
-  label _ := ⊥
-  label_bound _ := Or.inl (bot_lt_ofOrd α)
-  respects := by rw [hD.rows_eq]; exact RespectsSemantics.mute
-
-@[simp] theorem mute_scheme (D : SemScheme n) (hD : D.IsMute) :
-    (mute (α := α) D hD).scheme = D := rfl
 
 end StageType
 

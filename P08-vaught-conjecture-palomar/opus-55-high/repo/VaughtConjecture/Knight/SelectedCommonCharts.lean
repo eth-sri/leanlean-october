@@ -57,20 +57,23 @@ def selectedChartFamily (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) �
   {x | ∃ nd, Good nd ∧ ∃ σ : Fin x.1 → Fin nd.arity,
     nd.tuple₁ ∘ σ = x.2.1 ∧ nd.tuple₂ ∘ σ = x.2.2}
 
+section
+variable {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop} {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)}
+
 /-- A good chart's own tuple pair is selected, by the identity selection. -/
-theorem node_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)} (hnd : Good nd) :
+theorem node_mem_selectedChartFamily (hnd : Good nd) :
     (⟨nd.arity, ⇑nd.tuple₁, ⇑nd.tuple₂⟩ : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈
       selectedChartFamily Good :=
   ⟨nd, hnd, id, rfl, rfl⟩
 
 /-- The empty pair is selected from any good chart, by the empty selection. -/
 theorem selectedChartFamily_empty_mem
-    {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)} (hnd : Good nd) :
+    (hnd : Good nd) :
     (⟨0, Fin.elim0, Fin.elim0⟩ : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈
       selectedChartFamily Good :=
   ⟨nd, hnd, Fin.elim0, funext fun i => i.elim0, funext fun i => i.elim0⟩
+
+end
 
 /-- Every selected pair is certified by the common chart containing it. -/
 theorem selectedChartFamily_commonChart
@@ -79,13 +82,15 @@ theorem selectedChartFamily_commonChart
   rintro x ⟨nd, -, σ, hσ₁, hσ₂⟩
   exact ⟨nd.arity, nd.tuple₁, nd.tuple₂, σ, nd.type, nd.eval₁, nd.eval₂, hσ₁, hσ₂⟩
 
+section
+variable {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
+
 /-- One good extension of a containing chart selects the pair enlarged by any coordinate of the
 next chart: the old selection is pushed forward along the extension embedding. -/
-theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {x : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)} {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)}
-    {z : M₁ ⊕ M₂} (d : GoodCommonChartExtension Good nd z) {σ : Fin x.1 → Fin nd.arity}
+theorem snoc_mem_selectedChartFamily {x : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)} {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)}
+    {z} (d : GoodCommonChartExtension Good nd z) {σ}
     (hσ₁ : nd.tuple₁ ∘ σ = x.2.1) (hσ₂ : nd.tuple₂ ∘ σ = x.2.2)
-    (j : Fin d.extension.next.arity) :
+    j :
     (⟨x.1 + 1, Fin.snoc x.2.1 (d.extension.next.tuple₁ j),
       Fin.snoc x.2.2 (d.extension.next.tuple₂ j)⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
@@ -96,8 +101,7 @@ theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A�
     rfl
 
 /-- Forth: the restricted supply at the good containing chart absorbs the requested point. -/
-theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
+theorem selectedChartFamily_forth (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
     ∀ x ∈ selectedChartFamily Good, ∀ m : M₁, ∃ n' : M₂,
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
@@ -108,8 +112,7 @@ theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ :
   exact ⟨_, snoc_mem_selectedChartFamily d hσ₁ hσ₂ j⟩
 
 /-- Back: the restricted supply at the good containing chart absorbs the requested point. -/
-theorem selectedChartFamily_back {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
+theorem selectedChartFamily_back (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
     ∀ x ∈ selectedChartFamily Good, ∀ n' : M₂, ∃ m : M₁,
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
@@ -118,6 +121,8 @@ theorem selectedChartFamily_back {Good : CommonChartNode (A₁ := A₁) (A₂ :=
   obtain ⟨j, hj⟩ := d.extension.serves_right n' rfl
   rw [← hj]
   exact ⟨_, snoc_mem_selectedChartFamily d hσ₁ hσ₂ j⟩
+
+end
 
 /-- Unrestricted one-step supply is restricted supply for the predicate selecting every chart. -/
 theorem restrictedCommonChartStepSupply_true

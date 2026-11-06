@@ -35,14 +35,8 @@ theorem srcP_nonTop_lt_top (o : P.scheme.below (BJ)) (ho : p o.1 = ⊤)
     (grade := fun d : P.scheme.below (P.scheme.cell o.1) => P.scheme.grade d.1)
     (c := ⟨o.1, GradedLe.refl _⟩) (p := fun d => p d.1) (fun d => d.2.2)
     (hp.orderly o).symm (hp.locality o)
-  have hd' : τ (P.rows.E o.1 d) = p d.1 := by
-    rw [hread]
-    change min (p d.1) (p o.1) = _
-    rw [ho, min_top_right]
-  have ht' : τ (P.rows.E o.1 t) = ⊤ := by
-    rw [hread]
-    change min (p t.1) (p o.1) = _
-    rw [ho, ht, min_top_right]
+  have hd' : τ (P.rows.E o.1 d) = p d.1 := by grind
+  have ht' : τ (P.rows.E o.1 t) = ⊤ := by grind
   by_contra hle
   have h := hτ.mono (not_lt.mp hle)
   rw [ht', hτ.comm_gTop _ le_rfl, hd', top_le_iff] at h
@@ -56,13 +50,16 @@ noncomputable def retargetTops (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd
     (d : P.scheme.below (BJ)) : ExtOrd :=
   if p d.1 = ⊤ then η else u d
 
-theorem retargetTops_of_top (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by
+section
+variable (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd) {d : P.scheme.below (BJ)}
+
+theorem retargetTops_of_top (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by
   unfold retargetTops; rw [ite_eq_left h]
 
-theorem retargetTops_of_nonTop (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by
+theorem retargetTops_of_nonTop (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by
   unfold retargetTops; rw [ite_eq_right h]
+
+end
 
 section Retarget
 
@@ -101,7 +98,7 @@ theorem RetargetData.srcMax_selfVis (o : P.scheme.below (BJ)) :
 
 omit hu in
 theorem RetargetData.le_srcMax (o : P.scheme.below (BJ))
-    {d : P.scheme.below (P.scheme.cell o.1)} (hd : p d.1 ≠ ⊤) :
+    {d} (hd : p d.1 ≠ ⊤) :
     P.rows.E o.1 d ≤ RetargetData.srcMax (p := p) o := by
   let _ := Fintype.ofFinite (P.scheme.below (P.scheme.cell o.1))
   exact (TopSupport.le_evr_self _ _).trans (Finset.le_sup (f := fun d =>
@@ -122,7 +119,6 @@ theorem RetargetData.srcMax_lt_top (o : P.scheme.below (BJ)) (ho : p o.1 = ⊤)
       (c := ⟨o.1, GradedLe.refl _⟩) (p := fun d => p d.1) (fun d => d.2.2)
       (hp.orderly o).symm (hp.locality o)
     have h := hread t
-    change τ (P.rows.E o.1 t) = min (p t.1) (p o.1) at h
     rw [ht, ho, min_top_right] at h
     apply bot_lt_iff_ne_bot.mpr
     intro hbot
@@ -169,13 +165,13 @@ theorem RetargetData.retargetTops_respects
         gTop_of_le d.2.2
       rw [hg, min_top_right, retargetTops_of_top η u ho]
       by_cases hd : p d.1 = ⊤
-      · rw [retargetTops_of_top η u (d := CellScheme.below.incl o d) hd, min_self]
+      · rw [retargetTops_of_top η u hd, min_self]
         have hne : τ (P.rows.E o.1 d) ≠ ⊥ := by
           rw [hread]
           change min (u (CellScheme.below.incl o d)) (u o) ≠ ⊥
           exact ne_bot_of_gt (lt_min (hu.top_pos hd) (hu.top_pos ho))
         rw [retargetShifter_of_lt hne (RetargetData.srcMax_lt_top (p := p) hp o ho hd)]
-      · rw [retargetTops_of_nonTop η u (d := CellScheme.below.incl o d) hd,
+      · rw [retargetTops_of_nonTop η u hd,
           retargetShifter_of_le (RetargetData.le_srcMax (p := p) o hd), hread]
         change min (u (CellScheme.below.incl o d)) η = min (u (CellScheme.below.incl o d)) (u o)
         rw [min_eq_left ((hu.nonTop_lt _ hd).le.trans hu.b_le_η),
@@ -189,10 +185,10 @@ theorem RetargetData.retargetTops_respects
         funext d
         rw [retargetTops_of_nonTop η u ho]
         by_cases hd : p d.1 = ⊤
-        · rw [retargetTops_of_top η u (d := CellScheme.below.incl o d) hd,
+        · rw [retargetTops_of_top η u hd,
             min_eq_right ((hu.nonTop_lt o ho).le.trans hu.b_le_η),
             min_eq_right ((hu.nonTop_lt o ho).le.trans (hu.top_ge _ hd))]
-        · rw [retargetTops_of_nonTop η u (d := CellScheme.below.incl o d) hd]
+        · rw [retargetTops_of_nonTop η u hd]
       rw [heq]; exact key
   availability Sig Xi₀ hs hg := by
     by_cases hS : p Sig.1 = ⊤

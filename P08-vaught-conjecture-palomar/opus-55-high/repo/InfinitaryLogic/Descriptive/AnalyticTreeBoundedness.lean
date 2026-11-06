@@ -183,9 +183,9 @@ private def witnessHom (f : (ℕ → ℕ) → X) (T : X → tree ℕ) (y : ℕ �
 set `{x | s ∈ T x}` is closed, and `T x` is well-founded for `x ∈ A`, then one countable ordinal
 strictly bounds the heights of all the trees `T x` with `x ∈ A`. -/
 theorem analytic_tree_rank_bounded [TopologicalSpace X] {A : Set X} (hA : AnalyticSet A)
-    (T : X → tree ℕ) (hT : ∀ s : List ℕ, IsClosed {x | s ∈ T x})
+    (T : X → tree ℕ) (hT : ∀ s, IsClosed {x | s ∈ T x})
     (hwf : ∀ x ∈ A, WellFounded (extBelow (T x))) :
-    ∃ β : Ordinal.{0}, β < Ordinal.omega 1 ∧
+    ∃ β, β < Ordinal.omega 1 ∧
       ∀ x (hx : x ∈ A), @treeHeight (T x) (hwf x hx) < β := by
   rw [AnalyticSet] at hA
   rcases hA with rfl | ⟨f, hf, rfl⟩

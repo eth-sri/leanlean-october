@@ -20,7 +20,6 @@ No bountifulness of higher outputs is claimed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedInstallation
 open Transform Value ExtOrd CappedDonor Growth GrowthOrderedBase GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedStepRows
@@ -33,13 +32,14 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {semA : Semantics DA} {semQ : Semantics DQ}
   (X : RelativeData DA semA DQ semQ)
 
-theorem field_coded {j : ℕ} (a : Catalogue X j) (d : Field DA DQ) :
+theorem field_coded {j} a d :
     IsCodedLabel j (fields X j a d) := by
   rcases mem_codedAlphabet_iff.mp
       (CanonicalPairedProfiles.inventory_coded (Field DA DQ) j a.property.1 d)
       with hb | ⟨b, i, _, hi, he⟩
-  · exact Or.inl hb
-  · exact Or.inr ⟨b, i, hi, he⟩
+  · tauto
+  · tauto
+
 end Fields
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -53,7 +53,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 theorem initial_coded : (initial I X attach hA hB hC).rows.IsCoded := by
   let J := GrowthPaddedSuccessor.input I X attach hA hB hC
   apply CanonicalCodingSupport.layer J.lower
-    (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty))
+    (LadderWeightedSuccessor.Input.Node)
     2 (by decide) hA J.separation J.lowerRows J.rows
     (RelativeLadderLayer.coded I.boundary I.rows (by omega)
       (field I) (fields X 1) (proper I hB hC) I.coded) J.inherited_row
@@ -61,8 +61,6 @@ theorem initial_coded : (initial I X attach hA hB hC).rows.IsCoded := by
   cases v with
   | some v => exact Empty.elim v
   | none =>
-    change IsCodedLabel 2 ((GrowthPaddedSuccessor.rows I X attach hA hB hC).E
-      (GrowthPaddedSuccessor.leaf I X attach hA hB hC a) d)
     rw [GrowthPaddedSuccessor.leaf_row]
     exact CanonicalCodingSupport.supported
       (fun _ hz => CanonicalCodingSupport.grid _ _ hz) (field_coded X a)
@@ -77,13 +75,12 @@ theorem successor_coded (hc : P.rows.IsCoded) : (successor P hk hnext).rows.IsCo
     (Nat.succ_pos k) hnext (P.separated I X attach hA hB hC (by omega))
     P.rows (rows P hk hnext) hc (inherited_row P hk hnext)
   intro a d
-  change IsCodedLabel (k + 1) ((rows P hk hnext).E (controller P hnext a).1 d)
   have he := (data P hk hnext).row_new (controller P hnext a) d
   exact he.symm ▸ CanonicalCodingSupport.supported
     (fun _ hz => CanonicalCodingSupport.grid _ _ hz) (field_coded X a)
     (source_supported P hk hnext a d.1)
 
-def successor_face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+def successor_face {T} {E : CellScheme T} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows P.rows) (hT : ¬ A ⊆ T) :
     ExactSemanticFace oldRows (successor P hk hnext).rows :=
   SeparatedLayerFace.face P.carrier (Catalogue X (k + 1)) (k + 1)
@@ -92,7 +89,7 @@ def successor_face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
 
 end Successor
 
-theorem build_coded (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_coded t ht :
     (build I X attach hA hB hC t ht).rows.IsCoded := by
   induction t with
   | zero => exact initial_coded I X attach hA hB hC
@@ -106,9 +103,9 @@ def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
   | t + 1, ht => successor_face (build I X attach hA hB hC t (by omega))
       (by omega) ht (face G hT t (by omega)) hT
 
-theorem face_map {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+theorem face_map {T} {E} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T)
-    (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell E) :
+    t ht d :
     (face I X attach hA hB hC G hT t ht).map d =
       (build I X attach hA hB hC t ht).baseMap
         (RelativeLadderLayer.old I.boundary (by omega) (G.map d)) := by
@@ -117,39 +114,49 @@ theorem face_map {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
   | succ t ih =>
     exact congrArg (old (build I X attach hA hB hC t (by omega)) (by omega)) (ih (by omega))
 
-def donorFace (t : ℕ) (ht : t + 2 ≤ A.card) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+def donorFace  :
     ExactSemanticFace I.leftRows (build I X attach hA hB hC t ht).rows :=
   face I X attach hA hB hC I.leftFace hB.not_ge t ht
 
-def privateFace (t : ℕ) (ht : t + 2 ≤ A.card) :
+def privateFace  :
     ExactSemanticFace I.rightRows (build I X attach hA hB hC t ht).rows :=
   face I X attach hA hB hC I.rightFace hC.not_ge t ht
 
-theorem donor_order (t : ℕ) (ht : t + 2 ≤ A.card) :
+end
+
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+theorem donor_order  :
     StrictMono (donorFace I X attach hA hB hC t ht).map := by
   have he := funext (face_map I X attach hA hB hC I.leftFace hB.not_ge t ht)
   change StrictMono (face I X attach hA hB hC I.leftFace hB.not_ge t ht).map
-  rw [he]
+  simp_all
   exact (build I X attach hA hB hC t ht).base_mono.comp
     ((SourceLayerCarrier.old_order _ _ _ _ _).comp I.left_order)
 
-theorem private_order (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem private_order  :
     StrictMono (privateFace I X attach hA hB hC t ht).map := by
   have he := funext (face_map I X attach hA hB hC I.rightFace hC.not_ge t ht)
   change StrictMono (face I X attach hA hB hC I.rightFace hC.not_ge t ht).map
-  rw [he]
+  simp_all
   exact (build I X attach hA hB hC t ht).base_mono.comp
     ((SourceLayerCarrier.old_order _ _ _ _ _).comp I.right_order)
 
 /-- Every installed full-scope grade has an actual owner, obtained from the
 constructed ceiling receipt rather than an assumed completeness contract. -/
-theorem full_occupied (t : ℕ) (ht : t + 2 ≤ A.card) (j : ℕ)
+theorem full_occupied j
     (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
     ∃ d, (build I X attach hA hB hC t ht).carrier.cell d = (A, j) := by
   obtain ⟨d, hd, _⟩ := (build I X attach hA hB hC t ht).ceiling_at le_rfl
     zero (zero_admitted X (t + 2)) (fun f => by cases f <;> exact bot_ne_top)
-    (G := ∅) (H := ⊤) (by simp) (by simp [SelfVis]) (fun _ => le_top) j hj hjt
+    (G := ∅) (by simp) (by aesop) (fun _ => le_top) j hj hjt
   exact ⟨d, hd⟩
+
+end
 
 end
 end VaughtConjecture.Knight.GrowthPaddedInstallation

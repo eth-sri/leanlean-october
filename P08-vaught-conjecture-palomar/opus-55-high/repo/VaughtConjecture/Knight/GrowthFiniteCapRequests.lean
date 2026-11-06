@@ -17,48 +17,56 @@ force donor tops to remain top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapRequests
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 noncomputable section
 
-theorem block_le {α : LimitStage} {β : Ordinal.{0}} (hβ : β < α.nextBlock.1) :
+section
+variable {α : LimitStage}
+
+theorem block_le {β} (hβ : β < α.nextBlock.1) :
     limitPart β ≤ α.1 := by
   rcases lt_or_ge β α.1 with h | h
   · exact (limitPart_le β).trans h.le
   · obtain ⟨k, rfl⟩ := exists_nat_of_lt_add_omega h hβ
     rw [limitPart_add_nat_of_limit (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))]
 
-theorem blocks_limit {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
-    (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : limitPart μ = μ := by
+section
+variable {n : ℕ} (q : S α.nextBlock.1 (n + 1))
+
+section
+variable (μ : Ordinal.{0})
+
+theorem blocks_limit (hμ : μ ∈ blocks q) : limitPart μ = μ := by
   obtain ⟨r, hr, rfl⟩ := mem_blocks.mp hμ
   exact limitPart_eq_self_of_isNonSuccessor (donorRequests_ok q r hr).1
 
-theorem blocks_le {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
-    (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : μ ≤ α.1 := by
+theorem blocks_le (hμ : μ ∈ blocks q) : μ ≤ α.1 := by
   obtain ⟨r, hr, rfl⟩ := mem_blocks.mp hμ
   obtain ⟨d, β, hd, rfl⟩ := mem_donorRequests.mp hr
   exact block_le (ofOrd_lt_ofOrd.mp (hd ▸ (q.label_bound d).resolve_right
     (hd ▸ ofOrd_ne_top _)))
 
+end
+
 /-- One finite cutoff dominates every proper donor label and every represented
 offset, with an independently requested floor. -/
-theorem exists_cut {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1)) (floor : ℕ) :
-    ∃ L : ℕ, floor < L ∧ n + 1 < L ∧
+theorem exists_cut floor :
+    ∃ L, floor < L ∧ n + 1 < L ∧
       (∀ d β, q.label d = ofOrd β → finitePart β < L) ∧
       ∀ d, q.label d ≠ ⊤ → q.label d < ofOrd (α.1 + L) := by
   classical
   let L := max floor (max (n + 1)
-    (Finset.univ.sup (fun d : Cell q.scheme.scheme => finitePart (ordOf (q.label d))))) + 1
+    (Finset.univ.sup (fun d => finitePart (ordOf (q.label d))))) + 1
   have hfp (d) (β) (hd : q.label d = ofOrd β) : finitePart β < L := by
-    have h := Finset.le_sup (f := fun d : Cell q.scheme.scheme =>
+    have h := Finset.le_sup (f := fun d =>
       finitePart (ordOf (q.label d))) (Finset.mem_univ d)
     rw [hd, ordOf_ofOrd] at h
     dsimp [L]; omega
   refine ⟨L, by dsimp [L]; omega, by dsimp [L]; omega, hfp, ?_⟩
   intro d hnt
   rcases ExtOrd.cases (q.label d) with hb | ht | ⟨β, hd⟩
-  · rw [hb]; exact bot_lt_ofOrd _
+  · simp_all
   · exact (hnt ht).elim
   · have hb := block_le (ofOrd_lt_ofOrd.mp (hd ▸ (q.label_bound d).resolve_right hnt))
     rw [hd]
@@ -66,6 +74,10 @@ theorem exists_cut {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1)) (f
     calc β = limitPart β + finitePart β := (limitPart_add_finitePart β).symm
       _ < limitPart β + (L : Ordinal.{0}) := add_lt_add_right (Nat.cast_lt.mpr (hfp d β hd)) _
       _ ≤ α.1 + (L : Ordinal.{0}) := add_le_add_left hb _
+
+end
+
+end
 
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
@@ -99,8 +111,8 @@ theorem tOf_eq {d : Cell DQ} (hd : P d ≠ ⊥ ∧ P d ≠ ⊤) :
     (requests c L hL a ref P).tOf ((requests c L hL a ref P).sec w) d =
       min (P d) (w c) := by
   rcases ExtOrd.cases (P d) with hb | ht | ⟨β, hβ⟩
-  · exact (hd.1 hb).elim
-  · exact (hd.2 ht).elim
+  · grind
+  · grind
   obtain ⟨ho, hr⟩ := href d β hβ
   change min (extVisibilityReplace (w (ref (limitPart (ordOf (P d)))).1)
     (DA.grade c) (finitePart (ordOf (P d)))) (w c) = _
@@ -122,13 +134,10 @@ This is derived from reference readings, not assumed as admission. -/
 theorem correct : (requests c L hL a ref P).Correct
     ((requests c L hL a ref P).sec w) P := by
   refine ⟨?_, ?_, ?_⟩
-  · intro d hd
-    change min (P d) (w c) = ⊥
-    rw [hd]; exact min_eq_left bot_le
+  · aesop
   · intro d hd
     exact (tOf_eq c L hL a ref P w off href hd).symm
   · intro d hd
-    change min (extVisibilityReplace (w a.1) (DA.grade c) L) (w c) ≤ min (P d) (w c)
     rw [hd, min_top_left]
     exact min_le_right _ _
 

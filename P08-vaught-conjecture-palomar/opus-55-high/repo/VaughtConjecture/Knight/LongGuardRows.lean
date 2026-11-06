@@ -23,15 +23,16 @@ It does not by itself install a support plan or prove lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.LongGuardRows
 
 open Transform Value ExtOrd SharpWitnessComposition FullRowLifting
 
+section
+variable {Y : Type*}
+
 /-- A finite visible table with the exact source-block zero condition has a
 faithful witness. Repeated source occurrences remain literal. -/
-theorem transforms_of_visible_table {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
+theorem transforms_of_visible_table [Finite Y] {E t}
     (hE : ∀ d, SelfVis 1 (E d)) (ht : ∀ d, SelfVis 1 (t d))
     (hord : ∀ d e, E d ≤ E e → t d ≤ t e)
     (hbot : ∀ d, E d = ⊥ → t d = ⊥)
@@ -56,8 +57,8 @@ theorem transforms_of_visible_table {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
 
 /-- Actual faithful locality, even with a nontrivial suppressor, prohibits
 different bottom flags in one source block at a common grade. -/
-theorem bottom_of_same_block {Y : Type*} {E t : Y → ExtOrd}
-    (h : TransformsTo (fun _ : Y => 1) E t) {d e : Y}
+theorem bottom_of_same_block {E t}
+    (h : TransformsTo (fun _ : Y => 1) E t) {d e}
     (hb : blockFloor (E d) = blockFloor (E e)) (hd : t d = ⊥) : t e = ⊥ := by
   obtain ⟨g, σ, hg, hgv, h0, hm, h5, hr⟩ := h
   have hz : min (σ (E d)) (g 1) = ⊥ := (hr d).symm.trans hd
@@ -66,6 +67,8 @@ theorem bottom_of_same_block {Y : Type*} {E t : Y → ExtOrd}
       (show Witness g σ from ⟨hg, hgv, h0, hm, h5⟩) hb hz
     rw [hr e, he, min_bot_left]
   · rw [hr e, hz, min_bot_right]
+
+end
 
 noncomputable def endpoint (i : ℕ) : ExtOrd :=
   ofOrd (Ordinal.omega0 * i + (2 : ℕ))
@@ -77,22 +80,27 @@ theorem endpoint_visible (i : ℕ) : SelfVis 1 (endpoint i) := by
   rw [endpoint, selfVis_ofOrd_iff, finitePart_code]
   omega
 
-theorem source_visible (i k : ℕ) : SelfVis 1 (source i k) := by
+section
+variable (i k : ℕ)
+
+theorem source_visible  : SelfVis 1 (source i k) := by
   unfold source
   split_ifs
   · exact SlotControllerFamily.value_visible k
   · exact endpoint_visible i
 
-theorem source_coded (i k : ℕ) : IsCodedLabel 1 (source i k) := by
+theorem source_coded  : IsCodedLabel 1 (source i k) := by
   unfold source
   split_ifs
   · exact SlotControllerFamily.value_coded k
   · exact Or.inr ⟨i, 2, le_rfl, rfl⟩
 
-@[simp] theorem source_zero (i : ℕ) : source i 0 = ⊥ := by
+end
+
+@[simp] theorem source_zero i : source i 0 = ⊥ := by
   simp [source, SlotControllerFamily.value]
 
-theorem value_lt_endpoint {i k : ℕ} (hk : k ≤ i) :
+theorem value_lt_endpoint {i k} (hk : k ≤ i) :
     SlotControllerFamily.value k < endpoint i := by
   by_cases h0 : k = 0
   · simp [h0, SlotControllerFamily.value, endpoint]
@@ -102,7 +110,7 @@ theorem value_lt_endpoint {i k : ℕ} (hk : k ≤ i) :
     · exact code_lt_code_of_lt (Nat.cast_lt.mpr hk) 1 2
     · exact add_lt_add_right (Nat.cast_lt.mpr (by omega : (1 : ℕ) < 2)) _
 
-theorem source_le_iff (i k l : ℕ) :
+theorem source_le_iff i k l :
     source i k ≤ source i l ↔ min k (i + 1) ≤ min l (i + 1) := by
   by_cases hk : k ≤ i <;> by_cases hl : l ≤ i
   · simp only [source, ite_eq_left hk, ite_eq_left hl,
@@ -120,9 +128,5 @@ theorem source_le_iff (i k l : ℕ) :
     · intro h; omega
   · simp only [source, ite_eq_right hk, ite_eq_right hl, le_refl,
       min_eq_right (by omega : i + 1 ≤ k), min_eq_right (by omega : i + 1 ≤ l)]
-
-namespace Regression
-
-end Regression
 
 end VaughtConjecture.Knight.LongGuardRows

@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HollowGrowthReference
-public import VaughtConjecture.Knight.ReceivingContextReceipts
+public import VaughtConjecture.Knight.ReceivingContext
 public import VaughtConjecture.Knight.GrowthFilteredRoot
 public import VaughtConjecture.Knight.CappedDonorContext
 
@@ -20,20 +20,16 @@ root-arity hypothesis is the unchanged graded-root premise of `RelativeData`.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace
 noncomputable section
-private theorem belowMap_val_of_heq {ιA ιB : Type*} [DecidableEq ιA] [DecidableEq ιB]
-    {A : Finset ιA} {B : Finset ιB} {DA : CellScheme A} {DB : CellScheme B}
+private theorem belowMap_val_of_heq {ιA ιB} [DecidableEq ιA] [DecidableEq ιB]
+    {A} {B} {DA : CellScheme A} {DB : CellScheme B}
     {I J : Finset ιA × ℕ} {U V : Finset ιB × ℕ} (hIJ : I = J) (hUV : U = V)
     {f : DA.below I → DB.below U} {g : DA.below J → DB.below V}
     (hfg : HEq f g) (a : DA.below I) :
-    (f a).1 = (g ⟨a.1, hIJ ▸ a.2⟩).1 := by
-  subst J
-  subst V
-  exact congrArg Subtype.val (congrFun (eq_of_heq hfg) a)
+    (f a).1 = (g ⟨a.1, hIJ ▸ a.2⟩).1 := by aesop
 
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
@@ -53,13 +49,13 @@ def requests : Requests D.context.type.scheme.scheme q.scheme.scheme where
   a := D.marker
 
 /-- The actual acquired references read the requested proper values exactly. -/
-theorem actual_tOf {d : Cell q.scheme.scheme} (hd : d ∈ (requests q D).F) :
+theorem actual_tOf {d} (hd : d ∈ (requests q D).F) :
     (requests q D).tOf ((requests q D).sec D.context.type.label) d = q.label d := by
   rcases ExtOrd.cases (q.label d) with hb | ht | ⟨β, hβ⟩
   · exact (hd.1 hb).elim
   · exact (hd.2 ht).elim
   have hr := mem_donorRequests.mpr ⟨d, β, hβ, rfl⟩
-  have hμ : limitPart (limitPart β) = limitPart β := limitPart_idem β
+  have hμ := limitPart_idem β
   have hoff := D.ref_off_lt _ hr
   change min (extVisibilityReplace
     (D.context.type.label (D.ref (limitPart (ordOf (q.label d)))).1)
@@ -81,10 +77,7 @@ assumption. This does not assert physical readback or occurrence. -/
 theorem actual_correct : (requests q D).Correct ((requests q D).sec D.context.type.label)
     q.label := by
   refine ⟨?_, ?_, ?_⟩
-  · intro d hd
-    change min (q.label d) (D.context.type.label D.cap) = ⊥
-    rw [D.cap_top, min_top_right]
-    exact hd
+  · aesop
   · intro d hd
     change min (q.label d) (D.context.type.label D.cap) = _
     rw [D.cap_top, min_top_right, actual_tOf q D hd]
@@ -95,7 +88,7 @@ theorem actual_correct : (requests q D).Correct ((requests q D).sec D.context.ty
 
 /-- Scalar correctness over the actual private face is exact donor readback.
 The physical construction must still establish that correctness. -/
-theorem correct_iff_eq_actual (v : Cell q.scheme.scheme → ExtOrd) :
+theorem correct_iff_eq_actual v :
     (requests q D).Correct ((requests q D).sec D.context.type.label) v ↔ v = q.label := by
   constructor
   · intro h
@@ -108,9 +101,7 @@ theorem correct_iff_eq_actual (v : Cell q.scheme.scheme → ExtOrd) :
     by_cases ht : q.label d = ⊤
     · have htop := h.2.2 d ht
       rw [actual_dOf] at htop
-      change ⊤ ≤ min (v d) (D.context.type.label D.cap) at htop
-      rw [D.cap_top, min_top_right] at htop
-      exact (top_le_iff.mp htop).trans ht.symm
+      grind
     have hp := h.2.1 d ⟨hb, ht⟩
     change min (v d) (D.context.type.label D.cap) = _ at hp
     rw [D.cap_top, min_top_right, actual_tOf q D ⟨hb, ht⟩] at hp

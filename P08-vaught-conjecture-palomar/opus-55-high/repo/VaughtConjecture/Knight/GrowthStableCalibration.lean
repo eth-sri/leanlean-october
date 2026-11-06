@@ -20,7 +20,6 @@ of the chosen stable donor is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCalibration
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -29,14 +28,14 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- The stable cap bound, with the proof from integration's
 `SameStageCalibration.stable_ge_of_top`, without its guard dependencies. -/
-theorem stable_cap_bound (hM : W.IsModel) {m : ℕ} {u : Fin m ↪ M} {Q : S α.1 m}
-    (hQ : W.eval u = some Q) {c : Cell Q.scheme.scheme} (hc : Q.label c = ⊤) :
+theorem stable_cap_bound (hM : W.IsModel) {m} {u} {Q : S α.1 m}
+    (hQ : W.eval u = some Q) {c} (hc : Q.label c = ⊤) :
     ofOrd (α.1 + Q.scheme.scheme.grade c) ≤ W.stableValue u Q c := by
   have hα := le_stableValue_of_top (R := W) hQ hc
   have hvis : SelfVis (Q.scheme.scheme.grade c) (W.stableValue u Q c) :=
     ((stableLiftRespects hM hQ).orderly c).symm
   rcases ExtOrd.cases (W.stableValue u Q c) with hb | ht | ⟨γ, hγ⟩
-  · rw [hb] at hα; exact absurd hα (not_ofOrd_le_bot _)
+  · simp_all
   · rw [ht]; exact le_top
   · rw [hγ] at hα hvis ⊢
     rw [selfVis_ofOrd_iff] at hvis
@@ -53,10 +52,10 @@ the requested root and the independently supplied attained marker. The floor
 `L` is chosen before this construction; the physical grade is strictly larger.
 The root may be empty. -/
 theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} (hp : W.eval t = some p)
-    (a : Cell p.scheme.scheme) (hatop : p.label a = ⊤) {i : ℕ}
+    {n} {t} {p : S α.1 n} (hp : W.eval t = some p)
+    a (hatop : p.label a = ⊤) {i : ℕ}
     (ha : W.stableValue t p a = ofOrd (α.1 + i))
-    {k : ℕ} (s : Fin k ↪ M) (p₀ : S α.1 k) (hs : W.eval s = some p₀)
+    {k} s (p₀ : S α.1 k) (hs : W.eval s = some p₀)
     (S : Finset Ordinal.{0}) (hS : ∀ μ ∈ S, limitPart μ = μ)
     (hle : ∀ μ ∈ S, μ ≤ α.1) (L : ℕ) :
     ∃ (m : ℕ) (u : Fin m ↪ M) (Q : Knight.S α.1 m), W.eval u = some Q ∧

@@ -6,7 +6,19 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FiniteFloorCompletion
-public import VaughtConjecture.Knight.TwoContextCoupled
+public import VaughtConjecture.Knight.CappedCore
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.Domain
+public import VaughtConjecture.Knight.OnePointSuccessor
+public import Mathlib.Tactic.DeriveFintype
+public import VaughtConjecture.Knight.PartialSections
+public import VaughtConjecture.Knight.PullbackSemantics
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.WitnessSplice
+public import VaughtConjecture.Knight.Type
+public import VaughtConjecture.Knight.WitnessAlgebra
 
 /-! # The owner-local saturation endpoint (audit13 / notes40 §2.1)
 
@@ -53,27 +65,37 @@ namespace OwnerLocalEndpoint
 /-- Rounding to the `j`-visible endpoint of the strip of `x`. -/
 noncomputable abbrev endpoint (j : ℕ) (x : ExtOrd) : ExtOrd := extVisibilityReplace x j j
 
-theorem le_endpoint (j : ℕ) (x : ExtOrd) : x ≤ endpoint j x := le_extVisibilityReplace_self x j
+section
+variable (j : ℕ) (x : ExtOrd)
 
-theorem selfVis_endpoint (j : ℕ) (x : ExtOrd) : SelfVis j (endpoint j x) := by
+theorem le_endpoint  : x ≤ endpoint j x := le_extVisibilityReplace_self x j
+
+theorem selfVis_endpoint  : SelfVis j (endpoint j x) := by
   unfold endpoint
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact selfVis_bot j
-  · exact extVisibilityReplace_top j j
+  · aesop
+  · aesop
   · rw [extVisibilityReplace_ofOrd, selfVis_ofOrd_iff, finitePart_visibilityReplace]
     split_ifs <;> omega
 
-theorem endpoint_of_selfVis {j : ℕ} {x : ExtOrd} (h : SelfVis j x) : endpoint j x = x := h
+end
 
-theorem endpoint_mono {j : ℕ} {x y : ExtOrd} (h : x ≤ y) : endpoint j x ≤ endpoint j y :=
+section
+variable {j : ℕ}
+
+theorem endpoint_of_selfVis {x} (h : SelfVis j x) : endpoint j x = x := h
+
+theorem endpoint_mono {x y} (h : x ≤ y) : endpoint j x ≤ endpoint j y :=
   evr_mono h le_rfl
 
-theorem endpoint_ne_top {j : ℕ} {x : ExtOrd} (h : x ≠ ⊤) : endpoint j x ≠ ⊤ := by
+theorem endpoint_ne_top {x} (h : x ≠ ⊤) : endpoint j x ≠ ⊤ := by
   unfold endpoint
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact bot_ne_top
-  · exact absurd rfl h
-  · rw [extVisibilityReplace_ofOrd]; exact ofOrd_ne_top _
+  · simp_all
+  · grind
+  · simp_all
+
+end
 
 variable {ι : Type*}
 
@@ -95,13 +117,16 @@ structure Saturation (j : ℕ) (s p : ι → ExtOrd) (c : ι) (τ : ExtOrd → E
 structure IsEndpoint (j : ℕ) (s : ι → ExtOrd) (τ : ExtOrd → ExtOrd) (γ h : ExtOrd) : Prop where
   least : IsLeast {x | ∃ d, τ (s d) = γ ∧ endpoint j (s d) = x} h
 
-theorem IsEndpoint.le_of_saturated {j : ℕ} {s : ι → ExtOrd} {τ : ExtOrd → ExtOrd} {γ h : ExtOrd}
-    (H : IsEndpoint j s τ γ h) {d : ι} (hd : τ (s d) = γ) : h ≤ endpoint j (s d) :=
+section
+variable {j : ℕ} {s : ι → ExtOrd} {τ : ExtOrd → ExtOrd} {γ h : ExtOrd}
+
+theorem IsEndpoint.le_of_saturated (H : IsEndpoint j s τ γ h) {d} (hd : τ (s d) = γ) : h ≤ endpoint j (s d) :=
   H.least.2 ⟨d, hd, rfl⟩
 
-theorem IsEndpoint.exists_witness {j : ℕ} {s : ι → ExtOrd} {τ : ExtOrd → ExtOrd} {γ h : ExtOrd}
-    (H : IsEndpoint j s τ γ h) : ∃ d, τ (s d) = γ ∧ endpoint j (s d) = h :=
+theorem IsEndpoint.exists_witness (H : IsEndpoint j s τ γ h) : ∃ d, τ (s d) = γ ∧ endpoint j (s d) = h :=
   H.least.1
+
+end
 
 section Conclusions
 
@@ -142,13 +167,13 @@ theorem IsEndpoint.le_owner (H : IsEndpoint j s τ γ h) (S : Saturation j s p c
   (H.le_of_saturated S.owner_saturated).trans_eq (endpoint_of_selfVis S.owner_vis)
 
 /-- The single-strip conclusion: a saturated observation below the endpoint rounds to it. -/
-theorem IsEndpoint.strip (H : IsEndpoint j s τ γ h) {d : ι} (hlt : s d < h) (hd : τ (s d) = γ) :
+theorem IsEndpoint.strip (H : IsEndpoint j s τ γ h) {d} (hlt : s d < h) (hd : τ (s d) = γ) :
     endpoint j (s d) = h :=
   le_antisymm ((endpoint_mono hlt.le).trans_eq (endpoint_of_selfVis H.selfVis))
     (H.le_of_saturated hd)
 
 /-- A saturated observation strictly below the endpoint is `j`-invisible. -/
-theorem IsEndpoint.not_selfVis_of_lt (H : IsEndpoint j s τ γ h) {d : ι} (hlt : s d < h)
+theorem IsEndpoint.not_selfVis_of_lt (H : IsEndpoint j s τ γ h) {d} (hlt : s d < h)
     (hd : τ (s d) = γ) : ¬ SelfVis j (s d) := fun hv ↦
   hlt.ne (((endpoint_of_selfVis hv).symm.trans (H.strip hlt hd)))
 
@@ -158,25 +183,24 @@ end Conclusions
 arguments the least rounded saturated observation exists; it is positive, proper, `j`-visible,
 reaches the cap, is bounded by the owner's source value, and collects every saturated
 observation below it into its own strip. -/
-theorem exists_isEndpoint [Finite ι] {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : ExtOrd → ExtOrd}
-    {γ : ExtOrd} (S : Saturation j s p c τ γ) :
+theorem exists_isEndpoint [Finite ι] {j} {s p} {c : ι} {τ}
+    {γ} (S : Saturation j s p c τ γ) :
     ∃ h, IsEndpoint j s τ γ h ∧ ⊥ < h ∧ h ≠ ⊤ ∧ SelfVis j h ∧ τ h = γ ∧ h ≤ s c ∧
       ∀ d, s d < h → τ (s d) = γ → endpoint j (s d) = h := by
-  classical
   let _ : Fintype ι := Fintype.ofFinite ι
   obtain ⟨d₀, hd₀, hmin⟩ := Finset.exists_min_image (Finset.univ.filter fun d ↦ τ (s d) = γ)
     (fun d ↦ endpoint j (s d)) ⟨c, by simp [S.owner_saturated]⟩
   have H : IsEndpoint j s τ γ (endpoint j (s d₀)) :=
     ⟨⟨⟨d₀, (Finset.mem_filter.mp hd₀).2, rfl⟩, by
       rintro x ⟨d, hd, rfl⟩
-      exact hmin d (by simp [hd])⟩⟩
+      exact hmin d (by grind)⟩⟩
   exact ⟨_, H, H.bot_lt S, H.ne_top S, H.selfVis, H.reach S, H.le_owner S,
     fun d hlt hd ↦ H.strip hlt hd⟩
 
 /-- The map hypotheses of `Saturation` from a normalized witness with suppressor `gTop j`
 (the sufficient condition named in notes40 §2). -/
-theorem Saturation.of_witness {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : ExtOrd → ExtOrd}
-    {γ : ExtOrd} (hτ : Witness (gTop j) τ) (bound : ∀ x, τ x ≤ γ) (pos : ⊥ < γ) (cap : γ < p c)
+theorem Saturation.of_witness {j} {s p} {c : ι} {τ}
+    {γ} (hτ : Witness (gTop j) τ) (bound : ∀ x, τ x ≤ γ) (pos : ⊥ < γ) (cap : γ < p c)
     (face : ∀ d, τ (s d) = min (p d) γ) (proper : ∀ d, s d ≠ ⊤) (owner_vis : SelfVis j (s c)) :
     Saturation j s p c τ γ :=
   ⟨hτ.bot, hτ.mono, bound, pos, cap, face, proper, owner_vis⟩

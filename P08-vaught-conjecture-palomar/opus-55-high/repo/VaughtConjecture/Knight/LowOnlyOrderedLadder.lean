@@ -18,7 +18,6 @@ the installed ladder rows or discard future fields from its catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedLadder
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
 open LowOnly RelativeLadderLayer
@@ -35,9 +34,8 @@ def field (d : Cell I.boundary) : Field I.left I.right :=
   | .inl c => .inl c
   | .inr c => .inr (.inl c.1)
 
-theorem field_read (S : State I.left I.right) (d : Cell I.boundary) :
+theorem field_read (S : State I.left I.right) d :
     S.profile (field I d) = I.paste S.u S.v d := by
-  unfold field WholeDonorBoundary.Input.paste OrderedFaceBoundarySemantics.paste
   change S.profile (match (OrderedFaceBoundary.enumeration
       I.leftScheme I.rightScheme I.shared).symm d with
     | .inl c => .inl c
@@ -59,7 +57,7 @@ theorem field_private {S : State I.left I.right} (hs : F.Admissible 1 S)
 
 /-- The boundary has no ambient-full owner; no global bound on retained grades
 is imposed. -/
-theorem proper (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) : I.boundary.scope d ≠ A := by
+theorem proper (hB : B ⊂ A) (hC : C ⊂ A) d : I.boundary.scope d ≠ A := by
   rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared R I.isPlan
       I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
   · have hs := I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d)
@@ -137,17 +135,6 @@ def privateIncl (d : I.right.scheme.below (effC n 1)) : I.boundary.below (A, 1) 
       have hg := congrArg Prod.snd (I.rightFace.index d.1)
       change I.boundary.grade (I.rightFace.map d.1) = I.right.scheme.grade d.1 at hg
       exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
-
-include hroot in
-/-- Consistency is constructed on these same rows, independently of lifting. -/
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).IsConsistent := by
-  apply RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent
-  intro a
-  obtain ⟨S, hs, he⟩ := a.property.2
-  have hvalues : (fun d : I.boundary.below (A, 1) => F.fields 1 a (field I d.1)) =
-      (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
-  exact hvalues ▸ boundary_lawful I F hroot S hs
 
 include hroot in
 /-- A complete positive-cap physical lift on the actual ordered two-face ladder.

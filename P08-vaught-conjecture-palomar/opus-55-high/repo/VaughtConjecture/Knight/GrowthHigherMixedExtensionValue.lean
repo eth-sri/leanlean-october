@@ -16,7 +16,6 @@ from complete-field readouts. Values above the observed cutoff are irrelevant.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration
@@ -56,7 +55,7 @@ def nativeValue (c : Cell (P).carrier) : ExtOrd := by
     p (place I X T hA hB hC t ht U hU hm j hj c ha.1 ha.2)
   else ⊥
 
-theorem native_original (d : Cell I.boundary) :
+theorem native_original d :
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p (original I X T hA hB hC t ht d) =
       boundaryValue I X T hA hB hC t ht U hU hm j hj hj0 p d := by
   classical
@@ -66,8 +65,8 @@ theorem native_original (d : Cell I.boundary) :
       (original_injective I X T hA hB hC t ht ho.choose_spec.symm)
   all_goals exact (ho ⟨d, rfl⟩).elim
 
-theorem native_full (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
-    (hg : (P).carrier.grade c ≤ j) :
+theorem native_full c hc
+    hg :
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p c =
       p (place I X T hA hB hC t ht U hU hm j hj c hc hg) := by
   classical
@@ -79,11 +78,11 @@ theorem native_full (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
   · rfl
   · exact (ha ⟨hc, hg⟩).elim
 
-def value {V : Finset ι} (z : (D).below (V, j)) : ExtOrd :=
+def value {V} (z : (D).below (V, j)) : ExtOrd :=
   nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p (erase I X T hA hB hC t ht z.1)
 
 theorem literal (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
-    {V : Finset ι} (hUV : U ⊆ V) (z : (D).below (U, j)) :
+    {V} (hUV : U ⊆ V) z :
     value I X T hA hB hC t ht U hU hm j hj hj0 p
       (CellScheme.below.mono (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) z) = p z := by
   change nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p

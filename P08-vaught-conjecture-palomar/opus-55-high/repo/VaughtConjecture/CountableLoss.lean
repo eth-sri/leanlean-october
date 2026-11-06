@@ -37,7 +37,7 @@ open Cardinal Set
 universe u
 
 /-- **Countable successor losses and limit continuity give countable complements.** -/
-theorem compl_countable_of_loss {X : Type u} (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ)
+theorem compl_countable_of_loss {X} (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ)
     (hsucc : ∀ ξ, ξ < (aleph 1).ord → (D ξ \ D (ξ + 1)).Countable)
     (hlim : ∀ l, Order.IsSuccLimit l → l < (aleph 1).ord → (⋂ ξ < l, D ξ) ⊆ D l) :
     ∀ β, β < (aleph 1).ord → (D β)ᶜ.Countable := by

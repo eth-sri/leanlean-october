@@ -47,32 +47,37 @@ namespace StageType
 variable {α : Ordinal.{0}} {n : ℕ}
 
 /-- Every provisional value lies strictly below the end of the next `ω`-block. -/
-theorem someProvisionalValue_lt_add_omega (p : S α n) (Xi : Cell p.scheme.scheme) :
+theorem someProvisionalValue_lt_add_omega (p : S α n) Xi :
     p.someProvisionalValue Xi < ofOrd (α + Ordinal.omega0) := by
   refine (p.someProvisionalValue_le Xi).trans_lt (ofOrd_lt_ofOrd.mpr ?_)
   exact (add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 p.topGrade)
 
+section
+variable {p : S α n} {Xi : Cell p.scheme.scheme}
+
 /-- The provisional value of an `∞`-cell is at least `α`. -/
-theorem le_someProvisionalValue_of_top {p : S α n} {Xi : Cell p.scheme.scheme}
-    (htop : p.label Xi = ⊤) : ofOrd α ≤ p.someProvisionalValue Xi := by
+theorem le_someProvisionalValue_of_top (htop : p.label Xi = ⊤) : ofOrd α ≤ p.someProvisionalValue Xi := by
   by_cases hcap : p.ProvisionalCap Xi
   · rw [someProvisionalValue_of_cap htop hcap]
     exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
   · obtain ⟨i, -, -, hval⟩ := someProvisionalValue_of_band htop hcap
-    rw [hval]
-    exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+    simp_all
 
 /-- The label dominates nothing above the provisional value: `p(Ξ) ≤ p⁺(Ξ)` fails only
 through `⊤`, so a finite value below `p(Ξ)` is below `p⁺(Ξ)`. -/
-theorem le_someProvisionalValue_of_le_label {p : S α n} {Xi : Cell p.scheme.scheme}
-    {x : ExtOrd} (hx : x < ofOrd α) (h : x ≤ p.label Xi) : x ≤ p.someProvisionalValue Xi := by
+theorem le_someProvisionalValue_of_le_label {x} (hx : x < ofOrd α) (h : x ≤ p.label Xi) : x ≤ p.someProvisionalValue Xi := by
   by_cases htop : p.label Xi = ⊤
   · exact hx.le.trans (le_someProvisionalValue_of_top htop)
   · rwa [someProvisionalValue_of_ne_top htop]
 
+end
+
+section
+variable (p : S α n)
+
 /-- **Lemma 5.3.4 (orderliness of `p⁺`)**: in the band case, consistency of the coded row makes
 its finite part the selected band index. -/
-theorem someProvisionalValue_orderly (p : S α n) (hα : Order.IsSuccLimit α) :
+theorem someProvisionalValue_orderly (hα : Order.IsSuccLimit α) :
     Transform.IsOrderly p.scheme.scheme.grade p.someProvisionalValue := by
   intro Xi
   by_cases htop : p.label Xi = ⊤
@@ -128,29 +133,19 @@ theorem someProvisionalValue_orderly (p : S α n) (hα : Order.IsSuccLimit α) :
 
 /-- Below a maximal top witness `Θ` the labels are a monotone function of the row `E(Θ)`
 (the locality witness of the labels has `g = ⊤` up to `K^p`). -/
-theorem exists_monotone_label_of_row (p : S α n) {Θ : Cell p.scheme.scheme}
+theorem exists_monotone_label_of_row {Θ}
     (hgr : p.scheme.scheme.grade Θ = p.topGrade) (hΘ : p.label Θ = ⊤) :
-    ∃ σ : ExtOrd → ExtOrd, Monotone σ ∧
-      ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ),
+    ∃ σ, Monotone σ ∧
+      ∀ d,
         p.label d.1 = σ (p.scheme.rows.E Θ d) := by
   obtain ⟨g, σ, hganti, _, _, hσmono, _, heq⟩ := p.respects.locality Θ
-  have heq' : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ),
+  have heq' : ∀ d,
       p.label d.1 = min (σ (p.scheme.rows.E Θ d)) (g (p.scheme.scheme.grade d.1)) := by
-    intro d
-    have := heq d
-    change min (p.label d.1) (p.label Θ) = min (σ (p.scheme.rows.E Θ d))
-      (g (p.scheme.scheme.grade d.1)) at this
-    rwa [hΘ, min_top_right] at this
+    grind
   have hgK : ∀ k, k ≤ p.topGrade → g k = ⊤ := by
     intro k hk
     have hΘ' := heq' ⟨Θ, GradedLe.refl _⟩
-    change p.label Θ = min (σ (p.scheme.rows.E Θ ⟨Θ, GradedLe.refl _⟩))
-      (g (p.scheme.scheme.grade Θ)) at hΘ'
-    rw [hΘ, hgr] at hΘ'
-    have hgKtop : g p.topGrade = ⊤ := top_le_iff.mp (hΘ'.le.trans (min_le_right _ _))
-    rcases hk.lt_or_eq with hlt | rfl
-    · exact top_le_iff.mp (hgKtop ▸ hganti _ _ hlt)
-    · exact hgKtop
+    grind
   refine ⟨σ, hσmono, fun d => ?_⟩
   have hk : p.scheme.scheme.grade d.1 ≤ p.topGrade := by
     have h2 : p.scheme.scheme.grade d.1 ≤ p.scheme.scheme.grade Θ := d.2.2
@@ -158,9 +153,9 @@ theorem exists_monotone_label_of_row (p : S α n) {Θ : Cell p.scheme.scheme}
   rw [heq' d, hgK _ hk, min_top_right]
 
 /-- **Lemma 5.3.5 (locality of `p⁺`)** at every controller. -/
-theorem provisional_locality (p : S α n) (hα : Order.IsSuccLimit α)
+theorem provisional_locality (hα : Order.IsSuccLimit α)
     (Sig : Cell p.scheme.scheme) :
-    Transform.TransformsTo (fun d : p.scheme.scheme.below (p.scheme.scheme.cell Sig) =>
+    Transform.TransformsTo (fun d =>
         p.scheme.scheme.grade d.1)
       (p.scheme.rows.E Sig)
       (fun d => min (p.someProvisionalValue d.1) (p.someProvisionalValue Sig)) := by
@@ -175,13 +170,13 @@ theorem provisional_locality (p : S α n) (hα : Order.IsSuccLimit α)
       by_cases hd : p.label d.1 = ⊤
       · rw [hd, min_top_left, min_eq_right (hlt.le.trans (le_someProvisionalValue_of_top hd))]
       · rw [someProvisionalValue_of_ne_top hd]
-    rw [hfun]
+    simp_all
     exact p.respects.locality Sig
 
 /-- **Lemma 5.3.6 (availability of `p⁺`)**: at a finite-labelled cell the original
 availability; at an `∞`-cell the availability of the row of a maximal top witness `Θ`, read
 through the monotone label witness (the found cell is again an `∞`-cell) and the band map. -/
-theorem provisional_availability (p : S α n) :
+theorem provisional_availability  :
     ∀ Sig Xi₀ : Cell p.scheme.scheme,
       p.scheme.scheme.scope Sig ⊆ p.scheme.scheme.scope Xi₀ →
       p.scheme.scheme.grade Sig = p.scheme.scheme.grade Xi₀ →
@@ -216,14 +211,19 @@ theorem provisional_availability (p : S α n) :
     exact le_someProvisionalValue_of_le_label ((p.label_bound Sig).resolve_right htop) hle
 
 /-- **Proposition 5.3.3**: the provisional labelling `p⁺` respects the semantics of `p`. -/
-theorem provisionalLift_respects (p : S α n) (hα : Order.IsSuccLimit α) :
+theorem provisionalLift_respects (hα : Order.IsSuccLimit α) :
     RespectsSemantics p.scheme.rows p.someProvisionalValue where
   orderly := someProvisionalValue_orderly p hα
   locality := provisional_locality p hα
   availability := provisional_availability p
 
+end
+
+section
+variable (p : S α n)
+
 /-- The provisional lift `p⁺ ∈ S^{α+ω}` (Prop. 5.3.3): same scheme and rows, labels `p⁺`. -/
-noncomputable def provisionalLift (p : S α n) (hα : Order.IsSuccLimit α) :
+noncomputable def provisionalLift (hα : Order.IsSuccLimit α) :
     S (α + Ordinal.omega0) n where
   scheme := p.scheme
   label := p.someProvisionalValue
@@ -231,7 +231,7 @@ noncomputable def provisionalLift (p : S α n) (hα : Order.IsSuccLimit α) :
   respects := provisionalLift_respects p hα
 
 /-- Provisional values reduce literally to the source labels. -/
-theorem truncExt_someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) :
+theorem truncExt_someProvisionalValue Xi :
     truncExt α (p.someProvisionalValue Xi) = p.label Xi := by
   by_cases htop : p.label Xi = ⊤
   · rw [htop]
@@ -239,12 +239,13 @@ theorem truncExt_someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) :
     · rw [someProvisionalValue_of_cap htop hcap]
       exact truncExt_ofOrd_of_le (le_add_of_nonneg_right zero_le)
     · obtain ⟨i, -, -, hval⟩ := someProvisionalValue_of_band htop hcap
-      rw [hval]
-      exact truncExt_ofOrd_of_le (le_add_of_nonneg_right zero_le)
+      simp_all
   · rw [someProvisionalValue_of_ne_top htop]
     rcases p.label_bound Xi with hlt | htop'
     · exact truncExt_id_of_lt hlt
     · exact absurd htop' htop
+
+end
 
 end StageType
 

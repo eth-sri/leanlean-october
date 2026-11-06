@@ -25,27 +25,30 @@ noncomputable section
 
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
+section
+variable {j : ℕ}
+
 /-- Release specialized to the actual common-root occurrences. -/
-theorem release_root {j : ℕ} (hj : K ≤ j)
-    {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+theorem release_root hj
+    {v}
+    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ}
     (hγ : SelfVis (effC n j).2 γ) (hbot : γ ≠ ⊥) (he : γ < F.gap.eC hj v)
-    (hshield : ∀ a : P.scheme.below (faceIndex F.root.A j), F.p a.1 ≠ ⊤ →
+    (hshield : ∀ a, F.p a.1 ≠ ⊤ →
       v (CellScheme.below.mono (faceIndex_le F.root.B j) (F.root.faceAt j a)) < γ) :
     ∃ v', RespectsSemanticsBelow C.rows (effC n j) v' ∧
       (∀ d, min (v' d) γ = min (v d) γ) ∧
-      (∀ a : P.scheme.below (faceIndex F.root.A j),
+      (∀ a,
         v' (CellScheme.below.mono (faceIndex_le F.root.B j) (F.root.faceAt j a)) =
           v (CellScheme.below.mono (faceIndex_le F.root.B j) (F.root.faceAt j a))) ∧
       F.gap.eC hj v' = γ := by
   let T (d : Cell C.scheme) : Prop :=
-    ∃ a : P.scheme.below (F.root.A, F.root.A.card), (F.root.face a).1 = d ∧ F.p a.1 = ⊤
+    ∃ a, (F.root.face a).1 = d ∧ F.p a.1 = ⊤
   have ht : ∀ a : C.scheme.below (faceIndex F.root.B j), T a.1 → C.scheme.grade a.1 ≤ K := by
     rintro a ⟨b, hb, ht⟩
     rw [← hb, ← F.root.grade]
     exact F.top_grade b.1 ht
   have hgap : ∀ (a : C.scheme.below (faceIndex F.root.B K))
-      (ha : GradedLe (C.scheme.cell a.1) (C.scheme.cell F.gap.c)),
+      ha,
       T a.1 → F.gap.h < C.rows.E F.gap.c ⟨a.1, ha⟩ := by
     rintro a ha ⟨b, hb, ht⟩
     have heq : (⟨a.1, ha⟩ : F.gap.Dom) = ⟨(F.root.face b).1,
@@ -54,28 +57,24 @@ theorem release_root {j : ℕ} (hj : K ≤ j)
             ((F.top_grade b.1 ht).trans_eq F.gap.c_grade.symm)⟩⟩ := Subtype.ext hb.symm
     rw [heq]
     exact F.root_gap b ht
-  have hs : ∀ a : C.scheme.below (faceIndex F.root.B j), ¬ T a.1 →
+  have hs : ∀ a, ¬ T a.1 →
       v (CellScheme.below.mono (faceIndex_le F.root.B j) a) < γ := by
     intro a ha
-    have hn : F.p ((F.root.faceAt j).symm a).1 ≠ ⊤ := by
-      intro ht
-      apply ha
-      refine ⟨F.root.fullP ((F.root.faceAt j).symm a), ?_, ht⟩
-      exact congrArg Subtype.val ((F.root.faceAt j).apply_symm_apply a)
+    have hn : F.p ((F.root.faceAt j).symm a).1 ≠ ⊤ := by aesop
     simpa only [Equiv.apply_symm_apply] using hshield ((F.root.faceAt j).symm a) hn
   obtain ⟨v', hv', hface, hcap, -, -, he'⟩ := F.gap.exists_release hj hv hγ hbot he
     F.root.B_mem F.root_sub T ht hgap hs
   exact ⟨v', hv', hcap, fun a => hface (F.root.faceAt j a), he'⟩
 
 /-- The active-grade donor fibre constructs the released private vector. -/
-theorem donor_active {j : ℕ} (hj : K ≤ j) {S : State P C}
-    (hS : F.Admissible j S) {u : P.scheme.below (effC n j) → ExtOrd}
-    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ : ExtOrd}
+theorem donor_active (hj : K ≤ j) {S}
+    (hS : F.Admissible j S) {u}
+    (hu : RespectsSemanticsBelow P.rows (effC n j) u) {γ}
     (hγ : SelfVis (effC n j).2 γ)
     (hag : ∀ d, min (u d) γ = min (S.lowerP j d) γ) :
     ∃ S', F.Admissible j S' ∧ S'.lowerP j = u ∧ S.CapEq γ S' ∧ S.FutureEq j S' := by
   obtain ⟨v, hQ, hvcap⟩ := hS.toSource.install_donor F hu hγ hag
-  have hface0 : ∀ a : P.scheme.below (faceIndex F.root.A j),
+  have hface0 : ∀ a,
       u (CellScheme.below.mono (faceIndex_le F.root.A j) a) =
         v (CellScheme.below.mono (faceIndex_le F.root.B j) (F.root.faceAt j a)) := by
     intro a
@@ -135,6 +134,8 @@ theorem donor_active {j : ℕ} (hj : K ≤ j) {S : State P C}
         _ ≤ min (S.u d) γ := min_le_min_right _ (hS.low hj hmold d hd)
         _ = min (Q.u d) γ := (hcap.1 d).symm
         _ ≤ Q.u d := min_le_left _ _
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnly.Family

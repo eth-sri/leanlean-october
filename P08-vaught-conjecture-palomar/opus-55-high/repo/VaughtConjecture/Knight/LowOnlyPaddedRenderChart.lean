@@ -18,7 +18,6 @@ ceiling are read through the same map.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRenderChart
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedRestriction
@@ -39,12 +38,15 @@ def nativeSource : (t : ℕ) → (ht : t + 2 ≤ A.card) → F.Anchor (t + 2) �
   | t + 1, ht, a => LowOnlyPaddedStepRows.source
       (build I F hroot hA hB hC t (by omega)) (by omega) ht a
 
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
 /-- At its own height, the renderer is the decoder of one admitted source. -/
-theorem native_chart (t : ℕ) (ht : t + 2 ≤ A.card) {j : ℕ} (hj : t + 2 ≤ j)
-    (S : State I.left I.right) (hS : F.Admissible j S) (hp : ∀ f, S.profile f ≠ ⊤)
-    {G : Finset ExtOrd} {H : ExtOrd} (hG : ∀ z ∈ G, SelfVis (t + 2) z)
+theorem native_chart {j} hj
+    S (hS : F.Admissible j S) hp
+    {G} {H} (hG : ∀ z ∈ G, SelfVis (t + 2) z)
     (hH : SelfVis (t + 2) H) (hb : ∀ f, S.profile f ≤ H) :
-    ∃ a : F.Anchor (t + 2), ∃ σ : ExtOrd → ExtOrd,
+    ∃ a, ∃ σ,
       BoundedMap (t + 2) σ ∧
       (∀ f, σ (a.val f) = S.profile f) ∧
       σ (CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right)) = H ∧
@@ -62,18 +64,20 @@ theorem native_chart (t : ℕ) (ht : t + 2 ≤ A.card) {j : ℕ} (hj : t + 2 ≤
   · intro d
     cases t <;> rfl
 
+section
+variable (r : ℕ) (hr : t + r + 2 ≤ A.card)
+
 /-- One native source chart survives any number of later rendering steps.
 The field receipts include future fields, not only current physical reads. -/
-theorem later_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
-    (hr : t + r + 2 ≤ A.card) {j : ℕ} (hj : t + r + 2 ≤ j)
-    (S : State I.left I.right) (hS : F.Admissible j S) (hp : ∀ f, S.profile f ≠ ⊤)
-    {G : Finset ExtOrd} {H : ExtOrd} (hG : ∀ z ∈ G, SelfVis (t + r + 2) z)
+theorem later_chart {j} hj
+    S (hS : F.Admissible j S) hp
+    {G} {H} (hG : ∀ z ∈ G, SelfVis (t + r + 2) z)
     (hH : SelfVis (t + r + 2) H) (hb : ∀ f, S.profile f ≤ H) :
-    ∃ a : F.Anchor (t + 2), ∃ σ : ExtOrd → ExtOrd,
+    ∃ a, ∃ σ,
       BoundedMap (t + 2) σ ∧
       (∀ f, σ (a.val f) = S.profile f) ∧
       σ (CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right)) = H ∧
-      ∀ d : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2),
+      ∀ d,
         (build I F hroot hA hB hC (t + r) hr).render hj S hS hp G H
           (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hr d).1 =
             σ (nativeSource I F hroot hA hB hC t ht a d.1) := by
@@ -120,14 +124,13 @@ theorem later_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
     exact congrArg δ (hd d)
 
 /-- The same chart for a later raw source, before its final decoder. -/
-theorem source_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
-    (hr : t + r + 2 ≤ A.card) (b : F.Anchor (t + r + 2)) :
-    ∃ a : F.Anchor (t + 2), ∃ σ : ExtOrd → ExtOrd,
+theorem source_chart b :
+    ∃ a : F.Anchor (t + 2), ∃ σ,
       BoundedMap (t + 2) σ ∧
       (∀ f, σ (a.val f) = b.val f) ∧
       σ (CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right)) =
         CanonicalFieldLayer.ceiling (t + r + 2) (Field I.left I.right) ∧
-      ∀ d : (build I F hroot hA hB hC t ht).carrier.below (A, t + 2),
+      ∀ d,
         nativeSource I F hroot hA hB hC (t + r) hr b
           (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r hr d).1 =
             σ (nativeSource I F hroot hA hB hC t ht a d.1) := by
@@ -148,14 +151,17 @@ theorem source_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
       (by omega) (Nat.le_succ _) (state F b) (state_admissible F b)
       (state_proper F b) hG hH hb
     refine ⟨a, σ, hσ, ?_, hc, ?_⟩
-    · intro f
-      exact (hf f).trans (congrFun (state_profile F b) f)
+    · aesop
     · intro d
       change LowOnlyPaddedStepRows.source P (by omega) (by omega) b
         (LowOnlyPaddedStepRows.old P (by omega)
           (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r (by omega) d).1) = _
       rw [LowOnlyPaddedStepRows.source_old]
       exact hd d
+
+end
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedRenderChart

@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.OwnerFaceAlignment
+public import VaughtConjecture.Knight.OwnerStripRetuning
+public import VaughtConjecture.Knight.AlignedCutEncoding
 public import VaughtConjecture.Knight.OwnerLocalEndpoint
 
 /-! # Owner alignment without a fixed source grid
@@ -18,20 +19,19 @@ assumed alignment conclusion. Long semantic source rows remain unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OwnerLocalAlignment
 open Transform Value ExtOrd SharpWitnessComposition OwnerStripRetuning OwnerLocalEndpoint
 noncomputable section
 
-theorem saturated_subcut {X : Type*} {j : ℕ} {s p : X → ExtOrd} {c : X}
-    {τ : ExtOrd → ExtOrd} {γ h : ExtOrd} (sat : Saturation j s p c τ γ)
+theorem saturated_subcut {X} {j} {s p} {c}
+    {τ} {γ h} (sat : Saturation j s p c τ γ)
     (H : IsEndpoint j s τ γ h) (d : X) (hd : s d < h) (hsat : τ (s d) = γ) :
-    ∃ (u : Ordinal.{0}) (n : ℕ), n < j ∧
+    ∃ u n, n < j ∧
       s d = ofOrd (limitPart u + n) ∧ h = ofOrd (limitPart u + j) := by
   have hnv := H.not_selfVis_of_lt hd hsat
   rcases ExtOrd.cases (s d) with hb | ht | ⟨u, hu⟩
-  · exact (hnv (hb ▸ selfVis_bot j)).elim
-  · exact (sat.proper d ht).elim
+  · simp_all
+  · simp_all
   · have hn : finitePart u < j := by
       by_contra hn
       exact hnv (hu ▸ selfVis_ofOrd_iff.mpr (not_lt.mp hn))
@@ -44,18 +44,19 @@ theorem saturated_subcut {X : Type*} {j : ℕ} {s p : X → ExtOrd} {c : X}
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable {sem : Semantics D}
 
+section
+variable (c : Cell D) {s p : D.below (D.cell c) → ExtOrd}
+
 /-- Internal alignment at the constructed owner-local endpoint. -/
-theorem alignment_at_endpoint (c : Cell D)
-    {s p : D.below (D.cell c) → ExtOrd}
-    (hs : RespectsSemanticsBelow sem (D.cell c) s)
+theorem alignment_at_endpoint (hs : RespectsSemanticsBelow sem (D.cell c) s)
     (hp : RespectsSemanticsBelow sem (D.cell c) p)
     (hshort : ∀ e, Short (D.grade c) (s e))
-    {τ : ExtOrd → ExtOrd} {h γ : ExtOrd}
+    {τ} {h γ}
     (hτ : Witness (gTop (D.grade c)) τ)
     (hγ : SelfVis (D.grade c) γ)
     (sat : Saturation (D.grade c) s p ⟨c, GradedLe.refl _⟩ τ γ)
     (H : IsEndpoint (D.grade c) s τ γ h) :
-    ∃ (ρ : ExtOrd → ExtOrd) (δ : ExtOrd),
+    ∃ ρ δ,
       Witness (gTop (D.grade c)) ρ ∧ γ ≤ δ ∧ δ ≤ p ⟨c, GradedLe.refl _⟩ ∧
       SelfVis (D.grade c) δ ∧ ρ h = δ ∧
       (∀ e, min (p e) δ = min (ρ (s e)) δ) ∧
@@ -83,10 +84,10 @@ theorem alignment_at_endpoint (c : Cell D)
   have howner : h ≤ s self := H.le_owner sat
   obtain ⟨α, hα, _, hαread⟩ := exists_bounded_exact_capped_witness
     (grade := fun x : D.below (D.cell c) => D.grade x.1) (p := s) (c := self)
-    (fun x : D.below (D.cell c) => x.2.2) (hs.orderly self).symm (hs.locality self)
+    (fun x => x.2.2) (hs.orderly self).symm (hs.locality self)
   obtain ⟨β, hβ, hβbound, hβread⟩ := exists_bounded_exact_capped_witness
     (grade := fun x : D.below (D.cell c) => D.grade x.1) (p := p) (c := self)
-    (fun x : D.below (D.cell c) => x.2.2) (hp.orderly self).symm (hp.locality self)
+    (fun x => x.2.2) (hp.orderly self).symm (hp.locality self)
   have ha (e : D.below (D.cell c)) (he : s e < h) : α (sem.E c e) = s e :=
     (hαread e).trans (min_eq_left (he.le.trans howner))
   obtain ⟨ρ, δ, hρ, hγδ, hδM, hδvis, hend, hstrip, habove, hcap, hbound⟩ :=
@@ -133,17 +134,15 @@ theorem alignment_at_endpoint (c : Cell D)
 
 /-- The endpoint and retuning are constructed from lawful owner data. No source
 grid, first-reaching-grid assertion, or alignment conclusion is an input. -/
-theorem exists_alignment (c : Cell D)
-    {s p : D.below (D.cell c) → ExtOrd}
-    (hs : RespectsSemanticsBelow sem (D.cell c) s)
+theorem exists_alignment (hs : RespectsSemanticsBelow sem (D.cell c) s)
     (hp : RespectsSemanticsBelow sem (D.cell c) p)
     (hproper : ∀ e, s e ≠ ⊤) (hshort : ∀ e, Short (D.grade c) (s e))
-    {τ : ExtOrd → ExtOrd} {γ : ExtOrd}
+    {τ} {γ}
     (hτ : Witness (gTop (D.grade c)) τ)
     (hγ : SelfVis (D.grade c) γ) (hpos : ⊥ < γ) (hτbound : ∀ z, τ z ≤ γ)
     (hface : ∀ e, τ (s e) = min (p e) γ)
     (hpc : γ < p ⟨c, GradedLe.refl _⟩) :
-    ∃ (h : ExtOrd) (ρ : ExtOrd → ExtOrd) (δ : ExtOrd),
+    ∃ h ρ δ,
       IsEndpoint (D.grade c) s τ γ h ∧
       ⊥ < h ∧ h ≠ ⊤ ∧ SelfVis (D.grade c) h ∧ h ≤ s ⟨c, GradedLe.refl _⟩ ∧
       Witness (gTop (D.grade c)) ρ ∧ γ ≤ δ ∧ δ ≤ p ⟨c, GradedLe.refl _⟩ ∧
@@ -160,9 +159,11 @@ theorem exists_alignment (c : Cell D)
     obtain ⟨ρ, δ, hrest⟩ := alignment_at_endpoint c hs hp hshort hτ hγ sat H
     exact ⟨ρ, δ, H, hhpos, hhtop, hvis, howner, hrest⟩⟩
 
+end
+
 /-- A finite tail budget follows from an explicit complete-inventory bound.
 The number `m` is not tied to the cardinality of the prescribed owner face. -/
-theorem tail_room {j m : ℕ} {x : ExtOrd}
+theorem tail_room {j m : ℕ} {x}
     (hx : x ≤ ofOrd (Ordinal.omega0 * (2 * m : ℕ) + j)) :
     x < ofOrd (Ordinal.omega0 * (2 * m + 1 : ℕ)) :=
   hx.trans_lt (ofOrd_lt_ofOrd.mpr (code_add_lt_mul (Nat.cast_lt.mpr (by omega)) j))
@@ -170,20 +171,20 @@ theorem tail_room {j m : ℕ} {x : ExtOrd}
 /-- Construct the lawful encoded owner face and exact owner-capped readback.
 The complete source inventory controls the tail budget; the local endpoint is
 produced from the actual owner observations, not a separately assumed grid. -/
-theorem exists_coded_face (c : Cell D) [Fintype (D.below (D.cell c))]
-    {s p : D.below (D.cell c) → ExtOrd}
+theorem exists_coded_face c [Fintype (D.below (D.cell c))]
+    {s p}
     (hs : RespectsSemanticsBelow sem (D.cell c) s)
     (hp : RespectsSemanticsBelow sem (D.cell c) p)
     (hproper : ∀ e, s e ≠ ⊤) (hshort : ∀ e, Short (D.grade c) (s e))
-    (m : ℕ)
+    m
     (hbudget : s ⟨c, GradedLe.refl _⟩ ≤ ofOrd (Ordinal.omega0 * (2 * m : ℕ) + D.grade c))
-    {τ : ExtOrd → ExtOrd} {γ : ExtOrd}
+    {τ} {γ}
     (hτ : Witness (gTop (D.grade c)) τ)
     (hγ : SelfVis (D.grade c) γ) (hpos : ⊥ < γ) (hτbound : ∀ z, τ z ≤ γ)
     (hface : ∀ e, τ (s e) = min (p e) γ)
     (hpc : γ < p ⟨c, GradedLe.refl _⟩) :
-    ∃ (h : ExtOrd) (ρ : ExtOrd → ExtOrd) (δ : ExtOrd)
-        (f : D.below (D.cell c) → ExtOrd),
+    ∃ h ρ δ
+        f,
       IsEndpoint (D.grade c) s τ γ h ∧
       ⊥ < h ∧ SelfVis (D.grade c) h ∧ h ≤ s ⟨c, GradedLe.refl _⟩ ∧
       h < ofOrd (Ordinal.omega0 * (2 * m + 1 : ℕ)) ∧
@@ -213,10 +214,7 @@ theorem exists_coded_face (c : Cell D) [Fintype (D.below (D.cell c))]
   · exact AlignedCutEncoding.encode_cap s p₀ hroom halign
   · intro e
     apply AlignedCutEncoding.decode_encode s p₀ hρ.mono hroom hρh.ge
-    intro d
-    change min (ρ (s d)) δ = min (min (p d) (p ⟨c, GradedLe.refl _⟩)) δ
-    rw [min_assoc, min_eq_right hδM]
-    exact (hread d).symm
+    grind
 
 end
 end VaughtConjecture.Knight.OwnerLocalAlignment

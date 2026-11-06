@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.AmalgamationPlan.ClosedGeometry
-public import VaughtConjecture.Knight.VisibleFaceOneStep

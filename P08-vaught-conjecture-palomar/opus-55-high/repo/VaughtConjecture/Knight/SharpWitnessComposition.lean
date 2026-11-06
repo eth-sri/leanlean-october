@@ -32,22 +32,23 @@ noncomputable def trim (m : ℕ) : ExtOrd → ExtOrd
   | some ⊤ => ⊤
   | some (some a) => ofOrd (limitPart a + (min (finitePart a) m : ℕ))
 
-@[simp] theorem trim_bot (m : ℕ) : trim m ⊥ = ⊥ := rfl
-@[simp] theorem trim_top (m : ℕ) : trim m ⊤ = ⊤ := rfl
-@[simp] theorem trim_ofOrd (m : ℕ) (a : Ordinal.{0}) :
+@[simp] theorem trim_ofOrd m a :
     trim m (ofOrd a) = ofOrd (limitPart a + (min (finitePart a) m : ℕ)) := rfl
 
-theorem trim_eq {m : ℕ} {a : Ordinal.{0}} (ha : finitePart a ≤ m) :
+theorem trim_eq {m} {a} (ha : finitePart a ≤ m) :
     trim m (ofOrd a) = ofOrd a := by
   rw [trim_ofOrd, min_eq_left ha, decomposition]
 
-theorem trim_mono (m : ℕ) : Monotone (trim m) := by
+section
+variable (m : ℕ)
+
+theorem trim_mono  : Monotone (trim m) := by
   intro x y hxy
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · exact bot_le
   · rw [top_le_iff.mp hxy]
   · rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
-    · exact False.elim (not_ofOrd_le_bot _ hxy)
+    · grind
     · exact le_top
     · rw [trim_ofOrd, trim_ofOrd, ofOrd_le_ofOrd]
       have hab := ofOrd_le_ofOrd.mp hxy
@@ -59,7 +60,7 @@ theorem trim_mono (m : ℕ) : Monotone (trim m) := by
           (limitPart_add_omega0_le hl)).trans le_self_add
 
 /-- Bounded replacements commute with source flattening. -/
-theorem trim_evr (m : ℕ) (x : ExtOrd) {k i : ℕ} (hk : k ≤ m) (hi : i ≤ k) :
+theorem trim_evr x {k i} (hk : k ≤ m) (hi : i ≤ k) :
     trim m (extVisibilityReplace x k i) = extVisibilityReplace (trim m x) k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · rfl
@@ -74,6 +75,8 @@ theorem trim_evr (m : ℕ) (x : ExtOrd) {k i : ℕ} (hk : k ≤ m) (hi : i ≤ k
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha), trim_ofOrd,
         extVisibilityReplace_of_le_finitePart (by
           rw [finitePart_limitPart_add_nat]; exact le_min (not_lt.mp ha) hk)]
+
+end
 
 /-- The weak data needed before repairing the higher-grade bottom guard. -/
 structure BoundedMap (m : ℕ) (f : ExtOrd → ExtOrd) : Prop where
@@ -95,7 +98,7 @@ theorem trim_bot_block {a b : Ordinal.{0}} (hab : limitPart a = limitPart b)
     apply le_bot_iff.mp
     exact (hf.mono (ofOrd_le_ofOrd.mpr le_self_add)).trans_eq ha
   by_cases hm : m = 0
-  · simpa [trim_ofOrd, hm, ← hab] using hfloor
+  · simp_all
   have he : extVisibilityReplace (ofOrd (limitPart a)) m (min (finitePart b) m) =
       trim m (ofOrd b) := by
     rw [extVisibilityReplace_of_finitePart_lt (by
@@ -135,38 +138,41 @@ end BoundedMap
 def Short (m : ℕ) (x : ExtOrd) : Prop :=
   x = ⊥ ∨ x = ⊤ ∨ ∃ a : Ordinal.{0}, x = ofOrd a ∧ finitePart a ≤ m
 
-theorem trim_of_short {m : ℕ} {x : ExtOrd} (hx : Short m x) : trim m x = x := by
+theorem trim_of_short {m} {x} (hx : Short m x) : trim m x = x := by
   rcases hx with rfl | rfl | ⟨a, rfl, ha⟩
   · rfl
   · rfl
   · exact trim_eq ha
 
+section
+variable {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
+
 /-- The function composite has bounded commutation, even without bottom reflection. -/
-theorem bounded_comp {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
-    (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
+theorem bounded_comp (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
     BoundedMap m (ν ∘ σ) where
   bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
   mono := hν.mono.comp hσ.mono
   comm := by
     intro x k i hk hi
-    simp only [Function.comp_apply]
+    simp_all
     rw [hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi,
       hν.clause5 (σ x) k (by rw [gTop_of_le (hk.trans hmK)]; exact le_top) i hi]
 
 /-- Repair the composite off the row. Every grade-short source is unchanged. -/
-theorem comp_read {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
-    (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧
+theorem comp_read (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
+    ∃ τ, Witness (gTop m) τ ∧
       ∀ x, Short m x → τ x = ν (σ x) := by
   refine ⟨(ν ∘ σ) ∘ trim m, (bounded_comp hσ hν hmK).witness, ?_⟩
   intro x hx
   simp only [Function.comp_apply, trim_of_short hx]
 
+end
+
 /-- A source-short controller locality survives any normalized outer shifter of
 at least its grade. The witness is repaired, not the semantic source row. -/
 theorem map_capped_locality
-    {X : Type*} {grade : X → ℕ} {E p : X → ExtOrd} {c : X}
-    {K : ℕ} {ν : ExtOrd → ExtOrd}
+    {X} {grade} {E p : X → ExtOrd} {c}
+    {K} {ν}
     (hmax : ∀ d, grade d ≤ grade c) (hcK : grade c ≤ K)
     (hshort : ∀ d, Short (grade c) (E d))
     (hvis : SelfVis (grade c) (p c))

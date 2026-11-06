@@ -54,7 +54,7 @@ theorem card_S (place : Fin N ↪ ι) (hS : Finset.univ.image place = S) : S.car
 omit [Fintype I] in
 /-- With one point beyond the private face, a proper subset of `A` containing `S` is `S`. -/
 theorem eq_S_of_subset (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
-    (hcard : A.card = N + 1) {B : Finset ι} (hBA : B ⊆ A) (hBne : B ≠ A) (hSB : S ⊆ B) :
+    (hcard : A.card = N + 1) {B} (hBA : B ⊆ A) (hBne : B ≠ A) (hSB : S ⊆ B) :
     B = S := by
   have hlt : B.card < A.card := Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr ⟨hBA, hBne⟩)
   have hle : B.card ≤ S.card := by rw [card_S place hS]; omega
@@ -64,11 +64,11 @@ theorem eq_S_of_subset (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
 not containing the private face: those owners are old, and their diagonals are mute. -/
 theorem bot_of_mute (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
     (hcard : A.card = N + 1)
-    (hmute : ∀ x : Cell D, D.grade x = N → D.scope x ≠ S →
+    (hmute : ∀ x, D.grade x = N → D.scope x ≠ S →
       F.sem.E x ⟨x, GradedLe.refl _⟩ = ⊥)
-    {B : Finset ι} (hBA : B ⊆ A) (hBne : B ≠ A) (hBS : B ≠ S)
-    {p : F.carrier.below (B, N) → ExtOrd} (hp : RespectsSemanticsBelow F.rows (B, N) p)
-    (e : F.carrier.below (B, N)) (he : F.carrier.grade e.1 = N) : p e = ⊥ := by
+    {B} (hBA : B ⊆ A) (hBne : B ≠ A) (hBS : B ≠ S)
+    {p} (hp : RespectsSemanticsBelow F.rows (B, N) p)
+    e (he : F.carrier.grade e.1 = N) : p e = ⊥ := by
   obtain ⟨x, hx⟩ := F.proper_occurrence hBA hBne e
   have hxg : D.grade x.1 = N := by
     have h := congrArg Prod.snd (F.old_index x.1)
@@ -97,12 +97,12 @@ theorem bountiful
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (A, N)),
       (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
+      (∀ d : D.below (D.cell c.1), ∃ f, F.lower a d.1 = a.val f))
     (hpriv : ∀ a d, F.lower a (E.map d) = a.val (.priv d))
     (hcard : A.card = N + 1)
-    (hmute : ∀ x : Cell D, D.grade x = N → D.scope x ≠ S →
+    (hmute : ∀ x, D.grade x = N → D.scope x ≠ S →
       F.sem.E x ⟨x, GradedLe.refl _⟩ = ⊥)
-    (hpred : ∀ (I J : Finset ι × ℕ), I ∈ Plan.gradedPlan D.plan → J ∈ Plan.gradedPlan D.plan →
+    (hpred : ∀ I J, I ∈ Plan.gradedPlan D.plan → J ∈ Plan.gradedPlan D.plan →
       (h : GradedLe I J) → ¬ GradedLe (A, N) J → CappedLift F.sem h) :
     F.rows.IsBountiful := by
   have hN : 2 ≤ N := by have := R.arity_lt; omega

@@ -53,13 +53,8 @@ noncomputable def knightTower : TypeTower.{1} LimitStage where
   reduce_trans {α β _} hαβ hβγ {_} r := reduceType_trans α.2 β.2 hαβ hβγ r
   pull_reduce {α _} h {_ _} f q := typeMap_reduceType_comm α.2 h f q
 
-@[simp] theorem knightTower_Ty (α : LimitStage) (n : ℕ) : knightTower.Ty α n = S α.1 n := rfl
-
-@[simp] theorem knightTower_pull {α : LimitStage} {m n : ℕ} (f : Fin m ↪ Fin n) (t : S α.1 n) :
+@[simp] theorem knightTower_pull {α : LimitStage} {m n} (f : Fin m ↪ Fin n) (t : S α.1 n) :
     knightTower.pull f t = typeMap f t := rfl
-
-@[simp] theorem knightTower_reduce {α β : LimitStage} (h : α ≤ β) {n : ℕ} (t : S β.1 n) :
-    knightTower.reduce h t = reduceType α.2 h t := rfl
 
 /-- The Knight tower has **permutation-total pull**: the range of a permutation is the whole
 domain, which is a visible face of every plan (`IsPlan.domain_mem`).  Hence, for Knight

@@ -33,9 +33,12 @@ def relabelFree (g : α → β) : ∀ {n : ℕ}, L.BoundedFormulaInf ι α n →
 
 variable {M : Type w} [L.Structure M]
 
+section
+variable (g : α → β)
+
 /-- Relabelling free variables is realized along the composite valuation. -/
-theorem realize_relabelFree (g : α → β) :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaInf ι α n) (v : β → M) (xs : Fin n → M),
+theorem realize_relabelFree  :
+    ∀ {n} (φ : L.BoundedFormulaInf ι α n) v (xs : Fin n → M),
       (relabelFree g φ).Realize v xs ↔ φ.Realize (v ∘ g) xs := by
   intro n φ
   induction φ with
@@ -67,8 +70,8 @@ theorem realize_relabelFree (g : α → β) :
     exact forall_congr' fun i => ih i v xs
 
 /-- Relabelling free variables preserves the quantifier rank. -/
-theorem qrank_relabelFree (g : α → β) :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaInf ι α n), (relabelFree g φ).qrank = φ.qrank := by
+theorem qrank_relabelFree  :
+    ∀ {n} (φ : L.BoundedFormulaInf ι α n), (relabelFree g φ).qrank = φ.qrank := by
   intro n φ
   induction φ with
   | falsum => rfl
@@ -86,5 +89,7 @@ theorem qrank_relabelFree (g : α → β) :
   | iInf φs ih =>
     change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
     exact iSup_congr ih
+
+end
 
 end FirstOrder.Language.BoundedFormulaInf

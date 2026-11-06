@@ -15,7 +15,6 @@ catalogue, while the rendered vector reads the incoming numerical values.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd LadderScalarRendering
 noncomputable section
@@ -27,16 +26,21 @@ def renderWith (a : Q) (p : X → ExtOrd) (C : ExtOrd) :
     Cell (carrier D hA (X := X) (Q := Q)) → ExtOrd :=
   image D hA field fields a (LadderScalarRendering.level (values p) C)
 
-theorem renderWith_old (a : Q) (p : X → ExtOrd) (C : ExtOrd)
+section
+variable (a : Q) (p : X → ExtOrd)
+
+theorem renderWith_old C
     (hr : ∀ x, ranks fields a x = fieldRank p x) (d : Cell D) :
     renderWith D hA field fields a p C (old D hA d) = p (field d) := by
   simp only [renderWith, image, rankIndex_old, hr, field_readback]
 
-theorem renderWith_bound (a : Q) (p : X → ExtOrd) {C : ExtOrd}
+theorem renderWith_bound {C : ExtOrd}
     (hC : ∀ x, p x ≤ C) (d : Cell (carrier D hA (X := X) (Q := Q))) :
     renderWith D hA field fields a p C d ≤ C := level_le (values_bound hC) _
 
-theorem renderWith_respects {j : ℕ} (a : Q) (p : X → ExtOrd) {C : ExtOrd}
+end
+
+theorem renderWith_respects {j} a (p : X → ExtOrd) {C}
     (hr : ∀ x, ranks fields a x = fieldRank p x)
     (hC : ∀ x, p x ≤ C) (hv : ∀ x, SelfVis 1 (p x)) (hvis : SelfVis 1 C)
     (ha : RespectsSemanticsBelow sem (A, j) (fun d => p (field d.1))) :
@@ -56,7 +60,7 @@ theorem renderWith_respects {j : ℕ} (a : Q) (p : X → ExtOrd) {C : ExtOrd}
     simpa only [hr, field_readback] using ha
 
 /-- Agreement includes unused rungs and shadows of every retained anchor. -/
-theorem renderWith_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
+theorem renderWith_agreement {a b} {p q : X → ExtOrd} {C h}
     (hra : ∀ x, ranks fields a x = fieldRank p x)
     (hrb : ∀ x, ranks fields b x = fieldRank q x)
     (ha : ∀ x, p x ≤ C) (hb : ∀ x, q x ≤ C) (hC : h ≤ C)
@@ -79,7 +83,7 @@ theorem renderWith_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
     rw [rankIndex_added]
     exact hh
 
-theorem renderWith_supported (a : Q) (p : X → ExtOrd) (C : ExtOrd)
+theorem renderWith_supported a (p : X → ExtOrd) C
     (d : Cell (carrier D hA (X := X) (Q := Q))) :
     renderWith D hA field fields a p C d = ⊥ ∨
       (∃ x, renderWith D hA field fields a p C d = p x) ∨

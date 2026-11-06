@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HighLayerBountiful
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Literal section supply with a zero high tail
 
@@ -16,7 +18,6 @@ It requires neither positive continuation nor a supported canonical encoding.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension SourceLayerCarrier GradeTailRestoration
 noncomputable section

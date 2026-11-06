@@ -16,26 +16,38 @@ They do not change the refuted `PairedMixedGradeLayers` construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedEncoding
 open Transform Value ExtOrd PairedSlotEncoding
 noncomputable section
 
-def codeOrd (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : Ordinal.{0} :=
+section
+variable (j : ℕ) (S : Finset Ordinal.{0})
+
+def codeOrd (a : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * block j S a + offset j S a
 
-def codedValues (j : ℕ) (S : Finset Ordinal.{0}) : Finset Ordinal.{0} :=
+def codedValues  : Finset Ordinal.{0} :=
   S.image (codeOrd j S)
 
-theorem codeOrd_finitePart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+end
+
+section
+variable (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0})
+
+theorem codeOrd_finitePart  :
     finitePart (codeOrd j S a) = offset j S a := by
   exact finitePart_mul_add _ _
 
-theorem codeOrd_limitPart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem codeOrd_limitPart  :
     limitPart (codeOrd j S a) = Ordinal.omega0 * block j S a := by
   exact limitPart_mul_add _ _
 
-theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+end
+
+section
+variable {j : ℕ} {S : Finset Ordinal.{0}}
+
+theorem orbit_codeOrd_iff {a}
     (ha : a ∈ S) : Orbit j (codedValues j S) (codeOrd j S a) ↔ Orbit j S a := by
   classical
   constructor
@@ -47,10 +59,7 @@ theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
       simp only [offset, ite_eq_right hn, lt_self_iff_false] at hbj
     have he : block j S b = block j S a := by
       simp only [codeOrd_limitPart] at hba
-      have h := congrArg blockIdx hba
-      have hz (n : ℕ) : blockIdx (Ordinal.omega0 * n) = (n : Ordinal.{0}) := by
-        simpa only [Nat.cast_zero, add_zero] using blockIdx_mul_add n 0
-      simpa only [hz, Nat.cast_inj] using h
+      simp_all
     by_contra hoa
     simp only [block, ite_eq_left hob, ite_eq_right hoa] at he
     omega
@@ -62,22 +71,22 @@ theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     · simpa only [codeOrd_finitePart, offset, ite_eq_left hob] using hbj
     · simp only [codeOrd_limitPart, block_eq_of_key_eq hb ha hk]
 
-theorem key_codeOrd_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
-    (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
+section
+variable {a b : Ordinal.{0}}
+
+theorem key_codeOrd_eq_of_key_eq (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
     key j (codedValues j S) (codeOrd j S a) =
       key j (codedValues j S) (codeOrd j S b) := by
-  classical
   have he := block_eq_of_key_eq ha hb hk
   by_cases hoa : Orbit j S a
   · have hob := (orbit_iff_of_key_eq ha hb hk).mp hoa
     simp only [key, ite_eq_left ((orbit_codeOrd_iff ha).mpr hoa),
       ite_eq_left ((orbit_codeOrd_iff hb).mpr hob), codeOrd_limitPart, he]
   · have hob : ¬ Orbit j S b := fun h => hoa ((orbit_iff_of_key_eq ha hb hk).mpr h)
-    have hab : a = b := by simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
+    have hab := by simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
     rw [hab]
 
-theorem key_codeOrd_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
-    (ha : a ∈ S) (hk : key j S a < key j S b) :
+theorem key_codeOrd_lt_of_key_lt (ha : a ∈ S) (hk : key j S a < key j S b) :
     key j (codedValues j S) (codeOrd j S a) <
       key j (codedValues j S) (codeOrd j S b) := by
   have he := block_lt_of_key_lt ha hk
@@ -88,35 +97,37 @@ theorem key_codeOrd_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordin
   apply hlt.trans_le
   unfold key
   split_ifs
-  · exact le_rfl
+  · grind
   · exact limitPart_le _
 
-theorem key_codeOrd_lt_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
-    (ha : a ∈ S) (hb : b ∈ S) :
+theorem key_codeOrd_lt_iff (ha : a ∈ S) (hb : b ∈ S) :
     key j (codedValues j S) (codeOrd j S a) <
       key j (codedValues j S) (codeOrd j S b) ↔ key j S a < key j S b := by
   constructor
   · intro h
     rcases lt_trichotomy (key j S a) (key j S b) with hlt | he | hgt
-    · exact hlt
+    · grind
     · exact (h.ne (key_codeOrd_eq_of_key_eq ha hb he)).elim
     · exact (lt_asymm h (key_codeOrd_lt_of_key_lt hb hgt)).elim
   · exact key_codeOrd_lt_of_key_lt ha
 
-theorem key_codeOrd_eq_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
-    (ha : a ∈ S) (hb : b ∈ S) :
+theorem key_codeOrd_eq_iff (ha : a ∈ S) (hb : b ∈ S) :
     key j (codedValues j S) (codeOrd j S a) =
       key j (codedValues j S) (codeOrd j S b) ↔ key j S a = key j S b := by
   constructor
   · intro h
     rcases lt_trichotomy (key j S a) (key j S b) with hlt | he | hgt
     · exact ((key_codeOrd_lt_of_key_lt ha hlt).ne h).elim
-    · exact he
+    · grind
     · exact ((key_codeOrd_lt_of_key_lt hb hgt).ne h.symm).elim
   · exact key_codeOrd_eq_of_key_eq ha hb
 
-theorem rank_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
-    (ha : a ∈ S) : rank j (codedValues j S) (codeOrd j S a) = rank j S a := by
+end
+
+section
+variable {a : Ordinal.{0}}
+
+theorem rank_codeOrd (ha : a ∈ S) : rank j (codedValues j S) (codeOrd j S a) = rank j S a := by
   classical
   let rep (x : Ordinal.{0}) (hx : x ∈ PairedSlotEncoding.keys j S) : Ordinal.{0} :=
     Classical.choose (Finset.mem_image.mp hx)
@@ -148,8 +159,7 @@ theorem rank_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     refine ⟨key j S b, hm, ?_⟩
     exact key_codeOrd_eq_of_key_eq (rep_spec _ hk).1 hb (rep_spec _ hk).2
 
-theorem encode_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
-    (ha : a ∈ S) : encode j (codedValues j S) (codeOrd j S a) = encode j S a := by
+theorem encode_codeOrd (ha : a ∈ S) : encode j (codedValues j S) (codeOrd j S a) = encode j S a := by
   classical
   have hr := rank_codeOrd (j := j) ha
   by_cases ho : Orbit j S a
@@ -160,12 +170,18 @@ theorem encode_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
       fun h => ho ((orbit_codeOrd_iff ha).mp h)
     simp only [encode, block, offset, ite_eq_right ho, ite_eq_right hc, hr]
 
+end
+
+end
+
 section Profile
 variable {X : Type*} [Fintype X]
 
-theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
+section
+variable (j : ℕ) (p : X → ExtOrd)
+
+theorem values_normalize  :
     values (normalize j p) = codedValues j (values p) := by
-  classical
   ext a
   rw [mem_values, codedValues, Finset.mem_image]
   constructor
@@ -182,7 +198,7 @@ theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
 
 /-- Paired normalization is a retraction, with no bound on the original ordinals.
 Literal top stays top; membership of the finite proper catalogue is separate. -/
-theorem normalize_idempotent (j : ℕ) (p : X → ExtOrd) :
+theorem normalize_idempotent  :
     normalize j (normalize j p) = normalize j p := by
   funext d
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
@@ -190,6 +206,8 @@ theorem normalize_idempotent (j : ℕ) (p : X → ExtOrd) :
   · simp only [PairedSlotEncoding.normalize, ht]
   · rw [normalize_ofOrd (normalize_ofOrd ha), values_normalize, normalize_ofOrd ha]
     exact encode_codeOrd (mem_values.mpr ⟨d, ha⟩)
+
+end
 
 end Profile
 end

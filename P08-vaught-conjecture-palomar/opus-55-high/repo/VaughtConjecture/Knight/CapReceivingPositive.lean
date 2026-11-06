@@ -23,8 +23,8 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 /-- A single positive chart bootstraps empty-root receiving. -/
 theorem of_positive_chart (hcons : R.IsExactParentConsistent)
     (hchart : ∃ (m : ℕ) (u : Fin (m + 1) ↪ M) (P : S α.1 (m + 1)), R.eval u = some P)
-    (hpos : ∀ {n : ℕ}, 0 < n → ∀ (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-      ∀ q : S α.1 (n + 1), IsCoface p q →
+    (hpos : ∀ {n}, 0 < n → ∀ t (p : S α.1 n), R.eval t = some p →
+      ∀ q, IsCoface p q →
         ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
           ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
             R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
@@ -75,8 +75,8 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
 theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
     (hcover : R.IsInitialSegmentCovering)
     (hpos : ∀ {n : ℕ}, 0 < n → ∀ (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-      ∀ q : S α.1 (n + 1), IsCoface p q →
-        ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
+      ∀ q, IsCoface p q →
+        ∀ δ, ⊥ < δ → δ < ofOrd α.1 →
           ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
             R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
               ∀ d, min (r.label d) δ = min (q.label (SemScheme.castCell he d)) δ) :

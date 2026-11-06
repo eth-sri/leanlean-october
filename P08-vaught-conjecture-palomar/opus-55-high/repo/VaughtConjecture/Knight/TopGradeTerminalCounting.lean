@@ -32,7 +32,6 @@ as hypotheses here and supplied in `ConstructedTerminalCountability`.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TopGradeTerminalCounting
 open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
 noncomputable section
@@ -50,7 +49,7 @@ so no actual cover has a top cell, and every tuple (in particular the empty one)
 globally rigid core. -/
 theorem rigidCore_of_isCoinitial_zero
     (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = 0})
-    {k : ℕ} (B : Fin k ↪ M) : TopSupportRigidCore.RigidCore W B := by
+    {k} (B : Fin k ↪ M) : TopSupportRigidCore.RigidCore W B := by
   intro m C c hc e he H hH ht
   apply Set.Subset.antisymm hH.subset
   intro d hd
@@ -60,9 +59,9 @@ theorem rigidCore_of_isCoinitial_zero
   exact ((c.scheme.scheme.grade_pos d).ne' (Nat.le_zero.mp hg)).elim
 
 /-- Without a globally rigid core, an eventual top grade is positive. -/
-theorem pos_of_isCoinitial {K : ℕ}
+theorem pos_of_isCoinitial {K}
     (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = K})
-    (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B) : 0 < K := by
+    (hres : ∀ {k} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B) : 0 < K := by
   rcases Nat.eq_zero_or_pos K with rfl | hK
   · exact (hres (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
       (rigidCore_of_isCoinitial_zero hcoin _)).elim
@@ -72,12 +71,12 @@ theorem pos_of_isCoinitial {K : ℕ}
 same stage without globally rigid cores, whose top grades are eventually the same `K`,
 are isomorphic. Positivity of `K` is derived, not assumed. -/
 theorem nonempty_iso_of_isCoinitial {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
-    {W₁ : KnightRealization α M₁} {W₂ : KnightRealization α M₂}
-    (hM₁ : W₁.IsModel) (hM₂ : W₂.IsModel) {K : ℕ}
+    {W₁ : KnightRealization α M₁} {W₂}
+    (hM₁ : W₁.IsModel) (hM₂ : W₂.IsModel) {K}
     (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
-    (hres₁ : ∀ {k : ℕ} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
-    (hres₂ : ∀ {k : ℕ} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B) :
+    (hres₁ : ∀ {k} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
+    (hres₂ : ∀ {k} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B) :
     Nonempty (W₁.Iso W₂) := by
   have := hM₁.nonempty
   have := hM₂.nonempty
@@ -146,7 +145,7 @@ theorem countable_terminalClass {ρ : Ordinal.{0}} (hρ : ρ < (aleph 1).ord)
 
 /-- The same count in the neutral per-rank fibre contract. -/
 theorem countableTerminalFibres_of_growth_results
-    (hprolong : ∀ (ρ : Ordinal.{0}), ρ < (aleph 1).ord → ∀ W : TerminalModel ρ,
+    (hprolong : ∀ ρ, ρ < (aleph 1).ord → ∀ W : TerminalModel ρ,
       ¬ W.1.IsHollow → W.1.HasTopGradeGrowth →
         W.1.ProlongsToIn IsModelClass (blockStage_le_succ ρ))
     (hcompare : ∀ (ρ : Ordinal.{0}), ρ < (aleph 1).ord →

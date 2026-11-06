@@ -19,7 +19,6 @@ Adapted from `LowOnlyPaddedCharts` on the unchanged growth rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedCharts
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedSuccessor GrowthPaddedDecode
@@ -33,7 +32,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem source_short (a : Catalogue X 2) (d : Cell (carrier I X T hA hB hC)) :
+theorem source_short a (d : Cell (carrier I X T hA hB hC)) :
     SharpWitnessComposition.Short 2 (source I X T hA hB hC a d) := by
   rcases source_supported I X T hA hB hC a d with hz | hg | ⟨f, i, hi, he⟩
   · exact Or.inl hz
@@ -51,7 +50,7 @@ The chart reads the complete physical vector, not just the original fields. -/
 theorem exists_chart
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q) :
-    ∃ a : Catalogue X 2, ∃ σ : ExtOrd → ExtOrd, ∃ M : ExtOrd,
+    ∃ a, ∃ σ, ∃ M,
       Witness (gTop 2) σ ∧
       (∀ d, (carrier I X T hA hB hC).grade d.1 = 2 → q d ≤ M) ∧
       ∀ d, σ (source I X T hA hB hC a d.1) = min (q d) M := by
@@ -69,8 +68,7 @@ theorem exists_chart
     have hr := H.read_capped d d.2.2
     have he : (rows I X T hA hB hC).E H.owner.1
         (H.occurrence d d.2.2) = source I X T hA hB hC a d.1 := by
-      have hr' : ∀ e : (carrier I X T hA hB hC).below
-          ((carrier I X T hA hB hC).cell H.owner.1),
+      have hr' : ∀ e,
           (rows I X T hA hB hC).E H.owner.1 e =
             source I X T hA hB hC a e.1 := by
         rw [ha]

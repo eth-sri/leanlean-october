@@ -60,7 +60,7 @@ theorem setCountable_Iio_of_lt_omega1 (β : Ordinal.{0}) (hβ : β < Ordinal.ome
 /-- **Rank under a relation homomorphism.**  If `f : r →r s` sends every `r`-step to an `s`-step,
 then the `r`-rank of `a` is at most the `s`-rank of `f a`.  No injectivity is assumed: distinct
 points may share an image, since only the steps below `a` are transported. -/
-theorem rank_le_rank_of_relHom {α β : Type u} {r : α → α → Prop} {s : β → β → Prop}
+theorem rank_le_rank_of_relHom {α β} {r} {s : β → β → Prop}
     [WellFounded r] [WellFounded s] (f : r →r s) (a : α) :
     WellFounded.rank r a ≤ WellFounded.rank s (f a) := by
   induction a using WellFounded.induction' r with

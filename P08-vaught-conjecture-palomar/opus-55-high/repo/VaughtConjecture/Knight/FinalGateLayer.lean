@@ -24,7 +24,6 @@ No shortness condition is imposed on inherited rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
 noncomputable section
@@ -68,39 +67,43 @@ abbrev controller := SeparatedSourceLayerCarrier.controller D (Node (Q := Q))
 abbrev member := (SeparatedSourceLayerCarrier.controllerEquiv D (Node (Q := Q))
   N I.positive I.height I.separated).symm
 
-@[simp] theorem member_controller (a : Q) (marked : Bool) :
+@[simp] theorem member_controller a marked :
     I.member (I.controller (a, marked)) = (a, marked) := Equiv.symm_apply_apply _ _
 
-@[simp] theorem old_index (d : Cell D) : I.carrier.cell (I.old d) = D.cell d :=
+@[simp] theorem old_index d : I.carrier.cell (I.old d) = D.cell d :=
   SourceLayerCarrier.cell_toCell _ _ _ _ _ _
 
-@[simp] theorem added_index (a : Q) (marked : Bool) :
+@[simp] theorem added_index a marked :
     I.carrier.cell (I.added a marked) = (A, N) :=
   SourceLayerCarrier.cell_toCell _ _ _ _ _ _
 
-theorem old_strictMono : StrictMono I.old :=
-  SourceLayerCarrier.old_order D (Node (Q := Q)) N I.positive I.height
+theorem old_strictMono : StrictMono I.old := by tauto
 
 /-- The old occurrence inventory is exhaustive on every proper scope. -/
-theorem proper_occurrence {S : Finset ι} {k : ℕ} (hS : S ⊆ A) (hne : S ≠ A)
+theorem proper_occurrence {S} {k} (hS : S ⊆ A) (hne : S ≠ A)
     (d : I.carrier.below (S, k)) :
     ∃ x : D.below (S, k), d.1 = I.old x.1 := by
   have hn : I.carrier.cell d.1 ≠ (A, N) := by
     intro he
     exact hne (Finset.Subset.antisymm hS (he ▸ d.2).1)
-  obtain ⟨x, hx⟩ := SourceLayerCarrier.old_occurrence D (Node (Q := Q)) N
+  obtain ⟨x, hx⟩ := SourceLayerCarrier.old_occurrence D (Node) N
     I.positive I.height d.1 hn
   refine ⟨⟨x, ?_⟩, hx⟩
   simpa only [hx, I.old_index] using d.2
 
-def lowerVector (a : Q) (d : Cell I.carrier) : ExtOrd :=
+section
+variable (a : Q)
+
+def lowerVector (d : Cell I.carrier) : ExtOrd :=
   match SourceLayerCarrier.toOcc D (Node (Q := Q)) N I.positive I.height d with
   | .inl x => I.lower a x
   | .inr _ => ⊥
 
-theorem lowerVector_old (a : Q) (d : Cell D) :
+theorem lowerVector_old d :
     I.lowerVector a (I.old d) = I.lower a d := by
   simp only [lowerVector, old, SourceLayerCarrier.toOcc_toCell]
+
+end
 
 def data : ScopedSourcePrefixLayer.Data I.carrier N X where
   base := SeparatedSourceLayerCarrier.base D (Node (Q := Q)) N
@@ -144,78 +147,94 @@ def nodeWeight (v : Node (Q := Q)) : ExtOrd :=
   if v.2 then I.fields v.1 I.gate else I.ceiling
 def weight (q : Controller I.carrier N) : ExtOrd := I.nodeWeight (I.member q)
 
-theorem weight_visible (q : Controller I.carrier N) : SelfVis N (I.weight q) := by
+section
+variable (q : Controller I.carrier N)
+
+theorem weight_visible  : SelfVis N (I.weight q) := by
   unfold weight nodeWeight
   split
   · exact I.gate_visible _
   · exact I.grid_visible _ I.ceiling_mem
 
-theorem weight_bound (q : Controller I.carrier N) : I.weight q ≤ I.ceiling := by
+theorem weight_bound  : I.weight q ≤ I.ceiling := by
   unfold weight nodeWeight
   split
   · exact I.gate_bound _
-  · exact le_rfl
+  · grind
 
-theorem weight_kind (q : Controller I.carrier N) :
+theorem weight_kind  :
     I.weight q = I.data.ceiling ∨ ∃ x, I.weight q = I.data.boundary q x := by
   unfold weight nodeWeight
   split
-  · exact Or.inr ⟨I.gate, rfl⟩
-  · exact Or.inl rfl
+  · aesop
+  · aesop
 
-theorem parent (q : Controller I.carrier N) :
+theorem parent  :
     ∃ p, I.data.boundary p = I.data.boundary q ∧ I.weight p = I.data.ceiling := by
   refine ⟨I.controller ((I.member q).1, false), ?_, ?_⟩
   · change I.fields (I.member (I.controller _)).1 = _
-    rw [member_controller]
-    rfl
+    aesop
   · simp only [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
     rfl
+
+end
 
 abbrev rows := WeightedSourcePrefixLayer.rows I.data I.weight I.weight_visible
 abbrev source (a : Q) :=
   WeightedSourcePrefixLayer.master I.data I.weight (I.controller (a, false))
 
-theorem source_lawful (a : Q) : RespectsSemanticsBelow I.rows (A, N)
+section
+variable (a : Q)
+
+theorem source_lawful  : RespectsSemanticsBelow I.rows (A, N)
     (fun d => I.source a d.1) :=
   WeightedSourcePrefixLayer.master_respects I.data I.weight I.weight_visible I.parent _
 
-theorem source_old (a : Q) (d : Cell D) : I.source a (I.old d) = I.lower a d := by
+theorem source_old d : I.source a (I.old d) = I.lower a d := by
   rw [source, WeightedSourcePrefixLayer.master_old _ _ _
     (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ I.separated d)]
   change I.lowerVector (I.member (I.controller (a, false))).1 (I.old d) = _
   rw [member_controller, lowerVector_old]
 
-theorem source_added (a b : Q) (marked : Bool) :
+end
+
+section
+variable (a b : Q)
+
+theorem source_added marked :
     I.source a (I.added b marked) =
       min (cut I.grid (I.fields a) (I.fields b)) (I.nodeWeight (b, marked)) := by
   rw [source, show I.added b marked = (I.controller (b, marked)).1 from rfl,
     WeightedSourcePrefixLayer.master_new]
   simp only [data, weight, member_controller]
 
-theorem source_marked (a b : Q) : I.source a (I.added b true) =
+theorem source_marked  : I.source a (I.added b true) =
     min (I.fields a I.gate) (cut I.grid (I.fields a) (I.fields b)) := by
   rw [source_added]
-  change min (cut I.grid (I.fields a) (I.fields b)) (I.fields b I.gate) = _
   rw [min_comm]
   exact (agree_cut I.bot_mem _ _ I.gate).symm
 
-theorem source_marked_le (a b : Q) : I.source a (I.added b true) ≤ I.fields a I.gate := by
+theorem source_marked_le  : I.source a (I.added b true) ≤ I.fields a I.gate := by
   rw [source_marked]
   exact min_le_left _ _
 
-theorem source_own_marked (a : Q) : I.source a (I.added a true) = I.fields a I.gate := by
+end
+
+section
+variable (a : Q)
+
+theorem source_own_marked  : I.source a (I.added a true) = I.fields a I.gate := by
   rw [source_marked, cut_refl I.ceiling_mem I.grid_bound, min_eq_left (I.gate_bound a)]
 
-theorem source_own_leaf (a : Q) : I.source a (I.added a false) = I.ceiling := by
+theorem source_own_leaf  : I.source a (I.added a false) = I.ceiling := by
   rw [source_added, cut_refl I.ceiling_mem I.grid_bound]
   exact min_self _
 
-theorem source_bound (a : Q) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ N) :
+theorem source_bound d (hd : I.carrier.grade d ≤ N) :
     I.source a d ≤ I.ceiling :=
   WeightedSourcePrefixLayer.master_bound I.data I.weight _ d hd
 
-theorem leaf_row (a : Q) (d : I.carrier.below (I.carrier.cell (I.added a false))) :
+theorem leaf_row d :
     I.rows.E (I.added a false) d = I.source a d.1 := by
   have hw : I.weight (I.controller (a, false)) = I.ceiling := by
     simp only [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
@@ -225,29 +244,31 @@ theorem leaf_row (a : Q) (d : I.carrier.below (I.carrier.cell (I.added a false))
       exact I.source_bound a d.1
         (by simpa only [CellScheme.grade, added_index] using d.2.2))
 
+end
+
 theorem source_supported
     (hlower : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (I.grid : Set ExtOrd) (I.fields a) (I.lower a d))
-    (a : Q) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ N) :
+    a d (hd : I.carrier.grade d ≤ N) :
     OrbitPrefixSupport.Supported N (I.grid : Set ExtOrd) (I.fields a) (I.source a d) := by
   have h := WeightedSourcePrefixLayer.master_supported I.data I.weight I.weight_visible
     I.weight_kind (fun q d hg hn => ?_) (I.controller (a, false)) d hd
   · simpa only [source, data, member_controller] using h
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Node (Q := Q)) N
+  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Node) N
       I.positive I.height d hn
     change OrbitPrefixSupport.Supported N (I.grid : Set ExtOrd)
       (I.fields (I.member q).1) (I.lowerVector _ (I.old x))
     rw [lowerVector_old]
     exact hlower _ x (by simpa only [CellScheme.grade, old_index] using hg)
 
-theorem source_prefix (a b : Q) {h : ExtOrd} (hh : h ∈ I.grid)
+theorem source_prefix a b {h} (hh : h ∈ I.grid)
     (hag : Agree (I.fields a) (I.fields b) h) :
     Agree (fun d : I.carrier.below (A, N) => I.source a d.1)
       (fun d => I.source b d.1) h := by
   apply WeightedSourcePrefixLayer.master_prefix I.data I.weight hh
   simpa only [data, member_controller] using hag
 
-theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
+theorem inherited_row c d :
     I.rows.E (I.old c) (SeparatedSourceLayerCarrier.ownerEquiv D (Node (Q := Q))
       N I.positive I.height I.separated c d) = I.sem.E c d := by
   rw [WeightedSourcePrefixLayer.row_old _ _ _
@@ -257,9 +278,9 @@ theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
 theorem consistent (hs : I.sem.IsConsistent) : I.rows.IsConsistent := by
   apply WeightedSourcePrefixLayer.consistent I.data I.weight I.weight_visible I.parent
   intro c hc
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Node (Q := Q)) N
+  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Node) N
     I.positive I.height c hc
-  apply (SeparatedSourceLayerCarrier.base_respects_iff D (Node (Q := Q)) N
+  apply (SeparatedSourceLayerCarrier.base_respects_iff D (Node) N
     I.positive I.height I.separated I.sem x _).mpr
   simpa only [Function.comp_def, data, SeparatedSourceLayerCarrier.base_old] using hs x
 

@@ -22,7 +22,6 @@ rows: in particular, their long ladder rows are retained unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WeightedSourcePrefixLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
 noncomputable section
@@ -31,31 +30,39 @@ variable {ι X : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k :
 variable (F : ScopedSourcePrefixLayer.Data D k X)
 variable (weight : Controller D k → ExtOrd)
 
+section
+variable (q : Controller D k)
+
 /-- The uncapped master has weighted new columns and literal old columns. -/
-def master (q : Controller D k) (d : Cell D) : ExtOrd :=
+def master (d : Cell D) : ExtOrd :=
   if hd : D.cell d = (A, k) then min (F.profile q d) (weight ⟨d, hd⟩)
   else F.profile q d
 
-theorem master_old (q : Controller D k) {d : Cell D} (hd : D.cell d ≠ (A, k)) :
+theorem master_old {d} (hd : D.cell d ≠ (A, k)) :
     master F weight q d = F.lower q d := by
   simp only [master, hd, ↓reduceDIte, F.profile_old q hd]
 
-theorem master_new (q p : Controller D k) :
+end
+
+theorem master_new q p :
     master F weight q p.1 = min (cut F.grid (F.boundary q) (F.boundary p)) (weight p) := by
   simp only [master, p.2, ↓reduceDIte, F.profile_new]
 
-theorem master_le_profile (q : Controller D k) (d : Cell D) :
+section
+variable (q : Controller D k) (d : Cell D)
+
+theorem master_le_profile  :
     master F weight q d ≤ F.profile q d := by
   unfold master
-  split_ifs
-  · exact min_le_left _ _
-  · exact le_rfl
+  grind
 
-theorem master_bound (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
+theorem master_bound (hd : D.grade d ≤ k) :
     master F weight q d ≤ F.ceiling :=
   (master_le_profile F weight q d).trans (F.profile_bound q d hd)
 
-theorem master_agreement (p q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
+end
+
+theorem master_agreement p q d (hd : D.grade d ≤ k) :
     min (master F weight p d) (cut F.grid (F.boundary p) (F.boundary q)) =
       min (master F weight q d) (cut F.grid (F.boundary p) (F.boundary q)) := by
   unfold master
@@ -64,11 +71,11 @@ theorem master_agreement (p q : Controller D k) (d : Cell D) (hd : D.grade d ≤
       congrArg (fun x => min x (weight ⟨d, he⟩)) (F.profile_agreement p q d hd)
   · exact F.profile_agreement p q d hd
 
-theorem master_prefix {p q : Controller D k} {h : ExtOrd}
+theorem master_prefix {p q} {h}
     (hh : h ∈ F.grid) (hpq : Agree (F.boundary p) (F.boundary q) h) :
-    Agree (fun d : D.below (A, k) => master F weight p d.1)
+    Agree (fun d => master F weight p d.1)
       (fun d : D.below (A, k) => master F weight q d.1) h := by
-  have ha : Agree (fun d : D.below (A, k) => master F weight p d.1)
+  have ha : Agree (fun d => master F weight p d.1)
       (fun d : D.below (A, k) => master F weight q d.1)
       (cut F.grid (F.boundary p) (F.boundary q)) :=
     fun d => master_agreement F weight p q d.1 d.2.2
@@ -97,17 +104,16 @@ def rows : Semantics D where
         ((hvis ⟨c, hc⟩).mono hd)).symm
     · exact F.base.orderly c d
 
-theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) :
+theorem row_old {c} (hc : D.cell c ≠ (A, k)) :
     (rows F weight hvis).E c = F.base.E c := by
-  funext d
   simp only [rows, hc, ↓reduceDIte]
 
-theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
+theorem row_new q d :
     (rows F weight hvis).E q.1 d = min (master F weight q d.1) (weight q) := by
   simp only [rows, q.2, ↓reduceDIte]
 
-theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
-    {r : D.below (D.cell c) → ExtOrd} :
+theorem old_respects_iff {c} (hc : D.cell c ≠ (A, k))
+    {r} :
     RespectsSemanticsBelow (rows F weight hvis) (D.cell c) r ↔
       RespectsSemanticsBelow F.base (D.cell c) r := by
   constructor <;> intro hr <;> refine ⟨hr.orderly, ?_, hr.availability⟩
@@ -118,16 +124,16 @@ theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     exact hr.locality d
 
 theorem master_locality (q p : Controller D k) :
-    TransformsTo (fun d : D.below (D.cell p.1) => D.grade d.1)
+    TransformsTo (fun d => D.grade d.1)
       ((rows F weight hvis).E p.1)
       (fun d => min (master F weight q d.1) (master F weight q p.1)) := by
   have hb (d : D.below (D.cell p.1)) : D.grade d.1 ≤ k := by
     simpa only [CellScheme.grade, p.2] using d.2.2
   have ht := (TransformsTo.refl
-    (grade := fun d : D.below (D.cell p.1) => D.grade d.1)
+    (grade := fun d => D.grade d.1)
     ((rows F weight hvis).E p.1)).cap
     hb (F.grid_visible _ (cut_mem F.bot_mem (F.boundary q) (F.boundary p)))
-  have he : (fun d : D.below (D.cell p.1) =>
+  have he : (fun d =>
       min ((rows F weight hvis).E p.1 d) (cut F.grid (F.boundary q) (F.boundary p))) =
       (fun d => min (master F weight q d.1) (master F weight q p.1)) := by
     funext d
@@ -166,7 +172,7 @@ theorem le_parent {BJ : Finset ι × ℕ} (hBJ : GradedLe (A, k) BJ)
   let self : D.below (D.cell q.1) := ⟨q.1, GradedLe.refl _⟩
   let parent : D.below (D.cell q.1) :=
     ⟨p.1, by rw [p.2, q.2]; exact GradedLe.refl _⟩
-  have he : (rows F weight hvis).E q.1 parent = (rows F weight hvis).E q.1 self :=
+  have he :=
     (parent_read F weight hvis hbound q p hp hw).trans
       (diagonal F weight hvis hbound q).symm
   obtain ⟨g, σ, _, _, _, _, _, hr⟩ := hv.locality c
@@ -205,11 +211,7 @@ theorem master_supported
       · exact False.elim (hc ((cut_le F.grid_bound _ _).trans_eq hw.symm))
       · have ha := agree_cut F.bot_mem (F.boundary q) (F.boundary p) x
         rw [← hw, min_eq_left hc'.le] at ha
-        have hx : F.boundary q x = weight p := by
-          by_cases hb : F.boundary q x ≤ cut F.grid (F.boundary q) (F.boundary p)
-          · rwa [min_eq_left hb] at ha
-          · rw [min_eq_right (le_of_not_ge hb)] at ha
-            exact False.elim (ne_of_lt hc' ha.symm)
+        have hx : F.boundary q x = weight p := by grind
         exact Or.inr (Or.inr ⟨x, 0, Nat.zero_le _, by
           rw [hx]; exact (evr_eq_self_of_selfVis (hvis p) 0).symm⟩)
   · rw [master_old F weight q he]
@@ -231,7 +233,7 @@ theorem master_respects
   availability c t hs hg := by
     by_cases ht : D.cell t.1 = (A, k)
     · obtain ⟨p, hp, hw⟩ := hleaf q
-      refine ⟨⟨p.1, by rw [p.2]; exact GradedLe.refl _⟩, p.2.trans ht.symm, ?_⟩
+      refine ⟨⟨p.1, by grind⟩, p.2.trans ht.symm, ?_⟩
       rw [master_new, hp, hw, cut_refl F.ceiling_mem F.grid_bound, min_self]
       exact master_bound F weight q c.1 c.2.2
     · have hc : GradedLe (D.cell c.1) (D.cell t.1) := ⟨hs, hg.le⟩
@@ -243,7 +245,7 @@ theorem master_respects
 
 theorem consistent
     (hleaf : ∀ q, ∃ p, F.boundary p = F.boundary q ∧ weight p = F.ceiling)
-    (hbase : ∀ c : Cell D, D.cell c ≠ (A, k) →
+    (hbase : ∀ c, D.cell c ≠ (A, k) →
       RespectsSemanticsBelow F.base (D.cell c) (F.base.E c)) :
     (rows F weight hvis).IsConsistent := by
   intro c

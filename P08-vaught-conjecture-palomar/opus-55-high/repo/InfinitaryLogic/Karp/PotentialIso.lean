@@ -190,8 +190,7 @@ private theorem PotentialIso.buildChain_coherent_fst_general
       rw [P.buildChain_coherent_fst enumM enumN k ⟨j, hjk'⟩]
       exact ih hjk'
     · have hjeqk : j = k := by omega
-      subst hjeqk
-      rfl
+      aesop
 
 /-- Extended coherence for the N-side. -/
 private theorem PotentialIso.buildChain_coherent_snd_general
@@ -208,8 +207,7 @@ private theorem PotentialIso.buildChain_coherent_snd_general
       rw [P.buildChain_coherent_snd enumM enumN k ⟨j, hjk'⟩]
       exact ih hjk'
     · have hjeqk : j = k := by omega
-      subst hjeqk
-      rfl
+      aesop
 
 /-- For countable structures, a potential isomorphism implies actual isomorphism.
 
@@ -219,7 +217,7 @@ theorem PotentialIso.countable_toEquiv_graph
     {M : Type w} [L.Structure M] [Countable M]
     {N : Type w} [L.Structure N] [Countable N]
     (P : PotentialIso L M N) :
-    ∃ e : M ≃[L] N, ∀ m : M, ∃ p ∈ P.family, ∃ i : Fin p.1, p.2.1 i = m ∧ p.2.2 i = e m := by
+    ∃ e : M ≃[L] N, ∀ m, ∃ p ∈ P.family, ∃ i, p.2.1 i = m ∧ p.2.2 i = e m := by
   classical
   -- Handle empty M
   by_cases hM : IsEmpty M
@@ -260,7 +258,7 @@ theorem PotentialIso.countable_toEquiv_graph
   have hSAT : ∀ s, SameAtomicType (L := L) (chain s).val.1 (chain s).val.2 :=
     P.buildChain_sat enumM enumN
   -- Equality preservation: aSeq(i) = aSeq(j) ↔ bSeq(i) = bSeq(j) for i,j < s
-  have hEq : ∀ {i j s : ℕ} (_ : i < s) (_ : j < s),
+  have hEq : ∀ {i j s} (_ : i < s) (_ : j < s),
       aSeq i = aSeq j ↔ bSeq i = bSeq j := by
     intro i j s hi hj
     have h := hSAT s (AtomicIdx.eq ⟨i, hi⟩ ⟨j, hj⟩)
@@ -340,50 +338,6 @@ theorem PotentialIso.countable_toEquiv
   let ⟨e, _⟩ := P.countable_toEquiv_graph
   ⟨e⟩
 
-/-- Given a potential isomorphism, BFEquiv holds at every ordinal level for any pair
-in the family. This is the key inductive step for the (→) direction of the
-potential isomorphism characterization.
-
-The proof proceeds by ordinal induction: the zero case uses atomic type preservation,
-the successor case uses the forth/back extension properties, and the limit case
-follows from the induction hypothesis.
-
-The structures may live in different universes, and no countability of the language is
-required: the induction consumes only the family's atomic-type compatibility and its two
-extension properties. -/
-theorem PotentialIso.family_bfEquiv
-    {M : Type w} [L.Structure M]
-    {N : Type w'} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b := by
-  induction α using Ordinal.limitRecOn generalizing n a b with
-  | zero =>
-    exact (BFEquiv.zero a b).mpr (P.compatible _ hab)
-  | add_one β ih =>
-    rw [← Order.succ_eq_add_one, BFEquiv.succ]
-    refine ⟨ih hab, ?_, ?_⟩
-    · intro m
-      obtain ⟨n', hn'⟩ := P.forth _ hab m
-      exact ⟨n', ih hn'⟩
-    · intro n'
-      obtain ⟨m, hm⟩ := P.back _ hab n'
-      exact ⟨m, ih hm⟩
-  | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ]
-    exact fun γ hγ => ih γ hγ hab
-
-/-- Compatibility alias for `PotentialIso.family_bfEquiv`, which is stated without the
-countable-language hypothesis and for structures in different universes. -/
-@[deprecated PotentialIso.family_bfEquiv +typeChanged (since := "2026-08-14")]
-theorem potentialIso_family_BFEquiv [Countable (Σ l, L.Relations l)]
-    {M : Type w} [L.Structure M]
-    {N : Type w} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b :=
-  P.family_bfEquiv α hab
-
 /-! ## Proof-relevant presentations
 
 A second producer-facing adapter, for callers who build *states* (partial maps, finite
@@ -395,33 +349,6 @@ nothing here quotients or picks canonical representatives.  This introduces **no
 back-and-forth structure — its output is the existing `PotentialIso`, built through
 `ofExtensionFamily`, and the eventual isomorphism still comes only from
 `PotentialIso.countable_toEquiv`. -/
-
-/-- A back-and-forth system presented by states rather than by a predicate. -/
-structure ExtensionPresentation (L : Language.{u, v}) [L.IsRelational]
-    (M : Type w) (N : Type w') [L.Structure M] [L.Structure N] where
-  /-- The states at each tuple length. -/
-  State : ℕ → Type*
-  /-- The `M`-tuple a state presents. -/
-  left : ∀ {n}, State n → Fin n → M
-  /-- The `N`-tuple a state presents. -/
-  right : ∀ {n}, State n → Fin n → N
-  /-- A state over the empty tuple. -/
-  empty : State 0
-  /-- Every state presents an atomic-type-preserving pair. -/
-  compatible : ∀ {n} (s : State n), SameAtomicType (L := L) (left s) (right s)
-  /-- Forth, witnessed by a successor state. -/
-  forth : ∀ {n} (s : State n) (m : M), ∃ (n' : N) (s' : State (n + 1)),
-    left s' = Fin.snoc (left s) m ∧ right s' = Fin.snoc (right s) n'
-  /-- Back, witnessed by a successor state. -/
-  back : ∀ {n} (s : State n) (n' : N), ∃ (m : M) (s' : State (n + 1)),
-    left s' = Fin.snoc (left s) m ∧ right s' = Fin.snoc (right s) n'
-
-namespace ExtensionPresentation
-
-variable {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
-variable (P : ExtensionPresentation L M N)
-
-end ExtensionPresentation
 
 end Language
 

@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedStepReadback
+public import VaughtConjecture.Knight.LowOnlyPaddedStepChart
+public import VaughtConjecture.Knight.LowSeparatorPaired
 
 /-! # Paired-separator readback on the unchanged grade-two seed
 
@@ -16,7 +17,6 @@ recursive steps. The strict physical separator remains an explicit premise.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedTwoReadback
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedContract
@@ -32,16 +32,12 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 theorem exists_top_chart {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
     (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q)
     (htop : ∃ d, (carrier I F hroot hA hB hC).grade d.1 = 2 ∧ q d = ⊤) :
-    ∃ a : F.Anchor 2, ∃ σ : ExtOrd → ExtOrd,
+    ∃ a, ∃ σ,
       Witness (gTop 2) σ ∧ ∀ d, σ (source I F hroot hA hB hC a d.1) = q d := by
   obtain ⟨a, σ, M, hσ, hM, hread⟩ := LowOnlyPaddedCharts.exists_chart I F hroot hA hB hC hq
   obtain ⟨d, hd, htop⟩ := htop
   have hMt : M = ⊤ := top_le_iff.mp (htop ▸ hM d hd)
   exact ⟨a, σ, hσ, fun d => (hread d).trans (by rw [hMt, min_top_right])⟩
-
-variable (S : State I.left I.right) (hS : F.Admissible 2 S)
-  (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) 2)
-  (hlt : LowSeparator.cutoffCut 2 (LowSeparator.donorField F) S.profile < S.b)
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedTwoReadback

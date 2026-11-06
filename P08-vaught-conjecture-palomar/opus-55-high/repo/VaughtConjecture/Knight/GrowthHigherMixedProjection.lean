@@ -17,7 +17,6 @@ one uncapped higher-grade state or identifying different chart anchors.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
@@ -44,7 +43,7 @@ variable (U : Finset ι) (hU : U ∈ R)
   {p : CellScheme.below (carrier I X T hA hB hC t ht) (U, j) → ExtOrd}
 
 theorem original_readback_one (hp : RespectsSemanticsBelow Rows (U, j) p)
-    (z : (D).below (U, j)) (d : Cell I.boundary)
+    z d
     (hz : erase I X T hA hB hC t ht z.1 = original I X T hA hB hC t ht d)
     (hg : (D).grade z.1 = 1) :
     p z = shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d) := by
@@ -108,7 +107,7 @@ theorem boundary_projection (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j
     RespectsSemanticsBelow I.rows (A, j) (fun d =>
       min (shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d.1))
         (height I X T hA hB hC t ht U j p (I.boundary.grade d.1))) := by
-  apply GradePrefixProjection.respectsBelow (sem := I.rows) (BJ := (A, j))
+  apply GradePrefixProjection.respectsBelow (BJ := (A, j))
     (ρ := fun d => shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d))
     (height_antitone I X T hA hB hC t ht U hU hm j hj hp hjt)
   intro k hkj
@@ -124,7 +123,7 @@ theorem boundary_projection (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j
         (by omega) hkj (hkj.trans hjt)
 
 theorem projection_readback (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
-    (z : (D).below (U, j)) (d : Cell I.boundary)
+    z d
     (hz : erase I X T hA hB hC t ht z.1 = original I X T hA hB hC t ht d) :
     p z = min (shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d))
       (height I X T hA hB hC t ht U j p (I.boundary.grade d)) := by

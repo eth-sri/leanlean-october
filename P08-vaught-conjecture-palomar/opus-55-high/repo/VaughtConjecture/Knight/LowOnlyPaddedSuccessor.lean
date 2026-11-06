@@ -22,7 +22,6 @@ nor unrestricted bountifulness of the output is claimed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSuccessor
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open SourcePrefixRows PairedSlotComparison
@@ -31,9 +30,12 @@ noncomputable section
 section Anchors
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
 
+section
+variable (a : F.Anchor 2)
+
 /-- Downward normalization chooses an existing birth anchor; numerical source
 values are not identified with that anchor's normalized values. -/
-def baseAnchor (a : F.Anchor 2) : F.Anchor 1 := by
+def baseAnchor  : F.Anchor 1 := by
   refine ⟨PairedSlotEncoding.normalize 1 a.val, ?_⟩
   obtain ⟨S, hS, he⟩ := a.property.2
   have hp : ∀ d, S.profile d ≠ ⊤ := by rw [he]; exact a.property.1.2
@@ -44,10 +46,12 @@ def baseAnchor (a : F.Anchor 2) : F.Anchor 1 := by
   rw [LowOnlyRecursiveCoverage.normalizedAnchor_fields] at h
   simpa only [he] using h
 
-theorem baseAnchor_ranks (a : F.Anchor 2) (d : Field P C) :
+theorem baseAnchor_ranks d :
     RelativeLadderLayer.ranks (F.fields 1) (baseAnchor F a) d =
       LadderScalarRendering.fieldRank (F.fields 2 a) d :=
   ReceivingCatalogueRanks.fieldRank_normalize 1 a.val a.property.1.2 d
+
+end
 
 end Anchors
 
@@ -97,20 +101,19 @@ theorem cell_cases (d : Cell (carrier I F hroot hA hB hC)) :
       ∃ a, d = leaf I F hroot hA hB hC a := by
   let J := input I F hroot hA hB hC
   obtain ⟨x, hx⟩ := (SourceLayerCarrier.enumeration J.lower
-    (LadderWeightedSuccessor.Input.Node (U := F.Anchor 2) (V := Empty))
+    (LadderWeightedSuccessor.Input.Node)
     2 (by decide) hA).surjective d
-  change SourceLayerCarrier.toCell _ _ _ _ _ x = d at hx
   rcases x with x | ⟨a, v⟩
-  · exact Or.inl ⟨x, hx.symm⟩
+  · aesop
   · cases v with
     | none => exact Or.inr ⟨a, hx.symm⟩
     | some v => exact Empty.elim v
 
-theorem leaf_index (a : F.Anchor 2) :
+theorem leaf_index a :
     (carrier I F hroot hA hB hC).cell (leaf I F hroot hA hB hC a) = (A, 2) :=
   SourceLayerCarrier.cell_toCell _ _ _ _ _ _
 
-theorem original_index (d : Cell I.boundary) :
+theorem original_index d :
     (carrier I F hroot hA hB hC).cell (original I F hroot hA hB hC d) =
       I.boundary.cell d := by
   rw [SourceLayerCarrier.cell_toCell]
@@ -119,15 +122,14 @@ theorem original_index (d : Cell I.boundary) :
 theorem consistent : (rows I F hroot hA hB hC).IsConsistent :=
   (input I F hroot hA hB hC).consistent I.consistent
 
-theorem source_lawful (a : F.Anchor 2) :
+theorem source_lawful a :
     RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2)
       (fun d => source I F hroot hA hB hC a d.1) :=
   (input I F hroot hA hB hC).source_lawful a
 
 /-- Every retained rung, shadow, and proper original owner keeps its own row. -/
-theorem inherited_row (c : Cell (input I F hroot hA hB hC).lower)
-    (d : (input I F hroot hA hB hC).lower.below
-      ((input I F hroot hA hB hC).lower.cell c)) :
+theorem inherited_row c
+    d :
     (rows I F hroot hA hB hC).E (old I F hroot hA hB hC c)
       (SeparatedSourceLayerCarrier.ownerEquiv (input I F hroot hA hB hC).lower
         (LadderWeightedSuccessor.Input.Node (U := F.Anchor 2) (V := Empty))
@@ -135,32 +137,39 @@ theorem inherited_row (c : Cell (input I F hroot hA hB hC).lower)
       (input I F hroot hA hB hC).lowerRows.E c d :=
   (input I F hroot hA hB hC).inherited_row c d
 
-theorem original_readback (a : F.Anchor 2) (d : Cell I.boundary) :
+section
+variable (a : F.Anchor 2)
+
+theorem original_readback d :
     source I F hroot hA hB hC a (original I F hroot hA hB hC d) =
       F.fields 2 a (field I d) :=
   (input I F hroot hA hB hC).source_original a d
 
-theorem source_ceiling (a : F.Anchor 2) :
+theorem source_ceiling  :
     source I F hroot hA hB hC a (leaf I F hroot hA hB hC a) =
       RecursiveRungRendering.ceiling (Field I.left I.right) 2 :=
   (input I F hroot hA hB hC).source_parent a
 
-theorem source_prefix (a b : F.Anchor 2) {h : ExtOrd}
+end
+
+theorem source_prefix a b {h}
     (hh : h ∈ RecursiveRungRendering.grid (Field I.left I.right) 2)
     (hab : Agree (F.fields 2 a) (F.fields 2 b) h)
     (d : Cell (carrier I F hroot hA hB hC)) :
     min (source I F hroot hA hB hC a d) h = min (source I F hroot hA hB hC b d) h :=
   (input I F hroot hA hB hC).source_prefix_all a b hh hab d
 
-theorem source_supported (a : F.Anchor 2) (d : Cell (carrier I F hroot hA hB hC)) :
+section
+variable (a : F.Anchor 2)
+
+theorem source_supported (d : Cell (carrier I F hroot hA hB hC)) :
     OrbitPrefixSupport.Supported 2
       (RecursiveRungRendering.grid (Field I.left I.right) 2 : Set ExtOrd)
       (F.fields 2 a) (source I F hroot hA hB hC a d) :=
   (input I F hroot hA hB hC).source_supported_all a d
 
 /-- Each new row is the full selected source, with no residual weight cap. -/
-theorem leaf_row (a : F.Anchor 2)
-    (d : (carrier I F hroot hA hB hC).below
+theorem leaf_row (d : (carrier I F hroot hA hB hC).below
       ((carrier I F hroot hA hB hC).cell (leaf I F hroot hA hB hC a))) :
     (rows I F hroot hA hB hC).E (leaf I F hroot hA hB hC a) d =
       source I F hroot hA hB hC a d.1 := by
@@ -174,7 +183,9 @@ theorem leaf_row (a : F.Anchor 2)
   exact he.trans ((congrArg (min (J.source a d.1)) hw).trans
     (min_eq_left (J.source_bound_all a d.1)))
 
-theorem source_leaf (a b : F.Anchor 2) :
+end
+
+theorem source_leaf a b :
     source I F hroot hA hB hC a (leaf I F hroot hA hB hC b) =
       cut (RecursiveRungRendering.grid (Field I.left I.right) 2)
         (F.fields 2 a) (F.fields 2 b) := by

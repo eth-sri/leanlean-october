@@ -32,21 +32,16 @@ open TypeTower Value ExtOrd
 
 universe w
 
+section
+variable (α : LimitStage)
+
 /-- The next `ω`-block of a limit stage. -/
-noncomputable def LimitStage.nextBlock (α : LimitStage) : LimitStage :=
+noncomputable def LimitStage.nextBlock  : LimitStage :=
   ⟨α.1 + Ordinal.omega0, Ordinal.isSuccLimit_add _ Ordinal.isSuccLimit_omega0⟩
 
-theorem LimitStage.le_nextBlock (α : LimitStage) : α ≤ α.nextBlock :=
+theorem LimitStage.le_nextBlock  : α ≤ α.nextBlock :=
   show α.1 ≤ α.1 + Ordinal.omega0 from le_add_of_nonneg_right zero_le
 
-namespace Value
-
-end Value
-
-namespace StageType
-
-variable {α β : Ordinal.{0}} {n : ℕ}
-
-end StageType
+end
 
 end VaughtConjecture.Knight

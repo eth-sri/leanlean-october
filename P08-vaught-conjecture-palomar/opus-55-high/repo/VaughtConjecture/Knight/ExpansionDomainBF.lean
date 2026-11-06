@@ -40,10 +40,10 @@ open TypeTower FirstOrder Language KnightRealization Cardinal StoppingRankFiltra
 
 universe w
 
-private theorem bfEquiv_reduct_stage_eq {δ ε ζ : LimitStage}
-    (h : δ = ε) (hδ : δ ≤ ζ) (hε : ε ≤ ζ)
-    {M N : Type*} (W : KnightRealization ζ M) (V : KnightRealization ζ N)
-    {η : Ordinal.{0}} {n : ℕ} (a : Fin n → M) (b : Fin n → N) :
+private theorem bfEquiv_reduct_stage_eq {δ ε ζ}
+    (h : δ = ε) hδ hε
+    {M N} (W : KnightRealization ζ M) (V : KnightRealization ζ N)
+    {η : Ordinal.{0}} {n} a b :
     (@BFEquiv (stageLang δ) M (stageStructureOf (W.reduct hδ))
       N (stageStructureOf (V.reduct hδ)) η n a b) ↔
     (@BFEquiv (stageLang ε) M (stageStructureOf (W.reduct hε))
@@ -53,9 +53,9 @@ private theorem bfEquiv_reduct_stage_eq {δ ε ζ : LimitStage}
 
 /-- Transport the projected comparison from block zero to the sentence's `ω` language.
 The stage equality is eliminated explicitly; no additional comparison or rank loss occurs. -/
-theorem bfEquiv_of_commonChart_projected_omega {η : Ordinal.{0}} {M N : Type w}
-    (W : KnightRealization (blockStage η) M) (V : KnightRealization (blockStage η) N)
-    (hW : W.IsModel) (hV : V.IsModel) {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+theorem bfEquiv_of_commonChart_projected_omega {η} {M N : Type w}
+    (W : KnightRealization (blockStage η) M) V
+    (hW : W.IsModel) (hV : V.IsModel) {n} {a} {b}
     (hc : HasCommonChart W V a b) :
     @BFEquiv knightLang M (structureOf (W.reduct (omegaStage_le _)))
       N (structureOf (V.reduct (omegaStage_le _))) η n a b :=
@@ -64,8 +64,8 @@ theorem bfEquiv_of_commonChart_projected_omega {η : Ordinal.{0}} {M N : Type w}
 
 /-- Any two models at one stage have a common chart of the empty tuple: both label it, and
 there is only one label of the empty tuple. -/
-theorem hasCommonChart_elim0 {α : LimitStage} {M N : Type}
-    {W : KnightRealization α M} {V : KnightRealization α N} (hW : W.IsModel)
+theorem hasCommonChart_elim0 {α} {M N : Type}
+    {W} {V : KnightRealization α N} (hW : W.IsModel)
     (hV : V.IsModel) :
     HasCommonChart W V (Fin.elim0 : Fin 0 → M) (Fin.elim0 : Fin 0 → N) := by
   obtain ⟨p, hp⟩ := exists_eval_empty_at hW
@@ -74,10 +74,13 @@ theorem hasCommonChart_elim0 {α : LimitStage} {M N : Type}
     funext fun i => i.elim0, funext fun i => i.elim0⟩
   rw [hp', Subsingleton.elim p' p]
 
+section
+variable {η : Ordinal.{0}}
+
 /-- **Back-and-forth equivalence on an expansion domain.**  Two counted models whose classes
 lie in `domain η` are back-and-forth equivalent at level `η` on the empty tuple, directly from
 the projected receipt comparison, transported to the sentence's language. -/
-theorem bfEquiv_of_mem_domain {η : Ordinal.{0}} {R S : KnightNatModel}
+theorem bfEquiv_of_mem_domain {R S : KnightNatModel}
     (hR : Quotient.mk knightModelSetoid R ∈ domain η)
     (hS : Quotient.mk knightModelSetoid S ∈ domain η) :
     @BFEquiv knightLang ℕ (structureOf R.1) ℕ (structureOf S.1) η 0 Fin.elim0 Fin.elim0 := by
@@ -89,7 +92,7 @@ theorem bfEquiv_of_mem_domain {η : Ordinal.{0}} {R S : KnightNatModel}
 
 /-- **The library relation on a domain**: coded `ℕ`-models of `knightSentence` whose classes
 lie in `domain η` are related by `bfEquivSetoid knightSentence η`. -/
-theorem bfEquivSetoid_r_of_mem_domain {η : Ordinal.{0}} {c d : ModelsOf knightSentence}
+theorem bfEquivSetoid_r_of_mem_domain {c d}
     (hc : modelClass c ∈ domain η) (hd : modelClass d ∈ domain η) :
     (bfEquivSetoid knightSentence η).r c d := by
   have h := bfEquiv_of_mem_domain (R := realizationOfCode c) (S := realizationOfCode d) hc hd
@@ -107,12 +110,14 @@ theorem bfEquivSetoid_r_of_mem_domain {η : Ordinal.{0}} {c d : ModelsOf knightS
     ℕ d.1.toStructure (n := 0) (α := η) (a := Fin.elim0) (b := Fin.elim0) (c := Fin.elim0)
     hcd hd'
 
+end
+
 /-- **Countably many `≡_η`-classes**: for every countable `η`, the library's quotient of the
 coded `ℕ`-models of `knightSentence` by back-and-forth equivalence at level `η` is countable.
 The classes outside `domain η` are countable, and the classes inside it project to at most one
 `≡_η`-class. -/
 theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
-    {η : Ordinal.{0}} (hη : η < (aleph 1).ord) :
+    {η} (hη : η < (aleph 1).ord) :
     #(Quotient (bfEquivSetoid knightSentence η)) ≤ ℵ₀ := by
   let π : Classes → Quotient (bfEquivSetoid knightSentence η) :=
     fun q => bfProj knightSentence η (isoClassEquiv.symm q)

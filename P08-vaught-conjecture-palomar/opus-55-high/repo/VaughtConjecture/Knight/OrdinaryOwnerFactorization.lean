@@ -20,7 +20,6 @@ including unused grid/orbit values. No alignment or completion is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryOwnerFactorization
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue CanonicalPairedInverse
@@ -32,7 +31,10 @@ variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 abbrev privateCell (c : Cell C.scheme) : C.scheme.below (effC N N) :=
   CappedDonor.Ref.privCell c (gradeC_le c)
 
-theorem owner_index (c : Cell C.scheme) (hc : C.scheme.grade c = N) :
+section
+variable (c : Cell C.scheme)
+
+theorem owner_index (hc : C.scheme.grade c = N) :
     C.scheme.cell c = effC N N := by
   have hs : C.scheme.scope c = Finset.univ := by
     apply Finset.eq_univ_of_card
@@ -43,15 +45,15 @@ theorem owner_index (c : Cell C.scheme) (hc : C.scheme.grade c = N) :
 
 /-- The source-grid cut and private factorization are constructed from actual
 lawful inputs. The prescribed owner may be proper or literal top. -/
-theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
+theorem exists_factorization (hc : C.scheme.grade c = N)
     (a : OrdinaryFinalCatalogue.Member R)
-    {p : C.scheme.below (effC N N) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow C.rows (effC N N) p)
-    {σ : ExtOrd → ExtOrd} {γ : ExtOrd} (hσ : Witness (gTop N) σ)
+    {σ} {γ} (hσ : Witness (gTop N) σ)
     (hγ : SelfVis N γ) (hpos : ⊥ < γ) (hpc : γ < p (privateCell c))
     (hag : ∀ d, min (σ (a.val (.priv d.1))) γ = min (p d) γ) :
-    ∃ B : ℕ, grid N B ∈ PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)) ∧
-      ∃ (f : C.scheme.below (effC N N) → ExtOrd) (ν : ExtOrd → ExtOrd),
+    ∃ B, grid N B ∈ PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)) ∧
+      ∃ f ν,
         RespectsSemanticsBelow C.rows (effC N N) f ∧ (∀ d, f d ≠ ⊤) ∧
         (∀ d, min (f d) (grid N B) = min (a.val (.priv d.1)) (grid N B)) ∧
         Witness (gTop N) ν ∧ (∀ x, ν x ≤ p (privateCell c)) ∧
@@ -94,6 +96,8 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
   · intro d
     exact fac.readback (fromEff d)
   · simpa only [hc] using fac.caps
+
+end
 
 end
 end VaughtConjecture.Knight.OrdinaryOwnerFactorization

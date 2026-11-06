@@ -8,7 +8,7 @@ module
 public import VaughtConjecture.ModelTheory.ProjectedExtension
 public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
 public import VaughtConjecture.Knight.ChartLanguage
-public import VaughtConjecture.Knight.FiniteCoverCoordinates
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.OneSidedTransfer
 public import VaughtConjecture.Knight.StructuralChartComparison
 
@@ -32,8 +32,8 @@ universe w
 identifies this stage with `ω`. -/
 noncomputable abbrev projectedBaseLang := stageLang (blockStage 0)
 
-theorem lowerChart {α β : LimitStage} (h : β ≤ α) {M N : Type w}
-    {W : KnightRealization α M} {W' : KnightRealization α N} {n : ℕ}
+theorem lowerChart {α β} (h : β ≤ α) {M N : Type w}
+    {W} {W'} {n}
     {a : Fin n → M} {b : Fin n → N} (hc : HasCommonChart W W' a b) :
     HasCommonChart (W.reduct h) (W'.reduct h) a b := by
   obtain ⟨k, ta, tb, σ, p, hta, htb, ha, hb⟩ := hc
@@ -41,9 +41,9 @@ theorem lowerChart {α β : LimitStage} (h : β ≤ α) {M N : Type w}
   · rw [Realization.reduct_eval, hta]; rfl
   · rw [Realization.reduct_eval, htb]; rfl
 
-theorem reverseChart {α : LimitStage} {M N : Type w}
-    {W : KnightRealization α M} {W' : KnightRealization α N} {n : ℕ}
-    {a : Fin n → M} {b : Fin n → N} (hc : HasCommonChart W W' a b) :
+theorem reverseChart {α} {M N : Type w}
+    {W} {W' : KnightRealization α N} {n}
+    {a : Fin n → M} {b} (hc : HasCommonChart W W' a b) :
     HasCommonChart W' W b a := by
   obtain ⟨k, ta, tb, σ, p, hta, htb, ha, hb⟩ := hc
   exact ⟨k, tb, ta, σ, p, htb, hta, hb, ha⟩
@@ -51,10 +51,10 @@ theorem reverseChart {α : LimitStage} {M N : Type w}
 /-- One requested element is covered and received, retaining the root literally and matching
 only the lower chart. This extracts the finite-cover step from `forth_uniform` without its
 BF induction hypothesis or conclusion. Repeated points reuse the existing selector. -/
-theorem extend_commonChart_projected (α : Ordinal.{0}) {M N : Type w}
-    (W : KnightRealization (blockStage (α + 1)) M)
-    (W' : KnightRealization (blockStage (α + 1)) N) (hW : W.IsModel) (hW' : W'.IsModel)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N} (hc : HasCommonChart W W' a b) (x : M) :
+theorem extend_commonChart_projected α {M N : Type w}
+    W
+    W' (hW : W.IsModel) (hW' : W'.IsModel)
+    {n : ℕ} {a : Fin n → M} {b : Fin n → N} (hc : HasCommonChart W W' a b) x :
     ∃ y : N, HasCommonChart (W.reduct (blockStage_le_succ α))
       (W'.reduct (blockStage_le_succ α)) (Fin.snoc a x) (Fin.snoc b y) :=
   StructuralChartComparison.extend_commonChart α W W' hW.consistent hW.isCovering
@@ -91,9 +91,11 @@ noncomputable def lower {α β : Ordinal.{0}} (h : β ≤ α)
   target_base := by rw [Realization.reduct_reduct]; exact r.target_base
   chart := lowerChart _ r.chart
 
+section
+variable {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+
 /-- Every receipt reads back the full atomic base-language diagram. -/
-theorem atomic {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (r : ProjectedChartReceipt M N baseM baseN α n a b) :
+theorem atomic (r : ProjectedChartReceipt M N baseM baseN α n a b) :
     @SameAtomicType projectedBaseLang M baseM n N baseN a b := by
   have h := sameAtomicType_of_commonChart
     (r.source_model.consistent_reduct (blockStage_zero_le α))
@@ -103,9 +105,8 @@ theorem atomic {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
   exact h
 
 /-- Receive a requested source element and package the lower expansions as a new receipt. -/
-theorem forth {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (r : ProjectedChartReceipt M N baseM baseN (α + 1) n a b) (x : M) :
-    ∃ y : N, Nonempty (ProjectedChartReceipt M N baseM baseN α (n + 1)
+theorem forth (r : ProjectedChartReceipt M N baseM baseN (α + 1) n a b) x :
+    ∃ y, Nonempty (ProjectedChartReceipt M N baseM baseN α (n + 1)
       (Fin.snoc a x) (Fin.snoc b y)) := by
   obtain ⟨y, hc⟩ := extend_commonChart_projected α r.source r.target
     r.source_model r.target_model r.chart x
@@ -119,6 +120,8 @@ theorem forth {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
     chart := hc }⟩⟩
   · rw [Realization.reduct_reduct]; exact r.source_base
   · rw [Realization.reduct_reduct]; exact r.target_base
+
+end
 
 /-- Reverse the two expansions, retaining their exact realization data. -/
 def symm {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
@@ -134,10 +137,12 @@ def symm {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
 
 end ProjectedChartReceipt
 
+section
+variable {M N : Type w} [baseM : projectedBaseLang.Structure M] [baseN : projectedBaseLang.Structure N]
+
 /-- The generic ranked family on fixed base structures, supplied by actual receiving.
 The receipt type allows different block expansions at different indices. -/
-noncomputable def projectedChartFamily {M N : Type w} [baseM : projectedBaseLang.Structure M]
-    [baseN : projectedBaseLang.Structure N] (height : Ordinal.{0}) :
+noncomputable def projectedChartFamily (height : Ordinal.{0}) :
     RankedMatchingFamily projectedBaseLang M N height where
   Receipt := ProjectedChartReceipt M N baseM baseN
   atomic := ProjectedChartReceipt.atomic
@@ -149,18 +154,18 @@ noncomputable def projectedChartFamily {M N : Type w} [baseM : projectedBaseLang
     exact ⟨x, ⟨r'.symm⟩⟩
 
 /-- An explicitly supplied expansion/chart receipt gives BF equivalence of fixed bases. -/
-theorem bfEquiv_of_projectedChartReceipt {M N : Type w}
-    [baseM : projectedBaseLang.Structure M] [baseN : projectedBaseLang.Structure N]
-    {α : Ordinal.{0}} {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+theorem bfEquiv_of_projectedChartReceipt {α} {n} {a} {b}
     (r : ProjectedChartReceipt M N baseM baseN α n a b) :
     BFEquiv (L := projectedBaseLang) α n a b :=
   (projectedChartFamily α).bfEquiv le_rfl r
 
+end
+
 /-- Additive alternative to uniform comparison: finite-cover receiving supplies receipts
 to the generic projected-extension kernel. No old BF comparison theorem is invoked. -/
-theorem bfEquiv_of_commonChart_projected (α : Ordinal.{0}) {M N : Type w}
-    (W : KnightRealization (blockStage α) M) (W' : KnightRealization (blockStage α) N)
-    (hW : W.IsModel) (hW' : W'.IsModel) {n : ℕ} {a : Fin n → M} {b : Fin n → N}
+theorem bfEquiv_of_commonChart_projected α {M N : Type w}
+    W W'
+    (hW : W.IsModel) (hW' : W'.IsModel) {n} {a} {b}
     (hc : HasCommonChart W W' a b) :
     @BFEquiv projectedBaseLang M (stageStructureOf (W.reduct (blockStage_zero_le α)))
       N (stageStructureOf (W'.reduct (blockStage_zero_le α))) α n a b := by

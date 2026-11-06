@@ -23,9 +23,11 @@ namespace VaughtConjecture.Knight.CapFirstScalar
 
 open Transform Value ExtOrd SharpWitnessComposition
 
+section
+variable {σ τ : ExtOrd → ExtOrd}
+
 /-- The old values above the output cap need not be retained literally. -/
-theorem map_cap_agreement_of_capped_prefix {σ τ : ExtOrd → ExtOrd}
-    (hσ : Monotone σ) (hτ : Monotone τ) {a x y γ : ExtOrd}
+theorem map_cap_agreement_of_capped_prefix (hσ : Monotone σ) (hτ : Monotone τ) {a x y γ}
     (hprefix : ∀ z, z ≤ a → min (τ z) γ = min (σ z) γ)
     (hxy : min x a = min y a) (hactive : γ ≤ σ a) :
     min (τ x) γ = min (σ y) γ := by
@@ -42,13 +44,14 @@ theorem map_cap_agreement_of_capped_prefix {σ τ : ExtOrd → ExtOrd}
       rw [hσ.map_min, min_assoc, min_eq_right hactive]
 
 /-- Keeping the clipped prefix is a sufficient, constructive form of capped agreement. -/
-theorem map_cap_agreement_of_clipped_prefix {σ τ : ExtOrd → ExtOrd}
-    (hσ : Monotone σ) (hτ : Monotone τ) {a x y γ : ExtOrd}
+theorem map_cap_agreement_of_clipped_prefix (hσ : Monotone σ) (hτ : Monotone τ) {a x y γ}
     (hprefix : ∀ z, z ≤ a → τ z = min (σ z) γ)
     (hxy : min x a = min y a) (hactive : γ ≤ σ a) :
     min (τ x) γ = min (σ y) γ := by
   apply map_cap_agreement_of_capped_prefix hσ hτ _ hxy hactive
   intro z hz
   rw [hprefix z hz, min_assoc, min_self]
+
+end
 
 end VaughtConjecture.Knight.CapFirstScalar

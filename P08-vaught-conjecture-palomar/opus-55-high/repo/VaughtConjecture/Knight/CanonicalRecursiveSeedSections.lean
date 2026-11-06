@@ -18,7 +18,6 @@ This is selected-section supply, not arbitrary-ambient lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveSeedSections
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
 open CanonicalRecursiveSeedRows SharpWitnessComposition
@@ -26,11 +25,16 @@ noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hA : 3 ≤ A.card) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
-abbrev equiv (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, 3) J) :=
+section
+variable (J : Finset ι × ℕ)
+
+section
+variable (hJ : ¬ GradedLe (A, 3) J)
+
+abbrev equiv  :=
   HighLayerBountiful.equiv (predecessor sem hA) (Profile sem) 3 (by decide) hA J hJ
 
-theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, 3) J)
-    (p : (predecessor sem hA).below J → ExtOrd) :
+theorem respects_iff (p : (predecessor sem hA).below J → ExtOrd) :
     RespectsSemanticsBelow (predecessorRows sem hA hp) J p ↔
       RespectsSemanticsBelow (rows sem hA hp) J (p ∘ (equiv sem hA J hJ).symm) := by
   apply respects_iff_of_equiv (equiv sem hA J hJ)
@@ -39,15 +43,19 @@ theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, 3) J)
     (fun d e => ?_) (fun b d _ => (inherited_row sem hA hp b.1 d).symm) p
   simp only [CellScheme.scope, equiv, HighLayerBountiful.equiv_cell]
 
-def properEquiv (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) :
+end
+
+section
+variable (hJ : ¬ A ⊆ J.1)
+
+def properEquiv  :
     D.below J ≃ (carrier sem hA).below J :=
   (GradeCutPairCarrier.properEquiv D
     (CanonicalPairBoundary.firstProfiles sem 1 2) (CanonicalPairBoundary.secondProfiles sem 2)
     1 2 (by decide) (CanonicalPairLocalSections.one_le (two_le hA)) (by decide)
     (two_le hA) J hJ).trans (equiv sem hA J (fun h => hJ h.1))
 
-theorem proper_respects_iff (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
-    (p : D.below J → ExtOrd) :
+theorem proper_respects_iff p :
     RespectsSemanticsBelow sem J p ↔ RespectsSemanticsBelow (rows sem hA hp) J
       (p ∘ (properEquiv sem hA J hJ).symm) :=
   (GradeCutPairRows.proper_respects_iff D _ _ 1 2 (by decide)
@@ -55,22 +63,25 @@ theorem proper_respects_iff (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1)
     sem (CanonicalPairLocalSections.smallRows sem (two_le hA) hp) J hJ p).trans
     (respects_iff sem hA hp J (fun h => hJ h.1) _)
 
-theorem proper_lawful {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1) {p : Cell D → ExtOrd}
+end
+
+end
+
+theorem proper_lawful {J} (hJ : ¬ A ⊆ J.1) {p : Cell D → ExtOrd}
     (hpr : RespectsSemanticsBelow sem J (fun d => p d.1))
     {r : Cell (carrier sem hA) → ExtOrd} (hread : ∀ d, r (boundary sem hA d) = p d) :
     RespectsSemanticsBelow (rows sem hA hp) J (fun d => r d.1) := by
   let e := properEquiv sem hA J hJ
-  have he : (fun d : (carrier sem hA).below J => r d.1) =
-      (fun d : D.below J => p d.1) ∘ e.symm := by
+  have he : (fun d => r d.1) =
+      (fun d => p d.1) ∘ e.symm := by
     funext d
     obtain ⟨a, rfl⟩ := e.surjective d
-    simp only [Function.comp_apply, Equiv.symm_apply_apply]
-    exact hread a.1
-  rw [he]
+    aesop
+  simp_all
   exact (proper_respects_iff sem hA hp J hJ _).mp hpr
 
-theorem full_source_short (c : Cell (carrier sem hA)) (hc : (carrier sem hA).scope c = A)
-    (d : (carrier sem hA).below ((carrier sem hA).cell c)) :
+theorem full_source_short c (hc : (carrier sem hA).scope c = A)
+    d :
     Short ((carrier sem hA).grade c) ((rows sem hA hp).E c d) := by
   by_cases he : (carrier sem hA).cell c = (A, 3)
   · have q := (controllerEquiv sem hA hp).surjective ⟨c, he⟩
@@ -89,7 +100,6 @@ theorem full_source_short (c : Cell (carrier sem hA)) (hc : (carrier sem hA).sco
     rw [inherited_row]
     have hi := SourceLayerCarrier.cell_toCell (predecessor sem hA) (Profile sem)
       3 (by decide) hA (.inl x)
-    change Short ((carrier sem hA).grade (old sem hA x)) _
     rw [show (carrier sem hA).grade (old sem hA x) = (predecessor sem hA).grade x
       from congrArg Prod.snd hi]
     exact CanonicalProperOwnerSections.lower_full_short sem 3 (by decide) hA hp x
@@ -146,20 +156,20 @@ theorem section_lawful (hG : ∀ z ∈ G, SelfVis 3 z) (hC : SelfVis 3 C) :
   · exact hproper c.1 hc c.2.2
 
 theorem section_bound (hC : SelfVis 3 C) (hb : ∀ d, p d ≤ C)
-    (d : Cell (carrier sem hA)) : sectionOf sem hA hp hK hpr ht G C d ≤ C := by
+    d : sectionOf sem hA hp hK hpr ht G C d ≤ C := by
   apply PairedSlotDecoder.decode_le hC
   intro a ha
   obtain ⟨d, hd⟩ := mem_values.mp ha
   simpa only [hd] using hb d
 
-theorem section_supported {L : ℕ} (hL : 3 ≤ L) (hCG : C ∈ G)
-    (d : Cell (carrier sem hA)) :
+theorem section_supported {L} (hL : 3 ≤ L) (hCG : C ∈ G)
+    d :
     OrbitPrefixSupport.Supported L (G : Set ExtOrd) p
       (sectionOf sem hA hp hK hpr ht G C d) := PairedSlotDecoder.decode_supported hL hCG _
 
-theorem section_agreement {q : Cell D → ExtOrd}
-    (hqr : RespectsSemanticsBelow sem (A, K) (fun d => q d.1)) (htq : ∀ d, q d ≠ ⊤)
-    {h : ExtOrd} (hG : ∀ z ∈ G, SelfVis 3 z) (hC : SelfVis 3 C)
+theorem section_agreement {q}
+    hqr (htq : ∀ d, q d ≠ ⊤)
+    {h} (hG : ∀ z ∈ G, SelfVis 3 z) (hC : SelfVis 3 C)
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem hA hp hK hpr ht G C) (sectionOf sem hA hp hK hqr htq G C) h := by
   obtain ⟨heG, _, heAgree, hpReach, hqReach, hcompare⟩ :=

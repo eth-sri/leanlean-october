@@ -18,12 +18,11 @@ replacing an endpoint again leaves that endpoint, not the new offset.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 open Transform Value ExtOrd
 
 /-- Exact replacement composition, including the terminal offset. -/
-theorem replace_replace (x : ExtOrd) (K i j : ℕ) :
+theorem replace_replace x K i j :
     extVisibilityReplace (extVisibilityReplace x K i) K j =
       extVisibilityReplace x K (if i < K then j else i) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
@@ -35,16 +34,16 @@ theorem replace_replace (x : ExtOrd) (K i j : ℕ) :
     split_ifs <;> simp_all
 
 /-- A visible grid value is fixed at every replacement offset. -/
-theorem replace_visible {K : ℕ} {x : ExtOrd} (hx : SelfVis K x) (i : ℕ) :
+theorem replace_visible {K} {x} (hx : SelfVis K x) i :
     extVisibilityReplace x K i = x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · exact extVisibilityReplace_bot _ _
   · exact extVisibilityReplace_top _ _
   · exact extVisibilityReplace_of_le_finitePart (selfVis_ofOrd_iff.mp hx) i
 
-theorem Supported.replace {X : Type*} {K : ℕ} {G : Set ExtOrd} {p : X → ExtOrd}
-    {x : ExtOrd} (hx : Supported K G p x) (hG : ∀ z ∈ G, SelfVis K z)
-    {j : ℕ} (hj : j ≤ K) : Supported K G p (extVisibilityReplace x K j) := by
+theorem Supported.replace {X} {K} {G} {p : X → ExtOrd}
+    {x} (hx : Supported K G p x) (hG : ∀ z ∈ G, SelfVis K z)
+    {j} (hj : j ≤ K) : Supported K G p (extVisibilityReplace x K j) := by
   rcases hx with rfl | hx | ⟨d, i, hi, rfl⟩
   · exact Or.inl (extVisibilityReplace_bot _ _)
   · rw [replace_visible (hG _ hx)]
@@ -54,8 +53,8 @@ theorem Supported.replace {X : Type*} {K : ℕ} {G : Set ExtOrd} {p : X → ExtO
 
 /-- Flatten support through an entire intermediate physical vector. In particular
 there is no assumption that its auxiliaries equal original-field readings. -/
-theorem Supported.substitute {X Y : Type*} {K : ℕ} {G : Set ExtOrd}
-    {p : X → ExtOrd} {q : Y → ExtOrd} {x : ExtOrd}
+theorem Supported.substitute {X Y} {K} {G}
+    {p : X → ExtOrd} {q : Y → ExtOrd} {x}
     (hx : Supported K G q x) (hG : ∀ z ∈ G, SelfVis K z)
     (hq : ∀ d, Supported K G p (q d)) : Supported K G p x := by
   rcases hx with hx | hx | ⟨d, i, hi, rfl⟩
@@ -64,7 +63,7 @@ theorem Supported.substitute {X Y : Type*} {K : ℕ} {G : Set ExtOrd}
   · exact (hq d).replace hG hi
 
 /-- Literal fields themselves have support, even if they are invisible. -/
-theorem supported_field {X : Type*} (K : ℕ) (G : Set ExtOrd) (p : X → ExtOrd) (d : X) :
+theorem supported_field {X} K G p (d : X) :
     Supported K G p (p d) := by
   rcases ExtOrd.cases (p d) with he | he | ⟨a, he⟩
   · exact Or.inl he

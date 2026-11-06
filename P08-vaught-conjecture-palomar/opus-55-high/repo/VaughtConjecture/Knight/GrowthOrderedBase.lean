@@ -18,18 +18,15 @@ rank table. Boundary lawfulness is derived from the literal root attachment.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthOrderedBase
 open Transform Value ExtOrd AmalgamationPlan Growth RelativeLadderLayer
 noncomputable section
 
-private theorem faceMap_eq {m n : ℕ} (D : SemScheme n) (F : SemScheme m)
-    (f : Fin m ↪ Fin n) (hv : Finset.univ.image f ∈ D.scheme.plan)
-    (hf : D.restrictFace f hv = F) (d : Cell F.scheme) :
+private theorem faceMap_eq {m n} D F
+    (f : Fin m ↪ Fin n) hv
+    hf d :
     SemSchemeBoundaryInput.faceMap D F f hv hf d =
-      CellScheme.restrictFace.toCell D.scheme f hv (SemScheme.castCell hf.symm d) := by
-  subst F
-  rfl
+      CellScheme.restrictFace.toCell D.scheme f hv (SemScheme.castCell hf.symm d) := by aesop
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -43,9 +40,8 @@ def field (d : Cell I.boundary) : Field I.right.scheme I.left.scheme :=
   | .inl c => .inr c
   | .inr c => .inl c.1
 
-theorem field_read (S : State I.right.scheme I.left.scheme) (d : Cell I.boundary) :
+theorem field_read (S : State I.right.scheme I.left.scheme) d :
     S.profile (field I d) = I.paste S.donorValues S.privateValues d := by
-  unfold field WholeDonorBoundary.Input.paste OrderedFaceBoundarySemantics.paste
   change S.profile (match (OrderedFaceBoundary.enumeration
       I.leftScheme I.rightScheme I.shared).symm d with
     | .inl c => .inr c | .inr c => .inl c.1) =
@@ -97,7 +93,7 @@ theorem field_private {j : ℕ} {S : State I.right.scheme I.left.scheme}
     S.profile (field I (I.rightFace.map d)) = S.privateValues d :=
   (field_read I S _).trans (I.paste_right _ _ (shared I X T hs) d)
 
-theorem proper (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) :
+theorem proper (hB : B ⊂ A) (hC : C ⊂ A) d :
     I.boundary.scope d ≠ A := by
   rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared R I.isPlan
       I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
@@ -169,11 +165,6 @@ theorem anchor_lawful (a : Catalogue X 1) :
   obtain ⟨S, hs, he⟩ := a.property.2
   rw [← he]
   exact boundary_lawful I X T hs
-
-include T in
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (fields I X) (proper I hB hC)).IsConsistent :=
-  RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent (anchor_lawful I X T)
 
 end
 end VaughtConjecture.Knight.GrowthOrderedBase

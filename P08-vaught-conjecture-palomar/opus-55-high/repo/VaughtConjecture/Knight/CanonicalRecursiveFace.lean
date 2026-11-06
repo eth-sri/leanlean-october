@@ -17,7 +17,6 @@ or bound on the grades of inherited owners is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveFace
 open Transform Value ExtOrd CanonicalRecursiveContract
 noncomputable section

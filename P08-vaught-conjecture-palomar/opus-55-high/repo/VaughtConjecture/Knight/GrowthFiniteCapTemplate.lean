@@ -17,7 +17,6 @@ input. In particular, the encoding grade is not the marker offset.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapTemplate
 open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 noncomputable section
@@ -29,13 +28,13 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
 actual block-reference readings. Neither an encoding nor root source
 alignment nor a replacement donor is an input. -/
 theorem exists_template (req : Requests DA DQ)
-    (e : DA.below (DA.cell req.C) → ExtOrd)
+    e
     (he : RespectsSemanticsBelow semA (DA.cell req.C) e)
     (heproper : ∀ d, e d ≠ ⊤)
     (w : Cell DA → ExtOrd) (hebot : ∀ d, e d = ⊥ ↔ w d.1 = ⊥)
-    {τ : ExtOrd → ExtOrd} (hτ : BoundedMap req.N τ)
+    {τ} (hτ : BoundedMap req.N τ)
     (hchart : ∀ d, τ (e d) = min (w d.1) (w req.C))
-    {α : Ordinal.{0}} (hα : limitPart α = α) {i : ℕ} (hi : i < req.N)
+    {α} (hα : limitPart α = α) {i} (hi : i < req.N)
     (ha : w req.a.1 = ofOrd (α + i))
     (hai : ofOrd (α + i) < w req.C)
     (hcut : ofOrd (α + req.R) < w req.C)

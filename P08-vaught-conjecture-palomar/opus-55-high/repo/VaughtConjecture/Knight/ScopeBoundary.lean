@@ -16,7 +16,6 @@ installing a full-scope source layer on a proper mixed scope of a larger carrier
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeBoundary
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -39,19 +38,24 @@ def scheme : CellScheme B where
 
 def toCell : Cell (scheme D B hB) ↪o Cell D := (inventory D B).orderEmbOfFin rfl
 
-theorem cell_eq (d : Cell (scheme D B hB)) :
+section
+variable (d : Cell (scheme D B hB))
+
+theorem cell_eq  :
     (scheme D B hB).cell d = D.cell (toCell D B hB d) := rfl
 
-theorem scope_bound (d : Cell (scheme D B hB)) : D.scope (toCell D B hB d) ⊆ B :=
+theorem scope_bound  : D.scope (toCell D B hB d) ⊆ B :=
   (Finset.mem_filter.mp ((inventory D B).orderEmbOfFin_mem rfl d)).2
 
-theorem exhaustive {d : Cell D} (hd : D.scope d ⊆ B) : ∃ c, toCell D B hB c = d := by
+end
+
+theorem exhaustive {d} (hd : D.scope d ⊆ B) : ∃ c, toCell D B hB c = d := by
   have hm : d ∈ Set.range ((inventory D B).orderEmbOfFin (k := (inventory D B).card) rfl) := by
     rw [Finset.range_orderEmbOfFin]
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩
   exact hm
 
-def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B) :
+def belowEquiv BJ (hBJ : BJ.1 ⊆ B) :
     (scheme D B hB).below BJ ≃ D.below BJ :=
   Equiv.ofBijective (fun d => ⟨toCell D B hB d.1, d.2⟩) ⟨by
     intro a b hab
@@ -69,15 +73,15 @@ def rows : Semantics (scheme D B hB) where
     (belowEquiv D B hB ((scheme D B hB).cell c) (scope_bound D B hB c) d)
   orderly c _d := sem.orderly (toCell D B hB c) _
 
-theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B)
-    (p : (scheme D B hB).below BJ → ExtOrd) :
+theorem respects_iff BJ hBJ
+    p :
     RespectsSemanticsBelow (rows D B hB sem) BJ p ↔
       RespectsSemanticsBelow sem BJ (p ∘ (belowEquiv D B hB BJ hBJ).symm) :=
   respects_iff_of_equiv (belowEquiv D B hB BJ hBJ) (fun _ => rfl) (fun _ _ => Iff.rfl)
     (fun _ _ _ => rfl) p
 
-theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.1 ⊆ B)
-    {p : D.below BJ → ExtOrd} (hp : RespectsSemanticsBelow sem BJ p) :
+theorem pullback_respects {BJ} hBJ
+    {p} (hp : RespectsSemanticsBelow sem BJ p) :
     RespectsSemanticsBelow (rows D B hB sem) BJ (p ∘ belowEquiv D B hB BJ hBJ) := by
   apply (respects_iff D B hB sem BJ hBJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp

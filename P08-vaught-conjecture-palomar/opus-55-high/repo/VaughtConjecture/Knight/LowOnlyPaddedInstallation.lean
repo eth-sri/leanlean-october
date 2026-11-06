@@ -20,7 +20,6 @@ No bountifulness of higher outputs is claimed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedInstallation
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedStepRows
@@ -30,13 +29,14 @@ noncomputable section
 section Fields
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
 
-theorem field_coded {j : ℕ} (a : F.Anchor j) (d : Field P C) :
+theorem field_coded {j} a d :
     IsCodedLabel j (F.fields j a d) := by
   rcases mem_codedAlphabet_iff.mp
       (CanonicalPairedProfiles.inventory_coded (Field P C) j a.property.1 d)
       with hb | ⟨b, i, _, hi, he⟩
   · exact Or.inl hb
   · exact Or.inr ⟨b, i, hi, he⟩
+
 end Fields
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -80,7 +80,7 @@ theorem successor_coded (hc : P.rows.IsCoded) : (successor P hk hnext).rows.IsCo
     (fun _ hz => CanonicalCodingSupport.grid _ _ hz) (field_coded F a)
     (source_supported P hk hnext a d.1)
 
-def successor_face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+def successor_face {T} {E : CellScheme T} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows P.rows) (hT : ¬ A ⊆ T) :
     ExactSemanticFace oldRows (successor P hk hnext).rows :=
   SeparatedLayerFace.face P.carrier (F.Anchor (k + 1)) (k + 1)
@@ -89,7 +89,7 @@ def successor_face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
 
 end Successor
 
-theorem build_coded (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem build_coded t ht :
     (build I F hroot hA hB hC t ht).rows.IsCoded := by
   induction t with
   | zero => exact initial_coded I F hroot hA hB hC
@@ -103,9 +103,9 @@ def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
   | t + 1, ht => successor_face (build I F hroot hA hB hC t (by omega))
       (by omega) ht (face G hT t (by omega)) hT
 
-theorem face_map {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+theorem face_map {T} {E} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T)
-    (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell E) :
+    t ht d :
     (face I F hroot hA hB hC G hT t ht).map d =
       (build I F hroot hA hB hC t ht).baseMap
         (RelativeLadderLayer.old I.boundary (by omega) (G.map d)) := by
@@ -114,15 +114,23 @@ theorem face_map {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
   | succ t ih =>
     exact congrArg (old (build I F hroot hA hB hC t (by omega)) (by omega)) (ih (by omega))
 
-def donorFace (t : ℕ) (ht : t + 2 ≤ A.card) :
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+def donorFace  :
     ExactSemanticFace I.leftRows (build I F hroot hA hB hC t ht).rows :=
   face I F hroot hA hB hC I.leftFace hB.not_ge t ht
 
-def privateFace (t : ℕ) (ht : t + 2 ≤ A.card) :
+def privateFace  :
     ExactSemanticFace I.rightRows (build I F hroot hA hB hC t ht).rows :=
   face I F hroot hA hB hC I.rightFace hC.not_ge t ht
 
-theorem donor_order (t : ℕ) (ht : t + 2 ≤ A.card) :
+end
+
+section
+variable (t : ℕ) (ht : t + 2 ≤ A.card)
+
+theorem donor_order  :
     StrictMono (donorFace I F hroot hA hB hC t ht).map := by
   have he := funext (face_map I F hroot hA hB hC I.leftFace hB.not_ge t ht)
   change StrictMono (face I F hroot hA hB hC I.leftFace hB.not_ge t ht).map
@@ -130,7 +138,7 @@ theorem donor_order (t : ℕ) (ht : t + 2 ≤ A.card) :
   exact (build I F hroot hA hB hC t ht).base_mono.comp
     ((SourceLayerCarrier.old_order _ _ _ _ _).comp I.left_order)
 
-theorem private_order (t : ℕ) (ht : t + 2 ≤ A.card) :
+theorem private_order  :
     StrictMono (privateFace I F hroot hA hB hC t ht).map := by
   have he := funext (face_map I F hroot hA hB hC I.rightFace hC.not_ge t ht)
   change StrictMono (face I F hroot hA hB hC I.rightFace hC.not_ge t ht).map
@@ -138,42 +146,7 @@ theorem private_order (t : ℕ) (ht : t + 2 ≤ A.card) :
   exact (build I F hroot hA hB hC t ht).base_mono.comp
     ((SourceLayerCarrier.old_order _ _ _ _ _).comp I.right_order)
 
-/-- Every installed full-scope grade has an actual owner, obtained from the
-constructed ceiling receipt rather than an assumed completeness contract. -/
-theorem full_occupied (t : ℕ) (ht : t + 2 ≤ A.card) (j : ℕ)
-    (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = (A, j) := by
-  obtain ⟨a, _⟩ := F.exists_rank_anchor (show 1 ≤ t + 2 by omega) (F.zero_admissible (t + 2))
-  obtain ⟨d, hd, _⟩ := (build I F hroot hA hB hC t ht).ceiling_at le_rfl
-    (state F a) (state_admissible F a) (state_proper F a)
-    (G := ∅) (H := ⊤) (by simp) (by simp [SelfVis]) (fun _ => le_top) j hj hjt
-  exact ⟨d, hd⟩
-
-theorem complete_through (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
-    (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ}
-    (hJ : J ∈ Plan.gradedPlan R) (hj : J.2 ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = J := by
-  rcases J with ⟨T, j⟩
-  by_cases hT : T = A
-  · subst T
-    exact full_occupied I F hroot hA hB hC t ht j (Plan.mem_gradedPlan.mp hJ).2.1 hj
-  · obtain ⟨d, hd⟩ := (I.occupied_iff hJ).mpr (hcover T (Plan.mem_gradedPlan.mp hJ).1 hT)
-    refine ⟨(build I F hroot hA hB hC t ht).baseMap
-      (RelativeLadderLayer.old I.boundary (by omega) d), ?_⟩
-    exact ((build I F hroot hA hB hC t ht).base_index _).trans
-      ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd)
-
-/-- At the full available height every graded-plan index is occupied. This
-packages completeness, not the still separate bountifulness assertion. -/
-theorem complete (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C) :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.IsComplete := by
-  intro J hJ
-  have hp := build_plan I F hroot hA hB hC (A.card - 2) (by omega)
-  have hJ' : J ∈ Plan.gradedPlan R := by rwa [hp] at hJ
-  have hg := (Plan.mem_gradedPlan.mp hJ').2.2
-  have hs := I.boundary.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hJ').1
-  have hc := Finset.card_le_card hs
-  exact complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) hJ' (by omega)
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedInstallation

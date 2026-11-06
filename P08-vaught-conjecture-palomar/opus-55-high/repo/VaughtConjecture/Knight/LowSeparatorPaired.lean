@@ -56,24 +56,32 @@ section Scalar
 
 variable {X : Type*} [Fintype X] (K : ℕ) (N : X → Prop) [DecidablePred N] (b : X)
 
-/-- The non-top donor maximum of a complete profile. -/
-def donorMax (s : X → ExtOrd) : ExtOrd := (Finset.univ.filter N).sup s
+section
+variable (s : X → ExtOrd)
 
-theorem le_donorMax (s : X → ExtOrd) {d : X} (hd : N d) : s d ≤ donorMax N s :=
+/-- The non-top donor maximum of a complete profile. -/
+def donorMax  : ExtOrd := (Finset.univ.filter N).sup s
+
+theorem le_donorMax {d} (hd : N d) : s d ≤ donorMax N s :=
   Finset.le_sup (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩)
 
-theorem donorMax_le {s : X → ExtOrd} {c : ExtOrd} (h : ∀ d, N d → s d ≤ c) : donorMax N s ≤ c :=
+end
+
+theorem donorMax_le {s} {c} (h : ∀ d, N d → s d ≤ c) : donorMax N s ≤ c :=
   Finset.sup_le fun d hd => h d (Finset.mem_filter.mp hd).2
 
-theorem donorMax_congr {s a : X → ExtOrd} (h : ∀ d, N d → a d = s d) :
+theorem donorMax_congr {s a} (h : ∀ d, N d → a d = s d) :
     donorMax N a = donorMax N s :=
   Finset.sup_congr rfl fun d hd => h d (Finset.mem_filter.mp hd).2
 
-theorem donorMax_ne_top {s : X → ExtOrd} (hs : ∀ d, s d ≠ ⊤) : donorMax N s ≠ ⊤ :=
+theorem donorMax_ne_top {s} (hs : ∀ d, s d ≠ ⊤) : donorMax N s ≠ ⊤ :=
   ne_of_lt ((Finset.sup_lt_iff bot_lt_top).mpr fun d _ => lt_top_iff_ne_top.mpr (hs d))
 
+section
+variable (s : X → ExtOrd)
+
 /-- The non-top maximum is bottom or attained. -/
-theorem donorMax_cases (s : X → ExtOrd) :
+theorem donorMax_cases  :
     donorMax N s = ⊥ ∨ ∃ d, N d ∧ s d = donorMax N s := by
   by_cases hne : (Finset.univ.filter N).Nonempty
   · obtain ⟨d, hd, he⟩ := Finset.exists_mem_eq_sup _ hne s
@@ -83,15 +91,22 @@ theorem donorMax_cases (s : X → ExtOrd) :
     rw [Finset.not_nonempty_iff_eq_empty.mp hne, Finset.sup_empty]
 
 /-- The rounded frontier `R_K(M(s))`. -/
-def cutoffCut (s : X → ExtOrd) : ExtOrd := extVisibilityReplace (donorMax N s) K K
+def cutoffCut  : ExtOrd := extVisibilityReplace (donorMax N s) K K
 
-theorem donorMax_le_cutoffCut (s : X → ExtOrd) : donorMax N s ≤ cutoffCut K N s :=
+end
+
+section
+variable (s : X → ExtOrd)
+
+theorem donorMax_le_cutoffCut  : donorMax N s ≤ cutoffCut K N s :=
   TopSupport.le_evr_self _ _
 
-theorem cutoffCut_selfVis (s : X → ExtOrd) : SelfVis K (cutoffCut K N s) :=
+theorem cutoffCut_selfVis  : SelfVis K (cutoffCut K N s) :=
   TopSupport.selfVis_evr_self K _
 
-theorem cutoffCut_ne_top {s : X → ExtOrd} (hs : ∀ d, s d ≠ ⊤) : cutoffCut K N s ≠ ⊤ :=
+end
+
+theorem cutoffCut_ne_top {s} (hs : ∀ d, s d ≠ ⊤) : cutoffCut K N s ≠ ⊤ :=
   TopSupport.evr_ne_top (donorMax_ne_top N hs) K K
 
 /-- The partner: lower only the cutoff field to the rounded frontier, then normalize. -/
@@ -102,10 +117,10 @@ def partner [DecidableEq X] (s : X → ExtOrd) : X → ExtOrd :=
 
 /-- In a canonical profile the non-top maximum is bottom or a canonical code `ω·bl + off` with
 `off ≤ K`, and its rounding is the block endpoint `ω·bl + K`. -/
-theorem cutoffCut_eq_endpoint {s : X → ExtOrd}
+theorem cutoffCut_eq_endpoint {s}
     (hs : s ∈ CanonicalPairedProfiles.inventory X K) :
     cutoffCut K N s = ⊥ ∨
-      ∃ (m₀ : Ordinal.{0}) (d₀ : X), N d₀ ∧ s d₀ = ofOrd m₀ ∧ donorMax N s = ofOrd m₀ ∧
+      ∃ m₀ d₀, N d₀ ∧ s d₀ = ofOrd m₀ ∧ donorMax N s = ofOrd m₀ ∧
         m₀ = Ordinal.omega0 * block K (values s) m₀ + offset K (values s) m₀ ∧
         cutoffCut K N s = ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) := by
   rcases ExtOrd.cases (donorMax N s) with hM | hM | ⟨m₀, hM⟩
@@ -144,27 +159,24 @@ section Partner
 
 variable [DecidableEq X]
 
-theorem mem_values_update {s : X → ExtOrd} {x : ExtOrd} {c : Ordinal.{0}} :
+section
+variable {s : X → ExtOrd}
+
+theorem mem_values_update {x} {c} :
     c ∈ values (Function.update s b x) ↔ x = ofOrd c ∨ ∃ d, d ≠ b ∧ s d = ofOrd c := by
   rw [mem_values]
   constructor
-  · rintro ⟨d, hd⟩
-    by_cases hdb : d = b
-    · subst hdb
-      rw [Function.update_self] at hd
-      exact Or.inl hd
-    · rw [Function.update_of_ne hdb] at hd
-      exact Or.inr ⟨d, hdb, hd⟩
+  · grind
   · rintro (h | ⟨d, hdb, hd⟩)
-    · exact ⟨b, by rw [Function.update_self]; exact h⟩
-    · exact ⟨d, by rw [Function.update_of_ne hdb]; exact hd⟩
+    · exact ⟨b, by grind⟩
+    · exact ⟨d, by grind⟩
 
 /-- **Represented-endpoint fixation.**  Inserting the `K`-endpoint `ω·bl + K` of the block of a
 canonical code `m₀ = ω·bl + off` (`off ≤ K`) into the inventory and removing a value above that
 endpoint leaves its paired code at block `bl`, offset `K`: the endpoint witnesses no orbit, the
 keys below its key are those below `m₀`'s key, and the removed value lies at or above
 `ω·bl + K + 1`. -/
-theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm₀ : s d₀ = ofOrd m₀)
+theorem encode_endpoint {m₀} {d₀} (hm₀ : s d₀ = ofOrd m₀)
     (hdec : m₀ = Ordinal.omega0 * block K (values s) m₀ + offset K (values s) m₀)
     (hsb : ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) < s b) :
     encode K (values (Function.update s b (ofOrd (Ordinal.omega0 * block K (values s) m₀ + K))))
@@ -276,6 +288,8 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
   unfold encode
   rw [hblock, hoffT]
 
+end
+
 end Partner
 
 /-- The paired source grid of the complete field type. -/
@@ -288,7 +302,7 @@ theorem grid_bot : (⊥ : ExtOrd) ∈ grid (X := X) K := sourceGrid_bot _ _
 section PartnerProfile
 
 variable [DecidableEq X] {s : X → ExtOrd} (hs : s ∈ CanonicalPairedProfiles.inventory X K)
-  (hb : ¬ N b) (hlt : cutoffCut K N s < s b)
+   (hlt : cutoffCut K N s < s b)
 
 include hs in
 theorem partner_mem : partner K N b s ∈ CanonicalPairedProfiles.inventory X K := by
@@ -296,7 +310,7 @@ theorem partner_mem : partner K N b s ∈ CanonicalPairedProfiles.inventory X K 
   intro d
   by_cases hdb : d = b
   · subst hdb
-    rw [Function.update_self]
+    simp_all
     exact cutoffCut_ne_top K N hs.2
   · rw [Function.update_of_ne hdb]
     exact hs.2 d
@@ -307,7 +321,7 @@ theorem partner_cutoff : partner K N b s b = cutoffCut K N s := by
   unfold partner
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, hdec, hend⟩
   · rw [h0]
-    exact (PairedSlotEncoding.normalize_bot_iff K _ b).mpr (by rw [Function.update_self])
+    exact (PairedSlotEncoding.normalize_bot_iff K _ b).mpr (by grind)
   · rw [PairedSlotEncoding.normalize_ofOrd (by rw [Function.update_self, hend]), hend]
     rw [hend] at hlt
     exact encode_endpoint K b hm₀ hdec hlt
@@ -317,17 +331,11 @@ include hs hlt in
 theorem partner_cap (d : X) :
     min (partner K N b s d) (cutoffCut K N s) = min (s d) (cutoffCut K N s) := by
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, hdec, hend⟩
-  · rw [h0, min_eq_right bot_le, min_eq_right bot_le]
+  · grind
   · rw [hend]
     unfold partner
-    rw [hend]
     refine CanonicalPairedProfiles.normalize_cap X K hs (fun e => ?_) d
-    by_cases heb : e = b
-    · subst heb
-      rw [Function.update_self, min_self, min_eq_right]
-      rw [hend] at hlt
-      exact hlt.le
-    · rw [Function.update_of_ne heb]
+    grind
 
 omit [DecidableEq X] in
 include hs in
@@ -348,9 +356,7 @@ theorem cut_partner : cut (grid (X := X) K) s (partner K N b s) = cutoffCut K N 
     intro hgt
     have hag := agree_cut (grid_bot (X := X) K) s (partner K N b s) b
     rw [partner_cutoff K N b hs hlt, min_eq_left hgt.le] at hag
-    have : cutoffCut K N s < min (s b) (cut (grid (X := X) K) s (partner K N b s)) := lt_min hlt hgt
-    rw [hag] at this
-    exact lt_irrefl _ this
+    grind
   · exact le_cut (cutoffCut_mem_grid K N hs) (fun x => (partner_cap K N b hs hlt x).symm)
 
 end PartnerProfile
@@ -372,17 +378,8 @@ theorem cut_partner_eq_of_lt {a : X → ExtOrd}
   have hst := cut_partner K N b hs hlt
   have h1 := cut_triangle (grid_bot (X := X) K) a s (partner K N b s)
   have h2 := cut_triangle (grid_bot (X := X) K) s a (partner K N b s)
-  rw [hst] at h1 h2
   rw [cut_symm (grid_bot (X := X) K) s a] at h2
-  have hcu : cutoffCut K N s < cut (grid (X := X) K) a s := by
-    by_contra hn
-    rw [min_eq_left (not_lt.mp hn)] at h1
-    exact absurd (h1.trans_lt h) (lt_irrefl _)
-  refine ⟨le_antisymm ?_ ?_, hcu⟩
-  · rw [min_eq_right h.le] at h2
-    exact h2
-  · rw [min_eq_right hcu.le] at h1
-    exact h1
+  grind
 
 include hs hlt in
 /-- **Strict comparison activates LOW**: the non-top donor maximum is unchanged and the cutoff
@@ -397,9 +394,7 @@ theorem activation_of_cut_lt {a : X → ExtOrd}
       ((le_donorMax N s hd).trans (donorMax_le_cutoffCut K N s)).trans_lt hu
     exact (eq_of_cap_eq_lt (hag d).symm hsd).symm
   · have hb' := hag b
-    have hgt : cutoffCut K N s < min (s b) (cut (grid (X := X) K) a s) := lt_min hlt hu
-    rw [← hb'] at hgt
-    exact hgt.trans_le (min_le_left _ _)
+    grind
 
 include hs hlt in
 /-- A monotone chart reading the partner cut strictly below the diagonal cut activates LOW. -/
@@ -430,14 +425,17 @@ noncomputable instance : DecidablePred (donorField F) := Classical.decPred _
 /-- The cutoff field. -/
 abbrev cutoffField : LowOnly.Field P C := Sum.inr (Sum.inr ())
 
+section
+variable (S : State P C)
+
 /-- The family's non-top maximum is the donor maximum of the complete profile. -/
-theorem maximum_eq_donorMax (S : State P C) :
+theorem maximum_eq_donorMax  :
     F.maximum S = donorMax (donorField F) S.profile := by
   apply le_antisymm
   · unfold LowOnly.Family.maximum LowOnly.nonTopMax
     apply Finset.sup_le
     intro d hd
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hd
+    simp_all
     exact le_donorMax (donorField F) S.profile (d := Sum.inl d) hd
   · unfold donorMax
     apply Finset.sup_le
@@ -449,23 +447,24 @@ theorem maximum_eq_donorMax (S : State P C) :
     · exact hx'.elim
 
 /-- The partner state: only the cutoff is lowered to the frontier, then normalized. -/
-def partnerState (S : State P C) : State P C :=
+def partnerState  : State P C :=
   (⟨S.u, S.v, cutoffCut K (donorField F) S.profile⟩ : State P C).normalize K
 
-theorem partnerState_profile (S : State P C) :
+theorem partnerState_profile  :
     (partnerState F S).profile =
       partner K (donorField F) (cutoffField (P := P) (C := C)) S.profile := by
   funext d
   unfold partnerState partner
   rw [State.profile_normalize]
   congr 1
-  funext e
-  rcases e with e | e | e
-  · rfl
-  · rfl
-  · rfl
+  aesop
 
-theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
+end
+
+section
+variable {S : State P C}
+
+theorem partnerState_mem (hcan : S.profile ∈
       CanonicalPairedProfiles.inventory (LowOnly.Field P C) K) :
     (partnerState F S).profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K := by
   rw [partnerState_profile]
@@ -475,7 +474,7 @@ theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
 root; if the new LOW premise is active the old one was (the frontier bounds the maximum and lies
 below the old cutoff), and the old bound dominates the new one; normalization preserves
 admission. -/
-theorem partnerState_admissible {S : State P C} (hS : F.Admissible K S)
+theorem partnerState_admissible (hS : F.Admissible K S)
     (hlt : cutoffCut K (donorField F) S.profile < S.b) (hK : 1 ≤ K) :
     F.Admissible K (partnerState F S) := by
   have hm : F.maximum S < S.b := by
@@ -488,27 +487,31 @@ theorem partnerState_admissible {S : State P C} (hS : F.Admissible K S)
       futureP := hS.futureP
       futureC := hS.futureC
       cutoff := by
-        rw [min_self]
+        simp_all
         exact cutoffCut_selfVis K (donorField F) S.profile
       low := fun hj _ d hd => (max_le_max hlt.le le_rfl).trans (hS.low hj hm d hd) }
   exact F.normalize_admissible hK hS'
 
 /-- **Donor-top readback at an active state**: a chart through `K` reading the private owner
 and the low source as `⊤` reads every designated donor top as `⊤`, by LOW. -/
-theorem donor_top_readback {S : State P C} (hS : F.Admissible K S) (hm : F.maximum S < S.b)
-    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ) (hc : σ (S.v F.gap.c) = ⊤)
-    (hr : σ (S.v F.gap.r.1) = ⊤) (d : Cell P.scheme) (hd : F.p d = ⊤) : σ (S.u d) = ⊤ := by
+theorem donor_top_readback (hS : F.Admissible K S) (hm : F.maximum S < S.b)
+    {σ} (hσ : Witness (gTop K) σ) (hc : σ (S.v F.gap.c) = ⊤)
+    (hr : σ (S.v F.gap.r.1) = ⊤) d (hd : F.p d = ⊤) : σ (S.u d) = ⊤ := by
   have hlow := hS.low le_rfl hm d hd
   change max S.b (min (S.v F.gap.c) (extVisibilityReplace (S.v F.gap.r.1) K K)) ≤ S.u d at hlow
   have h1 := hσ.mono ((le_max_right _ _).trans hlow)
   rw [hσ.mono.map_min, hσ.comm_gTop _ le_rfl, hc, hr, extVisibilityReplace_top, min_self] at h1
   exact top_le_iff.mp h1
 
+end
+
+section
+variable {S A : State P C}
+
 /-- **Strict comparison at a serving state activates LOW there**: a monotone chart reading the
 partner cut strictly below the diagonal cut at an admitted serving profile forces the serving
 state's non-top maximum below its cutoff. -/
-theorem activation_of_serving {S A : State P C}
-    (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
+theorem activation_of_serving (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
     (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ : ExtOrd → ExtOrd} (hσ : Monotone σ)
     (h : σ (cut (grid (X := LowOnly.Field P C) K) A.profile (partnerState F S).profile) <
       σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile)) :
@@ -521,15 +524,17 @@ theorem activation_of_serving {S A : State P C}
 /-- **The separator readback**: at an admitted serving state whose chart reads the partner cut
 strictly below the diagonal cut and reads the private owner and low source as `⊤`, every
 designated donor top reads `⊤`. -/
-theorem serving_readback {S A : State P C} (hA : F.Admissible K A)
+theorem serving_readback (hA : F.Admissible K A)
     (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
-    (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ : ExtOrd → ExtOrd}
+    (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ}
     (hσ : Witness (gTop K) σ)
     (h : σ (cut (grid (X := LowOnly.Field P C) K) A.profile (partnerState F S).profile) <
       σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile))
-    (hc : σ (A.v F.gap.c) = ⊤) (hr : σ (A.v F.gap.r.1) = ⊤) (d : Cell P.scheme)
+    (hc : σ (A.v F.gap.c) = ⊤) (hr : σ (A.v F.gap.r.1) = ⊤) d
     (hd : F.p d = ⊤) : σ (A.u d) = ⊤ :=
   donor_top_readback F hA (activation_of_serving F hcan hlt hσ.mono h) hσ hc hr d hd
+
+end
 
 end Family
 

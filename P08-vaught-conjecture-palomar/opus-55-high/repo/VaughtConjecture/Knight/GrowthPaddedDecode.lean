@@ -23,7 +23,6 @@ actual growth fibres rather than substituting LOW.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedDecode
 open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
 open GrowthPaddedSuccessor GrowthOrderedBase
@@ -36,20 +35,24 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {X : RelativeData DA semA DQ semQ} {j b : ℕ}
   {a : Field DA DQ → ExtOrd} {S : State DA DQ}
 
+section
+variable (r : ProtectedRepair X a S j b)
+
 /-- The replacement indexes the existing fixed catalogue. -/
-def repairAnchor (r : ProtectedRepair X a S j b) : Catalogue X j :=
+def repairAnchor  : Catalogue X j :=
   ⟨r.encoded.profile, r.canonical, r.encoded, r.admitted, rfl⟩
 
-theorem grid_fixed_below (r : ProtectedRepair X a S j b)
-    {z : ExtOrd} (hz : z ∈ PairedSlotComparison.sourceGrid j (Fintype.card (Field DA DQ)))
+theorem grid_fixed_below {z} (hz : z ∈ PairedSlotComparison.sourceGrid j (Fintype.card (Field DA DQ)))
     (hlt : z < grid j b) : r.decoder z = z := by
   rcases Finset.mem_insert.mp hz with rfl | hz
   · exact r.witness.bot
   · obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hz
     apply r.grid_fixed
     by_contra hn
-    have hi : b ≤ i := Nat.le_of_not_gt hn
+    simp_all
     exact (not_le_of_gt hlt) (ofOrd_le_ofOrd.mpr (add_le_add (by gcongr) le_rfl))
+
+end
 
 end Grid
 
@@ -61,22 +64,21 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem protected_caps {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S 2 b)
-    (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
+section
+variable {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme I.left.scheme} (r : ProtectedRepair X a.val S 2 b)
+
+theorem protected_caps (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
     (d : Cell (carrier I X T hA hB hC)) :
     min (r.decoder (source I X T hA hB hC (repairAnchor r) d)) (grid 2 b) =
       min (source I X T hA hB hC a d) (grid 2 b) := by
   exact OrbitPrefixSupport.decode_agree r.witness (grid_visible 2 b)
-    (by rw [gTop_of_le le_rfl]; exact le_top) r.reaches
+    (by tauto) r.reaches
     (fun _ hz hlt => grid_fixed_below r hz hlt) r.boundary_fixed
     (source_supported I X T hA hB hC a)
     (source_prefix I X T hA hB hC (repairAnchor r) a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq) d
 
-theorem protected_lawful {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S 2 b)
-    (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1) :
+theorem protected_lawful (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1) :
     RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2)
       (fun d => r.decoder (source I X T hA hB hC (repairAnchor r) d.1)) := by
   exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
@@ -87,12 +89,13 @@ theorem protected_lawful {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme
     (fun d => source_prefix I X T hA hB hC (repairAnchor r) a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq d.1)).1
 
-theorem original_decode {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S 2 b) (d : Cell I.boundary) :
+theorem original_decode d :
     r.decoder (source I X T hA hB hC (repairAnchor r) (original I X T hA hB hC d)) =
       S.profile (field I d) := by
   rw [original_readback]
   exact r.readback _
+
+end
 
 /-- Physical private occurrences in the grade-two target. -/
 def privateAt (d : I.right.scheme.below (Finset.univ, 2)) :
@@ -114,11 +117,11 @@ def donorAt (d : I.left.scheme.below (Finset.univ, 2)) :
     change I.boundary.grade (I.leftFace.map d.1) = I.left.scheme.grade d.1 at hg
     exact hg.le.trans d.2.2⟩
 
-theorem private_source_repair {b : ℕ} {S : State I.right.scheme I.left.scheme}
-    (hS : Admitted X 2 S)
-    (hc : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.right.scheme I.left.scheme) 2)
+theorem private_source_repair {b} {S}
+    hS
+    hc
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
-    {v : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
+    {v}
     (hv : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) v)
     (hag : ∀ d, min (v d) (grid 2 b) = min (S.privateValues d.1) (grid 2 b)) :
     ∃ w, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) w ∧
@@ -131,18 +134,16 @@ theorem private_source_repair {b : ℕ} {S : State I.right.scheme I.left.scheme}
     fun d => protected_caps I X T hA hB hC
       (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source I X T hA hB hC (repairAnchor r)
-    (original I X T hA hB hC (I.rightFace.map d.1))) = v d
   exact (original_decode I X T hA hB hC
     (a := ⟨S.profile, hc, S, hS, rfl⟩) r (I.rightFace.map d.1)).trans
     ((field_private I X T hS' d.1).trans
         (he d))
 
-theorem donor_source_repair (hN : 2 < X.req.N) {b : ℕ} {S : State I.right.scheme I.left.scheme}
-    (hS : Admitted X 2 S)
-    (hc : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.right.scheme I.left.scheme) 2)
+theorem donor_source_repair (hN : 2 < X.req.N) {b} {S}
+    hS
+    hc
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
-    {u : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
+    {u}
     (hu : RespectsSemanticsBelow I.left.rows (Finset.univ, 2) u)
     (hag : ∀ d, min (u d) (grid 2 b) = min (S.donorValues d.1) (grid 2 b)) :
     ∃ w, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) w ∧
@@ -155,8 +156,6 @@ theorem donor_source_repair (hN : 2 < X.req.N) {b : ℕ} {S : State I.right.sche
     fun d => protected_caps I X T hA hB hC
       (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source I X T hA hB hC (repairAnchor r)
-    (original I X T hA hB hC (I.leftFace.map d.1))) = u d
   exact (original_decode I X T hA hB hC
     (a := ⟨S.profile, hc, S, hS, rfl⟩) r (I.leftFace.map d.1)).trans
     ((field_donor I S' d.1).trans (he d))

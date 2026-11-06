@@ -19,7 +19,6 @@ equations and the two small arities are not asserted here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveApex
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
 open SemSchemeBoundaryInput CoatomRecursiveInput
@@ -63,8 +62,8 @@ theorem complete : (scheme I).IsComplete := by
   rw [card_eq I] at hc
   omega
 
-theorem exists_display {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
-    {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem exists_display {α} (hα : Order.IsSuccLimit α)
+    {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (hpb : ∀ d, p d < ofOrd α ∨ p d = ⊤) (hqb : ∀ d, q d < ofOrd α ∨ q d = ⊤)
     (ha : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
@@ -107,8 +106,8 @@ structure Display (α : Ordinal.{0}) (p : Cell I.left.scheme → ExtOrd)
   right_read : ∀ d, label (right I d) = q d
   top_read : label (apex I) = ⊤
 
-def display {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
-    {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+def display {α} (hα : Order.IsSuccLimit α)
+    {p : Cell I.left.scheme → ExtOrd} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (hpb : ∀ d, p d < ofOrd α ∨ p d = ⊤) (hqb : ∀ d, q d < ofOrd α ∨ q d = ⊤)
     (ha : ∀ i, p (I.shared.f i) = q (I.shared.g i)) : Display I α p q := by
@@ -123,14 +122,17 @@ variable {α : Ordinal.{0}} {s' : Step (Finset.univ : Finset (Fin (n + 4)))}
   {I' : Input s' m (n + 3) (n + 3)} {p : Cell I'.left.scheme → ExtOrd}
   {q : Cell I'.right.scheme → ExtOrd}
 
+section
+variable (O : Display I' α p q)
+
 /-- An actual legal stage type, including coding and completeness. -/
-def Display.toType (O : Display I' α p q) : S α (n + 4) where
+def Display.toType  : S α (n + 4) where
   scheme := ⟨scheme I', O.rows, O.coded, O.consistent, O.bountiful, complete I'⟩
   label := O.label
   label_bound := O.bounded
   respects := O.lawful
 
-theorem Display.maximal (O : Display I' α p q) : O.toType.HasMaximalFullCell := by
+theorem Display.maximal  : O.toType.HasMaximalFullCell := by
   refine ⟨apex I', ?_, ?_⟩
   · exact congrArg Prod.snd (MaximalFullLayer.apex_index
       (CoatomRecursiveInput.scheme I') (n + 3) (n + 4) (by omega) (finalHeight I'))
@@ -139,11 +141,13 @@ theorem Display.maximal (O : Display I' α p q) : O.toType.HasMaximalFullCell :=
     rw [O.top_read]
     exact le_top
 
+end
+
 /-- Arbitrary compatible input types produce a complete coded stage type
 with both literal displays and a maximal full-grade top. The two ordered
 `typeMap` identities are still a separate theorem. -/
-def ofCompatible (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
-    {pa pb : S α (n + 3)} (h : C.Compatible pa pb) :
+def ofCompatible (hα : Order.IsSuccLimit α) C
+    {pa pb : S α (n + 3)} h :
     Display (CoatomBoundaryPresentation.of_compatible C h).input α pa.label pb.label :=
   display _ hα pa.respects pb.respects pa.label_bound pb.label_bound
     (CoatomRecursiveDisplay.compatible_labels C h)

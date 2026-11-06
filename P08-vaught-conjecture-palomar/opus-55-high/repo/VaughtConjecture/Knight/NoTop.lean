@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.Model
-public import VaughtConjecture.TypeTower.Slot
+public import Mathlib.SetTheory.Cardinal.Arithmetic
 
 /-! # No countable model of `S^{ω₁}` (Knight, Lemma 11.1.1)
 
@@ -49,23 +49,12 @@ universe u
 
 /-! ### The stage `ω₁` -/
 
-/-- The stage `ω₁ = (aleph 1).ord`, the top of Knight's construction, as a limit stage. -/
-noncomputable def omegaOneStage : LimitStage :=
-  ⟨(aleph 1).ord, Cardinal.isSuccLimit_ord (aleph0_le_aleph 1)⟩
-
-@[simp] theorem omegaOneStage_val : omegaOneStage.1 = (aleph 1).ord := rfl
-
 /-! ### Uniformity bands -/
-
-/-- The **Uniformity band** of a non-successor `γ`: the labels in `[γ, γ + ω)`
-(the target interval of Def. 3.2.1(4)(b), `UniformityFamily γ`). -/
-def band (γ : Ordinal.{0}) : Set ExtOrd :=
-  {x | ofOrd γ ≤ x ∧ x < ofOrd (γ + ω)}
 
 /-! ### The index set: non-successors below `ω₁` -/
 
 /-- The block levels below `ω₁` stay below `ω₁` (`card (ω + ω·ξ) = ℵ₀ + ℵ₀·card ξ < ℵ₁`). -/
-theorem blockLevel_lt_ord_aleph_one {ξ : Ordinal.{0}} (hξ : ξ < (aleph 1).ord) :
+theorem blockLevel_lt_ord_aleph_one {ξ} (hξ : ξ < (aleph 1).ord) :
     blockLevel ξ < (aleph 1).ord := by
   rw [lt_ord] at hξ ⊢
   unfold blockLevel
@@ -74,19 +63,5 @@ theorem blockLevel_lt_ord_aleph_one {ξ : Ordinal.{0}} (hξ : ξ < (aleph 1).ord
     (mul_lt_of_lt (aleph0_le_aleph 1) aleph0_lt_aleph_one hξ)
 
 /-! ### Slots: a labelled tuple together with a cell of its realized type -/
-
-section Slot
-
-variable {α : Ordinal.{0}} {n : ℕ}
-
-end Slot
-
-variable {M : Type u}
-
-namespace KnightRealization
-
-variable {α : LimitStage} {R : KnightRealization α M}
-
-end KnightRealization
 
 end VaughtConjecture.Knight

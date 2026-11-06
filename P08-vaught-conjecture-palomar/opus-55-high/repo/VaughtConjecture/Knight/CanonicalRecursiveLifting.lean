@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 /-! # Recursive lifting: inherited targets and vertical pasting
 
@@ -18,7 +18,6 @@ The active new-grade proper-face lift is not asserted here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveLifting
 open Transform Value ExtOrd CoatomBoundaryExtension
 noncomputable section
@@ -28,10 +27,12 @@ variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 variable (P : CanonicalRecursiveContract.State sem n (Nat.le_of_succ_le hA))
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveSuccessorSections
 
+section
+variable {I J : Finset ι × ℕ} (h : GradedLe I J)
+
 /-- Every target omitting the new controller index transports its full
 single-face lifting clause from the actual predecessor semantics. -/
-theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, n + 4) J) (hb : CappedLift P.rows h) :
+theorem inherited_lift (hJ : ¬ GradedLe (A, n + 4) J) (hb : CappedLift P.rows h) :
     CappedLift (rows sem n hA hp P) h := by
   intro p q γ hpr hqr hγ hag
   have hI : ¬ GradedLe (A, n + 4) I := fun hi => hJ (hi.trans h)
@@ -57,9 +58,11 @@ theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
     rw [Function.comp_apply, hd, hread]
     exact congrArg p (eI.apply_symm_apply d)
 
-theorem lower_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ n + 3)
+theorem lower_lift (hJ : J.2 ≤ n + 3)
     (hb : CappedLift P.rows h) : CappedLift (rows sem n hA hp P) h :=
   inherited_lift sem n hA hp P h (fun he => by have := he.2; omega) hb
+
+end
 
 end
 end VaughtConjecture.Knight.CanonicalRecursiveLifting

@@ -16,7 +16,6 @@ owner domain. No bound on the grades of the old schemes is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedFaces
 open Transform Value ExtOrd Growth GrowthHigherSources AmalgamationPlan CoatomBoundaryExtension
 open GrowthPaddedSuccessor
@@ -30,7 +29,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
+def face {T} {E : CellScheme T} {oldRows : Semantics E}
     (G : ExactSemanticFace oldRows I.rows) (hT : ¬ A ⊆ T) :
     ExactSemanticFace oldRows (rows I X attach hA hB hC) := by
   let J := input I X attach hA hB hC

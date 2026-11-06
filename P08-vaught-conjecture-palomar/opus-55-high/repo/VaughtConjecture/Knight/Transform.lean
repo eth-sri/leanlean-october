@@ -112,7 +112,7 @@ theorem TransformsTo.refl (p : D → ExtOrd) : TransformsTo grade p p :=
 
 /-- Reindexing: a transformation on cells `D` pulls back along any map `φ : D' → D` of cell
 families (same witnesses `g`, `σ`; used to transport locality along face restriction). -/
-theorem TransformsTo.reindex {D' : Type*} {p q : D → ExtOrd} (h : TransformsTo grade p q)
+theorem TransformsTo.reindex {D'} {p q} (h : TransformsTo grade p q)
     (φ : D' → D) : TransformsTo (grade ∘ φ) (p ∘ φ) (q ∘ φ) := by
   obtain ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, hσ_eq⟩ := h
   exact ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, fun d => hσ_eq (φ d)⟩
@@ -134,8 +134,8 @@ clause at `y` gives `σ x = evr (σ y) k m < ofOrd α` (`extVisReplace_lt_of_lt_
 contradiction.  This is exactly the case Knight-VC's guard `g k ≠ ⊤` excludes (there
 `truncExt α (g k) = ⊤` makes the clause vacuous), which is why the route needed the faithful
 relation. -/
-theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
-    {p q : D → ExtOrd} (h : TransformsTo grade p q) :
+theorem TransformsTo.truncExt_target {α} (hα : Order.IsSuccLimit α)
+    {p q} (h : TransformsTo grade p q) :
     TransformsTo grade p (truncExt α ∘ q) := by
   obtain ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, hσ_eq⟩ := h
   refine ⟨truncExt α ∘ g, truncExt α ∘ σ,
@@ -200,7 +200,7 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
 
 /-- Every labelling transforms to the constantly-`−∞` labelling (witnesses `σ ≡ ⊥`, `g ≡ ⊤`;
 clause 5 is `⊥ = ⊥`). -/
-theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
+theorem TransformsTo.to_bot {X} {grade} (p : X → ExtOrd) :
     TransformsTo grade p (fun _ => ⊥) :=
   ⟨fun _ => ⊤, fun _ => ⊥,
     fun _ _ _ => le_refl ⊤,

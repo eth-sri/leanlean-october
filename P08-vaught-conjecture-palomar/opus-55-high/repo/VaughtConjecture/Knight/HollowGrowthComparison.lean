@@ -8,7 +8,11 @@ module
 public import VaughtConjecture.Knight.HollowGrowthExactReceiving
 public import VaughtConjecture.Knight.OnePointRootedExtension
 public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.ModelBookkeeping
+public import VaughtConjecture.Knight.ModelEmpty
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
+public import VaughtConjecture.Knight.NoTop
+public import VaughtConjecture.Knight.LimitOfChain
 
 /-! # Exact rooted extension and comparison for hollow growth
 
@@ -26,7 +30,6 @@ keeps the initial chart as its seed. No core invariant is carried.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowth
 open TypeTower KnightRealization Cardinal
 noncomputable section
@@ -35,14 +38,14 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Arbitrary cores, without any restriction on the candidate top pattern. -/
 theorem onePointRootedExtension (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {c : ℕ} (core : Fin c ↪ M) :
+    (hh : W.IsHollow) {c} (core : Fin c ↪ M) :
     OnePointRootedExtensionOver W core (AdmTop α) := by
   intro n t p _ hp q hq _
   obtain ⟨y, hy, he⟩ := HollowGrowthTemplate.receives_exactly hM hg hh t p hp q hq
   exact ⟨snoc t y hy, castSuccEmb_trans_snoc t y hy, he⟩
 
 theorem rootedExtension (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {c : ℕ} (core : Fin c ↪ M) :
+    (hh : W.IsHollow) {c} (core : Fin c ↪ M) :
     RootedExtensionOver W core (AdmTop α) :=
   rootedExtensionOver_of_onePoint hM.consistent (onePointRootedExtension hM hg hh core)
 
@@ -51,21 +54,22 @@ actual tuple is realized over that tuple. This is the one-point receiver iterate
 one-point enlargements (`rootedExtensionOver_of_onePoint`), with the tuple itself as the root and
 the trivial admissibility; no core is carried. -/
 theorem receives_finite_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N) (hP : typeMap f P = some p) :
+    {n : ℕ} t (p : S α.1 n) (hp : W.eval t = some p)
+    {N} f P (hP : typeMap f P = some p) :
     ∃ u : Fin N ↪ M, f.trans u = t ∧ W.eval u = some P :=
   rootedExtension hM hg hh t t p ⟨Function.Embedding.refl _, Function.Embedding.refl_trans _⟩
     hp f P hP trivial
 
+section
+variable {M₁ M₂ : Type w} {V : KnightRealization α M₁} {W : KnightRealization α M₂}
+
 /-- One side of the hollow chart step: cover a common chart's first tuple together with a
 requested point by an actual chart of `V`, then receive that finite donor exactly over the
 second tuple in `W`. -/
-theorem exists_common_cover {M₁ M₂ : Type w}
-    {V : KnightRealization α M₁} {W : KnightRealization α M₂}
-    (hcV : V.IsExactParentConsistent) (hvV : V.IsInitialSegmentCovering) (hW : W.IsModel)
-    (hgW : W.HasTopGradeGrowth) (hhW : W.IsHollow) {n : ℕ} {t₁ : Fin n ↪ M₁}
-    {t₂ : Fin n ↪ M₂} {p : S α.1 n} (h₁ : V.eval t₁ = some p) (h₂ : W.eval t₂ = some p)
-    (x : M₁) :
+theorem exists_common_cover (hcV : V.IsExactParentConsistent) (hvV : V.IsInitialSegmentCovering) (hW : W.IsModel)
+    (hgW : W.HasTopGradeGrowth) (hhW : W.IsHollow) {n} {t₁}
+    {t₂} {p : S α.1 n} (h₁ : V.eval t₁ = some p) (h₂ : W.eval t₂ = some p)
+    x :
     ∃ (N : ℕ) (f : Fin n ↪ Fin N) (s : Fin N ↪ M₁) (u : Fin N ↪ M₂) (P : S α.1 N),
       f.trans s = t₁ ∧ f.trans u = t₂ ∧ V.eval s = some P ∧ W.eval u = some P ∧
         ∃ i, s i = x := by
@@ -86,9 +90,7 @@ theorem exists_common_cover {M₁ M₂ : Type w}
 /-- **Every common actual chart absorbs every requested point.** Cover the chart together with
 the point on the source side, then receive that finite donor exactly on the other side over the
 chart's actual root. -/
-theorem commonChartStepSupply {M₁ M₂ : Type w}
-    {V : KnightRealization α M₁} {W : KnightRealization α M₂}
-    (hV : V.IsModel) (hW : W.IsModel)
+theorem commonChartStepSupply (hV : V.IsModel) (hW : W.IsModel)
     (hgV : V.HasTopGradeGrowth) (hgW : W.HasTopGradeGrowth)
     (hhV : V.IsHollow) (hhW : W.IsHollow) :
     CommonChartStepSupply (A₁ := V) (A₂ := W) := by
@@ -102,14 +104,17 @@ theorem commonChartStepSupply {M₁ M₂ : Type w}
     exact ⟨⟨⟨N, u, s, P, huP, hsP⟩, f, hu, hs, fun _ hx => absurd hx.symm Sum.inl_ne_inr,
       fun y' hy' => ⟨i, hi.trans (Sum.inr.inj hy')⟩⟩⟩
 
+end
+
+section
+variable {M₁ M₂ : Type w} [Countable M₁] [Countable M₂] {V : KnightRealization α M₁} {W : KnightRealization α M₂}
+
 /-- Every common chart of two countable hollow growth models at the same stage extends to
 an isomorphism carrying the one tuple onto the other coordinatewise.
 
 All common actual charts are selected (`commonChartStepSupply`); the direct consumer keeps the
 initial chart as its seed, so no core invariant is carried. -/
-theorem exists_iso_of_commonChart {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
-    {V : KnightRealization α M₁} {W : KnightRealization α M₂}
-    (hV : V.IsModel) (hW : W.IsModel)
+theorem exists_iso_of_commonChart (hV : V.IsModel) (hW : W.IsModel)
     (hgV : V.HasTopGradeGrowth) (hgW : W.HasTopGradeGrowth)
     (hhV : V.IsHollow) (hhW : W.IsHollow) {c : ℕ} (core₁ : Fin c ↪ M₁) (core₂ : Fin c ↪ M₂)
     {s : S α.1 c} (hs₁ : V.eval core₁ = some s) (hs₂ : W.eval core₂ = some s) :
@@ -119,9 +124,7 @@ theorem exists_iso_of_commonChart {M₁ M₂ : Type w} [Countable M₁] [Countab
     (restrictedCommonChartStepSupply_true (commonChartStepSupply hV hW hgV hgW hhV hhW))
 
 /-- Hollow growth models at the same stage are isomorphic when countable. -/
-theorem nonempty_iso {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
-    {V : KnightRealization α M₁} {W : KnightRealization α M₂}
-    (hV : V.IsModel) (hW : W.IsModel)
+theorem nonempty_iso (hV : V.IsModel) (hW : W.IsModel)
     (hgV : V.HasTopGradeGrowth) (hgW : W.HasTopGradeGrowth)
     (hhV : V.IsHollow) (hhW : W.IsHollow) : Nonempty (V.Iso W) := by
   obtain ⟨sV, hsV⟩ := exists_eval_empty_at hV
@@ -131,6 +134,8 @@ theorem nonempty_iso {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
   obtain ⟨e, -⟩ := exists_iso_of_commonChart hV hW hgV hgW hhV hhW
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hsV hsW
   exact ⟨e⟩
+
+end
 
 end
 end VaughtConjecture.Knight.HollowGrowth

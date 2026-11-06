@@ -18,7 +18,6 @@ retained proper owners above it are not incorrectly assumed to have low grade.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedPrefix
 open Transform Value ExtOrd SourcePrefixRows CanonicalRecursiveSeedRows
 open CanonicalPairedInverse PairedSlotEncoding
@@ -31,10 +30,10 @@ variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 /-- The repair is an old-boundary input; its whole recursive extension,
 supported inverse and all auxiliary source-cap equations are constructed. -/
 theorem exists_section
-    (a : Profile sem)
+    a
     {p : Cell D → ExtOrd}
     (hpr : RespectsSemanticsBelow sem (A, 3) (fun d => p d.1)) (ht : ∀ d, p d ≠ ⊤)
-    {B : ℕ} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
+    {B} (hB : B ≤ 2 * Fintype.card (Cell D) + 1)
     (hag : ∀ d, min (a.val d) (CanonicalPairedInverse.grid 3 B) =
       min (p d) (CanonicalPairedInverse.grid 3 B)) :
     ∃ r : Cell (carrier sem hA) → ExtOrd,

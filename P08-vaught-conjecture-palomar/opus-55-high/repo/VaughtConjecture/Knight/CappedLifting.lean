@@ -22,8 +22,6 @@ supplied separately by `CappedLiftOfExtension`.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
 open Transform Value ExtOrd
@@ -67,9 +65,9 @@ theorem lift_of_bountiful (hb : sem.IsBountiful)
 commute, lawful sections must transport, and the old target grade must permit the new cap.
 No global carrier equivalence or output bountifulness is assumed. -/
 theorem CappedLift.of_equiv
-    {ι' : Type*} [DecidableEq ι'] {A' : Finset ι'} {D' : CellScheme A'}
-    {sem' : Semantics D'} {I' U' : Finset ι' × ℕ}
-    {h : GradedLe I U} {h' : GradedLe I' U'}
+    {ι'} [DecidableEq ι'] {A'} {D' : CellScheme A'}
+    {sem'} {I' U' : Finset ι' × ℕ}
+    {h} {h'}
     (eI : D'.below I' ≃ D.below I) (eU : D'.below U' ≃ D.below U)
     (hsquare : ∀ d, eU (CellScheme.below.mono h' d) = CellScheme.below.mono h (eI d))
     (hgrade : U'.2 ≤ U.2)
@@ -91,17 +89,6 @@ theorem CappedLift.of_equiv
       apply eU.injective
       rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
     rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
-
-section FaceTransport
-
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :

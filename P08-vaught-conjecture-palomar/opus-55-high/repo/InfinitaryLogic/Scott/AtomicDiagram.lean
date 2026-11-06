@@ -74,7 +74,7 @@ def holds (idx : L.AtomicIdx n) (a : Fin n → M) : Prop :=
 omit [L.IsRelational] in
 /-- Pushforward an atomic index through a function σ : Fin m → Fin n.
 This transforms an atomic index over m variables to one over n variables by composing indices. -/
-def pushforward {m : ℕ} (idx : L.AtomicIdx m) (σ : Fin m → Fin n) : L.AtomicIdx n :=
+def pushforward {m} (idx : L.AtomicIdx m) (σ : Fin m → Fin n) : L.AtomicIdx n :=
   match idx with
   | eq i j => eq (σ i) (σ j)
   | rel R f => rel R (σ ∘ f)
@@ -82,7 +82,7 @@ def pushforward {m : ℕ} (idx : L.AtomicIdx m) (σ : Fin m → Fin n) : L.Atomi
 omit [L.IsRelational] in
 /-- The key lemma: holds on composed tuple equals holds of pushforward on original tuple. -/
 theorem holds_comp_eq_holds_pushforward {m : ℕ} (idx : L.AtomicIdx m)
-    (a : Fin n → M) (σ : Fin m → Fin n) :
+    (a : Fin n → M) σ :
     idx.holds (a ∘ σ) = (idx.pushforward σ).holds a := by
   cases idx with
   | eq i j => simp only [holds, pushforward, Function.comp_apply]
@@ -107,10 +107,7 @@ theorem realize_atomicFormula (idx : L.AtomicIdx n) (a : Fin n → M) :
   cases idx with
   | eq i j => simp [atomicFormula, AtomicIdx.holds, Term.equal, Term.realize]
   | rel R f =>
-    simp only [atomicFormula, AtomicIdx.holds, Relations.formula, BoundedFormula.realize_rel]
-    refine iff_of_eq (congrArg (Structure.RelMap R) ?_)
-    funext i
-    simp
+    aesop
 
 omit [L.IsRelational] in
 @[simp]
@@ -168,32 +165,21 @@ theorem sameAtomicType_iff_realize_atomicDiagram [Countable (Σ l, L.Relations l
       exact (realize_atomicFormulaω (M := N) idx b).mp hidx
     · intro hb
       by_contra ha
-      simp only [ha, ↓reduceIte, Formulaω.realize_not] at hidx
+      simp_all
       exact hidx ((realize_atomicFormulaω (M := N) idx b).mpr hb)
 
 omit [L.IsRelational] in
 /-- Same atomic type is reflexive. -/
 @[refl]
-theorem SameAtomicType.refl (a : Fin n → M) : SameAtomicType (L := L) (M := M) (N := M) a a :=
-  fun _ => Iff.rfl
+theorem SameAtomicType.refl (a : Fin n → M) : SameAtomicType (L := L) (M := M) (N := M) a a := by tauto
 
 omit [L.IsRelational] in
 /-- Same atomic type is symmetric. -/
 @[symm]
-theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
+theorem SameAtomicType.symm {N} [L.Structure N]
     {a : Fin n → M} {b : Fin n → N} (h : SameAtomicType (L := L) (M := M) (N := N) a b) :
     SameAtomicType (L := L) (M := N) (N := M) b a :=
   fun idx => (h idx).symm
-
-omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
 
 omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.
@@ -218,11 +204,7 @@ theorem SameAtomicType.map_equiv.{v₀, u₀, w₀, w₀', u_1, u_2} {L : Langua
   constructor <;> intro h idx <;> have hidx := h idx <;> cases idx with
   | eq i j =>
     simp only [AtomicIdx.holds, Function.comp] at hidx ⊢
-    first
-    | exact ⟨fun hij => e'.injective (hidx.mp (congrArg e hij)),
-        fun hij => e.injective (hidx.mpr (congrArg e' hij))⟩
-    | exact ⟨fun hij => congrArg e' (hidx.mp (e.injective hij)),
-        fun hij => congrArg e (hidx.mpr (e'.injective hij))⟩
+    simp_all
   | rel R f =>
     simp only [AtomicIdx.holds] at hidx ⊢
     first

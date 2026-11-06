@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.LowOnlyPaddedDonorRepair
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Active positive-cap donor lifting on the unchanged padded successor
 
@@ -16,7 +18,6 @@ The successor's bountifulness is neither assumed nor claimed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedDonorLift
 open Transform Value ExtOrd CappedDonor LowOnly
 open LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedCharts LowOnlyPaddedDonorRepair
@@ -31,15 +32,17 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
+section
+variable {p : I.left.scheme.below (effC n 2) → ExtOrd}
+
 /-- Restore the entire donor lower vector using the unchanged padded base.
 Every lower auxiliary retains its owner cap; every upper locality target stays
 unchanged. This is a proved restoration, not an input to the final endpoint. -/
 theorem restore
-    {p : I.left.scheme.below (effC n 2) → ExtOrd}
     {u : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (effC n 2) p)
     (hu : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) u)
-    {M : ExtOrd} (hM : SelfVis 2 M)
+    {M} (hM : SelfVis 2 M)
     (hread : ∀ d, u (donorAt I F hroot hA hB hC d) = min (p d) M)
     (hbound : ∀ d, u d ≤ M)
     (hmax : ∀ d, I.left.scheme.grade d.1 = 2 → p d ≤ M) :
@@ -99,11 +102,10 @@ prescription, admitted repair, and lower restoration are all constructed.
 Every physical auxiliary has its own original-cap receipt, including unused
 rungs and the long tips. Literal top is not excluded. -/
 theorem active_donor_lift
-    {p : I.left.scheme.below (effC n 2) → ExtOrd}
     {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.left.rows (effC n 2) p)
     (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ)
     (hactive : ∃ d, I.left.scheme.grade d.1 = 2 ∧ γ < p d)
     (hag : ∀ d, min (q (donorAt I F hroot hA hB hC d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) r ∧
@@ -125,6 +127,8 @@ theorem active_donor_lift
   have hM : SelfVis 2 (p c) := by simpa only [hg] using (hp.orderly c).symm
   obtain ⟨r, hr, hrr, hrc⟩ := restore I F hroot hA hB hC hp hu hM hread hbound hmax
   exact ⟨r, hr, hrr, fun e => (cap_below (hrc e) hpc.le).trans (hcap e)⟩
+
+end
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedDonorLift

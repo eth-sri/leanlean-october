@@ -17,7 +17,6 @@ catalogue, model, or receiving predicate are needed for this input adapter.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorAttachment
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -169,8 +168,6 @@ def input : WholeDonorBoundary.Input Finset.univ privateScope (donorScope e)
   intersection := (root_left_image e).trans (intersection e).symm
   planLeft := (plan_spec e P D Q hp hd hpr hdr).2.2.1
   planRight := (plan_spec e P D Q hp hd hpr hdr).2.2.2.2
-
-local notation "I" => input e P D Q hp hd hpr hdr
 
 end
 end VaughtConjecture.Knight.WholeDonorAttachment

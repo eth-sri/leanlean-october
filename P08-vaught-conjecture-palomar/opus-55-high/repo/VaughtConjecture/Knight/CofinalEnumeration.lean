@@ -27,7 +27,7 @@ universe w
 /-- **Enumeration of a countable ordinal**: below `ω₁`, the ordinals `< γ` are the range
 of an `ℕ`-indexed sequence (surjective enumeration of `Set.Iio γ`; countable choice
 only). -/
-theorem exists_nat_enum_lt {γ : Ordinal.{0}} (hγ₁ : γ < (Cardinal.aleph 1).ord)
+theorem exists_nat_enum_lt {γ} (hγ₁ : γ < (Cardinal.aleph 1).ord)
     (h0 : 0 < γ) :
     ∃ g : ℕ → Ordinal.{0}, (∀ n, g n < γ) ∧ ∀ ξ, ξ < γ → ∃ n, g n = ξ := by
   have hcard : γ.card ≤ Cardinal.aleph0 :=
@@ -50,16 +50,24 @@ noncomputable def cofSeq (β : Ordinal.{0}) (g : ℕ → Ordinal.{0}) : ℕ → 
   | 0 => β
   | n + 1 => max (cofSeq β g n) (g n)
 
-theorem cofSeq_le_succ (β : Ordinal.{0}) (g : ℕ → Ordinal.{0}) (n : ℕ) :
+section
+variable (β : Ordinal.{0}) (g : ℕ → Ordinal.{0})
+
+theorem cofSeq_le_succ n :
     cofSeq β g n ≤ cofSeq β g (n + 1) :=
   le_max_left _ _
 
-theorem cofSeq_monotone (β : Ordinal.{0}) (g : ℕ → Ordinal.{0}) :
+theorem cofSeq_monotone  :
     Monotone (cofSeq β g) :=
   monotone_nat_of_le_succ (cofSeq_le_succ β g)
 
-theorem cofSeq_lt {β γ : Ordinal.{0}} (hβ : β < γ) {g : ℕ → Ordinal.{0}}
-    (hg : ∀ n, g n < γ) (n : ℕ) : cofSeq β g n < γ := by
+end
+
+section
+variable {β γ : Ordinal.{0}}
+
+theorem cofSeq_lt (hβ : β < γ) {g}
+    (hg : ∀ n, g n < γ) n : cofSeq β g n < γ := by
   induction n with
   | zero => exact hβ
   | succ n ih => exact max_lt ih (hg n)
@@ -67,8 +75,8 @@ theorem cofSeq_lt {β γ : Ordinal.{0}} (hβ : β < γ) {g : ℕ → Ordinal.{0}
 /-- **Cofinality of the running maxima in a limit**: every `ξ < γ` is strictly below
 some `cofSeq β g n` — the successor `ξ + 1` is again `< γ` (limit), hence enumerated,
 hence dominated by the next running maximum. -/
-theorem lt_cofSeq {β γ : Ordinal.{0}} (hlim : Order.IsSuccLimit γ)
-    {g : ℕ → Ordinal.{0}} (hg : ∀ ξ, ξ < γ → ∃ n, g n = ξ) {ξ : Ordinal.{0}}
+theorem lt_cofSeq (hlim : Order.IsSuccLimit γ)
+    {g} (hg : ∀ ξ, ξ < γ → ∃ n, g n = ξ) {ξ}
     (hξ : ξ < γ) : ∃ n, ξ < cofSeq β g n := by
   have hξ1 : ξ + 1 < γ := by
     have := hlim.succ_lt hξ
@@ -76,11 +84,13 @@ theorem lt_cofSeq {β γ : Ordinal.{0}} (hlim : Order.IsSuccLimit γ)
   obtain ⟨n, hn⟩ := hg (ξ + 1) hξ1
   exact ⟨n + 1, lt_of_lt_of_le (lt_add_one ξ) (hn ▸ le_max_right (cofSeq β g n) (g n))⟩
 
+end
+
 /-- **Cofinality descends to the block levels**: the levels `blockLevel ξ = ω + ω·ξ` of
 a sequence cofinal in the limit `γ` are cofinal in `blockLevel γ` (the computation of
 `exists_add_mul_natCast_lt`, at an arbitrary cofinal family). -/
-theorem exists_lt_blockStage_of_cofinal {γ : Ordinal.{0}} (hlim : Order.IsSuccLimit γ)
-    {c : ℕ → Ordinal.{0}} (hcof : ∀ ξ, ξ < γ → ∃ n, ξ < c n) {ξ' : Ordinal.{0}}
+theorem exists_lt_blockStage_of_cofinal {γ} (hlim : Order.IsSuccLimit γ)
+    {c : ℕ → Ordinal.{0}} (hcof : ∀ ξ, ξ < γ → ∃ n, ξ < c n) {ξ'}
     (hξ' : ξ' < (blockStage γ).1) : ∃ n, ξ' < (blockStage (c n)).1 := by
   by_cases h0 : ξ' < Ordinal.omega0
   · exact ⟨0, h0.trans_le (le_add_right le_rfl)⟩

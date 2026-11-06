@@ -21,7 +21,6 @@ follows GrowthPaddedOriginalLifts, consuming the actual higher growth rows.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepOriginalLifts
 open Transform Value ExtOrd CappedDonor Growth
 open GrowthPaddedContract GrowthPaddedStepRows GrowthPaddedStepDecode
@@ -37,11 +36,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   (P : Layer I X T hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
 theorem private_inactive (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
-    {p : I.right.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, k + 1) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hinactive : ∀ d, I.right.scheme.grade d.1 = k + 1 → p d ≤ γ)
     (hag : ∀ d, min (q (privateAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
@@ -54,11 +53,11 @@ theorem private_inactive (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P
 /-- All permitted original caps, including bottom and top. The prescription
 and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem private_lift (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
-    {p : I.right.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, k + 1) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hag : ∀ d, min (q (privateAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
       (∀ d, r (privateAt P hnext d) = p d) ∧
@@ -73,11 +72,11 @@ theorem private_lift (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
 
 theorem donor_inactive (hprev : GrowthPaddedStepDonorLift.DonorLowerLift P)
-    {p : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, k + 1) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hinactive : ∀ d, I.left.scheme.grade d.1 = k + 1 → p d ≤ γ)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
@@ -91,11 +90,11 @@ theorem donor_inactive (hprev : GrowthPaddedStepDonorLift.DonorLowerLift P)
 and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem donor_lift (hsmall : n + 1 < X.req.N)
     (hprev : GrowthPaddedStepDonorLift.DonorLowerLift P)
-    {p : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {p}
+    {q}
     (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, k + 1) p)
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
+    {γ} (hγ : SelfVis (k + 1) γ)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
     ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
       (∀ d, r (donorAt P hnext d) = p d) ∧

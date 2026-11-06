@@ -29,14 +29,14 @@ noncomputable def chainUnion (A : ℕ → T.Realization α M) : T.Realization α
 
 variable {A : ℕ → T.Realization α M}
 
-theorem chainUnion_eval_some_exists {n : ℕ} {t : Fin n ↪ M} {p : T.Ty α n}
+theorem chainUnion_eval_some_exists {n} {t} {p : T.Ty α n}
     (hp : (chainUnion A).eval t = some p) : ∃ k, (A k).eval t = some p := by
   by_cases h : ∃ k, ((A k).eval t).isSome
   · exact ⟨h.choose, (dite_eq_left h).symm.trans hp⟩
   · rw [show (chainUnion A).eval t = none from dite_eq_right h] at hp
     cases hp
 
-theorem extends_of_le (hchain : ∀ k, (A k).Extends (A (k + 1))) {j k : ℕ} (hjk : j ≤ k) :
+theorem extends_of_le (hchain : ∀ k, (A k).Extends (A (k + 1))) {j k} (hjk : j ≤ k) :
     (A j).Extends (A k) := by
   induction hjk with
   | refl => exact Extends.refl _

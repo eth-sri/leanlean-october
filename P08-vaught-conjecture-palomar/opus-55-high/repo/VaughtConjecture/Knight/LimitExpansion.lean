@@ -31,7 +31,7 @@ universe w
 variable {M : Type w}
 
 /-- **Expansion to a countable limit block** from expansions to every lower block. -/
-theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuccLimit l)
+theorem exists_model_at_limit_of_forall_lt {l} (hlim : Order.IsSuccLimit l)
     (hl : l < (aleph 1).ord) {R : KnightRealization (blockStage 0) M}
     (h : ∀ ξ, ξ < l → ∃ W : KnightRealization (blockStage ξ) M,
       W.IsModel ∧ W.reduct (blockStage_zero_le ξ) = R) :
@@ -55,7 +55,7 @@ theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuc
     exact PartialExpansion.coherent zero_le (hmono h) (bases j) (bases i) rfl
   have hδ : ∀ i, blockStage (cofSeq 0 g i) ≤ blockStage l := fun i =>
     blockStage_mono (hcs_lt i).le
-  have hcof : ∀ γ : Ordinal.{0}, γ < (blockStage l).1 →
+  have hcof : ∀ γ, γ < (blockStage l).1 →
       ∃ i, γ < (blockStage (cofSeq 0 g i)).1 := fun γ hγ =>
     exists_lt_blockStage_of_cofinal hlim (fun ξ hξ => lt_cofSeq hlim hg2 hξ) hγ
   refine ⟨limitOfChain hc W hchain (blockStage l) hδ,

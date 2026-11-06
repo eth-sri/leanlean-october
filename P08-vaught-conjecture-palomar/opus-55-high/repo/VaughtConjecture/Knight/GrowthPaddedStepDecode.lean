@@ -21,7 +21,6 @@ source cut, not an arbitrary external ambient.
 and source sections here are exclusively the growth producers. -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepDecode
 open Transform Value ExtOrd CappedDonor Growth GrowthOrderedBase
 open GrowthPaddedContract GrowthPaddedStepRows
@@ -35,15 +34,20 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I X T hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-def original (d : Cell I.boundary) : Cell (carrier P hnext) :=
+section
+variable (d : Cell I.boundary)
+
+def original  : Cell (carrier P hnext) :=
   old P hnext (P.baseMap (RelativeLadderLayer.old I.boundary (by omega) d))
 
-theorem original_index (d : Cell I.boundary) :
+theorem original_index  :
     (carrier P hnext).cell (original P hnext d) = I.boundary.cell d := by
   rw [original, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index,
     P.base_index, RelativeLadderLayer.old_index]
 
-theorem source_original (a : Catalogue X (k + 1)) (d : Cell I.boundary) :
+end
+
+theorem source_original a d :
     source P hk hnext a (original P hnext d) =
       GrowthHigherSources.fields X (k + 1) a (field I d) := by
   rw [original, source_old]
@@ -58,10 +62,11 @@ theorem source_original (a : Catalogue X (k + 1)) (d : Cell I.boundary) :
       exact GrowthHigherSources.anchor_bound X a f) d).trans
     (congrFun (GrowthHigherSources.state_profile X a) (field I d))
 
-theorem protected_caps {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S (k + 1) b)
-    (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
-    (d : Cell (carrier P hnext)) :
+section
+variable {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.scheme I.left.scheme} (r : ProtectedRepair X a.val S (k + 1) b)
+
+theorem protected_caps (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
+    d :
     min (r.decoder (source P hk hnext (GrowthPaddedDecode.repairAnchor r) d))
         (CanonicalPairedInverse.grid (k + 1) b) =
       min (source P hk hnext a d) (CanonicalPairedInverse.grid (k + 1) b) := by
@@ -72,9 +77,7 @@ theorem protected_caps {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.sc
     (source_agreement P hk hnext (GrowthPaddedDecode.repairAnchor r) a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq) d
 
-theorem protected_lawful {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S (k + 1) b)
-    (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1) :
+theorem protected_lawful (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1) :
     RespectsSemanticsBelow (rows P hk hnext) (A, k + 1)
       (fun d => r.decoder (source P hk hnext (GrowthPaddedDecode.repairAnchor r) d.1)) := by
   exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
@@ -85,12 +88,13 @@ theorem protected_lawful {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.
     (fun d => source_agreement P hk hnext (GrowthPaddedDecode.repairAnchor r) a
       (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq d.1)).1
 
-theorem original_decode {b : ℕ} {a : Catalogue X (k + 1)} {S : State I.right.scheme I.left.scheme}
-    (r : ProtectedRepair X a.val S (k + 1) b) (d : Cell I.boundary) :
+theorem original_decode d :
     r.decoder (source P hk hnext (GrowthPaddedDecode.repairAnchor r) (original P hnext d)) =
       S.profile (field I d) := by
   rw [source_original]
   exact r.readback _
+
+end
 
 def privateAt (d : I.right.scheme.below (Finset.univ, k + 1)) :
     (carrier P hnext).below (A, k + 1) :=
@@ -108,12 +112,11 @@ def donorAt (d : I.left.scheme.below (Finset.univ, k + 1)) :
     have hg := congrArg Prod.snd (I.leftFace.index d.1)
     exact hg.le.trans d.2.2⟩
 
-theorem private_source_repair {b : ℕ} {S : State I.right.scheme I.left.scheme}
-    (hS : Admitted X (k + 1) S)
-    (hc : S.profile ∈
-      CanonicalPairedProfiles.inventory (Field I.right.scheme I.left.scheme) (k + 1))
+theorem private_source_repair {b} {S}
+    hS
+    hc
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
-    {v : I.right.scheme.below (Finset.univ, k + 1) → ExtOrd}
+    {v}
     (hv : RespectsSemanticsBelow I.right.rows (Finset.univ, k + 1) v)
     (hag : ∀ d, min (v d) (CanonicalPairedInverse.grid (k + 1) b) =
       min (S.privateValues d.1) (CanonicalPairedInverse.grid (k + 1) b)) :
@@ -126,18 +129,15 @@ theorem private_source_repair {b : ℕ} {S : State I.right.scheme I.left.scheme}
   refine ⟨_, protected_lawful P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
     fun d => protected_caps P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source P hk hnext (GrowthPaddedDecode.repairAnchor r)
-    (original P hnext (I.rightFace.map d.1))) = v d
   exact (original_decode P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r
     (I.rightFace.map d.1)).trans
     ((GrowthOrderedBase.field_private I X T hS' d.1).trans (he d))
 
-theorem donor_source_repair (hN : k + 1 < X.req.N) {b : ℕ} {S : State I.right.scheme I.left.scheme}
-    (hS : Admitted X (k + 1) S)
-    (hc : S.profile ∈
-      CanonicalPairedProfiles.inventory (Field I.right.scheme I.left.scheme) (k + 1))
+theorem donor_source_repair (hN : k + 1 < X.req.N) {b} {S}
+    hS
+    hc
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
-    {u : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
+    {u}
     (hu : RespectsSemanticsBelow I.left.rows (Finset.univ, k + 1) u)
     (hag : ∀ d, min (u d) (CanonicalPairedInverse.grid (k + 1) b) =
       min (S.donorValues d.1) (CanonicalPairedInverse.grid (k + 1) b)) :
@@ -150,8 +150,6 @@ theorem donor_source_repair (hN : k + 1 < X.req.N) {b : ℕ} {S : State I.right.
   refine ⟨_, protected_lawful P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
     fun d => protected_caps P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
   intro d
-  change r.decoder (source P hk hnext (GrowthPaddedDecode.repairAnchor r)
-    (original P hnext (I.leftFace.map d.1))) = u d
   exact (original_decode P hk hnext (a := ⟨S.profile, hc, S, hS, rfl⟩) r
     (I.leftFace.map d.1)).trans
     ((GrowthOrderedBase.field_donor I S' d.1).trans (he d))

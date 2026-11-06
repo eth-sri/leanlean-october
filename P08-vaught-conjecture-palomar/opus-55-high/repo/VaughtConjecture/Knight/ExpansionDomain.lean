@@ -48,18 +48,21 @@ def domain (ξ : Ordinal.{0}) : Set Classes :=
     (fun _ _ h => propext (Realization.prolongsToIn_iff_of_iso
       (KnightNatModel.iso_atBlockZero (knightModelSetoid_r_iff.mp h)) _)) q}
 
+section
+variable {ξ : Ordinal.{0}} {R : KnightNatModel}
+
 /-- Membership normalizes to an actual model on the counted carrier. -/
-theorem exists_model_of_mem_domain {ξ : Ordinal.{0}} {R : KnightNatModel}
-    (h : Quotient.mk knightModelSetoid R ∈ domain ξ) :
+theorem exists_model_of_mem_domain (h : Quotient.mk knightModelSetoid R ∈ domain ξ) :
     ∃ W : KnightRealization (blockStage ξ) ℕ,
       W.IsModel ∧ W.reduct (blockStage_zero_le ξ) = R.atBlockZero :=
   (prolongsToIn_isModelClass_iff_on _ _).mp h
 
-theorem mem_domain_of_model {ξ : Ordinal.{0}} {R : KnightNatModel}
-    {W : KnightRealization (blockStage ξ) ℕ} (hW : W.IsModel)
+theorem mem_domain_of_model {W : KnightRealization (blockStage ξ) ℕ} (hW : W.IsModel)
     (hWr : W.reduct (blockStage_zero_le ξ) = R.atBlockZero) :
     Quotient.mk knightModelSetoid R ∈ domain ξ :=
   Realization.ProlongsToOnIn.prolongsToIn ⟨W, hW, hWr⟩
+
+end
 
 /-- Every class expands to block `0`. -/
 theorem domain_zero : domain 0 = Set.univ := by
@@ -103,7 +106,7 @@ theorem loss_subset_range (ξ : Ordinal.{0}) :
     exact liftBlockZero_reduct R.1
 
 /-- **Successor losses are countable**, given countable terminal fibres. -/
-theorem loss_countable (hct : CountableTerminalFibres) {ξ : Ordinal.{0}}
+theorem loss_countable (hct : CountableTerminalFibres) {ξ}
     (hξ : ξ < (aleph 1).ord) : (domain ξ \ domain (ξ + 1)).Countable :=
   have : Countable (TerminalClass ξ) := Cardinal.mk_le_aleph0_iff.mp (hct ξ hξ)
   (Set.countable_range _).mono (loss_subset_range ξ)
@@ -121,14 +124,14 @@ theorem iInter_subset_domain {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
     exact mem_domain_of_model hWm hWr
 
 /-- **Fixed-stage complements are countable.** -/
-theorem compl_countable (hct : CountableTerminalFibres) {β : Ordinal.{0}}
+theorem compl_countable (hct : CountableTerminalFibres) {β}
     (hβ : β < (aleph 1).ord) : (domain β)ᶜ.Countable :=
   CountableLoss.compl_countable_of_loss domain domain_zero
     (fun _ hξ => loss_countable hct hξ) (fun _ hl hlω => iInter_subset_domain hl hlω) β hβ
 
 /-! ## Fixed-stage comparison on a domain -/
 
-theorem reduct_omegaStage_eq {ξ : Ordinal.{0}} {R : KnightNatModel}
+theorem reduct_omegaStage_eq {ξ} {R : KnightNatModel}
     {W : KnightRealization (blockStage ξ) ℕ}
     (hWr : W.reduct (blockStage_zero_le ξ) = R.atBlockZero) :
     W.reduct (omegaStage_le _) = R.1 := by

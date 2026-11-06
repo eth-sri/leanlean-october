@@ -16,7 +16,6 @@ source is supplied by the caller.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPrivateRepair
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
 open LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedCharts
@@ -31,7 +30,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem private_grade (d : I.right.scheme.below (effC n 2)) :
+theorem private_grade d :
     (carrier I F hroot hA hB hC).grade (privateAt I F hroot hA hB hC d).1 =
       I.right.scheme.grade d.1 := by
   exact (congrArg Prod.snd (original_index I F hroot hA hB hC
@@ -40,13 +39,13 @@ theorem private_grade (d : I.right.scheme.below (effC n 2)) :
 /-- A supplied original owner identifies the actual private lower domain.
 The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped
-    (c : I.right.scheme.below (effC n 2))
+    c
     (hc : I.right.scheme.cell c.1 = effC n 2) (hg : I.right.scheme.grade c.1 = 2)
-    {p : I.right.scheme.below (effC n 2) → ExtOrd}
+    {p}
     {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
     (hp : RespectsSemanticsBelow I.right.rows (effC n 2) p)
     (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
+    {γ} (hγ : SelfVis 2 γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (privateAt I F hroot hA hB hC d)) γ = min (p d) γ) :
     ∃ u, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) u ∧
       (∀ d, u (privateAt I F hroot hA hB hC d) = min (p d) (p c)) ∧

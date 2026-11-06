@@ -17,7 +17,6 @@ inserted into the fixed proper-profile catalogue. No output lift is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSections
 open Transform Value ExtOrd CanonicalMixedGradeLayers CanonicalMixedOwnerLift
 open CoatomBoundaryExtension
@@ -31,7 +30,7 @@ variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
 /-- Every lawful whole OLD boundary extends, with arbitrary proper values
 and literal top. This supplies sections, not agreement with an ambient. -/
-theorem exists_whole {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
+theorem exists_whole {p} (hp : RespectsSemantics sem p) :
     ∃ r : CanonicalMixedAmbient.target sem j hj hjA k hk hkA → ExtOrd,
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) (A, k) r ∧
       ∀ d, r (oldTarget sem j hj hjA hproper k hg hk hkA hjk d) = p d := by
@@ -60,13 +59,13 @@ theorem exists_whole {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
 
 /-- Bottom-cap supply from a proper prescribed face uses only the two old
 face clauses. Empty prescribed domains require no owner or positive label. -/
-theorem exists_section {I U V O : Finset ι × ℕ}
+theorem exists_section {I U V O}
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (hIU : GradedLe I U) (hOU : GradedLe O U) (hOV : GradedLe O V)
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    {p : D.below I → ExtOrd} (hp : RespectsSemanticsBelow sem I p) :
+    {p} (hp : RespectsSemanticsBelow sem I p) :
     ∃ r : CanonicalMixedAmbient.target sem j hj hjA k hk hkA → ExtOrd,
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) (A, k) r ∧
       ∀ d : D.below I, r (oldTarget sem j hj hjA hproper k hg hk hkA hjk d.1) = p d := by

@@ -41,23 +41,31 @@ namespace Data
 
 variable (F : Data D k) {BJ : Finset ι × ℕ}
 
-def oldCell (d : Cell D) (hd : D.grade d ≤ k) : D.below (A, k) :=
+section
+variable (d : Cell D)
+
+def oldCell (hd : D.grade d ≤ k) : D.below (A, k) :=
   ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩
 
-def display (d : Cell D) : ExtOrd :=
+def display  : ExtOrd :=
   if hd : D.grade d ≤ k then F.profile (oldCell d hd) else
     if d = F.high then F.diagonal else ⊥
 
-theorem display_old (d : Cell D) (hd : D.grade d ≤ k) :
+theorem display_old (hd : D.grade d ≤ k) :
     F.display d = F.profile (oldCell d hd) := by simp only [display, hd, ↓reduceDIte]
+
+end
 
 theorem display_high : F.display F.high = F.diagonal := by
   simp only [display, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte]
 
-theorem display_other (d : Cell D) (hd : ¬D.grade d ≤ k) (hne : d ≠ F.high) :
+section
+variable (d : Cell D)
+
+theorem display_other (hd : ¬D.grade d ≤ k) (hne : d ≠ F.high) :
     F.display d = ⊥ := by simp only [display, hd, hne, ↓reduceDIte, ↓reduceIte]
 
-theorem display_visible (d : Cell D) : SelfVis (D.grade d) (F.display d) := by
+theorem display_visible  : SelfVis (D.grade d) (F.display d) := by
   by_cases hd : D.grade d ≤ k
   · rw [F.display_old d hd]
     exact (F.lawful.orderly _).symm
@@ -68,6 +76,8 @@ theorem display_visible (d : Cell D) : SelfVis (D.grade d) (F.display d) := by
     · rw [F.display_other d hd he]
       exact selfVis_bot _
 
+end
+
 def rows : Semantics D where
   E c d := if D.grade c ≤ k then F.base.E c d else
     if c = F.high then F.display d.1 else ⊥
@@ -77,20 +87,20 @@ def rows : Semantics D where
     · exact (F.display_visible d.1).symm
     · exact (selfVis_bot _).symm
 
-theorem row_old {c : Cell D} (hc : D.grade c ≤ k) : F.rows.E c = F.base.E c := by
+theorem row_old {c} (hc : D.grade c ≤ k) : F.rows.E c = F.base.E c := by
   funext d
   simp only [rows, hc, ↓reduceIte]
 
-theorem row_high (d : D.below (D.cell F.high)) : F.rows.E F.high d = F.display d.1 := by
+theorem row_high d : F.rows.E F.high d = F.display d.1 := by
   simp only [rows, not_le_of_gt F.above, ↓reduceIte]
 
 theorem rows_high : F.rows.E F.high = fun d => F.display d.1 := funext F.row_high
 
-theorem row_mute {c : Cell D} (hc : ¬D.grade c ≤ k) (he : c ≠ F.high)
-    (d : D.below (D.cell c)) : F.rows.E c d = ⊥ := by
+theorem row_mute {c} (hc : ¬D.grade c ≤ k) (he : c ≠ F.high)
+    d : F.rows.E c d = ⊥ := by
   simp only [rows, hc, he, ↓reduceIte]
 
-theorem old_respects_iff (hJ : BJ.2 ≤ k) {p : D.below BJ → ExtOrd} :
+theorem old_respects_iff (hJ : BJ.2 ≤ k) {p} :
     RespectsSemanticsBelow F.rows BJ p ↔ RespectsSemanticsBelow F.base BJ p := by
   constructor <;> intro hp <;> refine ⟨hp.orderly, ?_, hp.availability⟩
   · intro c
@@ -99,7 +109,7 @@ theorem old_respects_iff (hJ : BJ.2 ≤ k) {p : D.below BJ → ExtOrd} :
     rw [F.row_old (c.2.2.trans hJ)]
     exact hp.locality c
 
-theorem high_index {e : Cell D} (hs : D.scope F.high ⊆ D.scope e)
+theorem high_index {e} (hs : D.scope F.high ⊆ D.scope e)
     (hg : D.grade F.high = D.grade e) : D.cell F.high = D.cell e := by
   apply Prod.ext
   · apply Finset.Subset.antisymm hs
@@ -129,14 +139,14 @@ theorem consistent (hb : F.base.IsConsistent) : F.rows.IsConsistent := by
           dsimp only at hdhi
           subst d
           have ht := (TransformsTo.refl
-            (grade := fun e : D.below (D.cell F.high) => D.grade e.1)
+            (grade := fun e => D.grade e.1)
             (F.rows.E F.high)).cap (fun e => e.2.2) F.visible
           simpa only [F.rows_high, F.display_high, CellScheme.below.incl] using ht
         · simpa only [F.rows_high, F.display_other d.1 hd hdhi, min_bot_right] using
-            (TransformsTo.to_bot (grade := fun e : D.below (D.cell d.1) => D.grade e.1)
+            (TransformsTo.to_bot (grade := fun e => D.grade e.1)
               (F.rows.E d.1))
     · simpa only [rows, hc, he, ↓reduceIte, min_bot_right] using
-        (TransformsTo.to_bot (grade := fun e : D.below (D.cell d.1) => D.grade e.1)
+        (TransformsTo.to_bot (grade := fun e => D.grade e.1)
           (F.rows.E d.1))
   · intro d e hs hg
     by_cases he : c = F.high
@@ -158,8 +168,8 @@ theorem consistent (hb : F.base.IsConsistent) : F.rows.IsConsistent := by
           exact bot_le
     · exact ⟨e, rfl, by simp only [F.row_mute hc he, le_refl]⟩
 
-theorem mute_label {p : D.below BJ → ExtOrd}
-    (hp : RespectsSemanticsBelow F.rows BJ p) (c : D.below BJ)
+theorem mute_label {p}
+    (hp : RespectsSemanticsBelow F.rows BJ p) c
     (hc : ¬D.grade c.1 ≤ k) (hne : c.1 ≠ F.high) : p c = ⊥ := by
   rcases c with ⟨c, hcBJ⟩
   obtain ⟨g, σ, _, _, hbot, _, _, he⟩ := hp.locality ⟨c, hcBJ⟩

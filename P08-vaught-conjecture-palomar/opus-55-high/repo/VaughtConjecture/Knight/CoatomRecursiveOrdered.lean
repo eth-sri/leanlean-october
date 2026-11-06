@@ -11,7 +11,6 @@ public import VaughtConjecture.Knight.CanonicalRecursiveLiteralRows
 /-! # Ordered original faces of the activated recursive coatom output -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveOrdered
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
 open SemSchemeBoundaryInput CoatomRecursiveApex
@@ -21,23 +20,26 @@ variable (I : Input s m (n + 3) (n + 3)) {α : Ordinal.{0}}
   {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
   (O : Display I α p q)
 
-abbrev boundary (d : Cell I.boundary) := old I (CoatomRecursiveDisplay.boundary I d)
+section
+variable (d : Cell I.boundary)
 
-theorem boundary_index (d : Cell I.boundary) : (scheme I).cell (boundary I d) =
+abbrev boundary  := old I (CoatomRecursiveDisplay.boundary I d)
+
+theorem boundary_index  : (scheme I).cell (boundary I d) =
     I.boundary.cell d :=
   (MaximalFullLayer.old_index _ _ _ _ _ _).trans
     (CanonicalRecursiveInventory.boundary_cell _ _ _ d)
+
+end
 
 theorem boundary_order : StrictMono (boundary I) :=
   (SourceLayerCarrier.old_order _ _ _ _ _).comp
     (CoatomRecursiveDisplay.boundary I).strictMono
 
-theorem boundary_exhaustive (hB : ¬ A ⊆ B) (z : Cell (scheme I))
+theorem boundary_exhaustive (hB : ¬ A ⊆ B) z
     (hz : (scheme I).scope z ⊆ B) :
     ∃ d, boundary I d = z := by
-  have hn : (scheme I).cell z ≠ (A, n + 4) := fun h => hB (by
-    change ((scheme I).cell z).1 ⊆ B at hz
-    simpa only [h] using hz)
+  have hn : (scheme I).cell z ≠ (A, n + 4) := fun h => hB (by simp_all)
   obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (CoatomRecursiveInput.scheme I)
     Unit (n + 4) (by omega) (finalHeight I) z hn
   have hx : (CoatomRecursiveInput.scheme I).scope x ⊆ B := by
@@ -46,10 +48,7 @@ theorem boundary_exhaustive (hB : ¬ A ⊆ B) (z : Cell (scheme I))
   rcases RecursiveSourceCarrier.classify I.boundary (CanonicalRecursiveInventory.Profile I.rows)
       (n + 3) (CoatomRecursiveInput.height_le I) x with ⟨d, hd⟩ | ⟨j, _, _, he⟩
   · exact ⟨d, congrArg (old I) hd⟩
-  · apply False.elim
-    apply hB
-    change ((CoatomRecursiveInput.scheme I).cell x).1 ⊆ B at hx
-    simpa only [he] using hx
+  · simp_all
 
 theorem boundary_row (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cell c)) :
     O.rows.E (boundary I c) ⟨boundary I d.1, by rw [boundary_index, boundary_index]; exact d.2⟩ =
@@ -84,8 +83,8 @@ noncomputable section
 
 /-- Exact physical rows, exhaustive occurrence order, plan, and labels suffice
 for literal ordered restriction; no relabelling or equivalence of types. -/
-theorem typeMap_of_pointImage_face {α : Ordinal.{0}} {m n : ℕ}
-    (t : S α n) (p : S α m) (f : Fin m ↪ Fin n) {B : Finset (Fin n)}
+theorem typeMap_of_pointImage_face {α} {m n}
+    (t : S α n) p (f : Fin m ↪ Fin n) {B}
     (hB : Finset.univ.image f = B)
     (F : ExactSemanticFace (PointImageSemantics.rows p.scheme.scheme f hB p.scheme.rows)
       t.scheme.rows) (hmono : StrictMono F.map)
@@ -130,7 +129,7 @@ variable {n m : ℕ} {α : Ordinal.{0}}
   (O : Display I α p q)
 
 theorem left_typeMap (hp : RespectsSemantics I.left.rows p)
-    (hpb : ∀ d, p d < ofOrd α ∨ p d = ⊤) :
+    hpb :
     typeMap I.placeLeft O.toType = some (⟨I.left, p, hpb, hp⟩ : S α (n + 3)) := by
   have hn : ¬ (Finset.univ : Finset (Fin (n + 4))) ⊆ Finset.univ.erase s.a :=
     fun h => Finset.notMem_erase s.a Finset.univ (h s.ha)
@@ -145,7 +144,7 @@ theorem left_typeMap (hp : RespectsSemantics I.left.rows p)
   · exact O.left_read
 
 theorem right_typeMap (hq : RespectsSemantics I.right.rows q)
-    (hqb : ∀ d, q d < ofOrd α ∨ q d = ⊤) :
+    hqb :
     typeMap I.placeRight O.toType = some (⟨I.right, q, hqb, hq⟩ : S α (n + 3)) := by
   have hn : ¬ (Finset.univ : Finset (Fin (n + 4))) ⊆ Finset.univ.erase s.b :=
     fun h => Finset.notMem_erase s.b Finset.univ (h s.hb)

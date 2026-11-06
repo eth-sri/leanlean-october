@@ -24,41 +24,41 @@ namespace VaughtConjecture.AmalgamationPlan.Plan
 
 variable {α : Type*} [DecidableEq α]
 
-private theorem restrict_restrict {P : Finset (Finset α)} {A B : Finset α}
+private theorem restrict_restrict {P} {A B : Finset α}
     (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by
   ext S
   simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
   exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBA⟩, h.2⟩⟩
 
-private theorem restrict_self {A : Finset α} {P : Finset (Finset α)}
+private theorem restrict_self {A} {P : Finset (Finset α)}
     (hP : IsPlan A P) : restrictPlan P A = P := by
   ext S
   simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
   exact ⟨And.left, fun h => ⟨h, hP.subset_of_mem h⟩⟩
 
-private theorem coatom_over_face {A B : Finset α} {P : Finset (Finset α)}
+section
+variable {A B : Finset α}
+
+private theorem coatom_over_face {P}
     (hP : IsPlan A P) (hB : B ∈ P) (hne : B ≠ A) :
     ∃ a ∈ A, A.erase a ∈ P ∧ B ⊆ A.erase a := by
   cases hP with
   | empty =>
     exact (hne (Finset.mem_singleton.mp hB)).elim
   | singleton a =>
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hB
-    rcases hB with rfl | hB
-    · exact ⟨a, by simp, by simp, Finset.empty_subset _⟩
-    · exact (hne hB).elim
+    grind
   | @step A a b Q R P ha hb hab hQ hR hmem hre hPeq =>
     subst P
     simp only [Finset.mem_union, Finset.mem_singleton] at hB
     rcases hB with (hB | hB) | hB
     · exact ⟨a, ha, by simp [hQ.domain_mem], hQ.subset_of_mem hB⟩
     · exact ⟨b, hb, by simp [hR.domain_mem], hR.subset_of_mem hB⟩
-    · exact (hne hB).elim
+    · grind
 
-private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
+private theorem restrict_glue_left {P Q}
     (hP : IsPlan A P) (hQ : IsPlan B Q)
     (hres : restrictPlan P (A ∩ B) = restrictPlan Q (A ∩ B))
-    {x : α} (hxB : x ∈ B) (hxA : x ∉ A) :
+    {x} (hxB : x ∈ B) (hxA : x ∉ A) :
     restrictPlan (P ∪ Q ∪ {A ∪ B}) A = P := by
   ext S
   simp only [restrictPlan, Finset.mem_inter, Finset.mem_union,
@@ -73,11 +73,13 @@ private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
         Finset.mem_inter.mpr ⟨hS, Finset.mem_powerset.mpr hSAB⟩
       rw [← hres] at hm
       exact (Finset.mem_inter.mp hm).1
-    · exact (hxA (hSA (Finset.mem_union_right _ hxB))).elim
+    · grind
   · intro hS
     exact ⟨Or.inl (Or.inl hS), hP.subset_of_mem hS⟩
 
-private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
+end
+
+private theorem attach_coatom {A} {P Q}
     {a x : α} (hP : IsPlan A P) (ha : a ∈ A) (hx : x ∉ A)
     (hface : A.erase a ∈ P) (hQ : IsPlan (A.erase a ∪ {x}) Q)
     (hfaceQ : A.erase a ∈ Q)
@@ -124,7 +126,7 @@ private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
 
 /-- Attach a prescribed one-point plan over any visible old face. Both the
 old whole and the candidate face retain their plans literally. -/
-theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
+theorem IsPlan.attach_one_over_face {A B} {P Q}
     {x : α} (hP : IsPlan A P) (hB : B ∈ P) (hx : x ∉ A)
     (hQ : IsPlan (B ∪ {x}) Q) (hBQ : B ∈ Q)
     (hres : restrictPlan Q B = restrictPlan P B) :
