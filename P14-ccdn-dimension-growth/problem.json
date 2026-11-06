@@ -1,0 +1,91 @@
+{
+  "problem_idx": 14,
+  "id": "PALOMAR-2026-10-22-000015-v1",
+  "title": "Dimension growth, polynomial in the degree (Castryck–Cluckers–Dittmann–Nguyen)",
+  "abstract": "A Lean 4 formalisation of the main results of Castryck, Cluckers, Dittmann and Nguyen, \"The dimension growth conjecture, polynomial in the degree and without logarithmic factors\" (Algebra & Number Theory 14, 2020), incorporating the authors' 2026 addenda. It proves uniform bounds, polynomial in the degree, for the number of rational points of bounded height on varieties over Q. The bounds are: projective dimension growth N(X,B) ≤ C(n) d^(2n²+5n−5) B^dim X for integral X ⊆ P^n of degree d ≥ 5 (Theorem 1); N(X,B) ≤ C(n) d⁴ B^(2/d) for integral projective curves (Theorem 2); N_aff(X,B) ≤ C(n) d³ B^(1/d)(log B + d) for integral affine curves (Theorem 3); and C(N) d^(3N+9) B^(N−2) for affine hypersurfaces whose top-degree form is absolutely irreducible (Theorem 4). It also proves the lower-bound construction d² B^(2/d)/5 (Proposition 5), and the 2-torsion bound h₂(K) ≤ C(n) |disc K|^(1/2−1/(2n)) (log |disc K|)^(1−n mod 2) for all number fields of degree n ≥ 3 (Theorem 6). Degree and dimension are defined through Hilbert functions of the coordinate ring. Every constant depends only on the ambient dimension or field degree. The proofs construct the paper's determinant-method, projection and counting arguments in full. They include corrected versions of several intermediate lemmas whose printed forms are false.",
+  "authors": [
+    "Jason Davies"
+  ],
+  "repository": "jasondavies/ccdn-dimension-growth",
+  "repository_url": "https://github.com/jasondavies/ccdn-dimension-growth",
+  "commit": "bb025e7207f3a35a21b898629f5678b72aa7e44f",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "L",
+  "baseline_tokens": 552362,
+  "lean_files": 545,
+  "protected_theorem_names": [
+    "CCDN.Submission.affineCount_set_finite",
+    "CCDN.Submission.projectiveCount_set_finite",
+    "CCDN.Submission.projective_dimension_growth",
+    "CCDN.Submission.projective_curve_bound",
+    "CCDN.Submission.affine_curve_bound",
+    "CCDN.Submission.affine_hypersurface_bound",
+    "CCDN.Submission.affine_hypersurface_bound_rat",
+    "CCDN.Submission.projective_plane_curve_lower_bound",
+    "CCDN.Submission.classGroup_two_torsion_bound"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.NT",
+    "math.AG"
+  ],
+  "msc2020": [
+    "11D45",
+    "11G35",
+    "14G05",
+    "11G50",
+    "11R29"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "The dimension growth conjecture, polynomial in the degree and without logarithmic factors",
+      "authors": [
+        "Wouter Castryck",
+        "Raf Cluckers",
+        "Philip Dittmann",
+        "Kien Huu Nguyen"
+      ],
+      "type": "paper",
+      "identifier": "doi:10.2140/ant.2020.14.2261 (arXiv:1904.13109)",
+      "location": "Algebra & Number Theory 14 (2020), no. 8, 2261–2294; https://doi.org/10.2140/ant.2020.14.2261",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "List of addenda to papers of R. Cluckers and coauthors (entry for the CCDN dimension-growth paper), dated 2026-04-20",
+      "authors": [],
+      "type": "other",
+      "identifier": null,
+      "location": "https://rcluckers.perso.math.cnrs.fr/prints/list-of-addenda.pdf",
+      "relationship": "other"
+    },
+    {
+      "title": "On Siegel's lemma",
+      "authors": [
+        "Enrico Bombieri",
+        "Jeffrey D. Vaaler"
+      ],
+      "type": "paper",
+      "identifier": "doi:10.1007/BF01393823",
+      "location": "Inventiones Mathematicae 73 (1983), 11–32",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 3179,
+  "dependency_graph_edges": 12720,
+  "project_path": "repos/PALOMAR-2026-10-22-000015-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-22-000015-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-22-000015-v1/LICENSE"
+}
