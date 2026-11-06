@@ -1,6 +1,6 @@
 # LeanLean October 2026: projects and model submissions
 
-The 32 Lean projects of [LeanLean](https://matharena.ai/leanlean/) October 2026, and what 5 models made of them. Each agent had 12 hours per project to make the codebase as small as it could, in Lean tokens, while the project still builds, uses only the permitted axioms and keeps every protected theorem's statement.
+The 32 Lean projects of [LeanLean](https://matharena.ai/) October 2026, and what 5 models made of them. Each agent had 12 hours per project to make the codebase as small as it could, in Lean tokens, while the project still builds, uses only the permitted axioms and keeps every protected theorem's statement.
 
 ## Layout
 
