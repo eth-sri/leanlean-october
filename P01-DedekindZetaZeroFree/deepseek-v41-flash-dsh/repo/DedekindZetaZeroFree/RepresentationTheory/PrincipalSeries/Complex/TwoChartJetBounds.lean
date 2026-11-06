@@ -39,7 +39,7 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
 private lemma weight_smooth (a : ℝ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ℂ => (Real.rpow ‖z‖ a : ℂ)) ({0}ᶜ : Set ℂ) := by
   intro z hz
-  have hz0 : z ≠ 0 := hz
+  have hz0 := hz
   have hn : ContDiffAt ℝ (⊤ : ℕ∞) (fun z : ℂ => ‖z‖) z := contDiffAt_norm ℝ hz0
   exact (Complex.ofRealCLM.contDiff.comp_contDiffAt z
     (hn.rpow_const_of_ne (norm_ne_zero_iff.mpr hz0))).contDiffWithinAt

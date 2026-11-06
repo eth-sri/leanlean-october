@@ -135,7 +135,7 @@ private theorem list_perm {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
 private theorem compact_product_integrable {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
     (hu : ContinuousOn u B.carrier) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : tsupport g ⊆ B.carrier) : Integrable (fun x => u x * g x) volume := by
-  have hp : Continuous (fun x => u x * g x) :=
+  have hp :=
     (hu.mul hg.continuousOn).continuous_of_tsupport_subset Metric.isOpen_ball
       (tsupport_mul_subset_right.trans hs)
   exact hp.integrable_of_hasCompactSupport hc.mul_left

@@ -68,8 +68,7 @@ theorem exists_allowed_generator_of_isUnit (A : SArithmeticData F)
       ← FractionalIdeal.spanSingleton_inv, spanSingleton_unit A u, inv_one, mul_one]
     exact hx
   · change A.sClass (a₀ * u.val⁻¹) ∈ B
-    rw [map_mul, map_inv, hu, ← hp]
-    rw [mul_comm p.1.val p.2.val, mul_assoc, mul_inv_cancel, mul_one]
+    rw [map_mul, map_inv, hu, ← hp, mul_comm p.1.val p.2.val, mul_assoc, mul_inv_cancel, mul_one]
     exact p.2.property
 
 theorem exists_allowed_generator (A : SArithmeticData F)

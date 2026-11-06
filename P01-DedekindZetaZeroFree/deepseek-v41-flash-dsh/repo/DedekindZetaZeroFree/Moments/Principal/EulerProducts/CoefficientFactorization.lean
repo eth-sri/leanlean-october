@@ -56,8 +56,8 @@ private theorem local_unit_one (p : ExteriorPrime A) (n : ℕ) :
   apply Subtype.ext
   rw [MaskedQuotientCRT.localUnitPart_spec]
   have hπ : (generator C p : F) ≠ 0 := by exact_mod_cast (generator_generates C p).1
-  have hu : uniformizer C p ≠ 0 := (map_ne_zero (algebraMap F (LocalField p))).mpr hπ
-  have hu' : algebraMap F (LocalField p) (generator C p : F) ≠ 0 := hu
+  have hu := (map_ne_zero (algebraMap F (LocalField p))).mpr hπ
+  have hu' := hu
   simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hπ, hu']
 private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)

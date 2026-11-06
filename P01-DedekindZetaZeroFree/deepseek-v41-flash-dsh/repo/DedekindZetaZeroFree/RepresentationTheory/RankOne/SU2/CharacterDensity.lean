@@ -33,7 +33,7 @@ private theorem trace_mul_character_symPower_torusHom (d : ℕ) (z : Circle) :
     Matrix.trace ((torusHom z : SU2) : Matrix (Fin 2) (Fin 2) ℂ)
         * (symPower (d + 1)).character (torusHom z)
       = (symPower (d + 2)).character (torusHom z) + (symPower d).character (torusHom z) := by
-  have hz : (z : ℂ) ≠ 0 := z.coe_ne_zero
+  have hz := z.coe_ne_zero
   have hstep : ∀ i : ℕ, ((z : ℂ) + ((z : ℂ))⁻¹) * (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 1))
       = (z : ℂ) ^ (2 * (i : ℤ) - (d : ℤ)) + (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 2)) := by
     intro i

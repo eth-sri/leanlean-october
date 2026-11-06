@@ -117,12 +117,12 @@ theorem rowHeight_upper_compact_bounds
   let ℓ : KPChamberHeight.Line F := Projectivization.mk F ![0, 1] hr
   obtain ⟨m, M, hm, hmM, hb⟩ := KPChamberHeight.compact_uniform_height F S hS
   let z := KPChamberHeight.height F ℓ 1
-  have hz : 0 < z := KPChamberHeight.height_pos F ℓ 1
+  have hz := KPChamberHeight.height_pos F ℓ 1
   refine ⟨m * z, M * z, mul_pos hm hz, mul_le_mul_of_nonneg_right hmM hz.le, ?_⟩
   intro B C h10 hC
   obtain ⟨hl, hu⟩ := hb ℓ (ProjGenLinGroup.mk C) hC
   rw [KPChamberHeight.height_mk F ![0, 1] hr C] at hl hu
-  have hB : 0 ≤ KPChamberHeight.rowHeight F ![0, 1] B :=
+  have hB :=
     (KPChamberHeight.rowHeight_pos F ![0, 1] hr B).le
   rw [rowHeight_upper_mul F B C h10]
   constructor
