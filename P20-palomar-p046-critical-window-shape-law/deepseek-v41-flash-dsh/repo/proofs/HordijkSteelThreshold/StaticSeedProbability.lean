@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.StaticSeedClosure
-public import proofs.HordijkSteelThreshold.StaticBulk

@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.PositiveLowerPhase
-public import proofs.HordijkSteelThreshold.StaticParameterMonotonicity

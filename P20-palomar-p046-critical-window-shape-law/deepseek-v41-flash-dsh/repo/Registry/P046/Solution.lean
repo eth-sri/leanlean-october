@@ -1,11 +1,7 @@
 module
 
 public import Registry.P046.SupportingObligations
-public import proofs.RAFCriticalWindowQuantitative.SourceCalibration
-public import proofs.RAFCriticalWindowQuantitative.UniformApproximation
-public import proofs.RAFCriticalWindowQuantitative.LowIntensity
-public import proofs.RAFCriticalWindowQuantitative.ProductiveHistory
-public import proofs.RAFCriticalWindowQuantitative.WorkedBound
+public import proofs.RAFCriticalWindowQuantitative.RAFCriticalWindowQuantitativeAll
 
 @[expose] public section
 
