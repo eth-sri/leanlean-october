@@ -48,12 +48,6 @@ theorem Hyp30.L_pos {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) : 1 ≤ p.L := by
   have := h.m_pos
   omega
 
-namespace Within8
-
-variable {f g : Sec2.Par → ℕ → ℕ}
-
-end Within8
-
 /-! ## The tiles -/
 
 /-- For every e ≤ m - t with e ≤ L there is a box with e stars. -/

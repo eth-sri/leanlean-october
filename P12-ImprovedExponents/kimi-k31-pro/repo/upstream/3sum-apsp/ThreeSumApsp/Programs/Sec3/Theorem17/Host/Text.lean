@@ -174,16 +174,6 @@ def et17Addr : Stmt :=
   .skip
 
 open Et17 in
-/-- The second part: the prime, the sizes, and the addresses of the arrays. -/
-def et17Sizes (ν : Et17Nums) : Stmt :=
-  .call ν.pChoose [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v ParD, v Free] ThePrime ;;
-  .call ν.pCap [v Size, v ParD] Cap ;;
-  .call ν.pCeil [v RootD, v ParG] PieceLen ;;
-  .call ν.pCeil [v Size, v PieceLen] NumPieces ;;
-  .call ν.pBitLen [v Bound] Bits ;;
-  et17Addr
-
-open Et17 in
 /-- The third part: the residues, the classes, the chunks, and the loop over the instances. -/
 def et17Tables (ν : Et17Nums) : Stmt :=
   .call ν.pDbl [v Free, v ThePrime, v Bits] Small ;;
@@ -196,14 +186,6 @@ def et17Tables (ν : Et17Nums) : Stmt :=
   .call ν.pLoop [v Size, v ParD, v ThePrime, v PieceLen, v NumChunks, v NumInst, v AdrAB, v AdrBC,
     v AdrAC, v ResAC, v ResBC, v Rows, v Cols, v TabR, v TabL, v TabW, v MatX, v MatY, v AdrOut,
     v SolverFree] 0
-
-open Et17 in
-/-- et17(n, U, ab, bc, ac, fr). -/
-def et17Body (ν : Et17Nums) : Stmt :=
-  et17Params ν ;;
-  .ite (v Small =' k 1)
-    (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-    (et17Sizes ν ;; et17Tables ν)
 
 /-! ## Time and need
 
@@ -393,10 +375,6 @@ abbrev Et17.locals (x : TriInst) (X : HostData) (fr : ℕ) (g s nch res : ℤ) :
     ((aCw X x.U fr : ℕ) : ℤ), ((aX X x.U fr : ℕ) : ℤ), ((aY X x.U fr : ℕ) : ℤ),
     ((aOut X x.U fr : ℕ) : ℤ), ((aFr X x.U fr : ℕ) : ℤ), ((X.n * X.n + X.p : ℕ) : ℤ), nch, 0, res,
     ((X.n * X.D : ℕ) : ℤ)]
-
-/-- The locals after the second part (n is not small, so the flag is 0). -/
-def et17LocB (x : TriInst) (fr D g : ℕ) : List ℤ :=
-  Et17.locals x (hostData x D g) fr g (Nat.sqrt D : ℕ) 0 0
 
 /-- The time of the third part in a run: it depends on the data. -/
 def hostRunTime (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=

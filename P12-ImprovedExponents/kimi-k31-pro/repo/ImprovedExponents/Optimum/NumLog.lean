@@ -116,7 +116,7 @@ after unfolding the enclosing functions of this file and upstream's approximatio
 logarithms. -/
 macro "numlog" : tactic =>
   `(tactic| norm_num [logLo, logHi, g2Lo, g2Hi, cEntLo, cEntHi, logApprox, logErr, seriesArg,
-    logTwoLo, logTwoHi, logThreeLo, logThreeHi, logTenLo, logTenHi, Finset.sum_range_succ, rhoC])
+    logTwoLo, logTwoHi, logThreeLo, logThreeHi, Finset.sum_range_succ, rhoC])
 
 /-! ### Logarithms -/
 

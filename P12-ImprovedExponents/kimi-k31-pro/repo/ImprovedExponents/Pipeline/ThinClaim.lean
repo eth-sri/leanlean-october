@@ -463,56 +463,41 @@ theorem allInstancesNeedR_poly (R : RegimeTest) (O : OfflineRoutine) :
           Nat.le_mul_of_pos_left _ (by positivity) |>.trans
             (Nat.le_mul_of_pos_left _ (by positivity))
         _ ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := Nat.le_mul_of_pos_left _ (by omega)
-    rw [show polyBound (9 + kR + s) (3 + e + k) [N, D, w, U] =
-      2 ^ (9 + kR + s) * ((N + 1) * ((D + 1) * ((w + 1) * (U + 1)))) ^ (3 + e + k) by
-        simp [polyBound]]
-    generalize (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) = Q at *
+    set Q := (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) with hQdef
     have hQ : 1 ≤ Q := by omega
-    have h3 : Q ^ 3 ≤ Q ^ (3 + e + k) := Nat.pow_le_pow_right hQ (by omega)
-    -- the number the test forms
-    have hRQ : R.word N D ≤ 2 ^ kR * Q ^ (3 + e + k) :=
-      hRw.trans (Nat.mul_le_mul_left _ ((Nat.pow_le_pow_left hND e).trans
-        (Nat.pow_le_pow_right hQ (by omega))))
-    -- the need of the routine
-    have hOQ : ∀ {n : ℕ}, n ≤ 2 ^ s * ((N + 1) * (D + 1) * (U + 1)) ^ k →
-        n ≤ 2 ^ s * Q ^ (3 + e + k) :=
-      fun h => h.trans (Nat.mul_le_mul_left _ ((Nat.pow_le_pow_left hNDU k).trans
-        (Nat.pow_le_pow_right hQ (by omega))))
+    have hRQ : R.word N D ≤ polyBound kR e [N, D, w, U] := by
+      simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+      change R.word N D ≤ 2 ^ kR * Q ^ e
+      exact hRw.trans (Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hND e))
+    have hOQ {n : ℕ} (h : n ≤ 2 ^ s * ((N + 1) * (D + 1) * (U + 1)) ^ k) :
+        n ≤ polyBound s k [N, D, w, U] := by
+      simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+      change n ≤ 2 ^ s * Q ^ k
+      exact h.trans (Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hNDU k))
     have hOw' := hOQ hOw
     have hOc' := hOQ hOc
     have hOd' := hOQ hOd
-    -- the brute force and the frame
-    have hgen : 100 + D * (U * U) ≤ 101 * Q ^ (3 + e + k) := by
+    have hgen : 100 + D * (U * U) ≤ polyBound 7 3 [N, D, w, U] := by
+      simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+      change 100 + D * (U * U) ≤ 2 ^ 7 * Q ^ 3
       have hDUU : D * (U * U) ≤ Q ^ 3 :=
         calc D * (U * U) ≤ Q * (Q * Q) := by gcongr
           _ = Q ^ 3 := by ring
       have h1 : 1 ≤ Q ^ 3 := Nat.one_le_pow _ _ hQ
+      norm_num
       omega
-    have hN1 : N + 1 ≤ Q ^ (3 + e + k) := hN.trans ((Nat.le_self_pow (by omega) Q).trans h3)
-    have h1 : 1 ≤ Q ^ (3 + e + k) := Nat.one_le_pow _ _ hQ
-    -- the three constants: 2^kR + 101 + 2^s ≤ 2^(9 + kR + s)
-    have hpow : (2 : ℕ) ^ (9 + kR + s) * Q ^ (3 + e + k)
-        = 512 * (2 ^ kR * 2 ^ s * Q ^ (3 + e + k)) := by
-      rw [pow_add, pow_add]
-      ring
-    have hs1 : 1 ≤ 2 ^ s := Nat.one_le_two_pow
-    have hkR1 : 1 ≤ 2 ^ kR := Nat.one_le_two_pow
-    have hA : 2 ^ kR * Q ^ (3 + e + k) ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) :=
-      calc 2 ^ kR * Q ^ (3 + e + k) = 2 ^ kR * 1 * Q ^ (3 + e + k) := by ring
-        _ ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) := by gcongr
-    have hB : 2 ^ s * Q ^ (3 + e + k) ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) :=
-      calc 2 ^ s * Q ^ (3 + e + k) = 1 * 2 ^ s * Q ^ (3 + e + k) := by ring
-        _ ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) := by gcongr
-    have hC : Q ^ (3 + e + k) ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) :=
-      Nat.le_mul_of_pos_left _ (by positivity)
-    rw [hpow]
+    have hN1 : N + 1 ≤ polyBound 0 1 [N, D, w, U] := by
+      simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+      change N + 1 ≤ 1 * Q ^ 1
+      simpa using hN
+    have hTwo : 2 ≤ polyBound 1 0 [N, D, w, U] := by simp [polyBound]
     refine ⟨?_, ?_, ?_⟩
-    · change R.word N D + (100 + D * (U * U)) + (O.need N D U).word ≤ _
-      omega
-    · change N + 1 + (O.need N D U).cells ≤ _
-      omega
-    · change 2 + (O.need N D U).depth ≤ _
-      omega
+    · exact (add_le_polyBound (add_le_polyBound hRQ hgen) hOw').trans
+        (polyBound_mono (by omega) (by omega) [N, D, w, U])
+    · exact (add_le_polyBound hN1 hOc').trans
+        (polyBound_mono (by omega) (by omega) [N, D, w, U])
+    · exact (add_le_polyBound hTwo hOd').trans
+        (polyBound_mono (by omega) (by omega) [N, D, w, U])
   | [] | [_] | [_, _] | [_, _, _] | _ :: _ :: _ :: _ :: _ :: _ =>
     exact ⟨Nat.zero_le _, Nat.zero_le _, Nat.zero_le _⟩
 

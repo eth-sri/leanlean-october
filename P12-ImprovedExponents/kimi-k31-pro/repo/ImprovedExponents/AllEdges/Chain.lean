@@ -2,7 +2,12 @@ module
 
 public import ImprovedExponents.AllEdges.Model
 public import ImprovedExponents.Pipeline.HostBound
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem22
+public import ThreeSumApsp.Machine.PolylogIsLittleO
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.BitSearch
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.TimeBound
+public import ThreeSumApsp.RunningTimes.FromClaims
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.MinPlusLayout
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ApspLayout
 
 @[expose] public section
 
@@ -41,14 +46,31 @@ def PairsFromAllEdges (CA : ℝ) : Prop :=
   ∀ T : ℕ → ℝ → ℝ, SolvedIn aeTask T →
     SolvedIn pairsTask fun n u => CA * ((1 + logU u) * (T n (9 * u) + (n : ℝ) ^ 2))
 
-/-- The time of upstream's bit search for the (min,+)-product (`mpTime`: `mpRounds U` calls of the
-pairs solver at the bound `6U`, each with `O(n²)` more steps), against a real bound `Tp` on the
-pairs solver: at most `1100 log u (Tp(n, 6u) + n²)`. -/
+/-- The number of rounds of the search is `O(log u)`. -/
+theorem mpRounds_le {U : ℕ} (hU : 1 ≤ U) {u : ℝ} (hu : (U : ℝ) ≤ u) :
+    (mpRounds U : ℝ) ≤ 8 * logU u := by
+  have hU' : (1 : ℝ) ≤ U := by exact_mod_cast hU
+  have hhalf := Real.one_half_lt_log_two
+  have hpow : 2 ^ Nat.log 2 (4 * U) ≤ 4 * U := Nat.pow_log_le_self 2 (by omega)
+  have hlog : (Nat.log 2 (4 * U) : ℝ) * Real.log 2 ≤ Real.log (4 * U) := by
+    rw [← Real.log_pow]
+    exact Real.log_le_log (by positivity) (by exact_mod_cast hpow)
+  rw [Real.log_mul (by norm_num) (by positivity), Real.log_four] at hlog
+  have hUu : Real.log U ≤ logU u := (Real.log_le_log (by positivity) hu).trans
+    (log_le_logU (by linarith))
+  have h2u := log_two_le_logU u
+  have hleft : (Nat.log 2 (4 * U) : ℝ) * (1 / 2) ≤ (Nat.log 2 (4 * U) : ℝ) * Real.log 2 :=
+    mul_le_mul_of_nonneg_left hhalf.le (Nat.cast_nonneg _)
+  simp only [mpRounds]
+  push_cast
+  linarith
+
+/-- The time of upstream's bit search for the (min,+)-product. -/
 theorem mpTime_le {Tn : ℕ → ℕ → ℕ} {Tp : ℕ → ℝ → ℝ}
     (hTn : ∀ (n U : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ U → (U : ℝ) ≤ u → (Tn n U : ℝ) ≤ Tp n u)
     {n U : ℕ} {u : ℝ} (hn : 1 ≤ n) (hU : 1 ≤ U) (hu : (U : ℝ) ≤ u) :
     (mpTime Tn n U : ℝ) ≤ 1100 * (logU u * (Tp n (6 * u) + (n : ℝ) ^ 2)) := by
-  have hR := MinPlusFromNeg.mpRounds_le hU hu
+  have hR := mpRounds_le hU hu
   have hL : 1 / 2 < logU u := Real.one_half_lt_log_two.trans_le (log_two_le_logU u)
   have hT := hTn n (6 * U) (6 * u) hn (by omega) (by push_cast; linarith)
   have hT0 : (0 : ℝ) ≤ Tp n (6 * u) := (Nat.cast_nonneg _).trans hT
@@ -152,7 +174,6 @@ theorem apspInPolylog_of_explicitFrom {CA : ℝ} (hCA : 0 ≤ CA) (hp : PairsFro
   obtain ⟨c, C₀, hc, hsq⟩ := claim_apspFromMinPlus
   intro κ hκ
   refine ⟨_, hsq _ (solvedIn_mp_of_allEdges hp hT), ?_⟩
-  have hc0 : (0 : ℝ) ≤ c := zero_le_one.trans hc
   have hev := eventually_le_of_explicit hb (c := 54 * c) (κ := κ + 1) (by linarith)
   -- the numbers `c n · n^κ = c n^{κ+1}` of the (min,+)-products, and `6` times them
   have hmag : ∀ n : ℕ, 1 ≤ n → 1 ≤ c * ((n : ℝ) * (n : ℝ) ^ κ) ∧
@@ -203,34 +224,18 @@ theorem apspInPolylog_of_explicitFrom {CA : ℝ} (hCA : 0 ≤ CA) (hp : PairsFro
 
 /-! ## The end statements -/
 
-/-- **The (min,+)-product in time `O(n^{3-δ} (log n)^{O(1)})` on the word RAM**, from all-edges
-Exact Triangle in time `n^{3-δ} (log n)^e`. -/
-theorem minPlus_polylog_of_explicitFrom {CA : ℝ} (hCA : 0 ≤ CA) (hp : PairsFromAllEdges CA)
-    {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1) (h : ExplicitFrom lightModelAE δ e) :
-    SolvedInPolylogTime EndStatement.MinPlusProduct (3 - δ) :=
-  FromClaims.solvedInPolylogTime_of_claim (fun T hT => realized_minPlusProduct T hT)
-    (minPlusInPolylog_of_explicitFrom hCA hp hδ h)
-
-/-- **APSP in time `O(n^{3-δ} (log n)^{O(1)})` on the word RAM**, from all-edges Exact Triangle in
-time `n^{3-δ} (log n)^e`. -/
-theorem apsp_polylog_of_explicitFrom {CA : ℝ} (hCA : 0 ≤ CA) (hp : PairsFromAllEdges CA)
-    {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1) (h : ExplicitFrom lightModelAE δ e) :
-    SolvedInPolylogTime EndStatement.APSP (3 - δ) :=
-  FromClaims.solvedInPolylogTime_of_claim (fun T hT => realized_apsp T hT)
-    (apspInPolylog_of_explicitFrom hCA hp hδ h)
-
 /-- The two end statements that all-edges Exact Triangle with the saving `δ` gives: the
 (min,+)-product and APSP in `O(n^a)` steps on the word RAM for every exponent `a > 3 - δ`. -/
-structure MinPlusSolved (δ : ℝ) : Prop where
-  /-- The (min,+)-product in `O(n^a)` steps for every `a > 3 - δ`. -/
-  minPlus : ∀ a : ℝ, 3 - δ < a → SolvedInTime EndStatement.MinPlusProduct a 0
-  /-- APSP in `O(n^a)` steps for every `a > 3 - δ`. -/
-  apsp : ∀ a : ℝ, 3 - δ < a → SolvedInTime EndStatement.APSP a 0
+def MinPlusSolved (δ : ℝ) : Prop :=
+  (∀ a : ℝ, 3 - δ < a → SolvedInTime EndStatement.MinPlusProduct a 0) ∧
+    (∀ a : ℝ, 3 - δ < a → SolvedInTime EndStatement.APSP a 0)
 
 /-- **From all-edges Exact Triangle in time `n^{3-δ} (log n)^e` to the end statements.** -/
 theorem minPlusSolved_of_explicitFrom {CA : ℝ} (hCA : 0 ≤ CA) (hp : PairsFromAllEdges CA)
     {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1) (h : ExplicitFrom lightModelAE δ e) : MinPlusSolved δ :=
-  ⟨fun _ ha => (minPlus_polylog_of_explicitFrom hCA hp hδ h).solvedInTime ha,
-    fun _ ha => (apsp_polylog_of_explicitFrom hCA hp hδ h).solvedInTime ha⟩
+  ⟨fun _ ha => (FromClaims.solvedInPolylogTime_of_claim (fun T hT => realized_minPlusProduct T hT)
+      (minPlusInPolylog_of_explicitFrom hCA hp hδ h)).solvedInTime ha,
+    fun _ ha => (FromClaims.solvedInPolylogTime_of_claim (fun T hT => realized_apsp T hT)
+      (apspInPolylog_of_explicitFrom hCA hp hδ h)).solvedInTime ha⟩
 
 end ImprovedExponents.AllEdges

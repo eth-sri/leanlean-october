@@ -68,19 +68,6 @@ theorem computeEncoding_psi {L : ℕ} (b : RightStr L → ℤ) : computeEncoding
 
 /-! ### Section 2.4.2: the sets `S_λ` of step (2) -/
 
-/-- Membership in a slice of a set of output strings. -/
-@[simp]
-theorem mem_sliceSet {n : ℕ} (S : Finset (OutStr (n + 1))) (z : OutVar) (w' : OutStr n) :
-    w' ∈ sliceSet S z ↔ (Fin.cons z w' : OutStr (n + 1)) ∈ S := by
-  simp [sliceSet]
-
-/-! ### Lemma 10, first claim: the values -/
-
-/-- An array restricted to the empty set is the zero array. -/
-@[simp]
-theorem restrictTo_empty {n : ℕ} (c : OutStr n → ℤ) : restrictTo ∅ c = 0 :=
-  rfl
-
 /-! ### Lemma 10, second claim: the calls that are made and the sets passed to them -/
 
 /-! ### Lemma 10, third claim: the total size of the sets passed -/

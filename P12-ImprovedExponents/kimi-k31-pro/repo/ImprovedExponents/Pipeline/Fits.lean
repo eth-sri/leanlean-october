@@ -89,6 +89,32 @@ theorem sqrtKN0_le_exp {L m : ℕ} (hm : 1 ≤ m) (hmL : m < L) :
         congr 1
         field_simp
 
+/-- Near `c`, the ratio `L/m` is close enough to keep `basePruned` below any bound above
+`basePruned c`. -/
+theorem basePruned_levelsOf_lt {c B : ℝ} (hc : 10 < c) (hB : basePruned c < B) :
+    ∃ m₀ : ℕ, ∀ m : ℕ, m₀ ≤ m → basePruned ((levelsOf c m : ℝ) / m) < B := by
+  have hcont : ContinuousAt basePruned c :=
+    basePruned_continuousOn.continuousAt (Ioi_mem_nhds hc)
+  obtain ⟨δ₀, hδ₀, hnear⟩ := Metric.eventually_nhds_iff.1
+    (hcont.eventually (gt_mem_nhds hB))
+  refine ⟨max 1 ⌈1 / δ₀⌉₊, fun m hm => ?_⟩
+  have hm1 : 1 ≤ m := (le_max_left _ _).trans hm
+  have hm0 : (0 : ℝ) < m := by exact_mod_cast hm1
+  have hmδ : 1 / δ₀ ≤ (m : ℝ) := (Nat.le_ceil _).trans
+    (by exact_mod_cast (le_max_right _ _).trans hm)
+  have hLge : c * m ≤ (levelsOf c m : ℝ) := Nat.le_ceil _
+  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
+  have hratio1 : c ≤ (levelsOf c m : ℝ) / m := by rwa [le_div_iff₀ hm0]
+  have hratio2 : (levelsOf c m : ℝ) / m < c + δ₀ := by
+    rw [div_lt_iff₀ hm0]
+    have : 1 ≤ δ₀ * m := by
+      have := (div_le_iff₀ hδ₀).1 hmδ
+      linarith
+    nlinarith
+  refine hnear ?_
+  rw [Real.dist_eq, abs_lt]
+  constructor <;> linarith
+
 /-- **The tile fits in the regime `D^r ≤ N^s`** for all large thresholds, if
 `(c/2) H(1/c) + (c - 1) ln 3 < (r/s) ln 4` at the ratio `c = a/b`. -/
 theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b < a) (hp : 1 ≤ p)
@@ -111,41 +137,22 @@ theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b
   have hsB : (s : ℝ) * B < r * log 4 := by
     have := (lt_div_iff₀ hsR).1 (by rwa [div_mul_eq_mul_div] at hB2)
     linarith
-  -- near `c` the constant stays below `B`
-  have hcont : ContinuousAt basePruned c :=
-    basePruned_continuousOn.continuousAt (Ioi_mem_nhds hcR)
-  obtain ⟨δ₀, hδ₀, hnear⟩ := Metric.eventually_nhds_iff.1
-    (hcont.eventually (gt_mem_nhds hB1))
+  obtain ⟨mNear, hnear⟩ := basePruned_levelsOf_lt hcR hB1
   have hgap : 0 < r * log 4 - s * B := by linarith
-  refine ⟨max ⌈1 / δ₀⌉₊ ⌈r * log 4 / (r * log 4 - s * B)⌉₊, fun m₀ hm₀ hm₂ N D₀ hN hm => ?_⟩
+  refine ⟨max mNear ⌈r * log 4 / (r * log 4 - s * B)⌉₊, fun m₀ hm₀ hm₂ N D₀ hN hm => ?_⟩
   change m₀ ≤ logFour D₀ at hm
   set m := logFour D₀ with hmdef
   have hm1 : 1 ≤ m := le_trans hm₀ hm
   have hm0 : (0 : ℝ) < m := by exact_mod_cast hm1
-  have hmδ : 1 / δ₀ ≤ (m : ℝ) :=
-    (Nat.le_ceil _).trans (by exact_mod_cast (le_trans (le_max_left _ _) (le_trans hm₂ hm)))
   have hmB : r * log 4 / (r * log 4 - s * B) ≤ (m : ℝ) :=
     (Nat.le_ceil _).trans (by exact_mod_cast (le_trans (le_max_right _ _) (le_trans hm₂ hm)))
-  -- the levels
   have hLdef : (parOf ⟨a, b, p, q, m₀, hb, hq, hc, hp, hθ, hm₀⟩ N D₀).L = levelsOf c m := by
     rw [levelsOf_div a _ hb]
     rfl
-  have hLge : c * m ≤ (levelsOf c m : ℝ) := Nat.le_ceil _
-  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
   have hmL : m < levelsOf c m := by
-    have h : (m : ℝ) < (levelsOf c m : ℝ) := by nlinarith
-    exact_mod_cast h
-  have hratio1 : c ≤ (levelsOf c m : ℝ) / m := by rwa [le_div_iff₀ hm0]
-  have hratio2 : (levelsOf c m : ℝ) / m < c + δ₀ := by
-    rw [div_lt_iff₀ hm0]
-    have : 1 ≤ δ₀ * m := by
-      have := (div_le_iff₀ hδ₀).1 hmδ
-      linarith
-    nlinarith
-  have hbase : basePruned ((levelsOf c m : ℝ) / m) < B := by
-    refine hnear ?_
-    rw [Real.dist_eq, abs_lt]
-    constructor <;> linarith
+    have := ten_mul_le_levelsOf hcR m
+    omega
+  have hbase := hnear m ((le_max_left _ _).trans (le_trans hm₂ hm))
   -- `s m B ≤ r (m - 1) ln 4`
   have hexp : (s : ℝ) * ((m : ℝ) * B) ≤ ((r * (m - 1) : ℕ) : ℝ) * log 4 := by
     have h1 : r * log 4 ≤ (m : ℝ) * (r * log 4 - s * B) := by

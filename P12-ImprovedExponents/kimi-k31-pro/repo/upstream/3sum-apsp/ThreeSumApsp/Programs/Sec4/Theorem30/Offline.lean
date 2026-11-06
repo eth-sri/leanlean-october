@@ -108,28 +108,4 @@ def wantedCoreBody : Stmt :=
   .call Proc.preCore [v Levels, v Inner, v Switch, v Size, v Dim, v MatX, v MatY, v Block] Res ;;
   .for Pos (v Count) wantedAsk
 
-section
-variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY aI aJ out b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
-  {W : List (Fin p.N × Fin p.N)} {μ μ' μ'' : ℕ → ℤ}
-
-/-- Where the input of wantedCore stands: the two matrices, the rows and the columns of the wanted
-positions and the output all lie below the free block, and the output does not meet the two lists.
--/
-structure WantedInput (p : Sec2.Par) (aX aY aI aJ out b0 : ℕ) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (W : List (Fin p.N × Fin p.N)) (μ : ℕ → ℤ) : Prop where
-  matX : MatAt μ aX X
-  matY : MatAt μ aY Y
-  rows : Seg μ aI (W.map fun q => ((q.1 : ℕ) : ℤ))
-  cols : Seg μ aJ (W.map fun q => ((q.2 : ℕ) : ℤ))
-  matX_le : aX + p.N * p.D ≤ b0
-  matY_le : aY + p.D * p.N ≤ b0
-  rows_le : aI + W.length ≤ b0
-  cols_le : aJ + W.length ≤ b0
-  out_le : out + W.length ≤ b0
-  out_rows : Apart out W.length aI W.length
-  out_cols : Apart out W.length aJ W.length
-
-end
-
 end Light.Sec4

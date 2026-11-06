@@ -61,11 +61,6 @@ theorem of_isBigO (hg : IsBigOPow g a) (hfg : f =O[atTop] g) : IsBigOPow f a :=
 theorem mono_left (hg : IsBigOPow g a) (h : ∀ᶠ n in atTop, |f n| ≤ |g n|) : IsBigOPow f a :=
   hg.of_isBigO (IsBigO.of_bound' h)
 
-/-- If `0 ≤ f n ≤ g n` for all large `n` and `g = O(n^a)`, then `f = O(n^a)`. -/
-theorem mono_left_of_nonneg (hg : IsBigOPow g a) (h0 : ∀ᶠ n in atTop, 0 ≤ f n)
-    (h : ∀ᶠ n in atTop, f n ≤ g n) : IsBigOPow f a :=
-  hg.mono_left ((h0.and h).mono fun _ hn => abs_le_abs_of_nonneg hn.1 hn.2)
-
 /-- The exponent may be raised. -/
 protected theorem mono (hf : IsBigOPow f a) (hab : a ≤ b) : IsBigOPow f b :=
   hf.trans (isBigO_rpow_rpow_of_le hab)
@@ -108,21 +103,6 @@ theorem isPowPolylog (hf : IsBigOPow f a) : IsPowPolylog f a :=
   ⟨0, by simpa only [pow_zero, mul_one, IsBigOPow] using hf⟩
 
 end IsBigOPow
-
-/-- Rounding up keeps the class: if `f = O(n^a)` with `a ≥ 0`, then `⌈f n⌉ = O(n^a)`. -/
-theorem IsBigOPow.natCeil (hf : IsBigOPow f a) (ha : 0 ≤ a) :
-    IsBigOPow (fun n => (⌈f n⌉₊ : ℝ)) a := by
-  refine (hf.abs.add ((isBigOPow_const 1).mono ha)).mono_left_of_nonneg
-    (Eventually.of_forall fun n => Nat.cast_nonneg _) (Eventually.of_forall fun n => ?_)
-  obtain hneg | hpos := le_or_gt (f n) 0
-  · rw [Nat.ceil_eq_zero.2 hneg, Nat.cast_zero]
-    positivity
-  · exact (Nat.ceil_lt_add_one hpos.le).le.trans (add_le_add_left (le_abs_self _) 1)
-
-/-- `⌈n ^ μ⌉ = O(n^μ)` for `μ ≥ 0`. -/
-theorem isBigOPow_ceil_rpow {μ : ℝ} (hμ : 0 ≤ μ) :
-    IsBigOPow (fun n : ℕ => (⌈(n : ℝ) ^ μ⌉₊ : ℝ)) μ :=
-  (isBigOPow_rpow μ).natCeil hμ
 
 /-! ### `Õ(n^a)` -/
 
@@ -219,21 +199,6 @@ theorem isBigOPow (hf : IsPowPolylog f a) (hab : a < b) : IsBigOPow f b := by
 
 end IsPowPolylog
 
-/-- If `size n = O(n^μ)` for some `μ`, then `log (size n) = Õ(1)`. -/
-theorem IsBigOPow.isPowPolylog_log_natCast {size : ℕ → ℕ} {μ : ℝ}
-    (hsize : IsBigOPow (fun n => (size n : ℝ)) μ) :
-    IsPowPolylog (fun n => Real.log (size n)) 0 := by
-  refine (isPowPolylog_log.const_mul (max μ 0 + 1)).mono_left_of_nonneg
-    (Eventually.of_forall fun n => Real.log_natCast_nonneg _) ?_
-  filter_upwards [(hsize.mono (le_max_left μ 0)).eventually_abs_le (lt_add_one _),
-    eventually_gt_atTop 0] with n hle hn
-  obtain hzero | hpos := (size n).eq_zero_or_pos
-  · rw [hzero, Nat.cast_zero, Real.log_zero]
-    exact mul_nonneg (add_nonneg (le_max_right μ 0) zero_le_one) (Real.log_natCast_nonneg n)
-  · rw [abs_of_nonneg (Nat.cast_nonneg _)] at hle
-    rw [← Real.log_rpow (Nat.cast_pos.2 hn)]
-    exact Real.log_le_log (Nat.cast_pos.2 hpos) hle
-
 /-- Substituting a size: if `G(s) = O(s^a)` and `size n = O(n^μ)` with `a, μ ≥ 0`, then
 `G(size n) = O(n^(a μ))`. The sizes need not tend to infinity. -/
 protected theorem IsBigOPow.comp {G : ℕ → ℝ} {size : ℕ → ℕ} {μ : ℝ} (hG : IsBigOPow G a)
@@ -243,18 +208,6 @@ protected theorem IsBigOPow.comp {G : ℕ → ℝ} {size : ℕ → ℕ} {μ : �
     ((hsize.rpow ha).mono (mul_comm μ a).le).add ((isBigOPow_const 1).mono (mul_nonneg ha hμ))
   exact hmodel.of_isBigO
     (isBigO_comp_add_one hG (fun s => Real.rpow_nonneg s.cast_nonneg a) size)
-
-/-- Substituting a size: if `G(s) = Õ(s^a)` and `size n = O(n^μ)` with `a, μ ≥ 0`, then
-`G(size n) = Õ(n^(a μ))`. The sizes need not tend to infinity. -/
-protected theorem IsPowPolylog.comp {G : ℕ → ℝ} {size : ℕ → ℕ} {μ : ℝ} (hG : IsPowPolylog G a)
-    (hsize : IsBigOPow (fun n => (size n : ℝ)) μ) (ha : 0 ≤ a) (hμ : 0 ≤ μ) :
-    IsPowPolylog (fun n => G (size n)) (a * μ) := by
-  obtain ⟨e, hG⟩ := hG
-  have hmain := (hsize.rpow ha).isPowPolylog.mul (hsize.isPowPolylog_log_natCast.pow e)
-  rw [zero_mul, add_zero, mul_comm μ a] at hmain
-  exact (hmain.add ((isPowPolylog_const 1).mono (mul_nonneg ha hμ))).of_isBigO
-    (isBigO_comp_add_one hG (fun s => mul_nonneg (Real.rpow_nonneg s.cast_nonneg a)
-      (pow_nonneg (Real.log_natCast_nonneg s) e)) size)
 
 /-- `n ^ a * (log n + 1) ^ e = Õ(n^a)`. -/
 theorem isPowPolylog_rpow_mul_log_add_one_pow (a : ℝ) (e : ℕ) :

@@ -126,10 +126,6 @@ and of the output, and as last argument the free pointer `fr`. All inputs and th
 cells: a routine clears what it needs cleared. The shared block starts at `fr`, the private block
 follows it. -/
 
-namespace Par
-
-end Par
-
 /-! ## The places and the sizes, as equations and inequalities -/
 
 /-- The places of the shared block: each area begins where the one before it ends. -/

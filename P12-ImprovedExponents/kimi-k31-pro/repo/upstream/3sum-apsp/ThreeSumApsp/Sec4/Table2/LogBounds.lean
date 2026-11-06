@@ -44,12 +44,6 @@ noncomputable def logThreeLo : ℝ := 1.0986122881
 /-- An upper bound on `ln 3 = 1.098612288668…`. -/
 noncomputable def logThreeHi : ℝ := 1.0986122892
 
-/-- A lower bound on `ln 10 = 2.302585092994…`. -/
-noncomputable def logTenLo : ℝ := 2.3025850922
-
-/-- An upper bound on `ln 10 = 2.302585092994…`. -/
-noncomputable def logTenHi : ℝ := 2.3025850938
-
 /-- The `x` with `θ = 2^k (1 + x)/(1 - x)`. It is small when `2^k` is near `θ`. -/
 noncomputable def seriesArg (k : ℤ) (θ : ℝ) : ℝ := (θ - 2 ^ k) / (θ + 2 ^ k)
 
@@ -68,7 +62,7 @@ noncomputable def logErr (k : ℤ) (n : ℕ) (θ : ℝ) : ℝ :=
 after unfolding the approximations of logarithms. -/
 macro "numerics" : tactic =>
   `(tactic| norm_num [logApprox, logErr, seriesArg, logTwoLo, logTwoHi, logThreeLo, logThreeHi,
-    logTenLo, logTenHi, Finset.sum_range_succ, rhoC])
+    Finset.sum_range_succ, rhoC])
 
 private lemma log_two_mem : Real.log 2 ∈ Set.Icc logTwoLo logTwoHi :=
   ⟨Real.log_two_gt_d9.le, Real.log_two_lt_d9.le⟩

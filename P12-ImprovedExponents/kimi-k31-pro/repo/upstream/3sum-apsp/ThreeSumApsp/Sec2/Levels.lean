@@ -240,18 +240,6 @@ private theorem outStrOf_outerLevel (r c : OuterStr L m)
     outStrOf Q hQ r c (outerLevel (innerSetO (outStrOf Q hQ r c)) h k) = .z (r k) (c k) := by
   rw [outerLevel_congr Q hQ (innerSetO_outStrOf Q hQ r c), outStrOf, glue_outerLevel]
 
-/-- The row of `outStrOf Q hQ r c` is `r`. -/
-@[simp]
-theorem rowO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    rowO (outStrOf Q hQ r c) h = r :=
-  funext fun k => congrArg OutVar.rowIndex (outStrOf_outerLevel Q hQ r c h k)
-
-/-- The column of `outStrOf Q hQ r c` is `c`. -/
-@[simp]
-theorem colO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    colO (outStrOf Q hQ r c) h = c :=
-  funext fun k => congrArg OutVar.colIndex (outStrOf_outerLevel Q hQ r c h k)
-
 variable {Q}
 
 /-- A left string with inner set `Q` is the string `leftStrOf` of its outer part and its inner

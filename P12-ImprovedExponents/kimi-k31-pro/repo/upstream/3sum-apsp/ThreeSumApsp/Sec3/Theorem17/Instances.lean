@@ -61,12 +61,6 @@ theorem pieceSize_pos (hD : 16 ≤ D) (hg1 : 1 ≤ g) : 0 < pieceSize D g :=
 private theorem pieceSize_le_sOf (hg1 : 1 ≤ g) : pieceSize D g ≤ sOf D :=
   Nat.ceil_le.mpr (div_le_self (Nat.cast_nonneg _) (by exact_mod_cast hg1))
 
-/-- Proof of Theorem 17, "pieces [...] of at most ⌈s/g⌉ vertices each": `|C_k| ≤ ⌈s/g⌉`, because the
-numbers of the vertices of the piece number `k` lie in `[k ⌈s/g⌉, (k + 1) ⌈s/g⌉)`. -/
-theorem card_piece_le (hD : 16 ≤ D) (hg1 : 1 ≤ g) (n k : ℕ) :
-    (piece n D g k).card ≤ pieceSize D g :=
-  Finset.univ.card_filter_div_eq_le (fun _ _ _ _ h => Fin.ext h) (pieceSize_pos hD hg1) k
-
 /-- Proof of Theorem 17: "so that h ≤ ⌈ng/s⌉". -/
 theorem numPieces_le (hD : 16 ≤ D) (hg1 : 1 ≤ g) :
     numPieces n D g ≤ ⌈(n : ℝ) * (g : ℝ) / (sOf D : ℝ)⌉₊ := by
@@ -242,33 +236,6 @@ theorem totalChunks_le (hD : 16 ≤ D) (hDn : D ≤ n) (hp : p ∈ primesInRange
 
 /-! ### The instances -/
 
-/-- Proof of Theorem 17: "middle part C_k × ℤ_p, of size at most sp ≤ D".  So each instance is an
-instance of Lop-AE-SparseTri(n, D). -/
-theorem middleAtMost_lopInstance (hD : 16 ≤ D) (hg1 : 1 ≤ g) (hp : p ∈ primesInRange D)
-    (ι : InstanceIndex p) : (T.lopInstance D g p ι).MiddleAtMost D := by
-  obtain ⟨-, -, hlt⟩ := mem_primesInRange.mp hp
-  have hsp : (sOf D : ℝ) * (p : ℝ) ≤ D :=
-    calc (sOf D : ℝ) * (p : ℝ) ≤ Real.sqrt D * Real.sqrt D :=
-          mul_le_mul (sOf_le_sqrt D) hlt.le (Nat.cast_nonneg p) (Real.sqrt_nonneg _)
-      _ = D := Real.mul_self_sqrt (Nat.cast_nonneg D)
-  calc Fintype.card ({c : Fin n // c ∈ piece n D g ι.2.2} × Fin p)
-      = (piece n D g ι.2.2).card * p := by
-        rw [Fintype.card_prod, Fintype.card_coe, Fintype.card_fin]
-    _ ≤ sOf D * p := Nat.mul_le_mul_right p
-        ((card_piece_le hD hg1 n ι.2.2).trans (pieceSize_le_sOf hg1))
-    _ ≤ D := by exact_mod_cast hsp
-
-/-- Proof of Theorem 17, "For each chunk 𝒬 ⊆ W_ϱ and each piece C_k": `(ϱ, j, k)` is the index of an
-instance exactly if `j` is the number of a chunk of `W_ϱ` and `k` the number of a piece. -/
-theorem mem_instanceIndices (ι : InstanceIndex p) :
-    ι ∈ T.instanceIndices D g p ↔
-      ι.2.1 < numChunks (T.residueClass p ι.1) (queryCap n D) ∧ ι.2.2 < numPieces n D g := by
-  obtain ⟨ϱ, j, k⟩ := ι
-  simp only [instanceIndices, Finset.mem_biUnion, Finset.mem_univ, true_and,
-    Finset.mem_image, Finset.mem_product, Finset.mem_range, Prod.mk.injEq, Prod.exists]
-  exact ⟨fun ⟨_, _, _, h, h1, h2, h3⟩ => by subst h1 h2 h3; exact h,
-    fun h => ⟨ϱ, j, k, h, rfl, rfl, rfl⟩⟩
-
 /-- There are as many instances as chunks times pieces. -/
 theorem card_instanceIndices (D g p : ℕ) :
     (T.instanceIndices D g p).card = T.totalChunks D p * numPieces n D g := by
@@ -312,44 +279,5 @@ theorem card_instanceIndices_le (hD : 16 ≤ D) (hDn : D ≤ n) (hg1 : 1 ≤ g)
     _ ≤ 4 * (n : ℝ) * (g : ℝ) := by linarith [hmain, hng, hsqrt]
 
 end TriangleInstance
-
-/-! ### The neighborhoods in an instance -/
-
-/-- Section 3.1, offline Set Disjointness: "the sets are the neighborhoods in M of the vertices of A
-and B".  The set of `a ∈ A`. -/
-def LopInstance.nbrA (I : LopInstance n) (a : Fin n) : Set I.M := {v | I.adjA a v}
-
-/-- Section 3.1, offline Set Disjointness: the set of `b ∈ B`. -/
-def LopInstance.nbrB (I : LopInstance n) (b : Fin n) : Set I.M := {v | I.adjB v b}
-
-/-- The graph of a function into `Fin p` has as many points as the domain. -/
-private theorem ncard_graph {α : Type} [Fintype α] (f : α → Fin p) :
-    {v : α × Fin p | v.2 = f v.1}.ncard = Fintype.card α := by
-  have h : {v : α × Fin p | v.2 = f v.1} = Set.range fun c : α => (c, f c) := by
-    ext ⟨c, σ⟩
-    simp [eq_comm]
-  rw [h, ← Set.image_univ, Set.ncard_image_of_injective _ fun c c' hc => congrArg Prod.fst hc,
-    Set.ncard_univ, Nat.card_eq_fintype_card]
-
-/-- Section 3.1, "The reductions below [...] produce at most n²/√D query pairs and sets of at most
-√D elements", and Remark 20, "every vertex of A has O(√D/g) neighbors in the middle part": in an
-instance of the reduction, a vertex of `A` or of `B` has exactly one neighbor `(c, σ)` for every
-`c ∈ C_k`, hence at most `⌈s/g⌉` neighbors.  (And `⌈s/g⌉ ≤ s ≤ √D`; for `g ≤ √D` also
-`⌈s/g⌉ ≤ 2√D/g`, `pieceSize_le_two_mul_sqrt_div`.) -/
-theorem TriangleInstance.ncard_nbr_lopInstance_le (T : TriangleInstance ℤ n) (hD : 16 ≤ D)
-    (hg1 : 1 ≤ g) (hp : p ≠ 0) (ι : InstanceIndex p) :
-    (∀ a, ((T.lopInstance D g p ι).nbrA a).ncard ≤ pieceSize D g) ∧
-    (∀ b, ((T.lopInstance D g p ι).nbrB b).ncard ≤ pieceSize D g) := by
-  -- The neighbors of a vertex are the graph of the function that sends `c` to its label.
-  have hgraph : ∀ (f : {c : Fin n // c ∈ piece n D g ι.2.2} → ℤ),
-      {v : {c : Fin n // c ∈ piece n D g ι.2.2} × Fin p |
-        ((v.2 : ℕ) : ℤ) ≡ f v.1 [ZMOD (p : ℤ)]}.ncard ≤ pieceSize D g := by
-    intro f
-    refine le_trans (le_of_eq ?_) (card_piece_le hD hg1 n ι.2.2)
-    rw [← Fintype.card_coe, ← ncard_graph fun c => resFin hp (f c)]
-    congr 1
-    ext v
-    exact modEq_iff_eq_resFin hp v.2 _
-  exact ⟨fun a => hgraph fun c => T.wAC a c + ((ι.1 : ℕ) : ℤ), fun b => hgraph fun c => -T.wBC b c⟩
 
 end ThreeSumApsp

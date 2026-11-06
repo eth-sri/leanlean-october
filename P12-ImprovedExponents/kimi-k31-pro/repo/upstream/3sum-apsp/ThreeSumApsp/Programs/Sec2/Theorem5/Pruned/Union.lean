@@ -89,17 +89,6 @@ def unionBody : Stmt :=
 
 /-! ## The invariant -/
 
-/-- What both loops keep: i and j numbers of the two lists have been taken; the list done has been
-written to pc; together with the merge of what is left it is the merge of the two lists; no cell
-outside the output has changed. -/
-structure UnionInv (μ μ' : ℕ → ℤ) (pc : ℕ) (la lb : List ℕ) (i j : ℕ) (done : List ℕ) : Prop where
-  hi : i ≤ la.length
-  hj : j ≤ lb.length
-  len_le : done.length ≤ i + j
-  merged : done ++ Spec.mergeUnion (la.drop i) (lb.drop j) = Spec.mergeUnion la lb
-  written : SegN μ' pc done
-  rest : SameOutside μ μ' pc (la.length + lb.length)
-
 variable {μ μ' : ℕ → ℤ} {pa pb pc : ℕ} {la lb : List ℕ} {i j : ℕ} {done : List ℕ}
 
 /-! ## The three bodies -/

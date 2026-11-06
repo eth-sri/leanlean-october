@@ -6,6 +6,9 @@ public import ImprovedExponents.Pipeline.Solved
 public import ImprovedExponents.Total.Explicit
 public import ImprovedExponents.Total.Uniform
 public import ImprovedExponents.Total.Lop
+public import ThreeSumApsp.Programs.Sec3.Theorem19.BruteForceClaim
+public import ThreeSumApsp.Programs.Sec3.Theorem19.ChooseBySize
+public import ThreeSumApsp.Programs.Sec3.Corollary15_16.CountAndDetect
 
 @[expose] public section
 
@@ -108,23 +111,9 @@ theorem explicitFrom_of_thinClaim_mid {ε γ q δ : ℝ} {σ e : ℚ}
   have hmin : min (min γ 1) ((σ : ℝ) - q) = min γ (σ - q) := by
     rw [min_assoc, min_eq_right (by linarith : (σ : ℝ) - q ≤ 1)]
   have hkey : (d : ℝ) * min (η : ℝ) (min (min γ 1 * (1 - η)) (1 / 2 - q * (1 - η)) - η)
-      = e * min (2 * (σ : ℝ) - 1) (min γ (σ - q) - (2 * (σ : ℝ) - 1)) :=
-    calc (d : ℝ) * min (η : ℝ) (min (min γ 1 * (1 - η)) (1 / 2 - q * (1 - η)) - η)
-        = min ((d : ℝ) * η)
-            ((d : ℝ) * (min (min γ 1 * (1 - η)) (1 / 2 - q * (1 - η)) - η)) :=
-          mul_min_of_nonneg _ _ hd0R.le
-      _ = min ((d : ℝ) * η) (min ((d : ℝ) * (min γ 1 * (1 - η)))
-            ((d : ℝ) * (1 / 2 - q * (1 - η))) - (d : ℝ) * η) := by
-          rw [mul_sub, mul_min_of_nonneg _ _ hd0R.le]
-      _ = min ((e : ℝ) * (2 * σ - 1))
-            (min ((e : ℝ) * min γ 1) ((e : ℝ) * (σ - q)) - (e : ℝ) * (2 * σ - 1)) := by
-          rw [h1, h2, h3]
-      _ = min ((e : ℝ) * (2 * σ - 1))
-            ((e : ℝ) * (min (min γ 1) (σ - q) - (2 * σ - 1))) := by
-          rw [← mul_min_of_nonneg _ _ he0.le, ← mul_sub]
-      _ = (e : ℝ) * min (2 * (σ : ℝ) - 1) (min (min γ 1) (σ - q) - (2 * (σ : ℝ) - 1)) :=
-          (mul_min_of_nonneg _ _ he0.le).symm
-      _ = e * min (2 * (σ : ℝ) - 1) (min γ (σ - q) - (2 * (σ : ℝ) - 1)) := by rw [hmin]
+      = e * min (2 * (σ : ℝ) - 1) (min γ (σ - q) - (2 * (σ : ℝ) - 1)) := by
+    rw [mul_min_of_nonneg _ _ hd0R.le, mul_sub, mul_min_of_nonneg _ _ hd0R.le, h1, h2, h3,
+      ← mul_min_of_nonneg _ _ he0.le, ← mul_sub, ← mul_min_of_nonneg _ _ he0.le, hmin]
   refine explicitFrom_mid M (D := paramDRat d.num.toNat d.den)
     (g := paramGRatOf d.num.toNat d.den η.num.toNat η.den) hd0R hη0R hη1R
     (le_min hγ zero_le_one) hq hδ0 (by rw [hdR]; linarith) (fun n => ?_) (fun n => ?_) hhost hlop

@@ -48,14 +48,6 @@ namespace ThreeSumApsp
 
 /-! ### Setting up -/
 
-/-- The hypotheses of Corollary 31 on its parameters: "Let c > 10 and 0 < θ < 0.9", and "ε <
-R_c(γ)". -/
-structure Admissible (c θ ε : ℝ) : Prop where
-  c_gt : 10 < c
-  θ_pos : 0 < θ
-  θ_lt : θ < 0.9
-  thin : ε < Rc c (gammaOf c θ)
-
 /-- With "L := ⌈cm⌉" (proof of Corollary 31) the hypothesis `L ≥ 10m` of Theorem 30 holds. -/
 theorem ten_mul_le_levelsOf {c : ℝ} (hc : 10 < c) (m : ℕ) : 10 * m ≤ levelsOf c m := by
   have h : ((10 * m : ℕ) : ℝ) ≤ c * m := by

@@ -46,9 +46,6 @@ theorem thinR_strictAntiOn {A : ℝ} (hA : 0 < A) : StrictAntiOn (thinR A) (Ici 
   refine div_lt_div_of_pos_left log_four_pos (thinR_den_pos hA hx) ?_
   linarith [mul_lt_mul_of_pos_right hxy log_four_pos]
 
-/-- `F(0) = 0`. -/
-@[simp] theorem savingF_zero (A : ℝ) : savingF A 0 = 0 := by simp [savingF]
-
 /-! ### The exponent `γ_Q` -/
 
 /-- `γ_Q(0) = 2/3`. -/

@@ -41,10 +41,4 @@ noncomputable def preBound31 (γ : ℝ) (N D₀ : ℕ) : ℝ :=
 /-- The bound on a query, D^q (log D + 1); the summand 1 makes it at least 1 at D = 1. -/
 noncomputable def queryBound31 (q : ℝ) (D₀ : ℕ) : ℝ := (D₀ : ℝ) ^ q * (Real.log D₀ + 1)
 
-section bounds
-
-variable {N D₀ : ℕ}
-
-end bounds
-
 end Light.Sec4

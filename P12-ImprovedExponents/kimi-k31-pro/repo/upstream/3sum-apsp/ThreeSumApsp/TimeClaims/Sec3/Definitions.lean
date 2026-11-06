@@ -183,25 +183,6 @@ def VW13_Theorem_4_3 (M : DetTimeModel) : Prop :=
     ∀ T : ℕ → ℝ → ℝ, M.exactTriangle T →
       M.convolution3SUM fun N u => E N * (1 + logU u) + Num N * T (size N) (c * u)
 
-/-- CITED.  [VW13, Theorem 3.3]: whether an instance with weights in `[−U, U]` has a negative
-triangle is decided by asking `O(log U)` times whether there is a zero triangle, each time after
-changing the weights, edge by edge, to numbers of absolute value `O(U)`; so a time `T(s)` for Exact
-Triangle gives the time `O(T(s) log U)`.  (The constant is taken at least 2 so that the new running
-time again satisfies `GoodTime`.) -/
-def VW13_Theorem_3_3 (M : DetTimeModel) : Prop :=
-  ∃ c C : ℝ, 1 ≤ c ∧ 2 ≤ C ∧ ∀ T : ℕ → ℝ → ℝ, GoodTime T → M.exactTriangle T →
-    M.negativeTriangle fun s U => C * (T s (c * U) * logU U)
-
-/-- CITED.  [VW18, Theorem 4.2]: from a running time for Negative Triangle that, divided by the
-number of vertices, is nondecreasing (`GoodTime`), one gets a running time for the (min,+)-product
-of two n × n matrices with entries in [−U, U], namely O(n² log U) times the time of Negative
-Triangle on n^{1/3} vertices per part with weights O(U). -/
-def VW18_Theorem_4_2 (M : DetTimeModel) : Prop :=
-  ∃ c C : ℝ, 1 ≤ c ∧ 0 ≤ C ∧ ∀ T' : ℕ → ℝ → ℝ, GoodTime T' → M.negativeTriangle T' →
-    ∃ T'' : ℕ → ℝ → ℝ, M.minPlusProduct T'' ∧
-      ∀ (n : ℕ) (U : ℝ), 1 ≤ n → 1 ≤ U →
-        T'' n U ≤ C * ((n : ℝ) ^ 2 * T' (cbrtCeil n) (c * U) * logU U)
-
 /-! ## Claims that are derived from the ones above -/
 
 /-- Exact Triangle is solved in time `K s^{3−δ} (log s + 1)^e (1 + log u)²` for ALL numbers `s ≥ 1`
@@ -230,29 +211,6 @@ def Theorem_21a (M : DetTimeModel) : Prop :=
     ∀ T : ℕ → ℝ → ℝ, M.exactTriangle T →
       ∃ T' : ℕ → ℝ → ℝ, M.threeSum T' ∧
         ∀ n : ℕ, 1 ≤ n → T' n ((n : ℝ) ^ κ) ≤ E n + Num n * T (size n) (mag n)
-
-/-- **Theorem 21(b)**, first half: "If a deterministic algorithm solves Exact
-Triangle on s vertices per part with weights of absolute value at most cU, for a suitable constant
-c, in time T(s) with T(s)/s nondecreasing, then the (min,+)-product of two n × n integer matrices
-with entries of absolute value at most U can be computed deterministically in O(n² T(n^{1/3}) log²
-U) time".  The paper's `T(s)` is `T s (c * U)`. -/
-def Theorem_21b_minPlus (M : DetTimeModel) : Prop :=
-  ∃ c C : ℝ, 1 ≤ c ∧ ∀ T : ℕ → ℝ → ℝ, GoodTime T → M.exactTriangle T →
-    ∃ T' : ℕ → ℝ → ℝ, M.minPlusProduct T' ∧
-      ∀ (n : ℕ) (U : ℝ), 1 ≤ n → 1 ≤ U →
-        T' n U ≤ C * ((n : ℝ) ^ 2 * T (cbrtCeil n) (c * U) * logU U ^ 2)
-
-/-- **Theorem 21(b)**, second half: "and APSP on directed n-vertex graphs with integer
-weights of absolute value at most n^ν and no negative cycles in O(n² T(n^{1/3}) log³ n) time".
-
-NOTE.  The printed hypothesis speaks of weights "at most cU" without saying what `U` is for APSP;
-here it is `U = n^{κ+1}`, with `κ` for ν, which bounds the entries during the repeated squaring. -/
-def Theorem_21b_apsp (M : DetTimeModel) : Prop :=
-  ∀ κ : ℝ, 0 ≤ κ → ∃ c C : ℝ, 1 ≤ c ∧ ∀ T : ℕ → ℝ → ℝ, GoodTime T → M.exactTriangle T →
-    ∃ T' : ℕ → ℝ → ℝ, M.apsp T' ∧
-      ∀ n : ℕ, 2 ≤ n →
-        T' n ((n : ℝ) ^ κ)
-          ≤ C * ((n : ℝ) ^ 2 * T (cbrtCeil n) (c * (n : ℝ) ^ (κ + 1)) * Real.log n ^ 3)
 
 /-! ## Bounds in `n` alone, along `u = n^κ` -/
 

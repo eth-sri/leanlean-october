@@ -32,12 +32,6 @@ open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4 ParamRoutines Ho
 
 /-! ## The thin product -/
 
-section thin
-
-variable {a b p q : ℕ}
-
-end thin
-
 /-! ## The reduction from Exact Triangle -/
 
 /-- The host that passes the true size of the middle part, for any parameter routines. -/

@@ -201,7 +201,7 @@ private theorem steps_hostRest {tD tG : ℕ → ℕ} (hD : Steps (fun θ => tD �
 
 /-- A bound `T` on the time of the solver that is monotone in the number of query pairs bounds its
 largest time on the instances of the host. -/
-private theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ}
+theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ}
     (hT : ∀ n D w w' : ℕ, 1 ≤ n → 1 ≤ D → w ≤ w' → (Tn [n, D, w] : ℝ) ≤ T n D w') {n D : ℕ}
     (hn : 1 ≤ n) (hD : 1 ≤ D) (cap : ℕ) : ((supTime Tn n D cap : ℕ) : ℝ) ≤ T n D cap := by
   obtain ⟨w, hw, hsup⟩ : ∃ w ∈ Finset.range (cap + 1),

@@ -154,35 +154,6 @@ def chi : Term → OutVar → ℤ
   | .P i j => zForm i j + z0Form
   | .P0 => z0Form
 
-/-- All 24 variables of the identity: the left, the right and the output variables. -/
-abbrev Var : Type := LeftVar ⊕ RightVar ⊕ OutVar
-
-/-- The polynomials in which Schönhage's identity is an identity. -/
-abbrev TriPoly : Type := MvPolynomial Var ℤ
-
-/-- A left variable, as a polynomial. -/
-noncomputable def polyL (s : LeftVar) : TriPoly := MvPolynomial.X (Sum.inl s)
-/-- A right variable, as a polynomial. -/
-noncomputable def polyR (t : RightVar) : TriPoly := MvPolynomial.X (Sum.inr (Sum.inl t))
-/-- An output variable, as a polynomial. -/
-noncomputable def polyO (z : OutVar) : TriPoly := MvPolynomial.X (Sum.inr (Sum.inr z))
-
-/-- A linear form in the left variables, as a polynomial. -/
-noncomputable def formL (f : LeftVar → ℤ) : TriPoly := ∑ s, MvPolynomial.C (f s) * polyL s
-/-- A linear form in the right variables, as a polynomial. -/
-noncomputable def formR (f : RightVar → ℤ) : TriPoly := ∑ t, MvPolynomial.C (f t) * polyR t
-
-/-- Section 2.2: "G := ∑_{i,j=1}^{3} x_i y_j z_ij + (∑_{i,j=1}^{2} p_ij q_ij) z₀". -/
-noncomputable def G : TriPoly :=
-  (∑ i : Fin 3, ∑ j : Fin 3, polyL (.x i) * polyR (.y j) * polyO (.z i j))
-    + (∑ i : Fin 2, ∑ j : Fin 2, polyL (.p i j) * polyR (.q i j)) * polyO .z0
-
-/-- Lemma 6: "E := ∑_{i,j=1}^{3} (x_i q̂_ij + p̂_ij y_j + p̂_ij q̂_ij) z_ij". -/
-noncomputable def E : TriPoly :=
-  ∑ i : Fin 3, ∑ j : Fin 3,
-    (polyL (.x i) * formR (qHat i j) + formL (pHat i j) * polyR (.y j)
-      + formL (pHat i j) * formR (qHat i j)) * polyO (.z i j)
-
 /-- Section 2.2: "We call the variables of the inner product, p, q, and z₀, inner". -/
 def LeftVar.IsInner : LeftVar → Prop
   | .x _ => False
@@ -336,15 +307,6 @@ def RightVar.outerIndex : RightVar → Fin 3
 def RightVar.innerIndex : RightVar → Fin 2 × Fin 2
   | .y _ => (0, 0)
   | .q i j => (i, j)
-/-- The first index `i` of an outer output variable `z_ij` (the value at `z₀` is never used). -/
-def OutVar.rowIndex : OutVar → Fin 3
-  | .z i _ => i
-  | .z0 => 0
-/-- The second index `j` of an outer output variable `z_ij` (the value at `z₀` is never used). -/
-def OutVar.colIndex : OutVar → Fin 3
-  | .z _ j => j
-  | .z0 => 0
-
 /-- A string of `L - m` outer left variables `x_{i₁} ⋯ x_{i_{L-m}}`, written as the string of its
 indices `i₁ ⋯ i_{L-m}`.  The same type is used for strings `y_{j₁} ⋯ y_{j_{L-m}}` of outer right
 variables.  Section 2.3.3: these strings index the `N₀` rows of an `N₀ × D` matrix and the `N₀`
@@ -389,14 +351,6 @@ def outerPartR {L m : ℕ} (v : RightStr L) (h : (innerSetR v).card = m) : Outer
 def innerPartR {L m : ℕ} (v : RightStr L) (h : (innerSetR v).card = m) : InnerStr m :=
   fun k => (v (innerLevel (innerSetR v) h k)).innerIndex
 
-/-- Section 2.3.3: "if the variables of w at the levels outside Q are z_{i₁j₁}, …, z_{i_{L-m}
-j_{L-m}}, in the order of the levels, then the row of w is the string x_{i₁} ⋯ x_{i_{L-m}}". -/
-def rowO {L m : ℕ} (w : OutStr L) (h : (innerSetO w).card = m) : OuterStr L m :=
-  fun k => (w (outerLevel (innerSetO w) h k)).rowIndex
-/-- Section 2.3.3: "and its column is the string y_{j₁} ⋯ y_{j_{L-m}}". -/
-def colO {L m : ℕ} (w : OutStr L) (h : (innerSetO w).card = m) : OuterStr L m :=
-  fun k => (w (outerLevel (innerSetO w) h k)).colIndex
-
 /-- An `N₀ × D` matrix, its rows and columns indexed by strings as in Section 2.3.3. -/
 abbrev LeftMat (L m : ℕ) : Type := Matrix (OuterStr L m) (InnerStr m) ℤ
 /-- A `D × N₀` matrix, its rows and columns indexed by strings as in Section 2.3.3. -/
@@ -432,21 +386,6 @@ def encodingL {L : ℕ} (a : LeftStr L → ℤ) : Leaf L → ℤ := fun τ => Ph
 def encodingR {L : ℕ} (b : RightStr L → ℤ) : Leaf L → ℤ := fun τ => Psi τ b
 
 /-! ### 2.4.2 Skipping the calls that are not needed -/
-
-/-- Section 2.4.2: "for a set S of output strings and an output variable z, the slice S_z is the set
-of output strings w' with z w' ∈ S". -/
-def sliceSet {n : ℕ} (S : Finset (OutStr (n + 1))) (z : OutVar) : Finset (OutStr n) :=
-  univ.filter fun w' => (Fin.cons z w' : OutStr (n + 1)) ∈ S
-
-/-- Section 2.4.2: "an array on S assigns an integer to each string of S".  We write such an array
-as a function on all output strings that is 0 outside `S`; this restricts an array to `S`. -/
-def restrictTo {n : ℕ} (S : Finset (OutStr n)) (c : OutStr n → ℤ) : OutStr n → ℤ :=
-  fun w => if w ∈ S then c w else 0
-
-/-- Section 2.4.2: "For a set U of output strings of length L, we write Leaves(U) for the set of
-leaves that contribute to some output string of U." -/
-def Leaves {L : ℕ} (U : Finset (OutStr L)) : Finset (Leaf L) :=
-  univ.filter fun τ => ∃ w ∈ U, Leaf.Contributes τ w
 
 /-! ### 2.4.3 Few leaves contribute to a sparse set of entries -/
 
@@ -508,50 +447,6 @@ A hypothesis that is not in the printed text is marked NOTE in the docstring. A 
 printed text that is not needed (such as m ≥ 1, Section 2.3.3) is left out without a mark.
 -/
 
-section Sec2Statements
-
-open Finset
-
-namespace PaperStatements
-
-open ThreeSumApsp
-
-/-! ### 2.1 Strassen's recursive algorithm -/
-
-/-! ### 2.2 Schönhage's identity for an inner product and an outer product -/
-
-/-! ### 2.3.1 The recursion -/
-
-/-! ### 2.3.2 Unraveling the recursion computation -/
-
-/-! ### 2.3.3 Batch computation of multiple matrix products -/
-
-/-! ### 2.4.2 Skipping the calls that are not needed -/
-
-/-! ### 2.4.3 Few leaves contribute to a sparse set of entries -/
-
-/-- **Lemma 11**, both inequalities together.  "For every set U of output strings whose inner
-sets have exactly m elements, |Leaves(U)| ≤ ∑_{d=0}^{m} min{|U| α_d, β_d}, and if L = 19m,
-then |Leaves(U)| ≤ 2^{-m/9} (2^m |U| + 2M)." -/
-def Lemma_11 : Prop :=
-  ∀ {L m : ℕ} (U : Finset (OutStr L)), (∀ w ∈ U, (innerSetO w).card = m) →
-    (Leaves U).card ≤ ∑ d ∈ range (m + 1), min (U.card * alpha m d) (beta L m d)
-      ∧ (L = 19 * m →
-          ((Leaves U).card : ℝ)
-            ≤ (2 : ℝ) ^ (-(m : ℝ) / 9) * ((2 : ℝ) ^ m * (U.card : ℝ) + 2 * (M L m : ℝ)))
-
-/-! ### 2.4.4 Proof of Theorem 5 -/
-
-/-- **Equation (6)**, the second consequence of `N ≥ D^18`: "10^L ≤ 2^{-m/9} N N₀", for
-`L = 19m`. -/
-def Eq_6 : Prop :=
-  ∀ m N : ℕ, D m ^ 18 ≤ N →
-    (10 : ℝ) ^ (19 * m) ≤ (2 : ℝ) ^ (-(m : ℝ) / 9) * (N : ℝ) * (N0 (19 * m) m : ℝ)
-
-end PaperStatements
-
-end Sec2Statements
-
 /-!
 ## Section 3: definitions
 
@@ -578,61 +473,6 @@ namespace ThreeSumApsp
 
 /-! ### 3.1 The Lopsided All-Edges Sparse Triangle problem -/
 
-/-- **Definition 13**, the input: "an unweighted undirected tripartite graph with two parts
-A and B of n vertices each and a middle part M [...], with arbitrary edges in M × A and M × B.  Let
-W ⊆ A × B be the set of edges between A and B."  The bound "of at most D vertices" on the middle
-part is `LopInstance.MiddleAtMost`. -/
-structure LopInstance (n : ℕ) where
-  /-- The middle part `M`. -/
-  M : Type
-  /-- The middle part is finite. -/
-  [fintypeM : Fintype M]
-  /-- `adjA a v`: the vertex `a ∈ A` and the middle vertex `v ∈ M` are adjacent. -/
-  adjA : Fin n → M → Prop
-  /-- `adjB v b`: the middle vertex `v ∈ M` and the vertex `b ∈ B` are adjacent. -/
-  adjB : M → Fin n → Prop
-  /-- The set `W ⊆ A × B` of edges between `A` and `B`; Section 3.1 calls its elements the query
-  pairs. -/
-  W : Finset (Fin n × Fin n)
-
-attribute [instance] LopInstance.fintypeM
-
-/-- Definition 13: "a middle part M of at most D vertices".  An instance of Lop-AE-SparseTri(n, D),
-and of #Lop-AE-SparseTri(n, D), is an `I : LopInstance n` with `I.MiddleAtMost D`. -/
-def LopInstance.MiddleAtMost {n : ℕ} (I : LopInstance n) (D : ℕ) : Prop :=
-  Fintype.card I.M ≤ D
-
-/-- Definitions 13 and 14: the common neighbors of `a` and `b` in `M`. -/
-def LopInstance.commonNeighbors {n : ℕ} (I : LopInstance n) (a b : Fin n) : Set I.M :=
-  {v | I.adjA a v ∧ I.adjB v b}
-
-/-- Definition 13: the pair `(a, b)` "lies in a triangle with some vertex of M, that is, [...] a and
-b have a common neighbor in M". -/
-def LopInstance.InTriangle {n : ℕ} (I : LopInstance n) (a b : Fin n) : Prop :=
-  ∃ v : I.M, I.adjA a v ∧ I.adjB v b
-
-/-- **Definition 14**: "the number of triangles it lies in, that is, the number of common
-neighbors of a and b in M". -/
-noncomputable def LopInstance.numTriangles {n : ℕ} (I : LopInstance n) (a b : Fin n) : ℕ :=
-  (I.commonNeighbors a b).ncard
-
-/-- **Definition 13**, the task: "Decide, for every edge (a, b) ∈ W, whether it lies in a triangle
-with some vertex of M".  `ans` is a correct answer to the instance `I` of Lop-AE-SparseTri; its
-values outside `W` are not constrained. -/
-def LopInstance.IsDetectionAnswer {n : ℕ} (I : LopInstance n) (ans : Fin n × Fin n → Bool) : Prop :=
-  ∀ q ∈ I.W, (ans q = true ↔ I.InTriangle q.1 q.2)
-
-/-- Footnote 8, Section 3.1: "An instance of #Lop-AE-SparseTri(n,D) asks for the wanted entries of a
-thin matrix product of two 0/1 matrices."  This is the instance that two matrices and a set `W` of
-positions describe: the middle part is the set of the `D` column indices of `X`, and adjacency means
-that the entry is 1. -/
-def LopInstance.ofMatrices {n D : ℕ} (X : Matrix (Fin n) (Fin D) ℤ) (Y : Matrix (Fin D) (Fin n) ℤ)
-    (W : Finset (Fin n × Fin n)) : LopInstance n where
-  M := Fin D
-  adjA a v := X a v = 1
-  adjB v b := Y v b = 1
-  W := W
-
 /-! #### Cutting a set of pairs into sets of bounded size
 
 Corollary 15 ("splitting W into sets of at most n²/√D query pairs") and the proof of Theorem 17
@@ -641,15 +481,6 @@ does not say how; we cut along the row-major order of the pairs. -/
 
 /-- The position of the pair `(a, b)` in the row-major order of `A × B`. -/
 def pairIndex {n : ℕ} (q : Fin n × Fin n) : ℕ := q.1.val * n + q.2.val
-
-/-- The number of pairs of `S` that come before `q` in row-major order. -/
-def rankIn {n : ℕ} (S : Finset (Fin n × Fin n)) (q : Fin n × Fin n) : ℕ :=
-  (S.filter fun r => pairIndex r < pairIndex q).card
-
-/-- The `j`-th chunk (`j = 0, 1, …`) of `S` when `S` is cut, in row-major order, into chunks of
-`cap` pairs each (the last one may be smaller). -/
-def chunk {n : ℕ} (S : Finset (Fin n × Fin n)) (cap j : ℕ) : Finset (Fin n × Fin n) :=
-  S.filter fun q => rankIn S q / cap = j
 
 /-- The number `⌈|S| / cap⌉` of nonempty chunks of `S` (for `cap ≥ 1`). -/
 noncomputable def numChunks {n : ℕ} (S : Finset (Fin n × Fin n)) (cap : ℕ) : ℕ :=
@@ -689,23 +520,11 @@ def IsZeroTriangle {R : Type} [Add R] [Zero R] {n : ℕ} (T : TriangleInstance R
 def HasZeroTriangle {R : Type} [Add R] [Zero R] {n : ℕ} (T : TriangleInstance R n) : Prop :=
   ∃ a b c : Fin n, T.IsZeroTriangle a b c
 
-/-- Every weight has absolute value at most `U`. -/
-def WeightsBoundedBy {R : Type} [Lattice R] [AddGroup R] {n : ℕ} (T : TriangleInstance R n)
-    (U : R) : Prop :=
-  (∀ a b, |T.wAB a b| ≤ U) ∧ (∀ b c, |T.wBC b c| ≤ U) ∧ (∀ a c, |T.wAC a c| ≤ U)
-
 /-- Section 3.2: "with |w(e)| ≤ n^ν for some constant ν ≥ 1".  `κ`, the paper's ν, is a real
 number. -/
 def WeightsPolyBounded {n : ℕ} (T : TriangleInstance ℤ n) (κ : ℝ) : Prop :=
   (∀ a b, ((|T.wAB a b| : ℤ) : ℝ) ≤ (n : ℝ) ^ κ) ∧ (∀ b c, ((|T.wBC b c| : ℤ) : ℝ) ≤ (n : ℝ) ^ κ) ∧
     (∀ a c, ((|T.wAC a c| : ℤ) : ℝ) ≤ (n : ℝ) ^ κ)
-
-/-- A correct answer to the search version, Section 3.2: "the search version, which asks the
-algorithm to find a zero triangle if one exists".  `some (a, b, c)` must be a zero triangle, and
-`none` means that there is none. -/
-def IsSearchAnswer {R : Type} [Add R] [Zero R] {n : ℕ} (T : TriangleInstance R n)
-    (r : Option (Fin n × Fin n × Fin n)) : Prop :=
-  (∀ a b c, r = some (a, b, c) → T.IsZeroTriangle a b c) ∧ (r = none → ¬ T.HasZeroTriangle)
 
 end TriangleInstance
 
@@ -739,12 +558,6 @@ noncomputable def sOf (D : ℕ) : ℕ := ⌊Real.sqrt D⌋₊
 /-- Proof of Theorem 17: the bound "⌈s/g⌉" on the number of vertices of a piece. -/
 noncomputable def pieceSize (D g : ℕ) : ℕ := ⌈(sOf D : ℝ) / (g : ℝ)⌉₊
 
-/-- Proof of Theorem 17: "split C into pieces C₁, …, C_h of at most ⌈s/g⌉ vertices each".  The paper
-does not say how; we take blocks of `⌈s/g⌉` consecutive vertices.  `piece n D g k` is the paper's
-`C_{k+1}`. -/
-noncomputable def piece (n D g k : ℕ) : Finset (Fin n) :=
-  Finset.univ.filter fun c : Fin n => c.val / pieceSize D g = k
-
 /-- Proof of Theorem 17: the number `h` of pieces, `⌈n / ⌈s/g⌉⌉` for the blocks of `piece`
 (meaningful when `⌈s/g⌉ ≥ 1`). -/
 noncomputable def numPieces (n D g : ℕ) : ℕ := ⌈(n : ℝ) / (pieceSize D g : ℝ)⌉₊
@@ -760,24 +573,6 @@ p)". -/
 def residueClass {n : ℕ} (T : TriangleInstance ℤ n) (p : ℕ) (ϱ : Fin p) : Finset (Fin n × Fin n) :=
   Finset.univ.filter fun q : Fin n × Fin n => T.wAB q.1 q.2 ≡ ((ϱ : ℕ) : ℤ) [ZMOD (p : ℤ)]
 
-/-- Proof of Theorem 17: "and cut it into chunks of at most n²/√D query pairs".  The `j`-th chunk of
-`W_ϱ`. -/
-noncomputable def chunkOf {n : ℕ} (T : TriangleInstance ℤ n) (D p : ℕ) (ϱ : Fin p) (j : ℕ) :
-    Finset (Fin n × Fin n) :=
-  chunk (T.residueClass p ϱ) (queryCap n D) j
-
-/-- Proof of Theorem 17: "For each chunk 𝒬 ⊆ W_ϱ and each piece C_k form the instance of
-Lop-AE-SparseTri(n, D) with query pairs W := 𝒬 and middle part C_k × ℤ_p [...], whose middle
-vertices are pairs (vertex, label) [...], with a ∼ (c, σ) ⟺ σ ≡ w(a,c) + ϱ,   (c, σ) ∼ b ⟺ σ ≡
-−w(b,c)   (mod p)." -/
-noncomputable def lopInstance {n : ℕ} (T : TriangleInstance ℤ n) (D g p : ℕ) :
-    InstanceIndex p → LopInstance n
-  | (ϱ, j, k) =>
-    { M := {c : Fin n // c ∈ piece n D g k} × Fin p
-      adjA := fun a (c, σ) => ((σ : ℕ) : ℤ) ≡ T.wAC a c + ((ϱ : ℕ) : ℤ) [ZMOD (p : ℤ)]
-      adjB := fun (c, σ) b => ((σ : ℕ) : ℤ) ≡ -T.wBC b c [ZMOD (p : ℤ)]
-      W := T.chunkOf D p ϱ j }
-
 /-- Proof of Theorem 17: "For each chunk 𝒬 ⊆ W_ϱ and each piece C_k" there is an instance; these
 are the indices of all the instances. This set depends only on the Exact Triangle instance and on
 `D`, `g`, `p`, not on any answer of the oracle. -/
@@ -786,42 +581,6 @@ noncomputable def instanceIndices {n : ℕ} (T : TriangleInstance ℤ n) (D g p 
   Finset.univ.biUnion fun ϱ : Fin p =>
     ((Finset.range (numChunks (T.residueClass p ϱ) (queryCap n D))) ×ˢ
       (Finset.range (numPieces n D g))).image fun jk => (ϱ, jk)
-
-/-! #### Witnesses (proof of Theorem 17) -/
-
-/-- Proof of Theorem 17: "scan the piece C_k of its instance for a c with S(a,b,c) = 0".  The
-vertices of the piece are tried in increasing order; the result is the first `c` found, or `none` if
-the scan fails. -/
-noncomputable def scanPiece {n : ℕ} (T : TriangleInstance ℤ n) (D g k : ℕ) (a b : Fin n) :
-    Option (Fin n) :=
-  ((List.finRange n).filter fun c => c ∈ piece n D g k).find? fun c => T.S a b c = 0
-
-/-- Proof of Theorem 17: "For every query pair that the oracle accepts".  `ans ι` is the oracle's
-answer to the instance with index `ι`.  The result is the set of all (instance, query pair of that
-instance) that the oracle accepts; each of them calls for one scan. -/
-noncomputable def acceptedPairs {n : ℕ} (T : TriangleInstance ℤ n) (D g p : ℕ)
-    (ans : InstanceIndex p → Fin n × Fin n → Bool) : Finset (InstanceIndex p × (Fin n × Fin n)) :=
-  ((T.instanceIndices D g p) ×ˢ Finset.univ).filter fun (ι, q) =>
-    q ∈ (T.lopInstance D g p ι).W ∧ ans ι q = true
-
-/-- Proof of Theorem 17: the scans, one after the other, over a list of accepted pairs: "We stop as
-soon as a zero triangle is found."  The result is the triangle found (or `none`) together with the
-number of scans that were carried out. -/
-noncomputable def runScans {n : ℕ} (T : TriangleInstance ℤ n) (D g : ℕ) {p : ℕ} :
-    List (InstanceIndex p × (Fin n × Fin n)) → Option (Fin n × Fin n × Fin n) × ℕ
-  | [] => (none, 0)
-  | ((_, _, k), a, b) :: rest =>
-    match T.scanPiece D g k a b with
-    | some c => (some (a, b, c), 1)
-    | none => ((runScans T D g rest).1, (runScans T D g rest).2 + 1)
-
-/-- Proof of Theorem 17: "For every query pair that the oracle accepts, scan [...]".  The paper does
-not say in which order.  `L` is an order of the scans: a list in which every accepted pair occurs
-exactly once. -/
-def IsScanOrder {n : ℕ} (T : TriangleInstance ℤ n) (D g p : ℕ)
-    (ans : InstanceIndex p → Fin n × Fin n → Bool) (L : List (InstanceIndex p × (Fin n × Fin n))) :
-    Prop :=
-  L.Nodup ∧ ∀ x, x ∈ L ↔ x ∈ T.acceptedPairs D g p ans
 
 end TriangleInstance
 
@@ -898,15 +657,6 @@ def minPlusSquares {R : Type} [Add R] [Zero R] [LinearOrder R] {n : ℕ}
   | t + 1 => minPlus (minPlusSquares w t) (minPlusSquares w t)
 
 /-! #### The shape of the two reductions of [VW13] that Theorem 21 cites -/
-
-/-- The instance on the same vertices obtained from `T` by applying one function to every weight
-`w(a,b)`, one to every `w(b,c)` and one to every `w(a,c)`. -/
-def TriangleInstance.mapWeights {n : ℕ} (T : TriangleInstance ℤ n) :
-    (ℤ → ℤ) × (ℤ → ℤ) × (ℤ → ℤ) → TriangleInstance ℤ n
-  | (fAB, fBC, fAC) =>
-    { wAB := fun a b => fAB (T.wAB a b)
-      wBC := fun b c => fBC (T.wBC b c)
-      wAC := fun a c => fAC (T.wAC a c) }
 
 /-- A rule that says where each edge weight of a triangle instance on `t` vertices per part is
 copied from, given an input `x₀, …, x_{N−1}`: `some (false, i)` stands for `x_i`, `some (true, i)`
@@ -1179,21 +929,6 @@ of absolute value at most `U`.  Each is read at length `8 * mPar n (2 * U) ^ 2`.
 def instances (n U : ℕ) (x : Fin n → ℤ) : List (ℕ → ℤ) :=
   (allNodes n U x).map fun ν => ν.oneArray (2 * U)
 
-/-- **The count for the searches.**  Each node runs two searches, each search tries at most the
-primes up to `m = mPar n (2 * U)`, and a trial can be decided from one remainder for each element of
-the node's three sets (the library's lemma `ChanHe.coll_eq_sum`).  This is the total number of pairs
-(candidate prime, element) if every search runs through all its candidates.  The definitions above
-do not compute collision counts in this way (`coll` runs through all ordered pairs); the count is
-for a program that would.
-
-It is a count that we define, not a running time that we derive.  Each remainder counts as one,
-whatever the size of the numbers.  The count leaves out the sieve for the primes, the sorting or
-counting of the remainders, the acceptance tests of the searches, the extraction of the heavy
-elements, the splitting of the input, the counting of repeated values, the computation of the
-parameters, and the writing of the arrays. -/
-def scanPairs (n U : ℕ) (x : Fin n → ℤ) : ℕ :=
-  ((allNodes n U x).map fun ν => 2 * #(Nat.primesLE (mPar n (2 * U))) * (#ν.S₁ + #ν.S₂ + #ν.S₃)).sum
-
 /-! ### Sizes for inputs of absolute value at most n ^ κ -/
 
 /-- The common length of the instances made from `n` numbers of absolute value at most `n ^ κ`. -/
@@ -1247,123 +982,6 @@ Hypotheses that are added or changed are marked NOTE and listed in `docs/REMARKS
 differences".  Lower bounds that only exclude empty or degenerate cases (`1 ≤ N`, `1 ≤ U`, `0 ≤ U`,
 `2 ≤ n`, `0 ≤ κ`, `0 ≤ τ` in the statements for Theorem 21) carry no NOTE.
 -/
-
-section Sec3Statements
-
-namespace PaperStatements
-
-open ThreeSumApsp
-
-/-! ### 3.2 A deterministic reduction from Exact Triangle to Lop-AE-SparseTri -/
-
-/-! #### Theorem 17, first step: hashing modulo a prime -/
-
-/-- Proof of Theorem 17: "each of them O(p²) word operations, so n^{ω+o(1)} D^{3/2} time over the
-fewer than √D primes in the range": the sum of `p²` over the primes in the range is at most
-`D^{3/2}`.  Only this sum is stated.  That the counts are read off a product of matrices over
-ℤ[x]/(x^p − 1) (proof of Theorem 17) is a lemma of the library. -/
-def Theorem_17_hashing_sum_sq_le : Prop :=
-  ∀ D : ℕ, 16 ≤ D →
-    ((∑ p ∈ primesInRange D, p ^ 2 : ℕ) : ℝ) ≤ (D : ℝ) ^ (3 / 2 : ℝ)
-
-/-! #### Theorem 17, second step: the instances -/
-
-/-! #### Theorem 17, third step: witnesses -/
-
-/-- **Theorem 17** (Exact Triangle to Lop-AE-SparseTri, deterministically), everything
-except the running time: "Let 16 ≤ D ≤ n, and let 1 ≤ g ≤ √D be an integer.  Exact Triangle on n
-vertices per part with weights of absolute value at most n^ν reduces deterministically to at most
-4ng instances of Lop-AE-SparseTri(n, D), each with at most n²/√D query pairs [...].  The reduction
-is non-adaptive: it produces all the instances before it makes any oracle call".
-
-The reduction is defined step by step as in the proof: a selected prime `p`, the instances
-`T.lopInstance D g p ι` for `ι ∈ T.instanceIndices D g p`, and the scans `T.runScans D g L` of the
-accepted pairs in any order `L`.  Non-adaptivity is visible in the statement: the instances do not
-depend on `ans`.  The answer is that of the search version (Section 3.2): a zero triangle, or the
-report that there is none.  The last clause bounds the number of scans times the size of a piece, an
-upper bound on the number of triples that the scans look at; this count is behind the term
-`O(ν n³ log n/g)` of the additional time (`κ` is the paper's ν).  Its constant `C` depends on
-nothing. Arithmetic behind the other two terms is in `theorem_17_hashing_sum_sq_le` and
-`theorem_17_write_cost`.  For the time itself see `docs/REMARKS.md`, "Section 3: running times".
-
-NOTE.  The paper does not say that `D` is an integer; here it is a natural number, as in every use
-of the theorem, and the bound on the number of chunks uses this (see the library's lemma
-`TriangleInstance.totalChunks_le`). -/
-def Theorem_17 : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧ ∀ {n D g : ℕ} {κ : ℝ}, 16 ≤ D → D ≤ n → 1 ≤ g → (g : ℝ) ≤ Real.sqrt D → 1 ≤ κ →
-  ∀ T : TriangleInstance ℤ n, T.WeightsPolyBounded κ →
-  (∃ p, T.IsSelectedPrime D p) ∧
-  ∀ p, T.IsSelectedPrime D p →
-    ((T.instanceIndices D g p).card : ℝ) ≤ 4 * (n : ℝ) * (g : ℝ) ∧
-    (∀ ι ∈ T.instanceIndices D g p, (T.lopInstance D g p ι).MiddleAtMost D ∧
-      ((T.lopInstance D g p ι).W.card : ℝ) ≤ (n : ℝ) ^ 2 / Real.sqrt D) ∧
-    ∀ ans : InstanceIndex p → Fin n × Fin n → Bool,
-      (∀ ι ∈ T.instanceIndices D g p, (T.lopInstance D g p ι).IsDetectionAnswer (ans ι)) →
-      ∀ L : List (InstanceIndex p × (Fin n × Fin n)), T.IsScanOrder D g p ans L →
-        T.IsSearchAnswer (T.runScans D g L).1 ∧
-        ((T.runScans D g L).2 : ℝ) * (pieceSize D g : ℝ)
-          ≤ C * (κ * (n : ℝ) ^ 3 * Real.log n / (g : ℝ))
-
-/-- **Remark 18**: "With residues in place of their intervals, the block C_k × {−j} of our
-instance for ϱ and C_k is their graph G_{−ϱ−j,j,ϱ}, and our instance puts the p graphs with the same
-ϱ side by side."  The half of the sentence that is about our instance: a middle vertex `(c, σ)` with
-`σ ≡ −j` is adjacent to `a` exactly if `w(a,c) ≡ −ϱ − j` and to `b` exactly if `w(b,c) ≡ j`, while
-the query pairs have `w(a,b) ≡ ϱ`; these three residues, in this order, are the index of the graph.
-The instance has the index `(ϱ, i, k)`: residue, chunk, piece.  The comparison with the graphs of
-[VX20] is not formalized. -/
-def Remark_18_block : Prop :=
-  ∀ {n D g p : ℕ} (T : TriangleInstance ℤ n) (ϱ : Fin p) (i k : ℕ)
-    (c : {c : Fin n // c ∈ piece n D g k}) (σ : Fin p) (j : ℤ),
-  ((σ : ℕ) : ℤ) ≡ -j [ZMOD (p : ℤ)] →
-    (∀ a, (T.lopInstance D g p (ϱ, i, k)).adjA a (c, σ) ↔
-      T.wAC a c ≡ -((ϱ : ℕ) : ℤ) - j [ZMOD (p : ℤ)]) ∧
-    (∀ b, (T.lopInstance D g p (ϱ, i, k)).adjB (c, σ) b ↔ T.wBC b c ≡ j [ZMOD (p : ℤ)]) ∧
-    (∀ q ∈ (T.lopInstance D g p (ϱ, i, k)).W, T.wAB q.1 q.2 ≡ ((ϱ : ℕ) : ℤ) [ZMOD (p : ℤ)])
-
-/-! ### 3.3 Exact Triangle in truly subcubic time
-
-Theorem 19 is a statement about running time: `Items.Theorem_19`.
-Stated here: Remark 20. -/
-
-/-! ### 3.4 3SUM and APSP reduce to Exact Triangle
-
-Theorem 22 is a statement about running time (`Items.Theorem_22_first`, `Items.Theorem_22_second`,
-`Items.Theorem_22_threeSum`).  Theorem 21 is cited from the literature, part (a) from [CH20, VW13]
-and part (b) from [VW10, VW18, VW13], and the paper gives no proof.  The route taken here:
-
-* for (a), from 3SUM to Convolution-3SUM [CH20, Theorem 5.1], and from there to Exact Triangle
-  [VW13, Theorem 4.3];
-* for (b), from Negative Triangle to Exact Triangle [VW13, Theorem 3.3], from the (min,+)-product to
-  Negative Triangle [VW18, Theorem 4.2], and from APSP to the (min,+)-product by repeated squaring.
-
-Stated here: the parts of this route that are mathematics, among them the combinatorial content of
-the two reductions of [VW13]. -/
-
-/-! #### Theorem 21(a): the reduction from 3SUM to Convolution-3SUM, after Chan and He
-
-The first step towards Theorem 21(a), after [CH20, Theorem 5.1]: from n integers bounded by a power
-of n, a deterministic reduction computes polylogarithmically many arrays of length Õ(n), whose
-entries are again bounded by a power of n, in Õ(n^{3/2}) time; three of the integers sum to 0
-exactly if one of the arrays is a yes-instance of Convolution-3SUM.
-
-The namespace `ChanHe` defines a reduction of this kind, as a function from inputs to lists of
-instances, in two versions: `ChanHe.reduction` for three sets and three arrays, and
-`ChanHe.instances` for n numbers and one array.  Nothing is stated here about `ChanHe.reduction`.
-
-Nothing here is about a machine. That the functions can be evaluated deterministically in n^(3/2)
-polylog n time on a word RAM is not stated. Theorem 5.1 of [CH20] as printed is a statement about
-running times, so it is not stated here. The easy converse reduction, from Convolution-3SUM to
-3SUM, is not treated. -/
-
-section ChanHe
-
-open Finset
-
-end ChanHe
-
-end PaperStatements
-
-end Sec3Statements
 
 /-!
 ## Section 4: definitions
@@ -1562,20 +1180,8 @@ def padInnerRows {N D₀ : ℕ} (D' : ℕ) (Y : Matrix (Fin D₀) (Fin N) ℤ) :
 logarithms)". (Lean's `Real.log 0 = 0` gives `H(0) = H(1) = 0`, the usual convention.) -/
 noncomputable def entropy (θ : ℝ) : ℝ := -θ * Real.log θ - (1 - θ) * Real.log (1 - θ)
 
-/-- The denominator of equation (11), which the paper calls `ln Λ`:
-`c ln 10 - (1/2) c H(1/c) - (c - 1) ln 3 + γ ln 4`, where "Λ := 10^c e^{-(1/2) c H(1/c)} 3^{-(c-1)}
-4^γ" (Section 4.4). -/
-noncomputable def lnΛ (c γ : ℝ) : ℝ :=
-  c * Real.log 10 - (1 / 2) * c * entropy (1 / c) - (c - 1) * Real.log 3 + γ * Real.log 4
-
-/-- Equation (11): "R_c(γ) := ln 4 / ln Λ". -/
-noncomputable def Rc (c γ : ℝ) : ℝ := Real.log 4 / lnΛ c γ
-
 /-- Corollary 31: "ρ_c := 9/(c - 1)". -/
 noncomputable def rhoC (c : ℝ) : ℝ := 9 / (c - 1)
-
-/-- Corollary 31: "γ := θ ln(1/ρ_c) / ln 4". -/
-noncomputable def gammaOf (c θ : ℝ) : ℝ := θ * Real.log (1 / rhoC c) / Real.log 4
 
 /-- Corollary 31: "q := (H(θ) + θ ln 9) / ln 4". -/
 noncomputable def qOf (θ : ℝ) : ℝ := (entropy θ + θ * Real.log 9) / Real.log 4
@@ -1626,43 +1232,6 @@ on Table 2, `Table_1_section_2_column` and `Corollary_26_W` come at the end.
   quantifiers, and the docstring says how the sentence was read.
 -/
 
-section Sec4Statements
-
-open Finset
-
-namespace PaperStatements
-
-open ThreeSumApsp
-
-/-! ### 4.2 Boxes -/
-
-/-! ### 4.3 The data structure, in terms of the parameters -/
-
-/-! #### The decay rate ρ and equation (7) -/
-
-/-! ### 4.4 Choosing the parameters -/
-
-/-! #### Corollary 31: the clauses that are not about time -/
-
-/-! #### Corollary 32 -/
-
-/-! #### Table 2, and the column of Table 1 on Section 2 -/
-
-/-! ##### The six rows of Table 2
-
-Each statement has the numbers of a row in the order in which the paper prints them: the first line
-has `c`, `ε` and the left half, the second line the right half. It says that every entry is computed
-as Section 4.4 prescribes and is rounded down to four decimals, and that the `ε` of the row is below
-`R_c(γ)` at every entry and is rounded down to three decimals. By `Table_2_query_valid`,
-`Table_2_ninth_valid` and `Table_2_density_valid`, Corollary 31 or 32 then gives what the caption
-claims for the entry. -/
-
-/-! #### Corollary 26 -/
-
-end PaperStatements
-
-end Sec4Statements
-
 /-!
 ## Section 5: definitions
 
@@ -1683,170 +1252,6 @@ Conventions.
 * Definitions shared with Section 3 (`TriangleInstance`, `IsMinPlusProduct`, ...) and Section 4
   (`epsStar`, `padInnerCols`, `padInnerRows`) stand with the definitions of these sections.
 -/
-
-section Sec5Definitions
-
-open Finset
-
-namespace ThreeSumApsp
-
-/-! ### Blocks of consecutive rows and columns (used in 5.1, 5.2 and 5.4) -/
-
-/-! ### 5.2 Comparison counts -/
-
-namespace ComparisonCounts
-
-/-- Lemma 36: "A comparison count may have ≤ in place of <."  `Cmp.lt` is the version with `<`,
-`Cmp.le` the version with `≤`. -/
-inductive Cmp : Type
-  | lt
-  | le
-
-/-- Section 5.2, "Comparison counts": "We are given n row lists: for every r ∈ [n], a list R_r of at
-most d real numbers x, where each x ∈ R_r has a color χ(x) ∈ [d] associated with it.  Similarly, we
-are given n column lists: for every c ∈ [n], a list C_c of at most d real numbers y, each y ∈ C_c
-again with a color χ(y) ∈ [d]". An entry of a list is the pair (number, color).  The bound "at most
-d" is the separate predicate `Lists.Valid`.
-
-NOTE.  The color belongs to the entry (the place in the list), not to the real number: the same
-number may occur twice in a list, and the two occurrences are counted separately. -/
-structure Lists (n d : ℕ) : Type where
-  /-- the row lists R_r -/
-  row : Fin n → List (ℝ × Fin d)
-  /-- the column lists C_c -/
-  col : Fin n → List (ℝ × Fin d)
-
-/-- Section 5.2.  A number of a row list: the row `r` and a place in the list R_r. -/
-abbrev RowItem {n d : ℕ} (Ls : Lists n d) : Type := Σ r : Fin n, Fin (Ls.row r).length
-
-/-- Section 5.2.  A number of a column list: the column `c` and a place in the list C_c. -/
-abbrev ColItem {n d : ℕ} (Ls : Lists n d) : Type := Σ c : Fin n, Fin (Ls.col c).length
-
-/-- Section 5.2.  A number of any of the lists. -/
-abbrev Item {n d : ℕ} (Ls : Lists n d) : Type := RowItem Ls ⊕ ColItem Ls
-
-/-- Section 5.2.  The real number at an item. -/
-def Item.val {n d : ℕ} {Ls : Lists n d} : Item Ls → ℝ
-  | .inl x => ((Ls.row x.1).get x.2).1
-  | .inr y => ((Ls.col y.1).get y.2).1
-
-/-- Section 5.2.  The color χ of an item. -/
-def Item.color {n d : ℕ} {Ls : Lists n d} : Item Ls → Fin d
-  | .inl x => ((Ls.row x.1).get x.2).2
-  | .inr y => ((Ls.col y.1).get y.2).2
-
-/-- Section 5.2.  A number of a row list, as a number of one of the lists. -/
-def Item.ofRow {n d : ℕ} {Ls : Lists n d} (x : RowItem Ls) : Item Ls := .inl x
-
-/-- Section 5.2.  A number of a column list, as a number of one of the lists. -/
-def Item.ofCol {n d : ℕ} {Ls : Lists n d} (y : ColItem Ls) : Item Ls := .inr y
-
-/-- Section 5.2.  The number at place `i` of the row list R_r. -/
-def rowItem {n d : ℕ} {Ls : Lists n d} (r : Fin n) (i : Fin (Ls.row r).length) : Item Ls :=
-  Item.ofRow ⟨r, i⟩
-
-/-- Section 5.2.  The number at place `i` of the column list C_c. -/
-def colItem {n d : ℕ} {Ls : Lists n d} (c : Fin n) (i : Fin (Ls.col c).length) : Item Ls :=
-  Item.ofCol ⟨c, i⟩
-
-/-! #### The objects in the proof of Lemma 36 -/
-
-/-! #### The construction of Lemma 37 -/
-
-/-- Lemma 37: "D'' := ⌈2nd/s⌉ + d". -/
-def D'' (n d s : ℕ) : ℕ := ⌈(2 * n * d : ℚ) / s⌉₊ + d
-
-/-- Proof of Lemma 37.  The number of numbers of color `k` in all the lists. -/
-def numOfColor {n d : ℕ} (Ls : Lists n d) (k : Fin d) : ℕ :=
-  (univ.filter fun x : Item Ls => x.color = k).card
-
-/-- Proof of Lemma 37: "For each color k, sort the numbers of color k of all the lists, and
-break ties so that, among equal numbers, those from column lists precede those from row lists.  Let
-pos(x) be the position of x in this order. ... (For ≤, we reverse the tie-breaking rule.)" The paper
-does not say how the remaining ties (equal numbers from two row lists, or from two column lists) are
-broken, so a `SortedOrder` is any outcome of such a sort.
-
-NOTE.  Positions are counted from 0 within each color, so that "blk(x) := ⌊pos(x)/s⌋" gives "blocks
-of s consecutive positions". -/
-structure SortedOrder {n d : ℕ} (cmp : Cmp) (Ls : Lists n d) : Type where
-  /-- pos(x), the position of x among the numbers of its color -/
-  pos : Item Ls → ℕ
-  /-- two numbers of the same color have different positions -/
-  pos_injective : ∀ x y : Item Ls, x.color = y.color → pos x = pos y → x = y
-  /-- the positions of the numbers of color k are 0, 1, ..., (number of numbers of color k) - 1 -/
-  pos_lt : ∀ x : Item Ls, pos x < numOfColor Ls x.color
-  /-- the order is sorted -/
-  sorted : ∀ x y : Item Ls, x.color = y.color → x.val < y.val → pos x < pos y
-  /-- the tie-breaking rule for `<`: a number y of a column list precedes an equal number x of a row
-  list -/
-  ties_lt : cmp = Cmp.lt → ∀ (x : RowItem Ls) (y : ColItem Ls),
-    (Item.ofRow x).color = (Item.ofCol y).color →
-    (Item.ofRow x).val = (Item.ofCol y).val → pos (Item.ofCol y) < pos (Item.ofRow x)
-  /-- the reversed tie-breaking rule for `≤`: a number x of a row list precedes an equal number y of
-  a column list -/
-  ties_le : cmp = Cmp.le → ∀ (x : RowItem Ls) (y : ColItem Ls),
-    (Item.ofRow x).color = (Item.ofCol y).color →
-    (Item.ofRow x).val = (Item.ofCol y).val → pos (Item.ofRow x) < pos (Item.ofCol y)
-
-/-- Proof of Lemma 37: "Cut the order into blocks of s consecutive positions, and let blk(x) :=
-⌊pos(x)/s⌋." -/
-def blk {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ) (x : Item Ls) : ℕ :=
-  o.pos x / s
-
-/-- Proof of Lemma 37: the "pairs (color, block)": all pairs (χ(x), blk(x)), x a number of one of
-the lists. -/
-def blockPairs {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ) :
-    Finset (Fin d × ℕ) :=
-  univ.image fun x : Item Ls => (x.color, blk o s x)
-
-/-- Proof of Lemma 37: "Let X[r,(k,β)] be the number of numbers of color k in R_r that lie in block
-β". -/
-def xCount {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ)
-    (r : Fin n) (k : Fin d) (β : ℕ) : ℕ :=
-  (univ.filter fun i : Fin (Ls.row r).length =>
-    (rowItem r i).color = k ∧ blk o s (rowItem r i) = β).card
-
-/-- Proof of Lemma 37: "let Y[(k,β),c] be the number of numbers of color k in C_c that lie in a
-block after β". -/
-def yCount {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ)
-    (k : Fin d) (β : ℕ) (c : Fin n) : ℕ :=
-  (univ.filter fun i : Fin (Ls.col c).length =>
-    (colItem c i).color = k ∧ β < blk o s (colItem c i)).card
-
-/-- Proof of Lemma 37: "there are at most 2nd/s + d ≤ D'' pairs (color, block), and we index the
-columns of X and the rows of Y by the pairs, padding with zeros if needed."  `idx` is the indexing;
-the statements assume that it is injective on `blockPairs`. Column `j` of `X` is the column of the
-pair (k,β) with `idx (k,β) = j`, and it is zero if there is no such pair. -/
-def matX {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ)
-    (idx : Fin d × ℕ → Fin (D'' n d s)) :
-    Matrix (Fin n) (Fin (D'' n d s)) ℤ :=
-  fun r j => ∑ kβ ∈ (blockPairs o s).filter (fun kβ => idx kβ = j), (xCount o s r kβ.1 kβ.2 : ℤ)
-
-/-- Proof of Lemma 37.  The matrix `Y`, indexed like `matX`: row `j` of `Y` is the row of the pair
-(k,β) with `idx (k,β) = j`, and it is zero if there is no such pair. -/
-def matY {n d : ℕ} {cmp : Cmp} {Ls : Lists n d} (o : SortedOrder cmp Ls) (s : ℕ)
-    (idx : Fin d × ℕ → Fin (D'' n d s)) :
-    Matrix (Fin (D'' n d s)) (Fin n) ℤ :=
-  fun j c => ∑ kβ ∈ (blockPairs o s).filter (fun kβ => idx kβ = j), (yCount o s kβ.1 kβ.2 c : ℤ)
-
-/-! #### The parameters of Corollary 38 and of the proof of Theorem 35 -/
-
-end ComparisonCounts
-
-/-! ### 5.4 Three conjectures of van den Brand, Nanongkai, and Saranurak -/
-
-namespace HintedMv
-
-/-- Proof of Corollary 40: "We compute over ℤ with 0/1 matrices".  The 0/1 integer matrix
-of a Boolean matrix. -/
-def toInt {l m : ℕ} (M : Matrix (Fin l) (Fin m) Bool) : Matrix (Fin l) (Fin m) ℤ :=
-  fun i j => if M i j = true then 1 else 0
-
-end HintedMv
-
-end ThreeSumApsp
-
-end Sec5Definitions
 
 /-!
 ## Section 5: statements
@@ -1878,50 +1283,6 @@ differences", says why.
 * The statements on blocks have n = b * d; the paper's proof treats n/d as an integer.
 * "Õ(f)" is read as "O(f · (log n)^c) for some constant c".
 -/
-
-section Sec5Statements
-
-open Finset Asymptotics Filter
-
-namespace PaperStatements
-
-open ThreeSumApsp
-
-/-! ### 5.1 Directed APSP with small integer weights -/
-
-/-! ### 5.2 3SUM, APSP, and Exact Triangle with real inputs -/
-
-section ComparisonCounts
-
-open ComparisonCounts
-
-/-! #### Lemma 36(a): the parts argued in the paper -/
-
-/-! Proof of Lemma 36(a): "APSP with real weights and no negative cycles can be computed by
-successive squaring of the weight matrix, performing ⌈log₂ n⌉ such products." This is
-`Theorem_21b_repeated_squaring` (Theorem 21(b)), which is stated for weights in any linearly ordered
-commutative group, in particular for real weights. -/
-
-/-! #### Lemma 36(b): the parts argued in the paper -/
-
-/-! #### Lemma 37
-
-The lemma says "we can build matrices X [...] and Y [...] and compute integers γ₂(r,c), (r,c) ∈ P,
-with" γ(r,c) = (XY)[r,c] + γ₂(r,c). Read as a bare existence statement this would be trivial (take
-X = Y = 0), so the statements below are about the matrices and the integers that the proof
-constructs: `matX`, `matY`, `sameBlockCount`, for an arbitrary outcome `o` of the sort and an
-arbitrary indexing `idx` of the pairs (color, block). The running time of the lemma is a hypothesis
-of the library's lemma `conditional_corollary_38`. -/
-
-/-! #### Corollary 38: correctness and parameter arithmetic -/
-
-/-! #### Proof of Theorem 35: the arithmetic, with d := ⌊n^{1/40}⌋ -/
-
-end ComparisonCounts
-
-end PaperStatements
-
-end Sec5Statements
 
 /-!
 ## The word RAM: problems
@@ -2113,105 +1474,6 @@ def rowMajor {n m : ℕ} (A : Fin n → Fin m → ℤ) : List ℤ :=
 /-! #### The wanted entries of a thin matrix product (Theorems 1, 5, 25 and 30, Corollaries 26 and
 32) -/
 
-/-- Two matrices `X ∈ ℤ^{N×D}` and `Y ∈ ℤ^{D×N}` with entries of absolute value at most `U`. -/
-structure ThinPair where
-  /-- The long side. -/
-  N : ℕ
-  /-- The short side. -/
-  D : ℕ
-  /-- The bound on the absolute values of the entries. -/
-  U : ℕ
-  /-- The first matrix. -/
-  X : Matrix (Fin N) (Fin D) ℤ
-  /-- The second matrix. -/
-  Y : Matrix (Fin D) (Fin N) ℤ
-  /-- The entries of `X` are bounded. -/
-  boundX : ∀ i j, |X i j| ≤ (U : ℤ)
-  /-- The entries of `Y` are bounded. -/
-  boundY : ∀ i j, |Y i j| ≤ (U : ℤ)
-
-/-- Theorem 5: two such matrices and "a set W of [...] positions of an N × N matrix".
-
-NOTE.  The paper does not say how a set is given.  Here it is a list without repetitions, in any
-order. -/
-structure ThinInstance extends ThinPair where
-  /-- The wanted positions. -/
-  W : List (Fin N × Fin N)
-  /-- No position is listed twice. -/
-  nodup : W.Nodup
-
-/-- The input of the matrix problems: `N`, `D`, `|W|`, then further parameters `extra` (none, except
-in Theorem 30), then `X`, then `Y`, then the rows `I` of the wanted positions, then their columns
-`J`. -/
-def ThinInstance.input (x : ThinInstance) (extra : List ℤ) : List ℤ :=
-  [(x.N : ℤ), (x.D : ℤ), (x.W.length : ℤ)] ++ extra ++ rowMajor x.X ++ rowMajor x.Y ++
-    x.W.map (fun q => (q.1.val : ℤ)) ++ x.W.map (fun q => (q.2.val : ℤ))
-
-/-- **The wanted entries of a thin matrix product** (Theorem 5): accept, and leave `(XY)[I,J]` for
-the `i`-th wanted position `(I,J)` in the `i`-th output cell. -/
-def thinProduct (extra : List ℤ) : Problem where
-  Inst := ThinInstance
-  params x := [x.N, x.D]
-  input x := x.input extra
-  IsAnswer x verdict out :=
-    verdict = true ∧ ∀ (i : ℕ) (h : i < x.W.length), out i = (x.X * x.Y) x.W[i].1 x.W[i].2
-
-/-! #### The two-stage data structure for a thin matrix product (Section 4) -/
-
-/-- The input of the preprocessing: `N`, `D`, further parameters `extra` (none, except in
-Theorem 30), then `X`, then `Y`.  The list `extra` is fixed before the instance. -/
-def ThinPair.input (x : ThinPair) (extra : List ℤ) : List ℤ :=
-  [(x.N : ℤ), (x.D : ℤ)] ++ extra ++ rowMajor x.X ++ rowMajor x.Y
-
-/-! #### The lopsided triangle problems (Definitions 13 and 14) -/
-
-/-- The instance of the lopsided triangle problems that two 0/1 matrices and a list of query pairs
-describe.
-
-NOTE.  Definition 13 has "a middle part M of at most D vertices"; here the middle part has exactly
-`D` vertices, the columns of `X`.  A smaller middle part is written with zero columns of `X` and
-zero rows of `Y`: vertices without edges, which lie in no triangle. -/
-def ThinInstance.lop (x : ThinInstance) : LopInstance x.N :=
-  LopInstance.ofMatrices x.X x.Y x.W.toFinset
-
-/-- **#Lop-AE-SparseTri** (Definition 14), with the graph given by its two biadjacency matrices: the
-`i`-th output cell holds the number of triangles through the `i`-th query pair. -/
-def lopCount : Problem where
-  Inst := ThinInstance
-  params x := [x.N, x.D]
-  input x := x.input []
-  IsAnswer x verdict out :=
-    verdict = true ∧ ∀ (i : ℕ) (h : i < x.W.length),
-      out i = (x.lop.numTriangles x.W[i].1 x.W[i].2 : ℤ)
-
-/-- **Lop-AE-SparseTri** (Definition 13): the `i`-th output cell holds 1 if the `i`-th query pair
-lies in a triangle, and 0 if not. -/
-def lopDetect : Problem where
-  Inst := ThinInstance
-  params x := [x.N, x.D]
-  input x := x.input []
-  IsAnswer x verdict out :=
-    verdict = true ∧ ∀ (i : ℕ) (h : i < x.W.length),
-      (x.lop.InTriangle x.W[i].1 x.W[i].2 → out i = 1) ∧
-        (¬ x.lop.InTriangle x.W[i].1 x.W[i].2 → out i = 0)
-
-/-! #### Exact Triangle, 3SUM, the (min,+)-product and APSP
-
-These four are the problems `ExactTriangle`, `ThreeSum`, `MinPlusProduct` and `APSP` of
-`EndStatement.lean`. -/
-
-/-! #### Exact Triangle on `n`-vertex graphs -/
-
-/-- A graph on `n` vertices with integer edge weights: an instance of Exact Triangle "on an
-arbitrary n-vertex graph" (Section 3.2); Theorem 2 has "Exact Triangle on n-vertex graphs". -/
-structure WeightedGraph (n : ℕ) where
-  /-- The graph. -/
-  G : SimpleGraph (Fin n)
-  /-- The weight of the edge `{u, v}`. -/
-  w : Fin n → Fin n → ℤ
-  /-- The graph is undirected. -/
-  symm : ∀ u v, w u v = w v u
-
 /-! #### Zero-Weight, Min-Weight and Max-Weight `k`-Clique (Corollary 39)
 
 Zero-Weight `k`-Clique is the problem `ZeroWeightKClique k` of `EndStatement.lean`.  The other two
@@ -2238,18 +1500,6 @@ sizes, and time bounds with real exponents and logarithmic factors.  The stateme
 the two definitions of each notion agree.  APSP has two statements, one for the promise and one for
 the output.
 -/
-
-section AgreementStatements
-
-open ThreeSumApsp.WordRam
-
-namespace PaperStatements
-
-open ThreeSumApsp
-
-end PaperStatements
-
-end AgreementStatements
 
 /-!
 ## The word RAM: running times
@@ -2290,26 +1540,4 @@ the bounds of `Theorem_19`, `Theorem_22_second` and `Corollary_39_zero`.
   hypotheses.  Theorems 17 and 21 speak of an arbitrary solver, while each item statement is about
   one fixed program.  The time bound of Lemma 29 enters the bound (8) of Theorem 30. -/
 
-section WordRamItems
 
-namespace ThreeSumApsp.WordRam
-
-open EndStatement (Instr)
-
-namespace Items
-
-/-! ### Section 2: Theorem 5 -/
-
-/-! ### Section 3: Corollaries 15 and 16, Theorems 19 and 22 -/
-
-/-! ### Section 4: Theorems 24 and 25, Corollary 26, Theorem 30, Corollaries 31 and 32 -/
-
-/-! ### Section 5: Corollaries 39 and 40 -/
-
-/-! ### Section 1, the introduction: Theorems 1 to 4 -/
-
-end Items
-
-end ThreeSumApsp.WordRam
-
-end WordRamItems

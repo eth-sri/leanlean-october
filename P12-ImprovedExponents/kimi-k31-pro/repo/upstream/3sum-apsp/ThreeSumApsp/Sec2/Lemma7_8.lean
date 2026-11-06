@@ -69,12 +69,6 @@ theorem Leaf.filter_contributes_eq_piFinset {L : ℕ} (w : OutStr L) :
   simp only [mem_filter, mem_univ, true_and, Fintype.mem_piFinset]
   rfl
 
-/-- Membership in `Leaves(U)`. -/
-@[simp]
-theorem mem_Leaves {L : ℕ} {U : Finset (OutStr L)} {τ : Leaf L} :
-    τ ∈ Leaves U ↔ ∃ w ∈ U, Leaf.Contributes τ w := by
-  simp [Leaves]
-
 /-! ### The two encodings at once -/
 
 section encodeWith

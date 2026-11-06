@@ -187,10 +187,6 @@ protected theorem add (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
       pow_mul_mon_le (e' := e₁ ⊔ e₂) (le_max_left _ _) (fun _ => le_sup_left) hx).add
       (h₂.mono_right fun _ hx => pow_mul_mon_le (le_max_right _ _) (fun _ => le_sup_right) hx)
 
-/-- A sum of two counts with the same bound. -/
-theorem add_le (h₁ : s.SoftO t₁ e) (h₂ : s.SoftO t₂ e) : s.SoftO (fun x => t₁ x + t₂ x) e :=
-  (h₁.add h₂).mono fun _ => (sup_idem _).le
-
 /-- In a product the exponents add up. -/
 protected theorem mul (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => t₁ x * t₂ x) (e₁ + e₂) := by
@@ -213,14 +209,6 @@ protected theorem pow (h : s.SoftO t e) (k : ℕ) : s.SoftO (fun x => t x ^ k) (
 protected theorem max (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => max (t₁ x) (t₂ x)) (e₁ ⊔ e₂) :=
   (h₁.add h₂).of_le fun _ _ => max_le (Nat.le_add_right _ _) (Nat.le_add_left _ _)
-
-/-- A difference has the exponents of its first term. -/
-protected theorem sub (h : s.SoftO t₁ e) (t₂ : α → ℕ) : s.SoftO (fun x => t₁ x - t₂ x) e :=
-  h.of_le fun _ _ => Nat.sub_le _ _
-
-/-- A quotient has the exponents of its numerator. -/
-protected theorem div (h : s.SoftO t₁ e) (t₂ : α → ℕ) : s.SoftO (fun x => t₁ x / t₂ x) e :=
-  h.of_le fun _ _ => Nat.div_le_self _ _
 
 /-- A quotient that is rounded up has the larger exponents of numerator and denominator. -/
 protected theorem ceilDiv (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :

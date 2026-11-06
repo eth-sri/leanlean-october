@@ -72,12 +72,6 @@ theorem one_le_polyBound (s k : ℕ) (params : List ℕ) : 1 ≤ polyBound s k p
   have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
   exact Nat.mul_pos (by positivity) (by positivity)
 
-/-- The bound grows with its first parameter. -/
-theorem polyBound_cons_le {p p' : ℕ} (h : p ≤ p') (s k : ℕ) (params : List ℕ) :
-    polyBound s k (p :: params) ≤ polyBound s k (p' :: params) := by
-  simp only [polyBound, List.map_cons, List.prod_cons]
-  gcongr
-
 /-- The bound grows with its two exponents. -/
 theorem polyBound_mono {s s' k k' : ℕ} (hs : s ≤ s') (hk : k ≤ k') (params : List ℕ) :
     polyBound s k params ≤ polyBound s' k' params := by

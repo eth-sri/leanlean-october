@@ -167,23 +167,6 @@ def dsTries (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (
     TrieStore :=
   allTries p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
 
-/-- **The block from b0 on holds the data structure for X and Y.** The preprocessing establishes
-this, and every query needs it and keeps it. -/
-structure DSReady (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
-  shared : Sec2.SharedReady p hmL aX aY b0 X Y μ
-  cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
-
-section
-
-variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
-
-end
-
 /-- The limits that the two routines need: U bounds the entries of X and Y. -/
 structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop where
   std : Std lim

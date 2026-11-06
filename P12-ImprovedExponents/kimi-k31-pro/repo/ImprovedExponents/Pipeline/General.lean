@@ -42,12 +42,6 @@ open ThreeSumApsp Light Real
 
 /-! ## The reduction as printed -/
 
-section printed
-
-variable {a b p q : ℕ}
-
-end printed
-
 /-! ## The reduction charged at the true size of the middle part -/
 
 /-- `R(γ) ≤ 1/k` if `A ≥ k ln 4`. -/

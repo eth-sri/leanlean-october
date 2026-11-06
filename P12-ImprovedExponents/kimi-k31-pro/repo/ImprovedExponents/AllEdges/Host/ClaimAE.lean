@@ -3,6 +3,7 @@ module
 public import ImprovedExponents.AllEdges.Host.ProgramAE
 public import ImprovedExponents.AllEdges.Model
 public import ImprovedExponents.Pipeline.Claims
+public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
 
 @[expose] public section
 
@@ -163,18 +164,6 @@ theorem steps_extraAE : Steps (fun θ => extraAE θ.n θ.D θ.g) restBoundAE :=
   |>.add (stepsRestAE_of_budget (Scale.SoftO.const _).withinBuild)
 
 /-! ## The bound of `Claim17Mid` -/
-
--- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/TimeBound/Total.lean
-/-- A bound `T` on the time of the solver that is monotone in the number of query pairs bounds its
-largest time on the instances of the host. -/
-theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ}
-    (hT : ∀ n D w w' : ℕ, 1 ≤ n → 1 ≤ D → w ≤ w' → (Tn [n, D, w] : ℝ) ≤ T n D w') {n D : ℕ}
-    (hn : 1 ≤ n) (hD : 1 ≤ D) (cap : ℕ) : ((supTime Tn n D cap : ℕ) : ℝ) ≤ T n D cap := by
-  obtain ⟨w, hw, hsup⟩ : ∃ w ∈ Finset.range (cap + 1),
-      (Finset.range (cap + 1)).sup (fun w => Tn [n, D, w]) = Tn [n, D, w] :=
-    Finset.exists_mem_eq_sup _ ⟨0, Finset.mem_range.2 (Nat.succ_pos _)⟩ _
-  rw [supTime, hsup]
-  exact hT n D w cap hn hD (Nat.lt_succ_iff.1 (Finset.mem_range.1 hw))
 
 /-- **The bound of `Claim17Mid` for the all-edges host.**  The hypotheses are those of
 `ImprovedExponents.HostMid.obeysBound17Mid_hostTime`: the parameter routines compute `Dfun n` from

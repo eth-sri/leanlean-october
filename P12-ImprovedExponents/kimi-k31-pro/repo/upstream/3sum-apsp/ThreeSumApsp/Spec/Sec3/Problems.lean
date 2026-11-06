@@ -32,11 +32,6 @@ namespace ThreeSumApsp.Spec
 /-- The entry `(i, j)` of a matrix with `n` columns that is stored in the list `L`, row by row. -/
 abbrev entry (n : ℕ) (L : List ℤ) (i j : ℕ) : ℤ := L.getD (i * n + j) 0
 
-/-- A bound on the numbers of the list is a bound on the entries of the matrix. -/
-theorem abs_entry_le (n : ℕ) {L : List ℤ} {U : ℤ} (hU : 0 ≤ U) (hL : AbsLe L U) (i j : ℕ) :
-    |entry n L i j| ≤ U :=
-  AbsLe.abs_getD_le hU hL _
-
 /-- The `N` numbers in a list. -/
 def vecOf (N : ℕ) (x : List ℤ) : Fin N → ℤ := fun i => x.getD i 0
 
@@ -53,14 +48,6 @@ cell `i n + j` of `w` if cell `i n + j` of `adj` holds 1, and there is no edge o
 def graphOf (n : ℕ) (adj w : List ℤ) : Fin n → Fin n → WithTop ℤ := fun i j =>
   if adj.getD (i * n + j) 0 = 1 then ((w.getD (i * n + j) 0 : ℤ) : WithTop ℤ) else ⊤
 
-/-- The weights of the instance read from three lists are bounded if the numbers of the lists
-are. -/
-theorem triOf_bounded {n U : ℕ} {AB BC AC : List ℤ} (hAB : AbsLe AB U) (hBC : AbsLe BC U)
-    (hAC : AbsLe AC U) : (triOf n AB BC AC).WeightsBoundedBy (U : ℤ) :=
-  ⟨fun _ _ => AbsLe.abs_getD_le (Int.natCast_nonneg U) hAB _,
-    fun _ _ => AbsLe.abs_getD_le (Int.natCast_nonneg U) hBC _,
-    fun _ _ => AbsLe.abs_getD_le (Int.natCast_nonneg U) hAC _⟩
-
 /-! ## Operations on matrices -/
 
 /-- The list of the numbers `m x + c`. -/
@@ -69,27 +56,6 @@ def affL (m c : ℤ) (l : List ℤ) : List ℤ := l.map fun x => m * x + c
 /-- The list of the numbers `m x + c` is as long as the list of the `x`. -/
 @[simp] theorem length_affL (m c : ℤ) (l : List ℤ) : (affL m c l).length = l.length := by
   simp [affL]
-
-/-- The `h × h` block of an `s × s` matrix whose upper left corner is `(r0, c0)`; both row by
-row. -/
-def subMat (s h r0 c0 : ℕ) (L : List ℤ) : List ℤ :=
-  (List.range (h * h)).map fun q => entry s L (r0 + q / h) (c0 + q % h)
-
-/-- A block has `h²` entries. -/
-@[simp] theorem length_subMat (s h r0 c0 : ℕ) (L : List ℤ) :
-    (subMat s h r0 c0 L).length = h * h := by
-  simp [subMat]
-
-/-- The entry `(i, j)` of a block is the entry `(r0 + i, c0 + j)` of the matrix. -/
-theorem entry_subMat {s h r0 c0 : ℕ} {L : List ℤ} {i j : ℕ} (hi : i < h) (hj : j < h) :
-    entry h (subMat s h r0 c0 L) i j = entry s L (r0 + i) (c0 + j) := by
-  rw [entry, subMat, List.getD_map_range _ (Nat.mul_add_lt_mul hi hj), Nat.mul_add_div_of_lt hj,
-    Nat.mul_add_mod_of_lt hj]
-
-/-- A bound on the entries of a matrix is a bound on the entries of its blocks. -/
-theorem abs_le_of_mem_subMat {s h r0 c0 : ℕ} {L : List ℤ} {U : ℤ} (hU : 0 ≤ U) (hL : AbsLe L U) :
-    AbsLe (subMat s h r0 c0 L) U :=
-  List.forall_mem_map.2 fun _ _ => AbsLe.abs_getD_le hU hL _
 
 /-! ## The (min,+)-product -/
 

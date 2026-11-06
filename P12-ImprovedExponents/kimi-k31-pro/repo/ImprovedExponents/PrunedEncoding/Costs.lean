@@ -80,37 +80,17 @@ theorem eq_10P {c γ ε : ℝ} (hc : 10 < c) (hγ : 0 ≤ γ) (hε0 : 0 < ε) (h
   have hB1 : basePruned c < B := by rw [hBdef]; linarith
   set η : ℝ := G - γ * log 4 - B with hηdef
   have hη : 0 < η := by rw [hηdef, hBdef]; linarith
-  -- near `c` the constant stays below `B`
-  have hcont : ContinuousAt basePruned c :=
-    basePruned_continuousOn.continuousAt (Ioi_mem_nhds hc)
-  obtain ⟨δ₀, hδ₀, hnear⟩ := Metric.eventually_nhds_iff.1
-    (hcont.eventually (gt_mem_nhds hB1))
-  refine ⟨max 1 (max ⌈1 / δ₀⌉₊ ⌈2 * (c + 1) * exp G / η ^ 2⌉₊),
+  obtain ⟨mNear, hnear⟩ := basePruned_levelsOf_lt hc hB1
+  refine ⟨max 1 (max mNear ⌈2 * (c + 1) * exp G / η ^ 2⌉₊),
     fun m hm D₀ N hgt hthin => ?_⟩
   have hm1 : 1 ≤ m := (le_max_left _ _).trans hm
   have hm0 : (0 : ℝ) < m := by exact_mod_cast hm1
-  have hmδ : 1 / δ₀ ≤ (m : ℝ) := (Nat.le_ceil _).trans
-    (by exact_mod_cast (le_max_left _ _).trans ((le_max_right _ _).trans hm))
   have hmη : 2 * (c + 1) * exp G / η ^ 2 ≤ (m : ℝ) := (Nat.le_ceil _).trans
     (by exact_mod_cast (le_max_right _ _).trans ((le_max_right _ _).trans hm))
-  -- the levels: `c ≤ L/m < c + δ₀`
-  -- adapted from `ImprovedExponents/Pipeline/Fits.lean` (`exists_fits18`)
-  have hLge : c * m ≤ (levelsOf c m : ℝ) := Nat.le_ceil _
-  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
   have hmL : m < levelsOf c m := by
-    have h : (m : ℝ) < (levelsOf c m : ℝ) := by nlinarith
-    exact_mod_cast h
-  have hratio1 : c ≤ (levelsOf c m : ℝ) / m := by rwa [le_div_iff₀ hm0]
-  have hratio2 : (levelsOf c m : ℝ) / m < c + δ₀ := by
-    rw [div_lt_iff₀ hm0]
-    have : 1 ≤ δ₀ * m := by
-      have := (div_le_iff₀ hδ₀).1 hmδ
-      linarith
-    nlinarith
-  have hbase : basePruned ((levelsOf c m : ℝ) / m) < B := by
-    refine hnear ?_
-    rw [Real.dist_eq, abs_lt]
-    constructor <;> linarith
+    have := ten_mul_le_levelsOf hc m
+    omega
+  have hbase := hnear m ((le_max_left _ _).trans ((le_max_right _ _).trans hm))
   have hLle : (levelsOf c m : ℝ) ≤ (c + 1) * m := levelsOf_le hc hm1
   have hsqrt : sqrtKN0 (levelsOf c m) m ≤ exp ((m : ℝ) * B) :=
     (sqrtKN0_le_exp hm1 hmL).trans (exp_le_exp.2 (mul_le_mul_of_nonneg_left hbase.le hm0.le))
@@ -192,19 +172,12 @@ theorem dominated_cost8P {c θ γ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 :
     rw [encodingP_eq hmL]
     calc 27 / 2 * (p.N : ℝ) * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m)
           / (1 - rho (levelsOf c p.m) p.m)
-        ≤ 27 / 2 * (p.N : ℝ) * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m)
-          / (1 - rhoC c) :=
-          div_le_div_of_nonneg_left (mul_nonneg (by positivity) hLs0) (sub_pos.2 hρ)
-            (by linarith)
-      _ ≤ 27 / 2 * (p.N : ℝ) * ((D p.m : ℝ) ^ (-γ) * p.N) / (1 - rhoC c) :=
-          div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hLs (by positivity))
-            (sub_pos.2 hρ).le
+        ≤ 27 / 2 * (p.N : ℝ) * ((D p.m : ℝ) ^ (-γ) * p.N) / (1 - rhoC c) := by
+          gcongr
       _ = 27 / 2 / (1 - rhoC c) * ((D p.m : ℝ) ^ (-γ) * 1 * (p.N : ℝ) ^ 2) := by ring
       _ ≤ 27 / 2 / (1 - rhoC c)
-            * ((D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2) :=
-          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right
-            (mul_le_mul_of_nonneg_left hlog hpow) (sq_nonneg _))
-            (div_nonneg (by norm_num) (sub_pos.2 hρ).le)
+            * ((D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2) := by
+          gcongr
   have hpadded : Dominated dom (fun p => cost8P (levelsOf c p.m) p.m (switchOf θ p.m) p.N)
       fun p => (D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2 :=
     hboxes.add hencodings

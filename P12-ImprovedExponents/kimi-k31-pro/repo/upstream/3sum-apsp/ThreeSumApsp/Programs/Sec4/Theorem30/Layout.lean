@@ -50,16 +50,6 @@ abbrev Ans : ℕ := 0
 
 end Thm30
 
-namespace Thm30
-
-end Thm30
-
 open Thm30
-
-section
-variable {lim : Limits} {P : Program} {N m L t : ℕ} {hmL : m ≤ L}
-  {X : Matrix (Fin N) (Fin (D m)) ℤ} {Y : Matrix (Fin (D m)) (Fin N) ℤ} {U : ℤ} {μ : ℕ → ℤ}
-
-end
 
 end Light.Sec4

@@ -36,10 +36,6 @@ def sortPos (kf : ℕ → ℕ) (N j : ℕ) : ℕ := cntLt kf (kf j) N + cntEq kf
 section
 variable (kf : ℕ → ℕ)
 
-@[simp] theorem cntEq_zero (t : ℕ) : cntEq kf t 0 = 0 := rfl
-
-@[simp] theorem cntLt_zero_right (t : ℕ) : cntLt kf t 0 = 0 := rfl
-
 @[simp] theorem cntLt_zero_left (j : ℕ) : cntLt kf 0 j = 0 := by simp [cntLt]
 
 /-- One more item: it is counted if its key is `t`. -/

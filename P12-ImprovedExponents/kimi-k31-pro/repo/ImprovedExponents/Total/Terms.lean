@@ -18,10 +18,13 @@ namespace ImprovedExponents
 /-- A product of five nonnegative factors, each at most a constant times a power of `N ≥ 1`, is at
 most the product of the constants times `N^E`, if the exponents add up to at most `E`. -/
 theorem prod5_le {N x₁ x₂ x₃ x₄ x₅ c₁ c₂ c₃ c₄ c₅ e₁ e₂ e₃ e₄ e₅ E : ℝ} (hN : 1 ≤ N)
-    (h0₂ : 0 ≤ x₂) (h0₃ : 0 ≤ x₃) (h0₄ : 0 ≤ x₄) (h0₅ : 0 ≤ x₅)
-    (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) (hc₃ : 0 ≤ c₃) (hc₄ : 0 ≤ c₄) (hc₅ : 0 ≤ c₅)
     (h₁ : x₁ ≤ c₁ * N ^ e₁) (h₂ : x₂ ≤ c₂ * N ^ e₂) (h₃ : x₃ ≤ c₃ * N ^ e₃)
-    (h₄ : x₄ ≤ c₄ * N ^ e₄) (h₅ : x₅ ≤ c₅ * N ^ e₅) (hE : e₁ + e₂ + e₃ + e₄ + e₅ ≤ E) :
+    (h₄ : x₄ ≤ c₄ * N ^ e₄) (h₅ : x₅ ≤ c₅ * N ^ e₅) (hE : e₁ + e₂ + e₃ + e₄ + e₅ ≤ E)
+    (h0₂ : 0 ≤ x₂ := by positivity) (h0₃ : 0 ≤ x₃ := by positivity)
+    (h0₄ : 0 ≤ x₄ := by positivity) (h0₅ : 0 ≤ x₅ := by positivity)
+    (hc₁ : 0 ≤ c₁ := by positivity) (hc₂ : 0 ≤ c₂ := by positivity)
+    (hc₃ : 0 ≤ c₃ := by positivity) (hc₄ : 0 ≤ c₄ := by positivity)
+    (hc₅ : 0 ≤ c₅ := by positivity) :
     x₁ * x₂ * x₃ * x₄ * x₅ ≤ c₁ * c₂ * c₃ * c₄ * c₅ * N ^ E := by
   have hN0 : 0 < N := by linarith
   calc x₁ * x₂ * x₃ * x₄ * x₅

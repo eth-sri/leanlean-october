@@ -110,28 +110,4 @@ open HostTime
 
 variable {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ}
 
-/-- The time of the loop over the instances is within its bound.  Both sides are a sum over the
-instances plus the same constant; the piece of an instance has `min q (n - c₀)` vertices. -/
-private theorem tHostLoop_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
-    tHostLoop Tn (hostData x D g) ≤ hostLoopBound Tn x.n x.U D g :=
-  Nat.add_le_add_right (sum_le_mul_add
-    (fun _ ht => instance_le Tn x.n D _ (Nat.min_le_left _ _) ((hostData x D g).w_le_cap ht))
-    (hostData_m_le hbig) (sum_execs_le_falsePositiveBound hpre hbig)) 14
-
-/-- **The time of a run after the choice of the prime is within the worst case.** -/
-theorem hostRunTime_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
-    hostRunTime Tn (hostData x D g) x.U
-      ≤ tDblTable (bitLen x.U) + 3 * tResidues (x.n * x.n) (bitLen x.U)
-        + tClasses x.n (Nat.sqrt D) + tChunks (Nat.sqrt D) (4 * x.n * g)
-        + hostLoopBound Tn x.n x.U D g + 80 := by
-  have hprime : (hostData x D g).p ≤ Nat.sqrt D := hostData_p_le x g hbig.sixteen_le
-  have hchunks : (hostData x D g).chunkCount ≤ 4 * x.n * g :=
-    (chunkCount_le_m (hostData_valid hpre hbig)).trans (hostData_m_le hbig)
-  have hloop := tHostLoop_le hpre hbig Tn
-  have hn : (hostData x D g).n = x.n := rfl
-  unfold hostRunTime
-  rw [hn]
-  unfold tClasses tChunks
-  omega
-
 end Light.Sec3

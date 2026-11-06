@@ -93,18 +93,6 @@ theorem exists_isPowPolylog (h : UpperPowPolylog f a) :
     ((isPowPolylog_rpow_mul_log_pow a e).const_mul C).abs,
     hC.mono fun n hn => hn.trans (le_abs_self _)⟩
 
-/-- The exponent may be raised. -/
-protected theorem mono (h : UpperPowPolylog f a) (hab : a ≤ b) : UpperPowPolylog f b := by
-  obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowPolylog
-  exact (hg.mono hab).upperPowPolylog.mono_left hfg
-
-/-- Nonnegative constant factors are absorbed. -/
-theorem const_mul (hf : UpperPowPolylog f a) {c : ℝ} (hc : 0 ≤ c) :
-    UpperPowPolylog (fun n => c * f n) a := by
-  obtain ⟨F, -, hF, hfF⟩ := hf.exists_isPowPolylog
-  exact (hF.const_mul c).upperPowPolylog.mono_left
-    (hfF.mono fun n hn => mul_le_mul_of_nonneg_left hn hc)
-
 /-- Logarithms are absorbed: `Õ(n^a) ⊆ O(n^b)` for `a < b`, from above. -/
 theorem upperBigOPow (h : UpperPowPolylog f a) (hab : a < b) : UpperBigOPow f b := by
   obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowPolylog

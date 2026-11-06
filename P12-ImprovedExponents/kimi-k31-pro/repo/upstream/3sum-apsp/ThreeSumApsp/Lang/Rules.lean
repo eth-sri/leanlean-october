@@ -216,13 +216,6 @@ theorem Ends.setLast {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {Q : State �
     Ends lim P d (.set x e) ⟨loc, μ⟩ T Q :=
   Ends.set hs hT h
 
-/-- An assignment, followed by the rest of the program. -/
-theorem Ends.setThen {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {s : Stmt} {Q : State → Prop}
-    (h : Ends lim P d s ⟨Function.update loc x (e.val ⟨loc, μ⟩), μ⟩ (T - (e.cost + 1)) Q)
-    (hs : e.Safe lim ⟨loc, μ⟩ := by light_side) (hT : e.cost + 1 ≤ T := by light_time) :
-    Ends lim P d (.set x e ;; s) ⟨loc, μ⟩ T Q :=
-  Ends.next _ (Ends.set hs le_rfl h) hT
-
 /-- A store at the end of the program. -/
 theorem Ends.storeLast {loc μ : ℕ → ℤ} {T : ℕ} {a e : Expr} {Q : State → Prop}
     (h : Q ⟨loc, Function.update μ (a.val ⟨loc, μ⟩).toNat (e.val ⟨loc, μ⟩)⟩)

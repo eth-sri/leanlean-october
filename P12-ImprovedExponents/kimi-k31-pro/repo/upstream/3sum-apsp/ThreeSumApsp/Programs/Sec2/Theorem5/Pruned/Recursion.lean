@@ -129,7 +129,6 @@ def prunedBody : Stmt :=
 
 /-! ## What the proofs assume -/
 
-variable {lim : Limits} {P : Program} {h d n t : ℕ} {x : PrunedArgs} {μ μ' : ℕ → ℤ}
 
 /-! ## Step (1) -/
 

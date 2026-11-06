@@ -43,12 +43,6 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## The limits -/
 
-section need
-
-variable {lim : Limits} {N D₀ w U fr d : ℕ}
-
-end need
-
 /-! ## The matrices of an instance -/
 
 /-- The first matrix of an instance. -/
@@ -97,11 +91,5 @@ theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre 
 /-! ## The time in the regime -/
 
 /-! ## The need is polynomial in the parameters -/
-
-section summands
-
-variable {N D U Q : ℕ}
-
-end summands
 
 end Light.Sec4

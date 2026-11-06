@@ -74,11 +74,6 @@ def sortWantedBody : Stmt := swInit ;; .ite (k 0 <' v Num) swDigits .skip ;; swT
 
 /-! ## What is assumed, and the state between the passes -/
 
-namespace SortWanted
-
-end SortWanted
-
-variable {μ μ' : ℕ → ℤ} {A : Args} {t x g : ℕ → ℕ} {π : List ℕ} {σ : State}
 
 /-! ## The list 0, …, w - 1 -/
 

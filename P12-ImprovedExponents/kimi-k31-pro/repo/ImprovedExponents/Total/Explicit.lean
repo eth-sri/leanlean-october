@@ -115,9 +115,8 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
       rw [preBound31, Real.rpow_neg hY0.le]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by positivity) (by positivity)
-      (by norm_num) (by norm_num) (by norm_num) hK₁ hK'0 fN fG fN2 Q.neg_rpow_le hlam2
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 fN fG fN2 Q.neg_rpow_le hlam2 (by linarith)
+      (hc₄ := hK₁) (hc₅ := hK'0)).trans_eq (by ring)
   have t2 : (n : ℝ) * g n * ((queryCap n (D n) : ℝ) * queryBound31 q (Dc n))
       ≤ 4 * K₂ * K' * (n : ℝ) ^ (3 - δ) := by
     have e : (n : ℝ) * g n * ((queryCap n (D n) : ℝ) * queryBound31 q (Dc n))
@@ -125,41 +124,34 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
       rw [queryBound31]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by positivity) (by linarith)
-      (by norm_num) (by norm_num) (by norm_num) hK₂ hK'0 fN fG (hw.trans fW) Q.rpow_le hlam1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 fN fG (hw.trans fW) Q.rpow_le hlam1 (by linarith)
+      (hc₄ := hK₂) (hc₅ := hK'0)).trans_eq (by ring)
   have t3 : (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n)) ≤ 4 * K' * (n : ℝ) ^ (3 - δ) := by
     have e : (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n))
         = (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n)) * 1 * 1 := by ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) hK'0 fN fG fW f1 hlam0
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 fN fG fW f1 hlam0 (by linarith)
+      (hc₅ := hK'0)).trans_eq (by ring)
   have t4 : termScans n (g n) κ ≤ κ * (2 * K' * (n : ℝ) ^ (3 - δ)) := by
     have e : termScans n (g n) κ
         = κ * ((n : ℝ) ^ 3 * (1 / (g n : ℝ)) * 1 * 1 * Real.log n) := by
       rw [termScans]
       ring
     rw [e]
-    exact mul_le_mul_of_nonneg_left ((prod5_le (E := 3 - δ) hN1 (by positivity) (by norm_num)
-      (by norm_num) (by linarith) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hK'0
-      fN3 fGi f1 f1 hlamn (by linarith)).trans_eq (by ring)) (by linarith)
+    exact mul_le_mul_of_nonneg_left ((prod5_le (E := 3 - δ) hN1 fN3 fGi f1 f1 hlamn
+      (by linarith) (hc₅ := hK'0)).trans_eq (by ring)) (by linarith)
   have t5 : termPrime strassen n (D n) ≤ (n : ℝ) ^ (3 - δ) := by
     have e : termPrime strassen n (D n) = strassen n * (D n : ℝ) ^ (3 / 2 : ℝ) * 1 * 1 * 1 := by
       rw [termPrime]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 (by positivity) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) fMM fX32 f1 f1 f1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 fMM fX32 f1 f1 f1 (by linarith)).trans_eq (by ring)
   have t6 : termBuild n (D n) (g n) ≤ 2 * (n : ℝ) ^ (3 - δ) := by
     have e : termBuild n (D n) (g n) = (n : ℝ) ^ 2 * (D n : ℝ) * (g n : ℝ) * 1 * 1 := by
       rw [termBuild]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hX0 hG0 (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) fN2 fX fG f1 f1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 fN2 fX fG f1 f1 (by linarith)).trans_eq (by ring)
   -- the sum
   have hS0 : 0 ≤ (n : ℝ) ^ (3 - δ) := by positivity
   have hpre0 : 0 ≤ preBound31 γ n (Dc n) := by rw [preBound31]; positivity

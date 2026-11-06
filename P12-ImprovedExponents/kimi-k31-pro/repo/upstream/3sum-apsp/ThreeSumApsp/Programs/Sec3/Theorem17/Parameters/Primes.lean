@@ -161,7 +161,7 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
   -- if D ≤ 4 q and q < D
   refine Ends.iteLast (fun hlow => Ends.iteLast (fun hhigh => ?_) fun hnhigh => ?_) fun hnlow => ?_
   · have hin : InWindow D p :=
-      ⟨by exact_mod_cast (by simpa [Cond.holds_le] using hlow : (D : ℤ) ≤ 4 * ((p : ℤ) * p)),
+      ⟨by exact_mod_cast (by simpa [Int.lt_add_one_iff] using hlow : (D : ℤ) ≤ 4 * ((p : ℤ) * p)),
         by exact_mod_cast (by simpa using hhigh : (p : ℤ) * p < D)⟩
     rw [htake hin]
     -- dst[cnt] := p; cnt := cnt + 1
@@ -172,7 +172,7 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
   · rw [hpass fun hin => hnhigh (by simpa using (by exact_mod_cast hin.2 : (p : ℤ) * p < D))]
     exact Ends.skip ⟨μ', p, (p * p : ℕ), rfl, front, hrest, same⟩
   · rw [hpass fun hin => hnlow (by
-      simpa [Cond.holds_le] using (by exact_mod_cast hin.1 : (D : ℤ) ≤ 4 * ((p : ℤ) * p)))]
+      simpa [Int.lt_add_one_iff] using (by exact_mod_cast hin.1 : (D : ℤ) ≤ 4 * ((p : ℤ) * p)))]
     exact Ends.skip ⟨μ', p, (p * p : ℕ), rfl, front, hrest, same⟩
 
 /-- The pass keeps the numbers of the list that lie in the window, and returns how many they are. -/

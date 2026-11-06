@@ -156,9 +156,6 @@ def codeOuter {n : ℕ} (r : Fin n → Fin 3) : ℕ := codeStr (Equiv.refl (Fin 
 /-- The code of a string of index pairs of inner variables, in base 4. -/
 def codeInner {n : ℕ} (π : Fin n → Fin 2 × Fin 2) : ℕ := codeStr pairEquiv π
 
-/-- The output string with a given code. -/
-def decodeO (n c : ℕ) : OutStr n := decodeStr outEquiv n c
-
 /-- The vertex or leaf with a given code. -/
 def decodeT (n c : ℕ) : Vertex n := decodeStr termEquiv n c
 

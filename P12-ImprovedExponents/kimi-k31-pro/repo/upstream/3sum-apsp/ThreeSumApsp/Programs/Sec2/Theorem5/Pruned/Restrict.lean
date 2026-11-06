@@ -74,16 +74,8 @@ def pickBody : Stmt :=
 
 /-! ## The lists -/
 
-section Lists
-
-variable {big small : List ℕ} {vals : List ℤ} {i j : ℕ}
-
-end Lists
-
 /-! ## The memory -/
 
-variable {lim : Limits} {P : Program} {d pDst add i j n : ℕ} {res : List ℤ} {μ μ' : ℕ → ℤ}
-  {x : PickArgs}
 
 /-! ## The walk -/
 

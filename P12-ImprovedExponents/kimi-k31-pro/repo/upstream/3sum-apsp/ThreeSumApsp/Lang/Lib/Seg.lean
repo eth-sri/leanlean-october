@@ -33,16 +33,7 @@ open ThreeSumApsp
 /-- The cells a, a + 1, … of the memory μ hold the list l. -/
 def Seg (μ : ℕ → ℤ) (a : ℕ) (l : List ℤ) : Prop := ∀ i (h : i < l.length), μ (a + i) = l[i]
 
-/-- The list held by the n cells from address a. -/
-def readSeg (μ : ℕ → ℤ) (a n : ℕ) : List ℤ := (List.range n).map fun i => μ (a + i)
-
 variable {μ μ' μ'' : ℕ → ℤ} {a b n : ℕ} {l l₁ l₂ : List ℤ} {x : ℤ}
-
-@[simp] theorem length_readSeg : (readSeg μ a n).length = n := by simp [readSeg]
-
-@[simp] theorem getElem_readSeg {i : ℕ} (h : i < (readSeg μ a n).length) :
-    (readSeg μ a n)[i] = μ (a + i) := by
-  simp [readSeg]
 
 @[simp] theorem Seg.nil : Seg μ a [] := fun i h => absurd h (by simp)
 
@@ -52,10 +43,6 @@ theorem Seg.get (h : Seg μ a l) {i : ℕ} (hi : i < l.length) : μ (a + i) = l[
 /-- Reading a cell of a segment, with a default value for the list. -/
 theorem Seg.getD (h : Seg μ a l) {i : ℕ} (hi : i < l.length) (d : ℤ) : μ (a + i) = l.getD i d := by
   rw [h i hi, List.getD_eq_getElem _ _ hi]
-
-/-- A segment determines its list. -/
-theorem Seg.eq_readSeg (h : Seg μ a l) : l = readSeg μ a l.length :=
-  List.ext_getElem (by simp) fun i h₁ h₂ => by rw [getElem_readSeg, h i h₁]
 
 theorem seg_cons : Seg μ a (x :: l) ↔ μ a = x ∧ Seg μ (a + 1) l := by
   constructor

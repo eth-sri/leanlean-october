@@ -180,11 +180,6 @@ theorem const_mul (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf x hx) hc
 
-/-- A nonnegative constant factor on the left side is absorbed. -/
-theorem mul_const (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
-    Dominated dom (fun x => f x * c) g := by
-  simpa only [mul_comm] using hfg.const_mul hc
-
 /-- A constant factor of any sign in front of a function that is nonnegative on the domain is
 absorbed. -/
 theorem const_mul_of_nonneg (hfg : Dominated dom f g) (c : ℝ) (hf : ∀ x, dom x → 0 ≤ f x) :

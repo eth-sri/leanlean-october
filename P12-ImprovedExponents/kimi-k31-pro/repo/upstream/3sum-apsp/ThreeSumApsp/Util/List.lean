@@ -77,16 +77,6 @@ theorem getD_map_of_lt (f : α → β) {l : List α} {i : ℕ} (hi : i < l.lengt
   rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getD_eq_getElem _ _ hi,
     List.getElem_map]
 
-/-- The entries of a list in which entry `q < l.length` was replaced by `a`. -/
-theorem getD_set_of_lt {l : List α} {q : ℕ} (hq : q < l.length) (a d : α) (q' : ℕ) :
-    (l.set q a).getD q' d = if q' = q then a else l.getD q' d := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_set]
-  split_ifs with h1 h2 h3
-  · rfl
-  · exact absurd h1.symm h2
-  · exact absurd (h3 ▸ hq) (by omega)
-  · rfl
-
 /-- One more member at the end changes the entry number `l.length` only. -/
 theorem getD_append_singleton (l : List α) (a d : α) :
     (fun e => (l ++ [a]).getD e d) = Function.update (fun e => l.getD e d) l.length a := by

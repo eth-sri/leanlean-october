@@ -178,11 +178,6 @@ theorem digitList_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b)
   refine List.ext_getElem (by simp) fun i hi _ => ?_
   simpa using digit_code hd ⟨i, by simpa using hi⟩
 
-/-- The empty list of digits has the value `0`. -/
-@[simp]
-theorem ofDigitList_nil (b : ℕ) : ofDigitList b [] = 0 :=
-  rfl
-
 /-- One more digit at the end multiplies the value by `b` and adds the digit. -/
 theorem ofDigitList_append_singleton (b : ℕ) (l : List ℕ) (x : ℕ) :
     ofDigitList b (l ++ [x]) = ofDigitList b l * b + x := by
