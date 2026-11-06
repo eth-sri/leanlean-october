@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderDownwardCycleHomotopy
 public import RequestProject.OrderNormalizationNaturality
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual strict cycle fillings from a componentwise downward collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

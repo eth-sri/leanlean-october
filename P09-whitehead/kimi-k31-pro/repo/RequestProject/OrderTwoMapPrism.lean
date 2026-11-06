@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Explicit finite cellular prisms for two monotone maps with different
 source and target posets. Proof terms only; not compiled. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

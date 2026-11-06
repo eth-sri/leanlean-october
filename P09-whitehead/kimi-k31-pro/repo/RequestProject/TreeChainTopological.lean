@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TreeUnivCoverIso
 public import RequestProject.TreeChain
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # `(1) ⇒ (2)` of Theorem A for chains of arbitrary two-complexes, topologically
@@ -28,9 +34,6 @@ hypothesis:
   `π₂`, has a connected acyclic regular cover.**
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb

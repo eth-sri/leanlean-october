@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ExponentCorrection
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Words in commuting elements, and the elimination step of Lemma 3.1
@@ -20,9 +26,6 @@ states it; the version proved here is the one used to compute the fundamental gr
 complex `Y_D` built in `RequestProject/InitialComplex.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

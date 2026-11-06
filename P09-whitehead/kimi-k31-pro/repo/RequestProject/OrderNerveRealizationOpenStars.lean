@@ -14,8 +14,7 @@ def orderNerveRealizationOpenStar (P : Type) [PartialOrder P] (v : P) :
 
 /-- Coordinate positivity defines an open subset of the actual realization. -/
 theorem orderNerveRealizationOpenStar_isOpen (P : Type) [PartialOrder P] (v : P) :
-    IsOpen (orderNerveRealizationOpenStar P v) := by
-  exact isOpen_Ioi.preimage ((continuous_apply v).comp
+    IsOpen (orderNerveRealizationOpenStar P v) := isOpen_Ioi.preimage ((continuous_apply v).comp
     (orderNerveRealizationCoordinates P).continuous)
 
 /-- On simplex interiors, open-star membership is exactly vertex membership. -/

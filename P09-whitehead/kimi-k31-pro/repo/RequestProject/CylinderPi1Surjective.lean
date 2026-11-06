@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderConstructionPartialOrder
 public import RequestProject.OrderReflexiveConjugation
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 universe u
@@ -15,7 +17,7 @@ variable {X S : Type u} [PartialOrder X] [PartialOrder S] (a : S →o X)
 
 /-- Every actual based cylinder loop is homotopic to its retraction onto the base. -/
 theorem cylinder_loop_retraction (x : X)
-    (p : List ((orderCx (CylP a)).E × Bool))
+    (p : FiniteChains.Comb.Oriented (orderCx (CylP a)).E)
     (hp : IsPath (orderCx (CylP a)).src (orderCx (CylP a)).tgt p (cylIn a x) (cylIn a x)) :
     Htpy (orderCx (CylP a)) (cylIn a x) (cylIn a x) p
       (mapPath (orderCxMap (cylIn a) (cylIn_monotone a))

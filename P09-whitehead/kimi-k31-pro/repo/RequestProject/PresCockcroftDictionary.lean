@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PresUnivCoverIso
 public import RequestProject.Cockcroft
 public import RequestProject.CockcroftExtension
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The Cockcroft property: the topological definition and the Fox one agree
@@ -23,9 +29,6 @@ Using the identification of the two models of the universal cover
 presentation the two agree: `FiniteChains.Comb.isCockcroft_presComplex_iff`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb

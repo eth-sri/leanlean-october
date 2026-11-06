@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.TreeCover
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual lifted paths with coefficients in an arbitrary receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -18,13 +20,13 @@ variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
 noncomputable def germValue (e : K.E × Bool) : G :=
   φ (QuotientGroup.mk (germWord T e))
 
-noncomputable def wordValue (p : List (K.E × Bool)) : G :=
+noncomputable def wordValue (p : FiniteChains.Comb.Oriented K.E) : G :=
   φ (QuotientGroup.mk (pathWord T p))
 
 @[simp] theorem wordValue_nil : wordValue T φ [] = 1 := by
   simp [wordValue, pathWord_nil]
 
-theorem wordValue_cons (e : K.E × Bool) (p : List (K.E × Bool)) :
+theorem wordValue_cons (e : K.E × Bool) (p : FiniteChains.Comb.Oriented K.E) :
     wordValue T φ (e :: p) = germValue T φ e * wordValue T φ p := by
   rw [wordValue, pathWord_cons, QuotientGroup.mk_mul, map_mul]
   rfl
@@ -59,13 +61,13 @@ noncomputable def tgt (x : G × K.E) : G × K.V :=
 noncomputable def liftGerm (g : G) (e : K.E × Bool) : (G × K.E) × Bool :=
   if e.2 then ((g, e.1), true) else ((g * germValue T φ e, e.1), false)
 
-noncomputable def liftPath : List (K.E × Bool) → G → List ((G × K.E) × Bool)
+noncomputable def liftPath : FiniteChains.Comb.Oriented K.E → G → FiniteChains.Comb.Oriented ((G × K.E))
   | [], _ => []
   | e :: p, g => liftGerm T φ g e :: liftPath p (g * germValue T φ e)
 
 @[simp] theorem liftPath_nil (g : G) : liftPath T φ [] g = [] := rfl
 
-@[simp] theorem liftPath_cons (e : K.E × Bool) (p : List (K.E × Bool)) (g : G) :
+@[simp] theorem liftPath_cons (e : K.E × Bool) (p : FiniteChains.Comb.Oriented K.E) (g : G) :
     liftPath T φ (e :: p) g = liftGerm T φ g e :: liftPath T φ p (g * germValue T φ e) := rfl
 
 @[simp] theorem liftGerm_projection (g : G) (e : K.E × Bool) :
@@ -88,13 +90,13 @@ theorem germTgt_liftGerm (g : G) (e : K.E × Bool) :
   obtain ⟨e, b⟩ := e
   cases b <;> rfl
 
-theorem liftPath_projection (p : List (K.E × Bool)) (g : G) :
+theorem liftPath_projection (p : FiniteChains.Comb.Oriented K.E) (g : G) :
     (liftPath T φ p g).map (fun eb => (eb.1.2, eb.2)) = p := by
   induction p generalizing g with
   | nil => rfl
   | cons e p ih => simp [ih]
 
-theorem liftPath_translate (p : List (K.E × Bool)) (h g : G) :
+theorem liftPath_translate (p : FiniteChains.Comb.Oriented K.E) (h g : G) :
     liftPath T φ p (h * g) =
       (liftPath T φ p g).map (fun eb => ((h * eb.1.1, eb.1.2), eb.2)) := by
   induction p generalizing g with
@@ -107,7 +109,7 @@ theorem liftPath_translate (p : List (K.E × Bool)) (h g : G) :
     rw [liftPath_cons, liftPath_cons, he, mul_assoc, ih]
     rfl
 
-theorem liftPath_isPath {p : List (K.E × Bool)} {a b : K.V}
+theorem liftPath_isPath {p : FiniteChains.Comb.Oriented K.E} {a b : K.V}
     (hp : IsPath K.src K.tgt p a b) (g : G) :
     IsPath (src (K := K)) (tgt T φ) (liftPath T φ p g)
       (g, a) (g * wordValue T φ p, b) := by

@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.OrderTriangleDiskCoordinates
 public import RequestProject.StrictOrderNerveCellEquivalences
@@ -11,6 +13,10 @@ public import RequestProject.ClassicalCWWordDiskModel
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual second skeleton of an order realization is obtained by
 attaching explicitly parametrized triangle disks to its actual first
 skeleton. The proof replaces the original chosen characteristic charts
@@ -19,9 +25,6 @@ Awaiting final Lean verification. -/
 
 noncomputable section
 open scoped Classical Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleAttachment
 open RelativeAttachment ClassicalSkeletonAttachment CategoryTheory Topology

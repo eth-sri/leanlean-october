@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.TreeCoverAcyclic
 public import RequestProject.CombPi2
 public import RequestProject.UniversalCoverPi2
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Collapsing a spanning tree does not change `π₂`
@@ -33,9 +38,6 @@ The last statement is what turns the topological form of condition (1) of Theore
 algebraic one used in Section 2 of the paper.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -47,11 +49,11 @@ universe u
 /-- A homotopy between two paths conjugated by a fixed prefix and suffix comes from a homotopy
 between the paths themselves. -/
 theorem htpy_of_congr_append {X : Complex2.{u}} {a b c d : X.V}
-    {r s p q : List (X.E × Bool)}
+    {r s p q : FiniteChains.Comb.Oriented X.E}
     (hr : IsPath X.src X.tgt r c a) (hs : IsPath X.src X.tgt s b d)
     (hp : IsPath X.src X.tgt p a b) (hq : IsPath X.src X.tgt q a b)
     (h : Htpy X c d (r ++ p ++ s) (r ++ q ++ s)) : Htpy X a b p q := by
-  have key : ∀ l : List (X.E × Bool), IsPath X.src X.tgt l a b →
+  have key : ∀ l : FiniteChains.Comb.Oriented X.E, IsPath X.src X.tgt l a b →
       Htpy X a b (revPath r ++ (r ++ l ++ s) ++ revPath s) l := by
     intro l hl
     have hrl : IsPath X.src X.tgt (revPath r ++ r) a a := (isPath_revPath hr).append hr
@@ -106,12 +108,12 @@ theorem uvQ_extend {x₀ : K.V} {c : UV K x₀} {eb : K.E × Bool}
       have hp : endpt K x₀ p.1 = germSrc K.src K.tgt eb := h
       rw [extend_mk, uvQ_mk, extendP_pos hp, uvQ_mk, wordQ_append]
       congr 1
-      rw [show ([eb] : List (K.E × Bool)) = eb :: [] from rfl, wordQ_cons, wordQ_nil, mul_one]
+      rw [show ([eb] : FiniteChains.Comb.Oriented K.E) = eb :: [] from rfl, wordQ_cons, wordQ_nil, mul_one]
 
 /-! ### The two-chain map is injective: `uvQ` separates classes with the same endpoint -/
 
 omit [Fintype (NonTree T)] [DecidableEq (NonTree T)] [Fintype K.F] [DecidableEq K.F] in
-theorem uvQ_conjPath {x₀ b : K.V} {l : List (K.E × Bool)} (hl : IsPath K.src K.tgt l x₀ b) :
+theorem uvQ_conjPath {x₀ b : K.V} {l : FiniteChains.Comb.Oriented K.E} (hl : IsPath K.src K.tgt l x₀ b) :
     pi1ToPres T (loopOf T hl) = wordQ T (relTree T) l := by
   show wordClass T (conjPath T l x₀ b) = _
   rw [conjPath, wordClass_append, wordClass_append]
@@ -156,7 +158,7 @@ theorem exists_uvQ (x₀ : K.V) (g : CovQ T (relTree T)) (a : K.V) :
     ∃ c : UV K x₀, uvQ (T := T) c = g ∧ endV c = a := by
   obtain ⟨w, rfl⟩ := QuotientGroup.mk_surjective (s := relTree T) g
   obtain ⟨L, hL, hLw⟩ := exists_loop_spelling T w
-  set l : List (K.E × Bool) := revPath (T.treePath x₀) ++ L ++ T.treePath a with hldef
+  set l : FiniteChains.Comb.Oriented K.E := revPath (T.treePath x₀) ++ L ++ T.treePath a with hldef
   have hl : IsPath K.src K.tgt l x₀ a :=
     ((isPath_revPath (T.treePath_isPath x₀)).append hL).append (T.treePath_isPath a)
   have hend : endpt K x₀ l = a := endpt_eq_of_isPath hl
@@ -186,7 +188,7 @@ noncomputable def uvFace {x₀ : K.V} (F : UF K x₀) : (treeUniv T).F := (uvQ (
 
 omit [Fintype (NonTree T)] [DecidableEq (NonTree T)] [Fintype K.F] [DecidableEq K.F] in
 /-- **The lifts of an edge path in the two models agree.** -/
-theorem map_uLiftPath_tree {x₀ : K.V} : ∀ (L : List (K.E × Bool)) (c : UV K x₀) (w : K.V),
+theorem map_uLiftPath_tree {x₀ : K.V} : ∀ (L : FiniteChains.Comb.Oriented K.E) (c : UV K x₀) (w : K.V),
     IsPath K.src K.tgt L (endV c) w →
       (uLiftPath L c).map (fun Eb => (uvEdge T Eb.1, Eb.2))
         = liftK T (relTree T) L (uvQ (T := T) c) := by

@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.AttachmentHomotopyExtension
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Continuous pasting on the two ends and the side of a cylinder.
 The side is any closed subspace, including an arbitrary disjoint family of
 disk boundaries. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical

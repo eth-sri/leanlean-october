@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SurfaceCoverRelativeRigidity
 public import RequestProject.SurfaceFundamentalChain
 public import RequestProject.OrderNerveDecoding
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual polygon disk lifted from each centre of a surface poset cover. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open Comb Cell
@@ -72,56 +75,56 @@ theorem exists_coveredPolygon (v : PolygonCoverPole hc f) :
   have ldown (a : P) (b : SCell vc ec hc) (h : b ≤ f a) :
       ∃ x, x ≤ a ∧ f x = b := (hf.down a b h).exists
   choose R hR using fun p : Fin M => lup v.1 (cR hc p)
-    (by rw (config := { transparency := .default }) [v.2]; exact cC_le_cR hc p)
+    (by rwd [v.2]; exact cC_le_cR hc p)
   choose I hI using fun p : Fin M => lup v.1 (cI hc p)
-    (by rw (config := { transparency := .default }) [v.2]; exact (ctr_lt_inn hc p).le)
+    (by rwd [v.2]; exact (ctr_lt_inn hc p).le)
   have hri (p : Fin M) : R p ≤ I p :=
     hf.le_of_le_above (hR p).1 (hI p).1 (by
-      rw (config := { transparency := .default }) [(hR p).2, (hI p).2]; exact cR_le_cI hc p)
+      rwd [(hR p).2, (hI p).2]; exact cR_le_cI hc p)
   have hr1i (p : Fin M) : R (p + 1) ≤ I p :=
     hf.le_of_le_above (hR (p + 1)).1 (hI p).1 (by
-      rw (config := { transparency := .default }) [(hR (p + 1)).2, (hI p).2]; exact cR1_le_cI hc p)
+      rwd [(hR (p + 1)).2, (hI p).2]; exact cR1_le_cI hc p)
   choose W hW using fun p : Fin M => ldown (R p) (cW hc p)
-    (by rw (config := { transparency := .default }) [(hR p).2]; exact cW_le_cR hc p)
+    (by rwd [(hR p).2]; exact cW_le_cR hc p)
   choose F hF using fun p : Fin M => ldown (I p) (cF hc p)
-    (by rw (config := { transparency := .default }) [(hI p).2]; exact cF_le_cI hc p)
+    (by rwd [(hI p).2]; exact cF_le_cI hc p)
   have hwf (p : Fin M) : W p ≤ F p :=
     hf.le_of_le_below ((hW p).1.trans (hri p)) (hF p).1 (by
-      rw (config := { transparency := .default }) [(hW p).2, (hF p).2]; exact cW_le_cF hc p)
+      rwd [(hW p).2, (hF p).2]; exact cW_le_cF hc p)
   have hw1f (p : Fin M) : W (p + 1) ≤ F p :=
     hf.le_of_le_below ((hW (p + 1)).1.trans (hr1i p)) (hF p).1 (by
-      rw (config := { transparency := .default }) [(hW (p + 1)).2, (hF p).2]; exact cW1_le_cF hc p)
+      rwd [(hW (p + 1)).2, (hF p).2]; exact cW1_le_cF hc p)
   choose T2 hT2 using fun p : Fin M => lup (F p) (cT2 hc p)
-    (by rw (config := { transparency := .default }) [(hF p).2]; exact cF_le_cT2 hc p)
+    (by rwd [(hF p).2]; exact cF_le_cT2 hc p)
   choose V hV using fun p : Fin M => ldown (T2 p) (cV hc p)
-    (by rw (config := { transparency := .default }) [(hT2 p).2]; exact cV_le_cT2 hc p)
+    (by rwd [(hT2 p).2]; exact cV_le_cT2 hc p)
   choose D hD using fun p : Fin M => ldown (T2 p) (cD hc p)
-    (by rw (config := { transparency := .default }) [(hT2 p).2]; exact cD_le_cT2 hc p)
+    (by rwd [(hT2 p).2]; exact cD_le_cT2 hc p)
   choose G hG using fun p : Fin M => ldown (T2 p) (cG hc p)
-    (by rw (config := { transparency := .default }) [(hT2 p).2]; exact cG_le_cT2 hc p)
+    (by rwd [(hT2 p).2]; exact cG_le_cT2 hc p)
   have hvd (p : Fin M) : V p ≤ D p := hf.le_of_le_below (hV p).1 (hD p).1 (by
-    rw (config := { transparency := .default }) [(hV p).2, (hD p).2]; exact cV_le_cD hc p)
+    rwd [(hV p).2, (hD p).2]; exact cV_le_cD hc p)
   have hwd (p : Fin M) : W p ≤ D p := hf.le_of_le_below
     ((hwf p).trans (hT2 p).1) (hD p).1 (by
-      rw (config := { transparency := .default }) [(hW p).2, (hD p).2]; exact cW_le_cD hc p)
+      rwd [(hW p).2, (hD p).2]; exact cW_le_cD hc p)
   have hvg (p : Fin M) : V p ≤ G p := hf.le_of_le_below (hV p).1 (hG p).1 (by
-    rw (config := { transparency := .default }) [(hV p).2, (hG p).2]; exact cV_le_cG hc p)
+    rwd [(hV p).2, (hG p).2]; exact cV_le_cG hc p)
   have hw1g (p : Fin M) : W (p + 1) ≤ G p := hf.le_of_le_below
     ((hw1f p).trans (hT2 p).1) (hG p).1 (by
-      rw (config := { transparency := .default }) [(hW (p + 1)).2, (hG p).2]; exact cW1_le_cG hc p)
+      rwd [(hW (p + 1)).2, (hG p).2]; exact cW1_le_cG hc p)
   choose T1 hT1 using fun p : Fin M => lup (G p) (cT1 hc p)
-    (by rw (config := { transparency := .default }) [(hG p).2]; exact cG_le_cT1 hc p)
+    (by rwd [(hG p).2]; exact cG_le_cT1 hc p)
   have hd1t1 (p : Fin M) : D (p + 1) ≤ T1 p := hf.le_of_le_above
     (hwd (p + 1)) ((hw1g p).trans (hT1 p).1) (by
-      rw (config := { transparency := .default }) [(hD (p + 1)).2, (hT1 p).2]; exact cD1_le_cT1 hc p)
+      rwd [(hD (p + 1)).2, (hT1 p).2]; exact cD1_le_cT1 hc p)
   choose E hE using fun p : Fin M => ldown (T1 p) (cE hc p)
-    (by rw (config := { transparency := .default }) [(hT1 p).2]; exact cE_le_cT1 hc p)
+    (by rwd [(hT1 p).2]; exact cE_le_cT1 hc p)
   have hve (p : Fin M) : V p ≤ E p := hf.le_of_le_below
     ((hvg p).trans (hT1 p).1) (hE p).1 (by
-      rw (config := { transparency := .default }) [(hV p).2, (hE p).2]; exact cV_le_cE hc p)
+      rwd [(hV p).2, (hE p).2]; exact cV_le_cE hc p)
   have hv1e (p : Fin M) : V (p + 1) ≤ E p := hf.le_of_le_below
     ((hvd (p + 1)).trans (hd1t1 p)) (hE p).1 (by
-      rw (config := { transparency := .default }) [(hV (p + 1)).2, (hE p).2]; exact cV1_le_cE hc p)
+      rwd [(hV (p + 1)).2, (hE p).2]; exact cV1_le_cE hc p)
   exact ⟨{
     V := V, W := W, E := E, D := D, G := G, F := F, R := R,
     T1 := T1, T2 := T2, I := I,
@@ -155,8 +158,7 @@ def sector (p : Fin M) : Nerve.Ch P :=
 
 def fundamental : Nerve.Ch P := ∑ p : Fin M, D.sector p
 
-theorem sector_mem_inc (p : Fin M) : D.sector p ∈ Nerve.Inc P := by
-  exact (Nerve.Inc _).add_mem ((Nerve.Inc _).add_mem
+theorem sector_mem_inc (p : Fin M) : D.sector p ∈ Nerve.Inc P := (Nerve.Inc _).add_mem ((Nerve.Inc _).add_mem
     (triangleFlagChain_mem_inc (D.ve p) (D.v1e p) (D.vd (p + 1)) (D.wd (p + 1))
       (D.w1g p) (D.vg p) (D.et1 p) (D.d1t1 p) (D.gt1 p))
     (triangleFlagChain_mem_inc (D.vg p) (D.w1g p) (D.w1f p) (D.wf p)
@@ -188,7 +190,7 @@ theorem fundamental_boundary :
     Fintype.sum_equiv (Equiv.addRight (1 : Fin M)) _ _ (fun _ => rfl)
   simp only [fundamental, map_sum, sector_boundary,
     Finset.sum_add_distrib, Finset.sum_sub_distrib]
-  rw (config := { transparency := .default }) [hshift (fun p => flagEdge (D.V p) (D.W p) (D.D p)),
+  rwd [hshift (fun p => flagEdge (D.V p) (D.W p) (D.D p)),
     hshift (fun p => flagEdge v.1 (D.W p) (D.R p))]
   abel
 
@@ -198,7 +200,7 @@ noncomputable def cellularFundamental : StrictOrdTri P →₀ ℤ :=
 theorem cellularFundamental_coefficient (t : StrictOrdTri P) :
     D.cellularFundamental t = ordTriangleCoefficient ((strictOrderIncl P).onF t)
       D.fundamental := by
-  rw (config := { transparency := .default }) [cellularFundamental, normalizeOrdChain2_apply, ← ordTriangleCoefficient_encode,
+  rwd [cellularFundamental, normalizeOrdChain2_apply, ← ordTriangleCoefficient_encode,
     ordNerveChain2_decode D.fundamental_mem_inc, D.fundamental_degree]
 
 noncomputable def boundaryEdges : OrdEdge P →₀ ℤ :=
@@ -213,19 +215,19 @@ theorem boundaryEdges_encode : ordNerveChain1 D.boundaryEdges =
 theorem decodedFundamental_boundary :
     Comb.bdry2 (orderCx P) (decodeOrdNerve2 D.fundamental) = D.boundaryEdges := by
   apply ordNerveChain1_injective
-  rw (config := { transparency := .default }) [ordNerveChain1_bdry2, ordNerveChain2_decode D.fundamental_mem_inc,
+  rwd [ordNerveChain1_bdry2, ordNerveChain2_decode D.fundamental_mem_inc,
     D.fundamental_degree, D.fundamental_boundary, D.boundaryEdges_encode]
 
 theorem V_ne_E (p : Fin M) : D.V p ≠ D.E p := by
   intro h
   have hh := congrArg f h
-  rw (config := { transparency := .default }) [D.projV, D.projE] at hh
+  rwd [D.projV, D.projE] at hh
   cases hh
 
 theorem V1_ne_E (p : Fin M) : D.V (p + 1) ≠ D.E p := by
   intro h
   have hh := congrArg f h
-  rw (config := { transparency := .default }) [D.projV, D.projE] at hh
+  rwd [D.projV, D.projE] at hh
   cases hh
 
 def boundaryEdgeLeft (p : Fin M) : StrictOrdEdge P :=
@@ -239,7 +241,7 @@ the lifted polygon sides, with their actual endpoints and coefficients. -/
 theorem cellularFundamental_boundary : Comb.bdry2 (strictOrderCx P) D.cellularFundamental =
     ∑ p : Fin M, (Finsupp.single (D.boundaryEdgeLeft p) 1 -
       Finsupp.single (D.boundaryEdgeRight p) 1) := by
-  rw (config := { transparency := .default }) [cellularFundamental, bdry2_normalizeOrdChain2, D.decodedFundamental_boundary]
+  rwd [cellularFundamental, bdry2_normalizeOrdChain2, D.decodedFundamental_boundary]
   simp [boundaryEdges, normalizeOrdEdge, D.V_ne_E, D.V1_ne_E,
     boundaryEdgeLeft, boundaryEdgeRight]
 
@@ -251,13 +253,13 @@ theorem cellularFundamental_relative : PolygonRelativeChain hc f D.cellularFunda
       InPolygonBoundary hc (f (D.boundaryEdgeLeft p).1.1) ∧
         InPolygonBoundary hc (f (D.boundaryEdgeLeft p).1.2) := by
     change InPolygonBoundary hc (f (D.V p)) ∧ InPolygonBoundary hc (f (D.E p))
-    rw (config := { transparency := .default }) [D.projV, D.projE]
+    rwd [D.projV, D.projE]
     exact ⟨trivial, trivial⟩
   have hright (p : Fin M) :
       InPolygonBoundary hc (f (D.boundaryEdgeRight p).1.1) ∧
         InPolygonBoundary hc (f (D.boundaryEdgeRight p).1.2) := by
     change InPolygonBoundary hc (f (D.V (p + 1))) ∧ InPolygonBoundary hc (f (D.E p))
-    rw (config := { transparency := .default }) [D.projV, D.projE]
+    rwd [D.projV, D.projE]
     exact ⟨trivial, trivial⟩
   by_contra hb
   have hneL (p : Fin M) : D.boundaryEdgeLeft p ≠ e := by
@@ -267,7 +269,7 @@ theorem cellularFundamental_relative : PolygonRelativeChain hc f D.cellularFunda
     intro hh
     exact hb (hh ▸ hright p)
   apply hn
-  rw (config := { transparency := .default }) [D.cellularFundamental_boundary]
+  rwd [D.cellularFundamental_boundary]
   simp [hneL, hneR]
 
 variable (hc f)
@@ -317,7 +319,7 @@ theorem cellularFundamental_pole_coefficient (hM : 2 ≤ M)
       exact Cell.rad.inj hh
     exact fin_succ_ne_self hM p (hp'.trans hp.symm)
   change D.cellularFundamental t = _
-  rw (config := { transparency := .default }) [D.cellularFundamental_coefficient]
+  rwd [D.cellularFundamental_coefficient]
   simp only [fundamental, sector, triangleFlagChain, map_sum, map_add, map_sub,
     ordTriangleCoefficient, FreeAbelianGroup.lift_apply_of, strictOrderIncl]
   simp only [hplus, hminus, if_false]
@@ -329,7 +331,7 @@ theorem cellularFundamental_pole_coefficients (hM : 2 ≤ M) :
     polygonCoverPoleCoefficients hc f hf D.cellularFundamental = Finsupp.single v 1 := by
   classical
   ext u
-  rw (config := { transparency := .default }) [polygonCoverPoleCoefficients_apply,
+  rwd [polygonCoverPoleCoefficients_apply,
     CoveredPolygon.cellularFundamental_pole_coefficient hc f hf D hM u]
   simp only [Finsupp.single_apply]
 
@@ -357,12 +359,12 @@ noncomputable def polygonCoverReconstruct :
 theorem polygonCoverReconstruct_relative (a : PolygonCoverPole hc f →₀ ℤ) :
     PolygonRelativeChain hc f (polygonCoverReconstruct hc f hf a) := by
   induction a using Finsupp.induction_linear with
-  | zero => rw (config := { transparency := .default }) [map_zero]; exact PolygonRelativeChain.zero hc f
+  | zero => rwd [map_zero]; exact PolygonRelativeChain.zero hc f
   | add a b ha hb =>
-    rw (config := { transparency := .default }) [map_add]
+    rwd [map_add]
     exact PolygonRelativeChain.add hc f ha hb
   | single v n =>
-    rw (config := { transparency := .default }) [polygonCoverReconstruct, Finsupp.linearCombination_single]
+    rwd [polygonCoverReconstruct, Finsupp.linearCombination_single]
     exact PolygonRelativeChain.smul hc f (polygonCoverFilling_relative hc f hf v) n
 
 theorem polygonCoverReconstruct_coefficients (hM : 2 ≤ M)
@@ -370,9 +372,9 @@ theorem polygonCoverReconstruct_coefficients (hM : 2 ≤ M)
     polygonCoverPoleCoefficients hc f hf (polygonCoverReconstruct hc f hf a) = a := by
   induction a using Finsupp.induction_linear with
   | zero => simp
-  | add a b ha hb => rw (config := { transparency := .default }) [map_add, map_add, ha, hb]
+  | add a b ha hb => rwd [map_add, map_add, ha, hb]
   | single v n =>
-    rw (config := { transparency := .default }) [polygonCoverReconstruct, Finsupp.linearCombination_single, map_smul,
+    rwd [polygonCoverReconstruct, Finsupp.linearCombination_single, map_smul,
       polygonCoverFilling_pole_coefficients hc f hf hM]
     simp [Finsupp.smul_single]
 

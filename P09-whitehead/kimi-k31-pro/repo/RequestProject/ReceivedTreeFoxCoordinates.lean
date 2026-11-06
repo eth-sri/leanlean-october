@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ReceivedTreeCover
 public import RequestProject.FoxWordBoundary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Fox coordinates of the actual cover over the receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -107,7 +109,7 @@ theorem cellCoefficient_liftGerm (i : NonTree T) (g : G) (e : K.E × Bool) :
 
 /-- The whole lifted marked path has the translated Fox coefficient of its
 actual tree word. No quotient of G or augmentation is taken. -/
-theorem cellCoefficient_liftPath (i : NonTree T) (g : G) (p : List (K.E × Bool)) :
+theorem cellCoefficient_liftPath (i : NonTree T) (g : G) (p : FiniteChains.Comb.Oriented K.E) :
     cellCoefficient (G := G) i.1 (pathChain (liftPath T φ p g)) =
       MonoidAlgebra.single g 1 * coefficientMap T φ (fox i (pathWord T p)) := by
   induction p generalizing g with

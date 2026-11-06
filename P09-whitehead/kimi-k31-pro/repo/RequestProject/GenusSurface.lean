@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SurfaceLink
 public import RequestProject.GenusLoops
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The nerve of the block of genus `q` is a closed surface
@@ -34,9 +40,6 @@ of the corner `8h` is glued to the side coming into the corner `8h + 6`, then `8
 commutator.  So all `4q` corners lie on one cycle.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

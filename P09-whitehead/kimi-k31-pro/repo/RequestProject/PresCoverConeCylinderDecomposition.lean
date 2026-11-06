@@ -1,20 +1,22 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCoverRelatorFanLinks
 public import RequestProject.PresCoverCylinderElimination
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 set_option maxHeartbeats 800000
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The genuine relator-fan realization recovers every cone link of an actual two-cycle. -/
@@ -44,9 +46,9 @@ theorem presCover_cycle_minus_fans_cylinder_support (c : StrictOrdTri P →₀ �
     have he := congrArg
       (fun z => z ((presCoverConeCircleHom w f hf p.1.1 p.1.2 p.2).onE e))
       (presCover_cycle_fan_circle w f hf hpos c hc p)
-    rw (config := { transparency := .default }) [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
+    rwd [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
     have hz : (c - presCoverRelatorFanChain w f hf (presCoverRelatorChain w f hf hpos c)) t = 0 := by
-      rw (config := { transparency := .default }) [Finsupp.sub_apply]
+      rwd [Finsupp.sub_apply]
       exact sub_eq_zero.mpr he
     exact (Finsupp.mem_support_iff.mp ht) hz
 
@@ -90,6 +92,6 @@ theorem exists_presCover_cycle_cylinder_boundary (c : StrictOrdTri P →₀ ℤ)
     (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) d).symm.trans (by
       change Comb.bdry2 (strictOrderCx P)
         (Finsupp.mapDomain (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}).onF d) = _
-      rw (config := { transparency := .default }) [hd, map_sub, hc, zero_sub])
+      rwd [hd, map_sub, hc, zero_sub])
 
 end FiniteChains.PresModel

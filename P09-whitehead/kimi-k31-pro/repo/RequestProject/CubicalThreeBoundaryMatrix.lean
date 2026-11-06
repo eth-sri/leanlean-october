@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeThreeFacetCoordinates
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Integral coefficient calculation for the six oriented faces of an ordered three-cube.
 The separate geometric comparison must identify this matrix with actual cube edge cells. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 

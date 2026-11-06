@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SurfaceRegular
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The links of the vertices of the surface are connected
@@ -27,9 +33,6 @@ polygon, from the outgoing side to the incoming side through the two triangles a
 diagonals of that corner, and then passes to the next corner through the side which glues them.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -314,13 +317,7 @@ def CornerAdj (vc : Fin M → κ) (ec : Fin M → ι) (i j : Fin M) : Prop :=
     ec (fpred i) = ec (fpred j))
 
 theorem cornerAdj_symm {i j : Fin M} (h : CornerAdj vc ec i j) : CornerAdj vc ec j i := by
-  obtain ⟨hv, hh⟩ := h
-  refine ⟨hv.symm, ?_⟩
-  rcases hh with h | h | h | h
-  · exact Or.inl h.symm
-  · exact Or.inr (Or.inr (Or.inl h.symm))
-  · exact Or.inr (Or.inl h.symm)
-  · exact Or.inr (Or.inr (Or.inr h.symm))
+  grind [CornerAdj]
 
 theorem vc_eq_of_reflTransGen {i j : Fin M} (h : ReflTransGen (CornerAdj vc ec) i j) :
     vc i = vc j := by

@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.MathlibOrderNerveNaturality
 public import Mathlib.AlgebraicTopology.SingularSet
 public import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
@@ -7,9 +9,10 @@ public import Mathlib.Algebra.Category.ModuleCat.Abelian
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory

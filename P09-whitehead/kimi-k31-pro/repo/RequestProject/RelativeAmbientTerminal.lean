@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RelativeAmbientReplacement
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The appended terminal stage in the ambient indexing used for the
 next iteration. No terminal vanishing or Cockcroft hypothesis is introduced.
@@ -11,9 +17,6 @@ Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily

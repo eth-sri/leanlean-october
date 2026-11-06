@@ -24,8 +24,7 @@ theorem radialPoint_mem_ball (r : I) (x : UnitBoundary E) :
 
 def ballRadialQuotient : C(I × UnitBoundary E, ClosedUnitBall E) where
   toFun rx := ⟨(rx.1 : ℝ) • rx.2.val, radialPoint_mem_ball E rx.1 rx.2⟩
-  continuous_toFun := by
-    exact ((continuous_subtype_val.comp continuous_fst).smul
+  continuous_toFun := ((continuous_subtype_val.comp continuous_fst).smul
       (continuous_subtype_val.comp continuous_snd)).subtype_mk _
 
 @[simp] theorem ballRadialQuotient_norm (r : I) (x : UnitBoundary E) :
@@ -131,8 +130,7 @@ def orderNerveWithTopBallHomeomorph :
 
 theorem orderNerveWithTopBallHomeomorph_radial (r : I) (x : orderNerveRealization P) :
     orderNerveWithTopBallHomeomorph e (orderNerveRadialCone P (r, x)) =
-      ballRadialQuotient E (r, e x) := by
-  exact quotientSameFibersHomeomorph_apply _ _ _ _ _ (r, x)
+      ballRadialQuotient E (r, e x) := quotientSameFibersHomeomorph_apply _ _ _ _ _ (r, x)
 
 /-- The boundary restriction is exactly the supplied map, with no reparametrization. -/
 theorem orderNerveWithTopBallHomeomorph_boundary (x : orderNerveRealization P) :

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderCoverRose
 public import RequestProject.PosetCoverRestriction
 public import RequestProject.PosetCoverTargetIso
@@ -9,7 +10,7 @@ public import RequestProject.PosetCoverTargetIso
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 def cylinderRoseSet : Set (CylBase w) := {p | ∃ x : Rose α, p = cylIn (aHom w) x}
 
@@ -42,7 +43,6 @@ theorem cylinderCoverRoseEnd_isPosetCover (hf : IsPosetCover f) :
 
 omit [PartialOrder P] in
 theorem cylinderCoverRoseEnd_projection (p : cylinderCoverRoseSet w f) :
-    cylIn (aHom w) (cylinderCoverRoseEnd w f p) = f p.val := by
-  exact congrArg Subtype.val ((cylinderRoseOrderIso w).apply_symm_apply ⟨f p.val, p.property⟩)
+    cylIn (aHom w) (cylinderCoverRoseEnd w f p) = f p.val := congrArg Subtype.val ((cylinderRoseOrderIso w).apply_symm_apply ⟨f p.val, p.property⟩)
 
 end FiniteChains.PresModel

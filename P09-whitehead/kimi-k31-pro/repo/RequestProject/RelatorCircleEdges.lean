@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeLinkOrderIso
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import RequestProject.PresConeLinkOrderIso
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 theorem tCirc_strict_of_lt_relation {x y : TCirc w} (h : TCirc.lt w x y) : x < y := by
   apply lt_of_le_of_ne (show x ≤ y from Or.inr h)

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ReceivedTreeMarkedComparison
 
 @[expose] public section
@@ -11,7 +12,7 @@ open scoped Classical
 namespace FiniteChains.Comb
 universe u
 
-theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : List (E × Bool))
+theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : FiniteChains.Comb.Oriented E)
     (e : E) (hp : ∀ b ∈ p, b.1 ≠ e) : pathChain p e = 0 := by
   classical
   induction p with
@@ -25,7 +26,7 @@ theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : List (E × Bool))
 variable {X : Complex2.{u}} {a : X.V}
 
 theorem liftedPathChain_apply_zero_of_edge_absent
-    (v : UV X a) {p : List (X.E × Bool)} {b : X.V}
+    (v : UV X a) {p : FiniteChains.Comb.Oriented X.E} {b : X.V}
     (hp : IsPath X.src X.tgt p (endV v) b) (e : UE X a)
     (he : ∀ c ∈ p, c.1 ≠ e.1.2) : pathChain (uLiftPath p v) e = 0 := by
   apply pathChain_apply_zero_of_edge_absent
@@ -37,7 +38,7 @@ theorem liftedPathChain_apply_zero_of_edge_absent
 
 section Markings
 variable {I J : Type u} (b : X.V) (edge : I → X.E)
-  (tail : I → List (X.E × Bool))
+  (tail : I → FiniteChains.Comb.Oriented X.E)
   (hp : ∀ i, IsPath X.src X.tgt ((edge i, true) :: tail i) b b)
   (v : J → UV X a) (hv : ∀ j, endV (v j) = b)
 

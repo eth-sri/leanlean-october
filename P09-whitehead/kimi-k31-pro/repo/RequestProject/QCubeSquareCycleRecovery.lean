@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeSquareBoundaryKernel
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Local recovery of cubical coefficients from actual two-dimensional strict cycles. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

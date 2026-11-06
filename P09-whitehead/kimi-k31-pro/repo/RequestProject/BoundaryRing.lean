@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.LemmaTwoOne
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The reduced Fox boundary over an arbitrary coefficient ring
@@ -21,9 +27,6 @@ The case `k = ℤ` is the integral half of the argument, the case `k = 𝔽ₚ` 
 prime.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

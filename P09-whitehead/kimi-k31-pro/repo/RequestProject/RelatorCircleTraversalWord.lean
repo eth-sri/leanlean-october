@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelatorCircleIndexedWord
 public import RequestProject.OrderNerveAffinePathWords
 public import RequestProject.FinitePosetCycleNaturality
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The explicit once-around circle traversal represents its literal
 four-edges-per-letter word as an actual based path homotopy.
@@ -12,14 +17,11 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ContinuousEdgeWords
 
-variable {A J : Type} (w : J → List (A × Bool)) (j : J) (hn : 0 < (w j).length)
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A) (j : J) (hn : 0 < (w j).length)
 
 def circleWordVertex (i : Fin (relatorCircleSize w j + 2)) : TCirc w :=
   (relatorCircleEnumeration w j hn i).val

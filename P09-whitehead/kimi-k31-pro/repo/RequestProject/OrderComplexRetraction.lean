@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexHtpyIn
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # A retraction on path classes across one gluing step
@@ -40,9 +45,6 @@ exhaustion to the whole complex: a null-homotopy is a finite derivation, so it o
 finitely many cells and therefore stays inside one member of the exhaustion.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -56,13 +58,13 @@ variable {P Q : Type u} [Preorder P] [Preorder Q]
 /-- **`B` is injective on path classes inside `U`**: a loop inside `B` that is null-homotopic
 inside `U` is null-homotopic inside `B`. -/
 def InjIn (U B : P → Prop) : Prop :=
-  ∀ (v : P) (l : List ((orderCx P).E × Bool)), B v →
+  ∀ (v : P) (l : FiniteChains.Comb.Oriented (orderCx P).E), B v →
     IsPath (orderCx P).src (orderCx P).tgt l v v → PathIn B l →
     HtpyIn U v v l [] → HtpyIn B v v l []
 
 /-- Every loop inside `J` is null-homotopic inside `J`. -/
 def SimplyConnectedIn (J : P → Prop) : Prop :=
-  ∀ (v : P) (l : List ((orderCx P).E × Bool)), J v →
+  ∀ (v : P) (l : FiniteChains.Comb.Oriented (orderCx P).E), J v →
     IsPath (orderCx P).src (orderCx P).tgt l v v → PathIn J l → HtpyIn J v v l []
 
 theorem injIn_self (U : P → Prop) : InjIn U U := fun _ _ _ _ _ h => h
@@ -104,7 +106,7 @@ theorem simplyConnectedIn_of_simplyConnected {J : P → Prop}
 
 section Retr
 
-variable (A : P → Prop) (j0 : P) (γ : P → List ((orderCx P).E × Bool))
+variable (A : P → Prop) (j0 : P) (γ : P → FiniteChains.Comb.Oriented (orderCx P).E)
 
 open Classical in
 /-- The retraction on vertices: a vertex of `A` stays where it is, any other vertex goes to the
@@ -114,13 +116,13 @@ noncomputable def retrVert (u : P) : P := if A u then u else j0
 open Classical in
 /-- The retraction on oriented edges: an edge of `A` is unchanged, any other edge `u → v` is
 replaced by `γ u ⁻¹ γ v`. -/
-noncomputable def retrGerm (eb : (orderCx P).E × Bool) : List ((orderCx P).E × Bool) :=
+noncomputable def retrGerm (eb : (orderCx P).E × Bool) : FiniteChains.Comb.Oriented (orderCx P).E :=
   if A eb.1.1.1 ∧ A eb.1.1.2 then [eb]
   else revPath (γ (germSrc (orderCx P).src (orderCx P).tgt eb)) ++
     γ (germTgt (orderCx P).src (orderCx P).tgt eb)
 
 /-- The retraction on edge paths. -/
-noncomputable def retrPath : List ((orderCx P).E × Bool) → List ((orderCx P).E × Bool)
+noncomputable def retrPath : FiniteChains.Comb.Oriented (orderCx P).E → FiniteChains.Comb.Oriented (orderCx P).E
   | [] => []
   | eb :: t => retrGerm A γ eb ++ retrPath t
 
@@ -128,10 +130,10 @@ variable {A j0 γ}
 
 @[simp] theorem retrPath_nil : retrPath A γ [] = [] := rfl
 
-@[simp] theorem retrPath_cons (eb : (orderCx P).E × Bool) (t : List ((orderCx P).E × Bool)) :
+@[simp] theorem retrPath_cons (eb : (orderCx P).E × Bool) (t : FiniteChains.Comb.Oriented (orderCx P).E) :
     retrPath A γ (eb :: t) = retrGerm A γ eb ++ retrPath A γ t := rfl
 
-theorem retrPath_append (l l' : List ((orderCx P).E × Bool)) :
+theorem retrPath_append (l l' : FiniteChains.Comb.Oriented (orderCx P).E) :
     retrPath A γ (l ++ l') = retrPath A γ l ++ retrPath A γ l' := by
   induction l with
   | nil => rfl
@@ -159,7 +161,7 @@ theorem retrGerm_of_not_mem {eb : (orderCx P).E × Bool} (h : ¬ (A eb.1.1.1 ∧
   simp [retrGerm, h]
 
 /-- A path inside `A` is returned unchanged. -/
-theorem retrPath_eq_self {l : List ((orderCx P).E × Bool)} (hl : PathIn A l) :
+theorem retrPath_eq_self {l : FiniteChains.Comb.Oriented (orderCx P).E} (hl : PathIn A l) :
     retrPath A γ l = l := by
   induction l with
   | nil => rfl
@@ -168,7 +170,7 @@ theorem retrPath_eq_self {l : List ((orderCx P).E × Bool)} (hl : PathIn A l) :
       rw [retrPath_cons, retrGerm_of_mem heb, ih ht, List.singleton_append]
 
 /-- The retraction lands inside `A`. -/
-theorem pathIn_retrPath (hγA : ∀ u : P, PathIn A (γ u)) (l : List ((orderCx P).E × Bool)) :
+theorem pathIn_retrPath (hγA : ∀ u : P, PathIn A (γ u)) (l : FiniteChains.Comb.Oriented (orderCx P).E) :
     PathIn A (retrPath A γ l) := by
   classical
   induction l with
@@ -187,7 +189,7 @@ end Retr
 
 section Gluing
 
-variable {A B U J : P → Prop} {j0 : P} {γ : P → List ((orderCx P).E × Bool)}
+variable {A B U J : P → Prop} {j0 : P} {γ : P → FiniteChains.Comb.Oriented (orderCx P).E}
 
 variable (hJA : ∀ x, J x → A x) (hJmk : ∀ x, A x → B x → J x)
   (hγpath : ∀ u : P, J u → IsPath (orderCx P).src (orderCx P).tgt (γ u) j0 u)
@@ -232,7 +234,7 @@ theorem isPath_retrGerm (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a �
 include hJA hJmk hγpath hγnil in
 /-- The image of a path is a path between the images of its endpoints. -/
 theorem isPath_retrPath (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b)) :
-    ∀ (l : List ((orderCx P).E × Bool)) {a b : P},
+    ∀ (l : FiniteChains.Comb.Oriented (orderCx P).E) {a b : P},
       IsPath (orderCx P).src (orderCx P).tgt l a b → PathIn U l →
       IsPath (orderCx P).src (orderCx P).tgt (retrPath A γ l) (retrVert A j0 a)
         (retrVert A j0 b) := by
@@ -328,7 +330,7 @@ include hJA hJmk hγpath hγin hγnil in
 /-- **Telescoping along a path of `B`.**  The image of a path of `B` from `u` to `v` is
 homotopic, inside `A`, to `γ u ⁻¹ γ v`. -/
 theorem htpyIn_retrPath_of_pathIn_B (hJsc : SimplyConnectedIn J) (hj0 : J j0) :
-    ∀ (l : List ((orderCx P).E × Bool)) {u v : P},
+    ∀ (l : FiniteChains.Comb.Oriented (orderCx P).E) {u v : P},
       IsPath (orderCx P).src (orderCx P).tgt l u v → PathIn B l → B u → B v →
       HtpyIn A (retrVert A j0 u) (retrVert A j0 v) (retrPath A γ l)
         (revPath (γ u) ++ γ v) := by
@@ -406,7 +408,7 @@ include hJA hJmk hγpath hγin hγnil in
 theorem htpyIn_retrPath_of_stepIn
     (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b))
     (hJsc : SimplyConnectedIn J) (hj0 : J j0) {a b : P}
-    {l l' : List ((orderCx P).E × Bool)} (h : StepIn U a b l l') :
+    {l l' : FiniteChains.Comb.Oriented (orderCx P).E} (h : StepIn U a b l l') :
     HtpyIn A (retrVert A j0 a) (retrVert A j0 b) (retrPath A γ l) (retrPath A γ l') := by
   classical
   obtain ⟨⟨hpl, hpl', hc⟩, hUl, hUl'⟩ := h
@@ -591,7 +593,7 @@ include hJA hJmk hγpath hγin hγnil in
 theorem htpyIn_retrPath_of_htpyIn
     (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b))
     (hJsc : SimplyConnectedIn J) (hj0 : J j0) {a b : P}
-    {p q : List ((orderCx P).E × Bool)} (h : HtpyIn U a b p q) :
+    {p q : FiniteChains.Comb.Oriented (orderCx P).E} (h : HtpyIn U a b p q) :
     HtpyIn A (retrVert A j0 a) (retrVert A j0 b) (retrPath A γ p) (retrPath A γ q) := by
   induction h with
   | refl => exact HtpyIn.refl _
@@ -617,7 +619,7 @@ theorem injIn_union_of_unmixed {A B U J : P → Prop}
   have hJA : ∀ x, J x → A x := fun x h => ((hJdef x).1 h).1
   have hJmk : ∀ x, A x → B x → J x := fun x h h' => (hJdef x).2 ⟨h, h'⟩
   -- choose the paths `γ`
-  have hex : ∀ u : P, ∃ g : List ((orderCx P).E × Bool),
+  have hex : ∀ u : P, ∃ g : FiniteChains.Comb.Oriented (orderCx P).E,
       (J u → IsPath (orderCx P).src (orderCx P).tgt g j0 u) ∧ PathIn J g ∧ (¬ J u → g = []) := by
     intro u
     by_cases hu : J u
@@ -636,7 +638,7 @@ theorem injIn_union_of_unmixed {A B U J : P → Prop}
 /-- A monotone map that fixes the vertices of `B` returns a path of `B` unchanged. -/
 theorem mapPath_liftPathIn_of_fix {C B : P → Prop} (f : {x : P // C x} → P) (hf : Monotone f)
     (hfix : ∀ z : {x : P // C x}, B z.1 → f z = z.1) :
-    ∀ (l : List ((orderCx P).E × Bool)) (hl : PathIn C l), PathIn B l →
+    ∀ (l : FiniteChains.Comb.Oriented (orderCx P).E) (hl : PathIn C l), PathIn B l →
       mapPath (orderCxMap f hf) (liftPathIn l hl) = l
   | [], _, _ => rfl
   | e :: t, hl, hB => by
@@ -664,7 +666,7 @@ theorem injIn_of_monotone_retraction {C B : P → Prop} (hBC : ∀ x, B x → C 
   have hvC : C v := hBC v hv
   have hlC : PathIn C l := pathIn_mono hBC hl
   have hlift : Htpy (orderCx {x : P // C x}) ⟨v, hvC⟩ ⟨v, hvC⟩ (liftPathIn l hlC)
-      (liftPathIn ([] : List ((orderCx P).E × Bool)) (pathIn_nil C)) :=
+      (liftPathIn ([] : FiniteChains.Comb.Oriented (orderCx P).E) (pathIn_nil C)) :=
     htpy_lift_of_htpyIn hnull hvC hvC hlC (pathIn_nil C)
   have hpush := htpyIn_mapPath (C := B) f hf hfB hlift
   rw [mapPath_liftPathIn_of_fix f hf hfix l hlC hl, hfix ⟨v, hvC⟩ hv] at hpush
@@ -675,9 +677,9 @@ theorem injIn_of_monotone_retraction {C B : P → Prop} (hBC : ∀ x, B x → C 
 /-- **Finiteness of null-homotopies.**  A homotopy of the ambient complex only uses finitely many
 cells, so it takes place inside one member of an increasing exhaustion. -/
 theorem exists_htpyIn_of_htpy {D : ℕ → P → Prop} (hmono : ∀ m n, m ≤ n → ∀ x, D m x → D n x)
-    (hcov : ∀ x : P, ∃ n, D n x) {a b : P} {p q : List ((orderCx P).E × Bool)}
+    (hcov : ∀ x : P, ∃ n, D n x) {a b : P} {p q : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : Htpy (orderCx P) a b p q) : ∃ n, HtpyIn (D n) a b p q := by
-  have hpath : ∀ l : List ((orderCx P).E × Bool), ∃ n, PathIn (D n) l := by
+  have hpath : ∀ l : FiniteChains.Comb.Oriented (orderCx P).E, ∃ n, PathIn (D n) l := by
     intro l
     induction l with
     | nil => exact ⟨0, pathIn_nil _⟩

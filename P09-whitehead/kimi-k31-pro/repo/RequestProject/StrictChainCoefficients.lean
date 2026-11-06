@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.StrictOrderChains
 public import RequestProject.OrderNerveDictionary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Normalization preserves the coefficients of all genuine order simplices. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {P : Type} [PartialOrder P]

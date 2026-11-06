@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeIntervals
 public import RequestProject.PosetCoverLowerInterval
 
@@ -8,7 +9,7 @@ public import RequestProject.PosetCoverLowerInterval
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 def RelatorCircle := {x : TCirc w // x.1 = j ∧ x.2.1 < (w j).length}
 instance : PartialOrder (RelatorCircle w j) := Subtype.partialOrder _

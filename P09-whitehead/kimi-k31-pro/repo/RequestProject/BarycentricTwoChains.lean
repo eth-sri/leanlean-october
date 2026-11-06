@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CmpNerve
 public import RequestProject.OrderNormalizationNaturality
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Explicit finite barycentric subdivision in degrees one and two.
 Proof terms only; not compiled under the current workflow. -/
@@ -11,9 +17,6 @@ Proof terms only; not compiled under the current workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalGraphBoundaryWords
 public import RequestProject.ComponentComplex
 public import Mathlib.Topology.Connected.TotallyDisconnected
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Attaching word disks cannot connect distinct graph components.
 Thus connectedness of an actual word-disk model supplies connectedness
 of its labelled combinatorial graph. No finiteness is required. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -65,8 +68,7 @@ theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by
   have hedge (s : SquareSide) :
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
-        Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 1)) := by
-    exact Quotient.sound ⟨W.word s, W.isPath s⟩
+        Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 1)) := Quotient.sound ⟨W.word s, W.isPath s⟩
   have hcorner (s : SquareSide) :
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
         Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelativeTreeExtensionMaps
 public import RequestProject.PresGeneratorRelabel
 public import RequestProject.TreePi1Reflection
@@ -36,7 +37,7 @@ def stageBase : ∀ i, c.chainCell i → D.V
   | 0 => D.base
   | _ + 1 => Sum.elim D.base (fun _ => T.root)
 
-def stageAttaching : ∀ i, c.chainCell i → List (stageEdges T c i × Bool)
+def stageAttaching : ∀ i, c.chainCell i → FiniteChains.Comb.Oriented (stageEdges T c i)
   | 0 => D.att
   | i + 1 => Sum.elim (fun f => oldPath (D.att f))
       (fun s => readWord T (restrictedExtra c.rel (c.stage i) s).toWord)

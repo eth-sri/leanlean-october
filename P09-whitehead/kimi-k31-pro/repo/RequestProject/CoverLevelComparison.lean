@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ChamberAttachingJ
 public import RequestProject.RACGPi1Example
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Which complex is compared with which: the levels of the two models
@@ -42,9 +48,6 @@ computations the full nerve chains of `RequestProject/NervePrism.lean` (which ke
 `∂₃`) must be used, not the two-skeleton `Comb.orderCx`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

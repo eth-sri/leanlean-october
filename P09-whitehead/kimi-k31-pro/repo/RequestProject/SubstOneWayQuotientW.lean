@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SubstOneWayQuotient
 public import RequestProject.PresPosetAlphaW
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The one-way comparison over a model built on prescribed relator words
@@ -17,9 +22,6 @@ quotient `Q = Z/Γ` is injective on fundamental groups
 (`FiniteChains.Davis.pi1Map_qNew_injective`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -33,7 +35,7 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 /-- **The comparison of the source presentation with the quotient**, over the model built on the
 prescribed relator words. -/
 noncomputable def baseToQuotientW {α J : Type u} (ρ : J → FreeGroup α)
-    (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+    (w : J → FiniteChains.Comb.Oriented α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
     (att : NeSpx A →o PresPos w) :
     PresGroup ρ →*
       Comb.Pi1 (orderCx (Qpos A (PresPos w) att)) (qNew (A := A) (att := att) (ptBase w)) :=
@@ -42,7 +44,7 @@ noncomputable def baseToQuotientW {α J : Type u} (ρ : J → FreeGroup α)
 
 /-- **The comparison is injective.** -/
 theorem baseToQuotientW_injective {α J : Type u} (ρ : J → FreeGroup α)
-    (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+    (w : J → FiniteChains.Comb.Oriented α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
     (att : NeSpx A →o PresPos w) :
     Function.Injective (baseToQuotientW (A := A) ρ w hw att) := by
   intro x y h

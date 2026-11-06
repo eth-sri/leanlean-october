@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWChainFixedInitial
 public import RequestProject.PresClassicalDiskComparison
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The fixed presentation used for necessity has an actual homotopy
 equivalence with the original CW space. Its words and tree are independent
@@ -12,9 +17,6 @@ of every ambient chain, and the only stabilization is one filled loop.
 Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
@@ -66,7 +68,7 @@ def fixedRoseDiskEquiv : K ≃ₕ DiskAttachment (fixedRoseAttaching K T) :=
   (fixedGraphWordDiskEquiv K).trans
     (diskAttachmentBaseChangeHomotopyEquiv (fixedGraphWordAttaching K) (fixedGraphCollapse K T))
 
-def fixedCanonicalWords : FixedRel K → List (FixedGen K T × Bool) :=
+def fixedCanonicalWords : FixedRel K → FiniteChains.Comb.Oriented (FixedGen K T) :=
   presCanonicalWords (fixedRelators K T) (Sum.inr PUnit.unit)
 
 theorem fixedCanonicalWords_ne_nil (j : FixedRel K) : fixedCanonicalWords K T j ≠ [] :=
@@ -94,12 +96,12 @@ theorem fixedStabilizedBoundary_homotopic (j : FixedRel K) :
       have H₁ := H₀.trans (boundaryWords_homotopic_classicalWord W)
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inl : Comb.SpanningTree.NonTree T → FixedGen K T))).comp H₁
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
+      rwd [classicalRoseWordBoundary_map] at H
       have he : FreeGroup.mk (W.loopWord.map (fun p => ((Sum.inl p.1 : FixedGen K T), p.2))) =
           FreeGroup.mk (fixedCanonicalWords K T (Sum.inl j)) := by
-        rw (config := { transparency := .default }) [fixedCanonicalWords_mk]
+        rwd [fixedCanonicalWords_mk]
         change FreeGroup.map Sum.inl (FreeGroup.mk W.loopWord) = _
-        rw (config := { transparency := .default }) [BoundaryWords.eraseTree_mk]
+        rwd [BoundaryWords.eraseTree_mk]
         rfl
       exact H.trans ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
         (classicalPresWordAttaching_homotopic_read (fixedCanonicalWords K T) (Sum.inl j)
@@ -108,7 +110,7 @@ theorem fixedStabilizedBoundary_homotopic (j : FixedRel K) :
       cases u
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inr : PUnit → FixedGen K T))).comp dummyCircleBoundaryHomeomorph_homotopic_word
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
+      rwd [classicalRoseWordBoundary_map] at H
       have he : FreeGroup.mk ([(PUnit.unit, true)].map
           (fun p => ((Sum.inr p.1 : FixedGen K T), p.2))) =
           FreeGroup.mk (fixedCanonicalWords K T (Sum.inr PUnit.unit)) :=

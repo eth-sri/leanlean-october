@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 
 @[expose] public section
+
+backwardOptions
+
+
 
 open scoped commutatorElement
 
@@ -27,9 +33,6 @@ presentation, and the homotopy-theoretic half of Lemma 3.1 (Cockcroftness of
 `Y_D` and the vanishing on `π₂`), are not.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

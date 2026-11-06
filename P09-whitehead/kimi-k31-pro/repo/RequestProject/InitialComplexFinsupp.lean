@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.InitialComplex
 public import RequestProject.CoreSignedCollapseFinsupp
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual initial presentation `relY` is Cockcroft for an arbitrary
 acyclic core. All cycle computations use finite-support chains. The
@@ -13,9 +19,6 @@ original construction; no finite presentation is substituted for the core. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 open BlockFamily

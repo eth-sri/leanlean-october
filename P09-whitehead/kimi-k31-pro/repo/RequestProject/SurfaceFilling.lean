@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfaceCells
 
 @[expose] public section
@@ -140,7 +141,7 @@ theorem cyc_self : cyc M M = cyc M 0 := by
   rw [Nat.mod_self, Nat.zero_mod]
 
 /-- **The boundary path**: the first `n` edges of the boundary of the polygon. -/
-def bdPath : ℕ → List ((sdCx hc).E × Bool)
+def bdPath : ℕ → FiniteChains.Comb.Oriented (sdCx hc).E
   | 0 => []
   | n + 1 => bdPath n ++ bdEdge hc (cyc M n)
 

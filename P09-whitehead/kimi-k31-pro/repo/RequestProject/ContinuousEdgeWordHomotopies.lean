@@ -1,11 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ContinuousEdgeWords
 public import RequestProject.CombPi1
 public import Mathlib.AlgebraicTopology.FundamentalGroupoid.Basic
 public import Mathlib.Data.List.OfFn
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Endpoint-preserving reversal and naturality for actual finite edge-word
 paths. These statements concern continuous paths, not only their fundamental
@@ -14,15 +19,12 @@ group classes. Pending Lean verification. -/
 noncomputable section
 open scoped Classical unitInterval Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ContinuousEdgeWords
 
 theorem realize_congr_list {V E X : Type} [TopologicalSpace X]
     (src tgt : E → V) (v : V → X) (edge : ∀ e, Path (v (src e)) (v (tgt e)))
-    {l m : List (E × Bool)} {a b : V}
+    {l m : FiniteChains.Comb.Oriented E} {a b : V}
     (hl : Comb.IsPath src tgt l a b) (hm : Comb.IsPath src tgt m a b) (he : l = m) :
     realize src tgt v edge l hl = realize src tgt v edge m hm := by
   subst m
@@ -42,7 +44,7 @@ theorem reversed_single (g : K.E × Bool) :
   · simpa [Comb.germSrc, Comb.germTgt, germPath, Comb.revGerm, Bool.not, Bool.not_true, realize, Path.cast_rfl_rfl]
       using (Path.Homotopic.trans_refl (edge e).symm).symm
 
-theorem realize_revPath (l : List (K.E × Bool)) {a b : K.V}
+theorem realize_revPath (l : FiniteChains.Comb.Oriented K.E) {a b : K.V}
     (hl : Comb.IsPath K.src K.tgt l a b) :
     (realize K.src K.tgt v edge l hl).symm.Homotopic
       (realize K.src K.tgt v edge (Comb.revPath (X := K) l) (Comb.isPath_revPath hl)) := by
@@ -98,7 +100,7 @@ theorem concat_homotopic_realize_ofFn (n : ℕ)
   induction n with
   | zero =>
     rw [Path.concat_zero]
-    have he : List.ofFn g = ([] : List (E × Bool)) := by simp only [List.ofFn_zero]
+    have he : List.ofFn g = ([] : FiniteChains.Comb.Oriented E) := by simp only [List.ofFn_zero]
     rw [realize_congr_list src tgt v edge (Comb.isPath_ofFn src tgt 0 a g hs ht)
       (show Comb.IsPath src tgt [] (a 0) (a (Fin.last 0)) from rfl) he]
     exact Path.Homotopic.refl _

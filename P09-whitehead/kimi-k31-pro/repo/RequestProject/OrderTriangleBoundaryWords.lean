@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.OrderEdgeSkeletonAttachment
 public import RequestProject.ClassicalGraphBoundaryWords
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual triangle attaching circle reads the literal strict
 boundary 01,12,02^-1 in the graph model. The trailing constant segment in
@@ -13,9 +18,6 @@ all four sides.  -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
@@ -32,7 +34,7 @@ def corner (t : StrictOrdTri P) (z : SquareBoundary) : Vertices P :=
   vertexEquiv P (if z.val 1 = 0 then t.val.1 else
     if z.val 0 = 0 then t.val.2.1 else t.val.2.2)
 
-def sideWord (t : StrictOrdTri P) (s : SquareSide) : List (StrictOrdEdge P × Bool) :=
+def sideWord (t : StrictOrdTri P) (s : SquareSide) : FiniteChains.Comb.Oriented (StrictOrdEdge P) :=
   if s.1 = 0 then
     if s.2 then [(edge02 P t, true)] else [(edge01 P t, true)]
   else if s.2 then [(edge12 P t, true)] else []

@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCWGraphCoordinates
 public import RequestProject.ComponentComplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Original subcomplex inclusions induce compatible graph inclusions and
 actual maps of disk models, retaining every original vertex and edge.
 This is the simultaneous graph datum for necessity. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment

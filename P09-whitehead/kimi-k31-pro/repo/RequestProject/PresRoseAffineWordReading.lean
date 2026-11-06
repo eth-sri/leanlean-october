@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.FiniteCycleWordComparison
 public import RequestProject.OrderRoseRealizationHomeomorph
 public import RequestProject.PresPosetAlpha
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The literal four-edge rose word and its actual continuous reading.
 The positive generator is the specified once-around interval loop.
@@ -12,16 +17,13 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ContinuousEdgeWords ClassicalGraphModel
 
 variable {A J : Type}
 
-def roseGeneratorWord (a : A) : List ((orderCx (Rose A)).E × Bool) :=
+def roseGeneratorWord (a : A) : FiniteChains.Comb.Oriented (orderCx (Rose A)).E :=
   [ordPos (Rose.base_le_edg a false), ordNeg (Rose.mid_le_edg a false),
     ordPos (Rose.mid_le_edg a true), ordNeg (Rose.base_le_edg a true)]
 
@@ -29,10 +31,10 @@ theorem roseGeneratorWord_valid (a : A) :
     IsPath (orderCx (Rose A)).src (orderCx (Rose A)).tgt (roseGeneratorWord a) .base .base :=
   ⟨rfl, rfl, rfl, rfl, rfl⟩
 
-def roseLetterWord (p : A × Bool) : List ((orderCx (Rose A)).E × Bool) :=
+def roseLetterWord (p : A × Bool) : FiniteChains.Comb.Oriented (orderCx (Rose A)).E :=
   if p.2 then roseGeneratorWord p.1 else revPath (X := orderCx (Rose A)) (roseGeneratorWord p.1)
 
-def roseWord (l : List (A × Bool)) : List ((orderCx (Rose A)).E × Bool) := l.flatMap roseLetterWord
+def roseWord (l : FiniteChains.Comb.Oriented A) : FiniteChains.Comb.Oriented (orderCx (Rose A)).E := l.flatMap roseLetterWord
 
 theorem roseLetterWord_valid (p : A × Bool) :
     IsPath (orderCx (Rose A)).src (orderCx (Rose A)).tgt (roseLetterWord p) .base .base := by
@@ -41,7 +43,7 @@ theorem roseLetterWord_valid (p : A × Bool) :
   · exact isPath_revPath (roseGeneratorWord_valid a)
   · exact roseGeneratorWord_valid a
 
-theorem roseWord_valid (l : List (A × Bool)) :
+theorem roseWord_valid (l : FiniteChains.Comb.Oriented A) :
     IsPath (orderCx (Rose A)).src (orderCx (Rose A)).tgt (roseWord l) .base .base := by
   induction l with
   | nil => rfl
@@ -71,7 +73,7 @@ theorem roseGeneratorPath_homotopic_word (a : A) :
   have hg : List.ofFn g = roseGeneratorWord a := by simp [g, roseGeneratorWord, List.ofFn_succ]
   simpa only [hg, roseGeneratorPath, roseFourCycle, orderRoseBase] using H
 
-def orderRoseRead : List (A × Bool) → Path (orderRoseBase A) (orderRoseBase A)
+def orderRoseRead : FiniteChains.Comb.Oriented A → Path (orderRoseBase A) (orderRoseBase A)
   | [] => Path.refl _
   | (a, b) :: l => (if b then roseGeneratorPath a else (roseGeneratorPath a).symm).trans (orderRoseRead l)
 
@@ -85,7 +87,7 @@ theorem roseLetterWord_homotopic_read (p : A × Bool) :
       (roseGeneratorWord_valid a)).symm.trans (roseGeneratorPath_homotopic_word a).symm.symm₂
   · exact (roseGeneratorPath_homotopic_word a).symm
 
-theorem roseWord_homotopic_read (l : List (A × Bool)) :
+theorem roseWord_homotopic_read (l : FiniteChains.Comb.Oriented A) :
     (affineOrderWordPath (roseWord l) (roseWord_valid l)).Homotopic (orderRoseRead l) := by
   induction l with
   | nil => exact Path.Homotopic.refl _
@@ -96,13 +98,13 @@ theorem roseWord_homotopic_read (l : List (A × Bool)) :
       (roseLetterWord p) (roseWord l) (roseLetterWord_valid p) (roseWord_valid l)).symm.trans
       ((roseLetterWord_homotopic_read p).hcomp ih)
 
-def classicalRoseRead : List (A × Bool) → Path (roseVertex A) (roseVertex A)
+def classicalRoseRead : FiniteChains.Comb.Oriented A → Path (roseVertex A) (roseVertex A)
   | [] => Path.refl _
   | (a, b) :: l =>
       (if b then graphEdgePath (roseAttaching A) a else (graphEdgePath (roseAttaching A) a).symm).trans
         (classicalRoseRead l)
 
-theorem orderRoseRead_classical (l : List (A × Bool)) (t : I) :
+theorem orderRoseRead_classical (l : FiniteChains.Comb.Oriented A) (t : I) :
     orderRoseRealizationHomeomorph A (orderRoseRead l t) = classicalRoseRead l t := by
   induction l generalizing t with
   | nil => exact orderRoseRealizationHomeomorph_base A
@@ -116,7 +118,7 @@ theorem orderRoseRead_classical (l : List (A × Bool)) (t : I) :
     · simp only [orderRoseRead, classicalRoseRead, Path.trans_apply, dif_neg ht, if_neg ht]
       exact ih _
 
-theorem classicalRoseRead_eq_realize (l : List (A × Bool))
+theorem classicalRoseRead_eq_realize (l : FiniteChains.Comb.Oriented A)
     (hl : IsPath (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A)) l PUnit.unit PUnit.unit) :
     classicalRoseRead l = realize (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A))
       (old (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ)))
@@ -129,7 +131,7 @@ theorem classicalRoseRead_eq_realize (l : List (A × Bool))
       realize, germPath, Path.cast_rfl_rfl]
     all_goals congr 1; exact ih _
 
-variable (w : J → List (A × Bool))
+variable (w : J → FiniteChains.Comb.Oriented A)
 
 theorem mapPath_aFun_segAt (j : J) {k : ℕ} (hk : k < (w j).length) :
     mapPath (orderCxMap (aFun w) (aFun_monotone w)) (segAt w j k) = roseLetterWord (w j)[k] := by

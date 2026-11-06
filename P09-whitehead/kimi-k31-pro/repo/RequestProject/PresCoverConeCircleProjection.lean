@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCoverRelatorChains
 
 @[expose] public section
@@ -17,7 +18,7 @@ end FiniteChains.Comb
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f) (v : P) (j : J) (hv : f v = apexOf w j)
 
 /-- The actual inverse circle coordinates project to the actual attaching-circle vertex. -/

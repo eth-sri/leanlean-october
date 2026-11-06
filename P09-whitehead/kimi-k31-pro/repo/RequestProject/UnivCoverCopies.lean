@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Pi2GenerationDescent
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The copies of `L̃` cover the universal cover of the pushout
@@ -33,9 +39,6 @@ lower degrees) in the combinatorial model, from scratch:
   pushout of Proposition 3.11.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb

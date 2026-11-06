@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresValidPoset
 public import RequestProject.PresPosetDimension
 public import RequestProject.OrderNerveDimension
@@ -33,7 +34,7 @@ instance rose_finite {α : Type u} [Finite α] : Finite (Rose α) := by
   | mid a => exact ⟨some (a, none), rfl⟩
   | edg a b => exact ⟨some (a, some b), rfl⟩
 
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-- Actual word positions have bounded finite indices, even though the old model
 uses all natural numbers for its unused positions. -/
@@ -62,6 +63,6 @@ end FiniteChains.PresModel
 
 namespace FiniteChains.PresModel
 open Comb CategoryTheory
-variable {α J : Type} (w : J → List (α × Bool))
+variable {α J : Type} (w : J → FiniteChains.Comb.Oriented α)
 
 end FiniteChains.PresModel

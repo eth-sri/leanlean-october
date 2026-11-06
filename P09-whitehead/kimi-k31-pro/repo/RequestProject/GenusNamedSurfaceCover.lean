@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusFaithfulComparison
 public import RequestProject.ChamberQuotientAttachingCover
 public import RequestProject.PosetCoverPullback
@@ -9,6 +11,10 @@ public import RequestProject.GenusReceivedPolygonCoefficient
 public import RequestProject.NerveDegree
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 The genuine surface cover under the lifted attaching locus of the named
@@ -25,9 +31,6 @@ the forward chain transfer, not an unproved inverse subdivision equivalence.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -73,13 +76,12 @@ theorem qAttachingCoverEnd_monotone :
       uOrderEnd_monotone hpr)
 
 theorem qAttachingCoverEnd_oldPoint (p : QLiftedAttaching a) :
-    qOldIncl (att := nerveAtt g) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := by
-  exact congrArg Subtype.val
+    qOldIncl (att := nerveAtt g) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := congrArg Subtype.val
     (qPositiveOldOrderIso.symm_apply_apply ⟨uOrderEnd p.1, p.2⟩)
 
 theorem attachingSurface_lower_comparison (p : QLiftedAttaching a) :
     qNew (att := nerveAtt g) (nerveAtt g (qAttachingCoverEnd a p)) ≤ uOrderEnd p.1 := by
-  rw (config := { transparency := .default }) [← qAttachingCoverEnd_oldPoint g a p]
+  rwd [← qAttachingCoverEnd_oldPoint g a p]
   exact qNew_att_le_qOldIncl (qAttachingCoverEnd a p)
 
 /-- Move to the actual lower base lift in the same universal-cover sheet. -/
@@ -143,7 +145,7 @@ def surfaceSubdivisionLastVertex (p : AttachingSurfaceSubdivision g a) :
 
 theorem surfaceSubdivision_upper_comparison (p : AttachingSurfaceSubdivision g a) :
     uOrderEnd p.1.1 ≤ qOldIncl (att := nerveAtt g) (posQCube p.1.2) := by
-  rw (config := { transparency := .default }) [p.2]
+  rwd [p.2]
   exact qNew_att_le_qOldIncl p.1.2
 
 /-- The inverse cover comparison is an actual upper interval lift in the
@@ -177,7 +179,7 @@ theorem surfaceSubdivisionUpperLift_monotone :
 def surfaceSubdivisionToAttaching (p : AttachingSurfaceSubdivision g a) :
     QLiftedAttaching a :=
   ⟨surfaceSubdivisionUpperLift g a hc p, by
-    rw (config := { transparency := .default }) [(surfaceSubdivisionUpperLift_spec g a hc p).2]
+    rwd [(surfaceSubdivisionUpperLift_spec g a hc p).2]
     exact ⟨trivial, rfl⟩⟩
 
 theorem surfaceSubdivisionToAttaching_monotone :
@@ -191,7 +193,7 @@ theorem surfaceSubdivisionToAttaching_monotone :
   change qOldIncl (att := nerveAtt g)
       (posQCube (qAttachingCoverEnd a (surfaceSubdivisionToAttaching g a hc p))) =
     qOldIncl (att := nerveAtt g) (posQCube p.1.2)
-  rw (config := { transparency := .default }) [qAttachingCoverEnd_oldPoint]
+  rwd [qAttachingCoverEnd_oldPoint]
   exact (surfaceSubdivisionUpperLift_spec g a hc p).2
 
 end FiniteChains.Davis

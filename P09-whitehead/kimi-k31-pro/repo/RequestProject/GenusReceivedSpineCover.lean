@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusSpineSubstitutedBoundary
 public import RequestProject.ReceivedTreeComparison
 public import RequestProject.ReceivedTreeFoxCoordinates
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! A genuine spine cover with the actual substituted group as its sheet set. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
@@ -49,7 +52,7 @@ theorem familySpineHom_marked (s : S) (i : Fin (q s) × Bool) :
       QuotientGroup.mk (FreeGroup.map (Sum.inl (β := Σ s, SpinePresentationGen (q s))) (u s i)) := by
   change QuotientGroup.mk (FreeGroup.map (genEmb s)
       (blockSubst u s (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inr i))))) = _
-  rw (config := { transparency := .default }) [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
+  rwd [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
   have h : (FreeGroup.map (genEmb (α := A) (Zt := fun s => SpinePresentationGen (q s)) s)).comp
       (FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s)))) =
       FreeGroup.map (Sum.inl (β := Σ s, SpinePresentationGen (q s))) := by
@@ -86,7 +89,7 @@ theorem receivedSpineFaceChain_relative_boundary (s : S)
       ∑ i, β (Sum.inr i) * NamedPresentation.receivedWordCoefficientMap
         (spinePresentation (q s)) (spinePresentationMarkedWord (q s))
         (familySpineHom ρ q u s) (fox z (spinePresentationMarkedWord (q s) i)) := by
-  rw (config := { transparency := .default }) [ReceivedTree.cellCoefficient_bdry2]
+  rwd [ReceivedTree.cellCoefficient_bdry2]
   simp only [receivedSpineFaceChain_coefficient, ReceivedTree.coefficientMap,
     RingHom.comp_apply]
   change (∑ j, β (Sum.inl j) * MonoidAlgebra.mapDomainRingHom ℤ

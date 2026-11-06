@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.OrderTriangleSkeletonAttachment
 public import RequestProject.ClassicalCWGraphCoordinates
 public import RequestProject.OrderNerveAffineEdgePath
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Explicitly oriented graph disks for the genuine first skeleton of
 an order realization. Vertex labels are the actual zero-skeleton points;
@@ -14,9 +20,6 @@ reads each edge in its prescribed order. Pending final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderEdgeAttachment
 open RelativeAttachment ClassicalSkeletonAttachment ClassicalGraphModel

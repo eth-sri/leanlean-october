@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexBoundaryDetour
 public import RequestProject.StrictOrderComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 variable {P : Type} [PartialOrder P]
@@ -100,7 +102,7 @@ representative avoiding that cell. -/
 theorem maximal_path_representative_nondegenerate {C : P → Prop} {t : P}
     (hmax : ∀ x, C x → t ≤ x → x = t)
     (hconn : ConnectedIn (fun x => C x ∧ x < t))
-    (p : List ((orderCx P).E × Bool)) {a b : P}
+    (p : FiniteChains.Comb.Oriented (orderCx P).E) {a b : P}
     (ha : C a ∧ a ≠ t) (hb : C b ∧ b ≠ t)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) (hC : PathIn C p)
     (hnd : ∀ e ∈ p, germSrc (orderCx P).src (orderCx P).tgt e ≠
@@ -126,7 +128,7 @@ theorem maximal_path_representative_nondegenerate {C : P → Prop} {t : P}
           (germTgt (orderCx P).src (orderCx P).tgt f) := ⟨hw ▸ hp.2.1, rfl⟩
       have hv : germTgt (orderCx P).src (orderCx P).tgt f ≠ t := by
         intro hvt
-        exact hnd f (by simp) (by rw (config := { transparency := .default }) [← hf.1, hvt])
+        exact hnd f (by simp) (by rwd [← hf.1, hvt])
       have hpair : PathIn C [e, f] := pathIn_cons heC (pathIn_cons hfC (pathIn_nil _))
       obtain ⟨l, hl, hB, hh⟩ := maximal_detour_germs hmax hconn e f
         (hw ▸ he) hf hpair ha.2 hv
@@ -164,7 +166,7 @@ theorem normalizeOrdGerm_properties {C : P → Prop} (e : (orderCx P).E × Bool)
       | true => exact h
 
 theorem normalizeOrdPath_properties {C : P → Prop}
-    (p : List ((orderCx P).E × Bool)) (hC : PathIn C p) :
+    (p : FiniteChains.Comb.Oriented (orderCx P).E) (hC : PathIn C p) :
     PathIn C (mapPath (strictOrderIncl P) (normalizeOrdPath p)) ∧
       ∀ g ∈ mapPath (strictOrderIncl P) (normalizeOrdPath p),
         germSrc (orderCx P).src (orderCx P).tgt g ≠
@@ -175,7 +177,7 @@ theorem normalizeOrdPath_properties {C : P → Prop}
     have he := normalizeOrdGerm_properties e (pathIn_of_cons hC).1
     have hp := ih (pathIn_of_cons hC).2
     change PathIn C (mapPath (strictOrderIncl P) (normalizeOrdGerm e ++ normalizeOrdPath p)) ∧ _
-    rw (config := { transparency := .default }) [mapPath_append]
+    rwd [mapPath_append]
     refine ⟨pathIn_append he.1 hp.1, ?_⟩
     intro g hg
     have hg' : g ∈ mapPath (strictOrderIncl P) (normalizeOrdGerm e) ++
@@ -187,7 +189,7 @@ theorem normalizeOrdPath_properties {C : P → Prop}
 theorem maximal_path_representative {C : P → Prop} {t : P}
     (hmax : ∀ x, C x → t ≤ x → x = t)
     (hconn : ConnectedIn (fun x => C x ∧ x < t))
-    (p : List ((orderCx P).E × Bool)) {a b : P}
+    (p : FiniteChains.Comb.Oriented (orderCx P).E) {a b : P}
     (ha : C a ∧ a ≠ t) (hb : C b ∧ b ≠ t)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) (hC : PathIn C p) :
     ∃ l, IsPath (orderCx P).src (orderCx P).tgt l a b ∧

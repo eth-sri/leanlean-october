@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SpanningTree
 public import RequestProject.PresentationDictionary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The presentation of `π₁` read off a spanning tree
@@ -28,9 +33,6 @@ relator.  The other sends a non-tree edge `e` to the loop "tree path to the sour
 `freeToPi1_pathWord`, which computes the image of an arbitrary path.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -53,7 +55,7 @@ noncomputable def germWord (g : K.E × Bool) : FreeGroup (NonTree T) :=
     if g.2 then FreeGroup.of (⟨g.1, h⟩ : NonTree T) else (FreeGroup.of (⟨g.1, h⟩ : NonTree T))⁻¹
 
 /-- The word in the non-tree edges spelled by an edge path. -/
-noncomputable def pathWord (l : List (K.E × Bool)) : FreeGroup (NonTree T) :=
+noncomputable def pathWord (l : FiniteChains.Comb.Oriented K.E) : FreeGroup (NonTree T) :=
   (l.map (germWord T)).prod
 
 /-- The relator of a two-cell: the word spelled by its attaching path. -/
@@ -61,11 +63,11 @@ noncomputable def treeRel (f : K.F) : FreeGroup (NonTree T) := pathWord T (K.att
 
 @[simp] theorem pathWord_nil : pathWord T [] = 1 := rfl
 
-theorem pathWord_cons (g : K.E × Bool) (l : List (K.E × Bool)) :
+theorem pathWord_cons (g : K.E × Bool) (l : FiniteChains.Comb.Oriented K.E) :
     pathWord T (g :: l) = germWord T g * pathWord T l := by
   simp [pathWord]
 
-theorem pathWord_append (l l' : List (K.E × Bool)) :
+theorem pathWord_append (l l' : FiniteChains.Comb.Oriented K.E) :
     pathWord T (l ++ l') = pathWord T l * pathWord T l' := by
   simp [pathWord, List.prod_append]
 
@@ -77,7 +79,7 @@ theorem germWord_revGerm (g : K.E × Bool) :
   · simp [germWord, revGerm, h]
   · cases b <;> simp [germWord, revGerm, h]
 
-theorem pathWord_revPath (l : List (K.E × Bool)) :
+theorem pathWord_revPath (l : FiniteChains.Comb.Oriented K.E) :
     pathWord T (revPath l) = (pathWord T l)⁻¹ := by
   induction l with
   | nil => simp [revPath]
@@ -89,7 +91,7 @@ theorem germWord_of_isTree {g : K.E × Bool} (h : T.isTree g.1) : germWord T g =
   classical
   simp [germWord, h]
 
-theorem pathWord_eq_one_of_tree {l : List (K.E × Bool)} (hl : ∀ g ∈ l, T.isTree g.1) :
+theorem pathWord_eq_one_of_tree {l : FiniteChains.Comb.Oriented K.E} (hl : ∀ g ∈ l, T.isTree g.1) :
     pathWord T l = 1 := by
   induction l with
   | nil => simp
@@ -104,10 +106,10 @@ theorem pathWord_eq_one_of_tree {l : List (K.E × Bool)} (hl : ∀ g ∈ l, T.is
 /-! ### From edge loops to the presented group -/
 
 /-- The class of the word spelled by an edge path, in the presented group. -/
-noncomputable def wordClass (l : List (K.E × Bool)) : PresGroup (treeRel T) :=
+noncomputable def wordClass (l : FiniteChains.Comb.Oriented K.E) : PresGroup (treeRel T) :=
   QuotientGroup.mk (pathWord T l)
 
-theorem wordClass_append (l l' : List (K.E × Bool)) :
+theorem wordClass_append (l l' : FiniteChains.Comb.Oriented K.E) :
     wordClass T (l ++ l') = wordClass T l * wordClass T l' := by
   unfold wordClass
   rw [pathWord_append, QuotientGroup.mk_mul]
@@ -117,7 +119,7 @@ theorem wordClass_att (f : K.F) : wordClass T (K.att f) = 1 := by
     QuotientGroup.eq_one_iff]
   exact Subgroup.subset_normalClosure ⟨f, rfl⟩
 
-theorem wordClass_cancels {l l' : List (K.E × Bool)} (h : Cancels K l l') :
+theorem wordClass_cancels {l l' : FiniteChains.Comb.Oriented K.E} (h : Cancels K l l') :
     wordClass T l = wordClass T l' := by
   rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, f, hl, hl'⟩
   · subst hl; subst hl'
@@ -129,7 +131,7 @@ theorem wordClass_cancels {l l' : List (K.E × Bool)} (h : Cancels K l l') :
   · subst hl; subst hl'
     rw [wordClass_append, wordClass_append, wordClass_append, wordClass_att, mul_one]
 
-theorem wordClass_htpy {a b : K.V} {l l' : List (K.E × Bool)} (h : Htpy K a b l l') :
+theorem wordClass_htpy {a b : K.V} {l l' : FiniteChains.Comb.Oriented K.E} (h : Htpy K a b l l') :
     wordClass T l = wordClass T l' := by
   induction h with
   | refl => rfl
@@ -152,17 +154,17 @@ noncomputable def pi1ToPres : Pi1 K T.root →* PresGroup (treeRel T) where
 /-! ### From the presented group to edge loops -/
 
 /-- The loop obtained from a path by prefixing and suffixing tree paths. -/
-noncomputable def conjPath (l : List (K.E × Bool)) (a b : K.V) : List (K.E × Bool) :=
+noncomputable def conjPath (l : FiniteChains.Comb.Oriented K.E) (a b : K.V) : FiniteChains.Comb.Oriented K.E :=
   T.treePath a ++ l ++ revPath (T.treePath b)
 
-theorem conjPath_isLoop {l : List (K.E × Bool)} {a b : K.V}
+theorem conjPath_isLoop {l : FiniteChains.Comb.Oriented K.E} {a b : K.V}
     (hl : IsPath K.src K.tgt l a b) :
     IsPath K.src K.tgt (conjPath T l a b) T.root T.root :=
   isPath_append_iff.mpr ⟨b, isPath_append_iff.mpr ⟨a, T.treePath_isPath a, hl⟩,
     isPath_revPath (T.treePath_isPath b)⟩
 
 /-- The class in `π₁(K, root)` of a path, conjugated into a loop by the tree paths. -/
-noncomputable def loopOf {l : List (K.E × Bool)} {a b : K.V}
+noncomputable def loopOf {l : FiniteChains.Comb.Oriented K.E} {a b : K.V}
     (hl : IsPath K.src K.tgt l a b) : Pi1 K T.root :=
   Pi1.mk ⟨conjPath T l a b, conjPath_isLoop T hl⟩
 
@@ -173,7 +175,7 @@ noncomputable def loopOf {l : List (K.E × Bool)} {a b : K.V}
   simpa [conjPath] using htpy_append_revPath (T.treePath_isPath a)
 
 /-- Concatenation of paths corresponds to multiplication of their classes. -/
-theorem loopOf_mul {p q : List (K.E × Bool)} {a m b : K.V}
+theorem loopOf_mul {p q : FiniteChains.Comb.Oriented K.E} {a m b : K.V}
     (hp : IsPath K.src K.tgt p a m) (hq : IsPath K.src K.tgt q m b) :
     loopOf T hp * loopOf T hq = loopOf T (hp.append hq) := by
   refine Quotient.sound ?_
@@ -188,14 +190,14 @@ theorem loopOf_mul {p q : List (K.E × Bool)} {a m b : K.V}
   have hrw₁ : (T.treePath a ++ p) ++ (revPath (T.treePath m) ++ T.treePath m) ++
       (q ++ revPath (T.treePath b)) = conjPath T p a m ++ conjPath T q m b := by
     simp [conjPath, List.append_assoc]
-  have hrw₂ : (T.treePath a ++ p) ++ ([] : List (K.E × Bool)) ++
+  have hrw₂ : (T.treePath a ++ p) ++ ([] : FiniteChains.Comb.Oriented K.E) ++
       (q ++ revPath (T.treePath b)) = conjPath T (p ++ q) a b := by
     simp [conjPath, List.append_assoc]
   rw [hrw₁, hrw₂] at hmain
   exact hmain
 
 /-- Reversing a path inverts its class. -/
-theorem loopOf_rev {l : List (K.E × Bool)} {a b : K.V} (hl : IsPath K.src K.tgt l a b) :
+theorem loopOf_rev {l : FiniteChains.Comb.Oriented K.E} {a b : K.V} (hl : IsPath K.src K.tgt l a b) :
     loopOf T (isPath_revPath hl) = (loopOf T hl)⁻¹ := by
   refine Quotient.sound ?_
   show Htpy K T.root T.root (conjPath T (revPath l) b a) (revPath (conjPath T l a b))
@@ -205,7 +207,7 @@ theorem loopOf_rev {l : List (K.E × Bool)} {a b : K.V} (hl : IsPath K.src K.tgt
   exact Htpy.refl _
 
 /-- `loopOf` depends only on the path and its endpoints. -/
-theorem loopOf_eq {l l' : List (K.E × Bool)} {a b a' b' : K.V}
+theorem loopOf_eq {l l' : FiniteChains.Comb.Oriented K.E} {a b a' b' : K.V}
     (hl : IsPath K.src K.tgt l a b) (hl' : IsPath K.src K.tgt l' a' b')
     (hll : l = l') (ha : a = a') (hb : b = b') : loopOf T hl = loopOf T hl' := by
   subst hll; subst ha; subst hb; rfl
@@ -289,7 +291,7 @@ theorem freeToPi1_germWord (g : K.E × Bool) :
 
 /-- **The image of an arbitrary edge path**: the free group element it spells is sent to the
 class of the path, conjugated into a loop by the tree paths. -/
-theorem freeToPi1_pathWord {l : List (K.E × Bool)} {a b : K.V}
+theorem freeToPi1_pathWord {l : FiniteChains.Comb.Oriented K.E} {a b : K.V}
     (hl : IsPath K.src K.tgt l a b) :
     freeToPi1 T (pathWord T l) = loopOf T hl := by
   induction l generalizing a with

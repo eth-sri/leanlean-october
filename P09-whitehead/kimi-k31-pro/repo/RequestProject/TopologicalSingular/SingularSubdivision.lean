@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SingularSubdivisionModels
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! # Barycentric subdivision of actual singular chains
 
@@ -13,9 +19,6 @@ singular simplex. The operator commutes with boundary and is naturally
 chain homotopic to the identity. No mesh or excision conclusion is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 

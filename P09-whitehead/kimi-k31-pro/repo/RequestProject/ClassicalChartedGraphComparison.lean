@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWRecharacterization
 public import RequestProject.ClassicalSubcomplexBoundaryWords
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! An embedding preserving characteristic maps identifies the literal
 old graph, its intervals, and every original two-cell boundary with the
@@ -14,9 +20,6 @@ hypothesis from the original InitialIdentification. Unverified source. -/
 noncomputable section
 open scoped Classical
 open Set Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead.CWCellEmbedding
 open FiniteChains FiniteChains.ClassicalCW FiniteChains.ClassicalGraphModel

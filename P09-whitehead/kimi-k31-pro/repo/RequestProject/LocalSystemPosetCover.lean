@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderPosetCovering
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! An actual set-valued local system on a poset gives a poset covering.
 The construction retains the whole fibre; no choice of group coordinates
 or covering classification theorem is needed. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.LocalSystem
 open CategoryTheory

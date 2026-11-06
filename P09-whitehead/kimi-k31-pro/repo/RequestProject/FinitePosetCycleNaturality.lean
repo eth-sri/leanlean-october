@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.FinitePosetCycleRealization
 public import RequestProject.OrderNerveRealizationMapCoordinates
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The explicit cycle boundary parametrization is natural under a map
 preserving the ordered vertex enumeration. Pending Lean verification. -/
@@ -12,9 +18,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 

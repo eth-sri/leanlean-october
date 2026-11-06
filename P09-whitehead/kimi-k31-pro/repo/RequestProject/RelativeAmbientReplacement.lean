@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RelativeSlideNaturality
 public import RequestProject.RelativeTerminalOperation
 public import RequestProject.PresentationInclusionCalculus
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! One simultaneous replacement, returned in the same ambient-label
 format as its input. The core labels are fixed. Earlier stages select
@@ -14,9 +20,6 @@ All algebraic chain assertions retain finite support. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily

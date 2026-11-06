@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNormalizationHomotopy
 public import RequestProject.NervePrism
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual cellular boundary maps in degrees two and three agree with the full nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

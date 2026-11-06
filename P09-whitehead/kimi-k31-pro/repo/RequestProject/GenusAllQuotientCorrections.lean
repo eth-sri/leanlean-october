@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusQuotientMarkingCoefficients
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Old-chain corrections with coefficients in the entire quotient deck
 group. This keeps the polygon scalar in its original ring until every
 spine and marking coordinate has been recovered. Awaiting Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
@@ -40,9 +43,9 @@ theorem allQuotientMarkingCorrections_translate (g : QuotientMarkingGroup q ρ u
   | zero => simp [ReceivedTree.translateCellChain]
   | add c d hc hd =>
       simp only [ReceivedTree.translateCellChain, Finsupp.mapDomain_add, map_add] at hc hd ⊢
-      rw (config := { transparency := .default }) [hc, hd]
+      rwd [hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [ReceivedTree.translateCellChain, Finsupp.mapDomain_single]
+      rwd [ReceivedTree.translateCellChain, Finsupp.mapDomain_single]
       simp only [allQuotientMarkingCorrections, Finsupp.linearCombination_single,
         map_smul, allQuotientMarkingCorrection, DeckAction.faceChains_mul]
 
@@ -60,7 +63,7 @@ theorem allQuotientMarkingCorrections_multiply
       simp only [ReceivedTree.multiplyCellChain, LinearMap.comp_apply,
         LinearEquiv.coe_toLinearMap, MonoidAlgebra.coeffLinearEquiv_apply,
         MonoidAlgebra.coeff_single, Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul,
+      rwd [map_smul,
         allQuotientMarkingCorrections_translate]
 
 /-- The marked boundary detects the exact correction chain even when the
@@ -76,8 +79,8 @@ theorem allQuotientMarkingCorrections_eq_of_boundary_multiple
       Finsupp.linearCombination ℤ (fun g =>
         (univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).faceChains g
           (allQuotientMarkingCorrections q ρ u d)) w.coeff := by
-  rw (config := { transparency := .default }) [← allQuotientSurfaceMarkingChains_multiply] at h
-  rw (config := { transparency := .default }) [allQuotientSurfaceMarkingChains_injective q ρ u h,
+  rwd [← allQuotientSurfaceMarkingChains_multiply] at h
+  rwd [allQuotientSurfaceMarkingChains_injective q ρ u h,
     allQuotientMarkingCorrections_multiply]
 
 /-- Consequently the correction cancels from the relative difference as an
@@ -107,9 +110,9 @@ theorem allQuotientCorrection_cancel_difference
     clear h
     induction w using MonoidAlgebra.induction_linear with
     | zero => simp
-    | add w z hw hz => rw (config := { transparency := .default }) [MonoidAlgebra.coeff_add, map_add, map_add, map_add, hw, hz]; abel
+    | add w z hw hz => rwd [MonoidAlgebra.coeff_add, map_add, map_add, map_add, hw, hz]; abel
     | single g n => simp only [MonoidAlgebra.coeff_single, Finsupp.linearCombination_single, map_sub, smul_sub]
-  rw (config := { transparency := .default }) [hs, ← allQuotientMarkingCorrections_eq_of_boundary_multiple q ρ u w c d h]
+  rwd [hs, ← allQuotientMarkingCorrections_eq_of_boundary_multiple q ρ u w c d h]
   abel
 
 variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))

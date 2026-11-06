@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.MonoidAlgebraMapDomain
 public import RequestProject.FoxLinear
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The chain complex of the cover `K_N` and the Crowell exact sequence
@@ -36,9 +42,6 @@ This is the algebraic content of the passage "`N` perfect and `ker ∂_{2,N} = 0
 `K_N` acyclic" used in the proof of `(1) ⇒ (2)` of Theorem A.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 open scoped commutatorElement
 
 namespace FiniteChains

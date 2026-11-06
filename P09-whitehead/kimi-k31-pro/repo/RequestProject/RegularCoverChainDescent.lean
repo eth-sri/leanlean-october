@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RegularCoverActualPi2Descent
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Regular-cover descent for arbitrary cell sets, carrying the actual
 inclusions. No finite-complement hypothesis is needed for the chain or
@@ -11,9 +17,6 @@ Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v

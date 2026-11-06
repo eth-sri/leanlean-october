@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderUniversalPosetCells
 public import RequestProject.UnivCoverIncl
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The cellular identification of the genuine universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

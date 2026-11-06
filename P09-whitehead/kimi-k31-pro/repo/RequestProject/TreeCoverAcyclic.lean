@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CoverComplexFinsupp
 public import RequestProject.TreeCover
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The cover of `K` is acyclic when the cover of the collapsed presentation complex is
@@ -24,9 +29,6 @@ The comparison is given by the chain maps
 * the identity on two-cells, the two covers having the same two-cells `Q × F`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -41,7 +43,7 @@ variable (N : Subgroup (FreeGroup (NonTree T))) [N.Normal]
 
 open Classical in
 /-- The word in the non-tree edges spelled by an edge path, as a list of letters. -/
-noncomputable def letters : List (K.E × Bool) → List (NonTree T × Bool)
+noncomputable def letters : FiniteChains.Comb.Oriented K.E → FiniteChains.Comb.Oriented (NonTree T)
   | [] => []
   | g :: L => if h : T.isTree g.1 then letters L else (⟨g.1, h⟩, g.2) :: letters L
 
@@ -49,18 +51,18 @@ variable {T}
 
 @[simp] theorem letters_nil : letters T [] = [] := rfl
 
-theorem letters_cons_tree {g : K.E × Bool} (h : T.isTree g.1) (L : List (K.E × Bool)) :
+theorem letters_cons_tree {g : K.E × Bool} (h : T.isTree g.1) (L : FiniteChains.Comb.Oriented K.E) :
     letters T (g :: L) = letters T L := by
   classical
   simp [letters, h]
 
-theorem letters_cons_nontree {g : K.E × Bool} (h : ¬ T.isTree g.1) (L : List (K.E × Bool)) :
+theorem letters_cons_nontree {g : K.E × Bool} (h : ¬ T.isTree g.1) (L : FiniteChains.Comb.Oriented K.E) :
     letters T (g :: L) = (⟨g.1, h⟩, g.2) :: letters T L := by
   classical
   simp [letters, h]
 
 /-- The list of non-tree letters spells the word of the path. -/
-theorem mk_letters (L : List (K.E × Bool)) :
+theorem mk_letters (L : FiniteChains.Comb.Oriented K.E) :
     FreeGroup.mk (letters T L) = pathWord T L := by
   classical
   induction L with
@@ -140,7 +142,7 @@ omit [N.Normal] in
   simp [Finsupp.lmapDomain_apply]
 
 /-- **Deleting the tree edges from a lifted path** gives the lift of the word it spells. -/
-theorem piE_pathChain_liftK (L : List (K.E × Bool)) (q : CovQ T N) :
+theorem piE_pathChain_liftK (L : FiniteChains.Comb.Oriented K.E) (q : CovQ T N) :
     piE T N (pathChain (liftK T N L q)) = pathChain (liftPath (letters T L) q) := by
   classical
   induction L generalizing q with
@@ -156,9 +158,7 @@ theorem piE_pathChain_liftK (L : List (K.E × Bool)) (q : CovQ T N) :
           piE_single_tree (N := N) (x := (liftGerm T N q (e, b)).1) (by rw [hfst]; exact h) 1
         rw [liftK_cons, pathChain_cons, map_add, letters_cons_tree (g := (e, b)) h, hq, ih q,
           hsnd]
-        cases b
-        · simp [hz]
-        · simp [hz]
+        cases b <;> simp [hz]
       · rw [liftK_cons, pathChain_cons, map_add, letters_cons_nontree (g := (e, b)) h]
         cases b
         · have hlift : liftGerm T N q (e, false) =
@@ -183,7 +183,7 @@ variable [Fintype (NonTree T)] [DecidableEq (NonTree T)]
 
 omit [Fintype (NonTree T)] in
 /-- The chain of a lifted word depends only on the free-group element it spells. -/
-theorem pathChain_liftPath_congr {L L' : List (NonTree T × Bool)}
+theorem pathChain_liftPath_congr {L L' : FiniteChains.Comb.Oriented (NonTree T)}
     (h : FreeGroup.mk L = FreeGroup.mk L') (q : CovQ T N) :
     pathChain (liftPath (Nsub := N) L q) = pathChain (liftPath (Nsub := N) L' q) := by
   apply (fsCoords N (NonTree T)).injective
@@ -265,7 +265,7 @@ theorem augC_piV (c : (CovQ T N × K.V) →₀ ℤ) :
 variable (T)
 
 /-- The loop of `K` at the root carried by a non-tree edge. -/
-noncomputable def loopPath (ε : NonTree T) : List (K.E × Bool) :=
+noncomputable def loopPath (ε : NonTree T) : FiniteChains.Comb.Oriented K.E :=
   conjPath T [((ε : K.E), true)] (K.src (ε : K.E)) (K.tgt (ε : K.E))
 
 /-- Lifting the loops of the generators: a section of the comparison map on one-chains. -/
@@ -474,8 +474,7 @@ theorem treeChain_eq_zero {z : (CovQ T N × K.E) →₀ ℤ}
         - (Finsupp.single ((treeCover T N hN).src x₀) (1 : ℤ)) (x₀.1, a₀)) := by
     have h := bdry1_apply (treeCover T N hN) z (x₀.1, a₀)
     rw [hz] at h
-    have h2 := h.trans (Finset.sum_eq_single_of_mem x₀ hx₀mem hterm)
-    convert h2 using 1 <;> congr 2
+    exact h.trans (Finset.sum_eq_single_of_mem x₀ hx₀mem hterm)
   have hzx₀ : z x₀ ≠ 0 := Finsupp.mem_support_iff.1 hx₀mem
   have hsrc : (treeCover T N hN).src x₀ = (x₀.1, K.src x₀.2) := rfl
   have htgt : (treeCover T N hN).tgt x₀ = (x₀.1, K.tgt x₀.2) := by

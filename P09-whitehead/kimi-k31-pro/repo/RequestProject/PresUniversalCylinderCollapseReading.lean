@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresUniversalRelatorMidpointReading
 public import RequestProject.PresCoverCylinderRelatorBoundary
 
@@ -9,7 +10,7 @@ namespace FiniteChains.PresModel
 open Comb
 universe u v
 variable {α J : Type u} {G : Type v} [Group G]
-  (w : J → List (α × Bool)) (hpos : ∀ j, 0 < (w j).length)
+  (w : J → FiniteChains.Comb.Oriented α) (hpos : ∀ j, 0 < (w j).length)
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)
 
 /-- The actual collapse in the universal presentation cover preserves actual vertex reading. -/

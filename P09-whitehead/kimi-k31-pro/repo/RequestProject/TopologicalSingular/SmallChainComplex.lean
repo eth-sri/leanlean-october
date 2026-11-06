@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SmallChainHomology
 public import RequestProject.TopologicalSingular.SingularHomologySequence
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! # The small singular subcomplex and its quotient
 
@@ -14,9 +20,6 @@ short exact sequence is valid for an arbitrary family of subsets; no
 openness or covering assumption is used in this file.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 

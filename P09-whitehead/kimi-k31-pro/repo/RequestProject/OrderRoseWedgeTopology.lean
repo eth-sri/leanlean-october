@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PresValidFinite
 public import RequestProject.OrderNerveFiniteCoordinates
 public import RequestProject.OrderNerveRealizationMapCoordinates
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The weak topology and exact intersection rule of an arbitrary realized
 rose. Every simplex lies in one four-vertex circle or at the common vertex.
 There is no finiteness assumption on the set of generators. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb CategoryTheory Simplicial

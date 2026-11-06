@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CoverAcyclic
 public import RequestProject.HurewiczDictionary
 public import RequestProject.HurewiczIso
 public import RequestProject.PresentationDictionary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Cycles lift modulo `m`: a theorem, not a citation
@@ -26,9 +32,6 @@ free, hence `w = ∂₂z` and `u - m·z` is a cycle congruent to `u` modulo `m`.
 `ChainInput`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

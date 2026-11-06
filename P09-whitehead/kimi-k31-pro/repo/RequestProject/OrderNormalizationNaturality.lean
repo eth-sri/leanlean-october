@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNormalizationSupport
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Normalized strict two-chain maps of actual monotone maps. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Cockcroft
 public import RequestProject.FoxNaturality
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Adding one generator and one relator: no new elements of `π₂`
@@ -39,9 +45,6 @@ of `π₂` at all: every Fox cycle of the enlarged presentation is a Fox cycle o
 presentation with coefficients in the bigger group ring.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

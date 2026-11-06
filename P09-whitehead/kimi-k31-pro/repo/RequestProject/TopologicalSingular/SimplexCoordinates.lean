@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib.Analysis.Convex.StdSimplex
 public import Mathlib.Topology.Homeomorph.Lemmas
 
 @[expose] public section
 
+backwardOptions
+
+
+
 namespace FiniteChains.TopologicalSingular
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 /-- The finite-support simplex and the barycentric-coordinate simplex have the same topology. -/
 noncomputable def simplexCoordinates (n : ℕ) :
@@ -37,8 +40,7 @@ theorem simplexCoordinates_map {n m : ℕ} (f : Fin (n + 1) → Fin (m + 1))
 
 @[simp] theorem simplexCoordinates_symm_weights_apply (n : ℕ)
     (z : stdSimplex ℝ (Fin (n + 1))) (i : Fin (n + 1)) :
-    ((simplexCoordinates n).symm z).weights i = z.val i := by
-  exact congrArg (fun w : stdSimplex ℝ (Fin (n + 1)) => w.val i)
+    ((simplexCoordinates n).symm z).weights i = z.val i := congrArg (fun w : stdSimplex ℝ (Fin (n + 1)) => w.val i)
     ((simplexCoordinates n).apply_symm_apply z)
 
 end FiniteChains.TopologicalSingular

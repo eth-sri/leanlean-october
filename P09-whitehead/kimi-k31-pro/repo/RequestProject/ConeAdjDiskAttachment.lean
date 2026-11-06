@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ConeAdjRealizationAttachment
 public import RequestProject.OrderNerveLowerCone
@@ -8,15 +10,16 @@ public import RequestProject.ClassicalCellAttachmentMaps
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Replace the actual cone pieces by disks and their actual strict
 boundaries by spheres, preserving the old inclusion. Circle geometry is
 provided separately, one finite link at a time; the collection of cones
 need not be finite. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open scoped Topology
@@ -52,7 +55,7 @@ theorem coneAdjLinkRealization_boundary (j : J) (x : orderNerveRealization (C j)
   change orderNerveRealizationMap Subtype.val (fun _ _ h => h)
       (orderNerveRealizationMap (coneAdjLinkOrderIso S C e j)
         (coneAdjLinkOrderIso S C e j).monotone x) = _
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp]
+  rwd [orderNerveRealizationMap_comp]
   rfl
 
 theorem coneAdjBallHomeomorph_boundary (j : J)
@@ -62,7 +65,7 @@ theorem coneAdjBallHomeomorph_boundary (j : J)
       unitBoundaryInclusion E (coneAdjSphereHomeomorph S C e b j x) := by
   have h := lowerConeBallHomeomorph_boundary (ConeAdj.apex (S := S) j) (e j) (b j)
     ((coneAdjLinkRealizationHomeomorph S C e j).symm x)
-  rw (config := { transparency := .default }) [← coneAdjLinkRealization_boundary S C e j, Homeomorph.apply_symm_apply] at h
+  rwd [← coneAdjLinkRealization_boundary S C e j, Homeomorph.apply_symm_apply] at h
   exact h
 
 def coneAdjSphereFamilyHomeomorph :
@@ -84,10 +87,10 @@ theorem coneAdjDiskAttaching_link (j : J) (x : orderNerveRealization (C j)) :
       ⟨j, coneAdjLinkRealizationHomeomorph S C e j x⟩ = ⟨j, b j x⟩ := by
     change (⟨j, b j ((coneAdjLinkRealizationHomeomorph S C e j).symm
       (coneAdjLinkRealizationHomeomorph S C e j x))⟩ : BoundaryFamily J E) = _
-    rw (config := { transparency := .default }) [Homeomorph.symm_apply_apply]
+    rwd [Homeomorph.symm_apply_apply]
   change coneAdjRealizationAttaching S
     ((coneAdjSphereFamilyHomeomorph S C e b).symm ⟨j, b j x⟩) = _
-  rw (config := { transparency := .default }) [← hs, Homeomorph.symm_apply_apply]
+  rwd [← hs, Homeomorph.symm_apply_apply]
 
 theorem coneAdjRealizationBoundary_injective : Function.Injective (coneAdjRealizationBoundary S) := by
   rintro ⟨j, x⟩ ⟨k, y⟩ h
@@ -109,7 +112,7 @@ def coneAdjAttachmentDiskHomeomorph :
       change coneAdjRealizationAttaching S a = coneAdjRealizationAttaching S
         ((coneAdjSphereFamilyHomeomorph S C e b).symm
           (coneAdjSphereFamilyHomeomorph S C e b a))
-      rw (config := { transparency := .default }) [Homeomorph.symm_apply_apply])
+      rwd [Homeomorph.symm_apply_apply])
     (fun a => by
       rcases a with ⟨j, x⟩
       exact congrArg (Sigma.mk j) (coneAdjBallHomeomorph_boundary S C e b j x))
@@ -126,11 +129,11 @@ def coneAdjRealizationDiskHomeomorph :
     (x : orderNerveRealization (ConeAdjBase S)) :
     coneAdjRealizationDiskHomeomorph S C e b (coneAdjRealizationOld S x) =
       old (coneAdjDiskAttaching S C e b) (boundaryFamilyInclusion J E) x := by
-  rw (config := { transparency := .default }) [← coneAdjRealizationAttachmentHomeomorph_old]
+  rwd [← coneAdjRealizationAttachmentHomeomorph_old]
   change coneAdjAttachmentDiskHomeomorph S C e b
     ((coneAdjRealizationAttachmentHomeomorph S).symm
       (coneAdjRealizationAttachmentHomeomorph S _)) = _
-  rw (config := { transparency := .default }) [Homeomorph.symm_apply_apply]
+  rwd [Homeomorph.symm_apply_apply]
   exact attachmentDiagramHomeomorph_old ..
 
 @[simp] theorem coneAdjRealizationDiskHomeomorph_cell
@@ -138,11 +141,11 @@ def coneAdjRealizationDiskHomeomorph :
     coneAdjRealizationDiskHomeomorph S C e b (coneAdjRealizationCell S z) =
       cell (coneAdjDiskAttaching S C e b) (boundaryFamilyInclusion J E)
         (coneAdjBallFamilyHomeomorph S C e b z) := by
-  rw (config := { transparency := .default }) [← coneAdjRealizationAttachmentHomeomorph_cell]
+  rwd [← coneAdjRealizationAttachmentHomeomorph_cell]
   change coneAdjAttachmentDiskHomeomorph S C e b
     ((coneAdjRealizationAttachmentHomeomorph S).symm
       (coneAdjRealizationAttachmentHomeomorph S _)) = _
-  rw (config := { transparency := .default }) [Homeomorph.symm_apply_apply]
+  rwd [Homeomorph.symm_apply_apply]
   exact attachmentDiagramHomeomorph_cell ..
 
 end FiniteChains.Comb

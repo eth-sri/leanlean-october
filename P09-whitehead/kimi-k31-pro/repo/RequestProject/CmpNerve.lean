@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.BlockConnected
 public import RequestProject.OrderCxConeNull
 
@@ -44,12 +45,12 @@ variable {X : Complex2.{u}}
 
 /-- Two paths with the same endpoints are homotopic as soon as the loop obtained by following
 the first and coming back along the second is null-homotopic. -/
-theorem htpy_of_loop_nil {a b : X.V} {p q : List (X.E × Bool)}
+theorem htpy_of_loop_nil {a b : X.V} {p q : FiniteChains.Comb.Oriented X.E}
     (hp : IsPath X.src X.tgt p a b) (hq : IsPath X.src X.tgt q a b)
     (h : Htpy X a a (p ++ revPath q) []) : Htpy X a b p q := by
   have hrq : IsPath X.src X.tgt (revPath q) b a := isPath_revPath hq
   have h1 : Htpy X a b (p ++ (revPath q ++ q)) q := by
-    have hh := h.congr_append (r := ([] : List (X.E × Bool))) (s := q) rfl hq
+    have hh := h.congr_append (r := ([] : FiniteChains.Comb.Oriented X.E)) (s := q) rfl hq
     simpa using hh
   have h2 : Htpy X a b (p ++ (revPath q ++ q)) (p ++ []) :=
     Htpy.append_congr hp (isPath_append_iff.mpr ⟨a, hrq, hq⟩) (Htpy.refl p)
@@ -58,13 +59,13 @@ theorem htpy_of_loop_nil {a b : X.V} {p q : List (X.E × Bool)}
   simpa using h3
 
 /-- Appending a fixed path on the right of a homotopy. -/
-theorem htpy_append_right {a b c : X.V} {p q r : List (X.E × Bool)}
+theorem htpy_append_right {a b c : X.V} {p q r : FiniteChains.Comb.Oriented X.E}
     (hp : IsPath X.src X.tgt p a b) (hr : IsPath X.src X.tgt r b c) (h : Htpy X a b p q) :
     Htpy X a c (p ++ r) (q ++ r) :=
   Htpy.append_congr hp hr h (Htpy.refl r)
 
 /-- Appending a fixed path on the left of a homotopy. -/
-theorem htpy_append_left {a b c : X.V} {p q r : List (X.E × Bool)}
+theorem htpy_append_left {a b c : X.V} {p q r : FiniteChains.Comb.Oriented X.E}
     (hr : IsPath X.src X.tgt r a b) (hp : IsPath X.src X.tgt p b c) (h : Htpy X b c p q) :
     Htpy X a c (r ++ p) (r ++ q) :=
   Htpy.append_congr hr hp (Htpy.refl r) h
@@ -129,7 +130,7 @@ theorem spx1_le_spx2_right {x y : P} (h : x ≤ y) : spx1 y ≤ spx2 h := by
 /-- The two-edge path of the order complex of the chains which goes from the face `a` of the
 chain `c` up to `c` and down to its face `b`. -/
 def hop {a b c : NeSpx (cmpRel P)} (ha : a ≤ c) (hb : b ≤ c) :
-    List ((orderCx (NeSpx (cmpRel P))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E :=
   [ordPos ha, ordNeg hb]
 
 omit [DecidableEq P] in
@@ -138,7 +139,7 @@ theorem isPath_hop {a b c : NeSpx (cmpRel P)} (ha : a ≤ c) (hb : b ≤ c) :
   ⟨rfl, rfl, rfl⟩
 
 /-- The two-edge path which crosses the edge `{x, y}` of the subdivision from `x` to `y`. -/
-def edgeHop {x y : P} (h : x ≤ y) : List ((orderCx (NeSpx (cmpRel P))).E × Bool) :=
+def edgeHop {x y : P} (h : x ≤ y) : FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E :=
   hop (spx1_le_spx2_left h) (spx1_le_spx2_right h)
 
 theorem isPath_edgeHop {x y : P} (h : x ≤ y) :
@@ -147,7 +148,7 @@ theorem isPath_edgeHop {x y : P} (h : x ≤ y) :
   isPath_hop _ _
 
 /-- The same edge crossed from `y` to `x`. -/
-def edgeHopRev {x y : P} (h : x ≤ y) : List ((orderCx (NeSpx (cmpRel P))).E × Bool) :=
+def edgeHopRev {x y : P} (h : x ≤ y) : FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E :=
   hop (spx1_le_spx2_right h) (spx1_le_spx2_left h)
 
 theorem isPath_edgeHopRev {x y : P} (h : x ≤ y) :
@@ -198,7 +199,7 @@ def insCh (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) : NeSpx (cmpRel P)
 /-- **The filling tool.**  A loop of the subdivision all of whose chains consist of faces of one
 fixed cell `t` is null-homotopic: the closed star of a cell is a cone. -/
 theorem htpy_nil_of_star (t : P) {v : NeSpx (cmpRel P)} (hv : StarCh t v)
-    {l : List ((orderCx (NeSpx (cmpRel P))).E × Bool)}
+    {l : FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E}
     (hp : IsPath (orderCx (NeSpx (cmpRel P))).src (orderCx (NeSpx (cmpRel P))).tgt l v v)
     (hl : PathIn (StarCh t) l) :
     Htpy (orderCx (NeSpx (cmpRel P))) v v l [] := by
@@ -234,7 +235,7 @@ theorem pathIn_edgeHopRev {t x y : P} (hxy : x ≤ y) (hx : x ≤ t) (hy : y ≤
   pathIn_hop _ _ (starCh_spx2 hxy hx hy)
 
 omit [DecidableEq P] in
-theorem pathIn_append' {A : NeSpx (cmpRel P) → Prop} {l l' : List ((orderCx (NeSpx (cmpRel P))).E × Bool)}
+theorem pathIn_append' {A : NeSpx (cmpRel P) → Prop} {l l' : FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E}
     (h : PathIn A l) (h' : PathIn A l') : PathIn A (l ++ l') := by
   intro e he
   rcases List.mem_append.1 he with hh | hh

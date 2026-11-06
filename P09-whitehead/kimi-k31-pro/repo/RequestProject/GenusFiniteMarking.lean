@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusApply
 public import RequestProject.ChamberQuotientFinite
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 Finite marking of the genus block. The canonical loops are indexed by `Fin q × Bool`,
@@ -12,9 +17,6 @@ This proves the filling and group injectivity for these actual loops; it does no
 (B2), (B3), or a comparison with topological second homotopy groups.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 
@@ -47,10 +49,9 @@ theorem finite_hfilling :
     commWord (fun x : Fin q × Bool =>
       Pi1.mk (⟨finiteSig q x, isPath_gSig q (x.1.val, x.2)⟩ :
         Loop (orderCx (NeSpx (cmpRel (SCell (gvc q) (gec q) (gc q))))) (gBase q)))
-      (finitePairs q) = 1 := by
-  exact (commWord_finitePairs q _).trans (genus_hfilling q)
+      (finitePairs q) = 1 := (commWord_finitePairs q _).trans (genus_hfilling q)
 
-abbrev finiteLw (_ : PUnit.{1}) (x : Fin q × Bool) : List (α × Bool) :=
+abbrev finiteLw (_ : PUnit.{1}) (x : Fin q × Bool) : FiniteChains.Comb.Oriented α :=
   genusLw a b q (PUnit.unit.{1} : PUnit.{1}) (x.1.val, x.2)
 
 /-- The internal generators are finite, since the quotient has finitely many edges. -/

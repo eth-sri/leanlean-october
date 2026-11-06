@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetDimension
 public import RequestProject.OrderUniversalPosetCells
 
@@ -24,7 +25,7 @@ universe u
 variable {α J : Type u}
 
 /-- Dimension two persists in the actual path-class universal cover. -/
-theorem presPos_cover_strict_three_flags_empty (w : J → List (α × Bool)) (a : PresPos w) :
+theorem presPos_cover_strict_three_flags_empty (w : J → FiniteChains.Comb.Oriented α) (a : PresPos w) :
     IsEmpty (StrictOrdTet (UOrder (PresPos w) a)) := by
   refine ⟨fun t => ?_⟩
   have h01 := presPosDimension_strictMono w (uOrderEnd_strictMono t.2.1)
@@ -33,7 +34,7 @@ theorem presPos_cover_strict_three_flags_empty (w : J → List (α × Bool)) (a 
   have hb := presPosDimension_le_two w (uOrderEnd t.1.2.2.2)
   omega
 
-theorem presPos_cover_normalized_three_boundary_zero (w : J → List (α × Bool))
+theorem presPos_cover_normalized_three_boundary_zero (w : J → FiniteChains.Comb.Oriented α)
     (a : PresPos w) (y : OrdTet (UOrder (PresPos w) a) →₀ ℤ) :
     normalizeOrdChain2 (ordBoundary3 y) = 0 := by
   haveI := presPos_cover_strict_three_flags_empty w a

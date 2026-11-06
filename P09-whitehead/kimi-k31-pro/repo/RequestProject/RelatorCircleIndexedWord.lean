@@ -1,25 +1,27 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelatorCircleBoundaryHomeomorph
 public import RequestProject.PresPosetAlpha
 public import Mathlib.Data.List.OfFn
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact enumeration of the actual circle edges as the four edges of each
 successive letter. This is a list identity, including the final closing
 edge, not merely an equality of free-group elements. Pending verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
 open scoped Classical
 
-variable {A J : Type} (w : J → List (A × Bool)) (j : J)
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A) (j : J)
 
 def circleSegmentGerm (k : Fin (w j).length) (t : Fin 4) :
     (orderCx (TCirc w)).E × Bool :=

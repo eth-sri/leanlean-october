@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelatorCircleEdges
 public import RequestProject.OrderConstructionConnected
 
@@ -8,7 +9,7 @@ public import RequestProject.OrderConstructionConnected
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 /-- Consecutive actual circle corners lie in the same actual edge-path component. -/
 theorem relatorCircle_corner_component_next (k : Fin (w j).length) :

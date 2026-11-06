@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetReading
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The comparison with the model built on a prescribed choice of relator words
@@ -21,9 +26,6 @@ This file repeats the two halves of the comparison for such a prescribed `w`:
   the model being a left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace PresModel
@@ -32,7 +34,7 @@ open Comb
 
 universe u
 
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
 include hw

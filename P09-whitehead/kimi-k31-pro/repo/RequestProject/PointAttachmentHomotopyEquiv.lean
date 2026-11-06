@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.AttachmentBaseChange
 public import RequestProject.BallHomotopyExtension
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Attaching a contractible pointed space at one old point preserves
 the homotopy type by an explicit contraction. This is the geometric
 ingredient for adding a dummy generator together with its killing disk. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open Topology

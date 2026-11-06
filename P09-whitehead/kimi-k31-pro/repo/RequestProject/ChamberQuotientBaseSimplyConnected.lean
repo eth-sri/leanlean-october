@@ -1,15 +1,17 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ChamberQuotientBaseCover
 public import RequestProject.OrderUniversalPosetConnected
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Each actual lifted base component is simply connected, proved from the
 genuine covering and the proved injection of the base fundamental group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -20,7 +22,7 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 omit [Fintype V] in
 theorem qBaseCover_path_projection (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att)))
-    (l : List ((orderCx (QLiftedBase a)).E × Bool)) :
+    (l : FiniteChains.Comb.Oriented (orderCx (QLiftedBase a)).E) :
     mapPath (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone)
       (mapPath (orderCxMap (qBaseCoverEnd a) (qBaseCoverEnd_isPosetCover a hc).mono) l) =
     mapPath (orderCxMap (uOrderEnd (P := Qpos A X att) (a := a)) uOrderEnd_monotone)
@@ -30,7 +32,7 @@ theorem qBaseCover_path_projection (a : Qpos A X att)
   | nil => rfl
   | cons e l ih =>
     simp only [mapPath, List.map_cons] at ih ⊢
-    rw (config := { transparency := .default }) [ih]
+    rwd [ih]
     congr 1
     apply Prod.ext
     · apply Subtype.ext
@@ -55,12 +57,12 @@ theorem qLiftedBase_simplyConnected (a : Qpos A X att)
       (qNew (A := A) (att := att) (qBaseCoverEnd (X := X) a b))
       (mapPath (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone)
         (mapPath beta p)) [] := by
-    rw (config := { transparency := .default }) [qBaseCover_path_projection a hc, qBaseCoverEnd_spec]
+    rwd [qBaseCover_path_projection a hc, qBaseCoverEnd_spec]
     exact hnull
   let l : Loop (orderCx X) (qBaseCoverEnd (X := X) a b) := ⟨mapPath beta p, isPath_mapPath beta hp⟩
   have hcl : Pi1.mk l = 1 := by
     apply pi1Map_qNew_injective (A := A) (att := att) (qBaseCoverEnd (X := X) a b)
-    rw (config := { transparency := .default }) [map_one]
+    rwd [map_one]
     exact Quotient.sound hq
   have hl : Htpy (orderCx X) (qBaseCoverEnd (X := X) a b) (qBaseCoverEnd (X := X) a b)
       (mapPath beta p) [] := Quotient.exact hcl

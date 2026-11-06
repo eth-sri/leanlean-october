@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.FoxRequirementMod
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The requirements modulo `m` pass to the commutator subgroup
@@ -23,9 +29,6 @@ coefficients form a field, so Lemma 2.1 applies and gives
 `foxSatMod_commutator`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

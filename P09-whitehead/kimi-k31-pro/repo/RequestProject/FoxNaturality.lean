@@ -32,8 +32,7 @@ noncomputable def freeRingMap (f : α → β) : FreeGroupRing α →+* FreeGroup
 
 omit [DecidableEq α] [DecidableEq β] in
 @[simp] theorem freeRingMap_grp (f : α → β) (w : FreeGroup α) :
-    freeRingMap f (grp w) = grp (FreeGroup.map f w) := by
-  exact MonoidAlgebra.mapDomain_single
+    freeRingMap f (grp w) = grp (FreeGroup.map f w) := MonoidAlgebra.mapDomain_single
 
 
 /-- **Naturality of the Fox derivative.**  For an injective map of generating sets the

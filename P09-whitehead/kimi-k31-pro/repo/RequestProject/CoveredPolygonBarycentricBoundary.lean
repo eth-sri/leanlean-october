@@ -1,18 +1,20 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CellularHomotopyChain
 public import RequestProject.SurfaceCoverPolygonEquivariance
 public import RequestProject.BarycentricTwoChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The boundary of the explicit subdivided polygon is its actual lifted
 boundary path, with all sheets retained. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.CoveredPolygon
 open RACG Mirror Comb Cell
@@ -22,7 +24,7 @@ variable {κ ι P : Type} {M : ℕ} [NeZero M] [PartialOrder P]
   {v : PolygonCoverPole hc f} (D : CoveredPolygon hc f v)
 
 def subdivisionBoundaryEdge (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel P))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E :=
   edgeHop (D.ve p) ++ revPath (edgeHop (D.v1e p))
 
 theorem subdivisionBoundaryEdge_isPath (p : Fin M) :
@@ -30,7 +32,7 @@ theorem subdivisionBoundaryEdge_isPath (p : Fin M) :
       (D.subdivisionBoundaryEdge hc f p) (spx1 (D.V p)) (spx1 (D.V (p + 1))) :=
   (isPath_edgeHop (D.ve p)).append (isPath_revPath (isPath_edgeHop (D.v1e p)))
 
-def subdivisionBoundaryPath : ℕ → List ((orderCx (NeSpx (cmpRel P))).E × Bool)
+def subdivisionBoundaryPath : ℕ → FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel P))).E
   | 0 => []
   | n + 1 => subdivisionBoundaryPath n ++ D.subdivisionBoundaryEdge hc f (cyc M n)
 

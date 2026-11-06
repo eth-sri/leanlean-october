@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusPolygonCoefficientBoundaryBridge
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual marking boundary supplies polygon relativity automatically.
 Consequently a fixed degree-one geometric reference generates every vector
@@ -10,9 +15,6 @@ satisfying the internal B2 equations. Written, unverified proof terms. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -20,7 +22,7 @@ variable {P Q I : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem normalizedWeakChain1To_paths_boundary_support
     (f : P → Q) (hf : Monotone f) (S : Q → Prop)
-    (p : I → List (OrdEdge P × Bool))
+    (p : I → FiniteChains.Comb.Oriented (OrdEdge P))
     (hp : ∀ i a, a ∈ p i → S (f a.1.1.1) ∧ S (f a.1.1.2))
     (c : I →₀ ℤ) :
     ∀ e ∈ (normalizedWeakChain1To f hf (Finsupp.linearCombination ℤ
@@ -84,8 +86,7 @@ theorem namedSurfaceMarkingChains_boundary_support
     ∀ e ∈ (normalizedWeakChain1To (namedSurfaceForward q ρ u)
         (namedSurfaceForward_monotone q ρ u) (namedAttachingMarkingChains q ρ u hrho b)).support,
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.1) ∧
-        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := by
-  exact normalizedWeakChain1To_paths_boundary_support
+        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := normalizedWeakChain1To_paths_boundary_support
     (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
     (fun p : NamedSurfaceCover ρ q u =>
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u p))

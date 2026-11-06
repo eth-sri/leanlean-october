@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxMonodromy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   (c : OrdCocycle P G)
 
-@[simp] theorem readPath_revPath (p : List ((orderCx P).E × Bool)) :
+@[simp] theorem readPath_revPath (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     c.readPath (revPath p) = (c.readPath p)⁻¹ := by
   induction p with
   | nil => simp [revPath, readPath]
@@ -24,13 +26,13 @@ variable {P : Type u} [Preorder P] {G : Type v} [Group G]
 /-- On a combinatorially simply connected order complex, a cocycle reads one
 on every closed edge path. -/
 theorem readPath_eq_one_of_simplyConnected (h : SimplyConnected (orderCx P))
-    {a : P} {p : List ((orderCx P).E × Bool)}
+    {a : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) : c.readPath p = 1 :=
   c.readPath_htpy (h a p hp)
 
 /-- Cocycle reading is independent of the edge path with prescribed endpoints. -/
 theorem readPath_eq_of_simplyConnected (h : SimplyConnected (orderCx P))
-    {a b : P} {p q : List ((orderCx P).E × Bool)}
+    {a b : P} {p q : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b)
     (hq : IsPath (orderCx P).src (orderCx P).tgt q a b) :
     c.readPath p = c.readPath q := by

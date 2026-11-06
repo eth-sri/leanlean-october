@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 
 @[expose] public section
@@ -25,7 +26,7 @@ namespace Comb
 
 universe u
 
-variable {X : Complex2.{u}} {a b : X.V} {c : List (X.E × Bool)}
+variable {X : Complex2.{u}} {a b : X.V} {c : FiniteChains.Comb.Oriented X.E}
 
 /-- The loop `c · p · c⁻¹` at `a`, for a loop `p` at `b` and a path `c` from `a` to `b`. -/
 def conjLoop (hc : IsPath X.src X.tgt c a b) (p : Loop X b) : Loop X a :=
@@ -53,7 +54,7 @@ def pi1Conj (hc : IsPath X.src X.tgt c a b) : Pi1 X b →* Pi1 X a where
     have hrw₁ : (c ++ p.1) ++ (revPath c ++ c) ++ (q.1 ++ revPath c)
         = (c ++ p.1 ++ revPath c) ++ (c ++ q.1 ++ revPath c) := by
       simp [List.append_assoc]
-    have hrw₂ : (c ++ p.1) ++ ([] : List (X.E × Bool)) ++ (q.1 ++ revPath c)
+    have hrw₂ : (c ++ p.1) ++ ([] : FiniteChains.Comb.Oriented X.E) ++ (q.1 ++ revPath c)
         = c ++ (p.1 ++ q.1) ++ revPath c := by
       simp [List.append_assoc]
     rw [hrw₁, hrw₂] at hmain
@@ -63,7 +64,7 @@ def pi1Conj (hc : IsPath X.src X.tgt c a b) : Pi1 X b →* Pi1 X a where
     pi1Conj hc (Pi1.mk p) = Pi1.mk (conjLoop hc p) := rfl
 
 /-- Conjugation only depends on the homotopy class of the conjugating path. -/
-theorem pi1Conj_congr {c' : List (X.E × Bool)} (hc : IsPath X.src X.tgt c a b)
+theorem pi1Conj_congr {c' : FiniteChains.Comb.Oriented X.E} (hc : IsPath X.src X.tgt c a b)
     (hc' : IsPath X.src X.tgt c' a b) (h : Htpy X a b c c') (x : Pi1 X b) :
     pi1Conj hc x = pi1Conj hc' x := by
   induction x using Quotient.inductionOn with
@@ -80,7 +81,7 @@ theorem pi1Conj_congr {c' : List (X.E × Bool)} (hc : IsPath X.src X.tgt c a b)
       simpa [List.append_assoc] using h1.trans h3
 
 /-- Conjugating twice is conjugating by the concatenated path. -/
-theorem pi1Conj_pi1Conj {d : List (X.E × Bool)} {e : X.V} (hc : IsPath X.src X.tgt c a b)
+theorem pi1Conj_pi1Conj {d : FiniteChains.Comb.Oriented X.E} {e : X.V} (hc : IsPath X.src X.tgt c a b)
     (hd : IsPath X.src X.tgt d b e) (x : Pi1 X e) :
     pi1Conj hc (pi1Conj hd x) = pi1Conj (hc.append hd) x := by
   induction x using Quotient.inductionOn with

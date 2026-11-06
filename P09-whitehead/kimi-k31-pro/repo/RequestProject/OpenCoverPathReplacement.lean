@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib.Topology.Subpath
 public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A finite open-cover argument for replacing a path after moving its
 vertices along specified connector paths. The result is an actual path and
@@ -14,9 +20,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PathReplacement
 

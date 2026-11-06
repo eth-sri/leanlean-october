@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TruncatedCoverRetraction
 public import RequestProject.GenusCoveredSpineCycleFaithfulness
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual covered-spine cycles are detected in the old cubical block. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Nerve

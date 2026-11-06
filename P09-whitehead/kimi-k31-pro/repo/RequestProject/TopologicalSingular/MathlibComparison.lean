@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.SimplexCoordinates
 public import RequestProject.Statement
 public import RequestProject.TopologicalSingular.SingularChainHomotopy
@@ -8,11 +10,12 @@ public import RequestProject.FreeSingularChainComparison
 
 @[expose] public section
 
+backwardOptions
+
+
+
 open scoped ContinuousMap
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxSynthPendingDepth 3
 set_option synthInstance.maxHeartbeats 40000

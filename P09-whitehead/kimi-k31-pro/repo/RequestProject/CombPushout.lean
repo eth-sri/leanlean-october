@@ -1,8 +1,13 @@
 module
 
-public import RequestProject.CombData
+public import RequestProject.Oriented
+public import RequestProject.ComponentComplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The cellular pushout `E = K ∪_p L` of Proposition 3.11
@@ -33,9 +38,6 @@ homotopy groups:
 Only the injectivity of the inclusion `D ⊆ L` is used; `p` is an arbitrary cellular map.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -50,7 +52,7 @@ variable {K D L : Complex2.{u}}
 theorem isPath_map {V E V' E' : Type*} {src tgt : E → V} {src' tgt' : E' → V'}
     (fV : V → V') (fE : E → E') (hs : ∀ e, src' (fE e) = fV (src e))
     (ht : ∀ e, tgt' (fE e) = fV (tgt e)) :
-    ∀ {q : List (E × Bool)} {a b : V}, IsPath src tgt q a b →
+    ∀ {q : FiniteChains.Comb.Oriented E} {a b : V}, IsPath src tgt q a b →
       IsPath src' tgt' (q.map fun eb => (fE eb.1, eb.2)) (fV a) (fV b) := by
   intro q
   induction q with
@@ -61,9 +63,7 @@ theorem isPath_map {V E V' E' : Type*} {src tgt : E → V} {src' tgt' : E' → V
       · obtain ⟨e, s⟩ := eb
         cases s <;> simp [germSrc, hs, ht] at h1 ⊢ <;> exact congrArg fV h1
       · obtain ⟨e, s⟩ := eb
-        cases s
-        · simpa [germTgt, hs, ht] using ih h2
-        · simpa [germTgt, hs, ht] using ih h2
+        cases s <;> simpa [germTgt, hs, ht] using ih h2
 
 /-! ### The cells of `L` off `D` -/
 
@@ -142,9 +142,7 @@ theorem psrc_pushE (e : L.E) : psrc p i (pushE p i e) = pushV p i (L.src e) := b
     rw [pushE_of_mem p hiE d]
     show Sum.inl (K.src (p.onE d)) = _
     rw [p.src_onE, i.src_onE, pushV_of_mem p hiV]
-  · have he : (⟨e, fun d hd => h ⟨d, hd⟩⟩ : OffE i).1 = e := rfl
-    rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
-    show pushV p i (L.src e) = pushV p i (L.src e)
+  · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
     rfl
 
 include hiV hiE in
@@ -239,14 +237,10 @@ noncomputable def pushoutMap (hiF : Function.Injective i.onF) :
 pushed into `L` or mapped into `K`. -/
 theorem pushout_comm (hiF : Function.Injective i.onF) :
     (pushoutMap p i hiV hiE hiF).comp i = (pushoutInl p i hiV hiE).comp p := by
-  have hV : ∀ d, pushV p i (i.onV d) = Sum.inl (p.onV d) := pushV_of_mem p hiV
-  have hE : ∀ d, pushE p i (i.onE d) = Sum.inl (p.onE d) := pushE_of_mem p hiE
-  have hF : ∀ d, pushF p i (i.onF d) = Sum.inl (p.onF d) := pushF_of_mem p hiF
-  have : ∀ (X Y : Complex2.{u}) (f g : Hom X Y), f.onV = g.onV → f.onE = g.onE →
-      f.onF = g.onF → f = g := by
-    rintro X Y ⟨a, b, c, _, _, _, _⟩ ⟨a', b', c', _, _, _, _⟩ h1 h2 h3
-    cases h1; cases h2; cases h3; rfl
-  exact this _ _ _ _ (funext hV) (funext hE) (funext hF)
+  apply Hom.ext'
+  · exact funext (pushV_of_mem p hiV)
+  · exact funext (pushE_of_mem p hiE)
+  · exact funext (pushF_of_mem p hiF)
 
 /-! ### The universal property -/
 

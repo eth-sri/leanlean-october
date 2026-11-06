@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RACGTrace
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Right-angled Coxeter groups through their reduced traces
@@ -29,9 +35,6 @@ On top of this the file develops the descent theory used in `RequestProject/RACG
 lemma `FiniteChains.RACG.isDesc_two`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace RACG

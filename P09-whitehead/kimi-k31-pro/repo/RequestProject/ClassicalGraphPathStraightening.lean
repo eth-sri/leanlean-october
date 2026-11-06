@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalGraphModel
 public import RequestProject.ContinuousEdgeWords
 public import RequestProject.DiskAttachmentVertexStars
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Every continuous path between vertices of the literal graph attachment
 is homotopic relative endpoints to a finite word in its original edges.
@@ -15,9 +21,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment ContinuousEdgeWords PathReplacement

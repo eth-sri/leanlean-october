@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PushoutFundamentalRetraction
 public import RequestProject.RegularCoverEdgeLabels
 public import RequestProject.UniversalCoverPi1Injection
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual sheet separation in the universal cover of the descent pushout.
 The map L→K∪D L identifies old vertices, so fundamental-group injection
@@ -14,9 +19,6 @@ No universal-cover embedding hypothesis is assumed. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -65,7 +67,7 @@ theorem labels_pushE (e : L.E) : labels p hp a hr i hiV hiE (pushE p i e) =
     rfl
 
 include he in
-theorem read_pushPath {l : List (L.E × Bool)} {v w : L.V}
+theorem read_pushPath {l : FiniteChains.Comb.Oriented L.E} {v w : L.V}
     (hl : IsPath L.src L.tgt l v w) :
     EdgeLabels.read (labels p hp a hr i hiV hiE)
       (mapPath (pushoutMap p i hiV hiE hiF) l) =

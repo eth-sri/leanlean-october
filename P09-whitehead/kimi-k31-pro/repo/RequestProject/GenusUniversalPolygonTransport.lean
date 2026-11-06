@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusUniversalPolygonReference
 public import RequestProject.GenusAttachingRelativeOldBoundary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Transport of the explicit pre-substitution degree-one polygon to the
 actual named quotient. All chains retain their actual cover sheets.
@@ -11,9 +17,6 @@ actual named quotient. All chains retain their actual cover sheets.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

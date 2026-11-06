@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PushoutRelativeCopyLabels
 public import RequestProject.PushoutUniversalCellEmbedding
 public import RequestProject.PushoutOldCoverHomology
 public import RequestProject.AcyclicLiftedSubcomplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual regular-cover descent in degree two. Every universal-cover
 two-cycle is a finite sum of images of genuine cycles in copies of the
@@ -14,9 +20,6 @@ are all constructed in the imported files. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
 universe u v
@@ -99,8 +102,7 @@ theorem copy_filter_completion
     have hcoeff : Comb.bdry2 (uCover L (i.onV d₀)) b e = 0 := by
       have hh := congrArg (fun z => z (φ.onE e)) hdr
       have hbd : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) d =
-          chain1 φ (bdry2 (uCover L (i.onV d₀)) b) := by
-        exact (congrArg (bdry2 (uCover (target p i hiV hiE)
+          chain1 φ (bdry2 (uCover L (i.onV d₀)) b) := (congrArg (bdry2 (uCover (target p i hiV hiE)
           (root p i hiV hiE hiF (i.onV d₀)))) hb'.symm).trans (bdry2_chain2 φ b)
       change ((bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) d).filter
         (fun e => ¬ oldEdge p i hiV hiE hiF (i.onV d₀) e))
@@ -170,8 +172,7 @@ theorem cycle_mem_span_at_core
   have hdiff : c - zsum ∈ W := by
     have hh := W.sum_mem (fun s (_ : s ∈ (Finset.univ : Finset {s // s ∈ S})) => hzd s)
     rw [Finset.sum_sub_distrib] at hh
-    have hsum : (∑ s : {s // s ∈ S}, c.filter (fun f => label f = s.val)) = c := by
-      exact (Finset.sum_coe_sort S (fun s => c.filter (fun f => label f = s))).trans
+    have hsum : (∑ s : {s // s ∈ S}, c.filter (fun f => label f = s.val)) = c := (Finset.sum_coe_sort S (fun s => c.filter (fun f => label f = s))).trans
         (finsupp_sum_label_filters label c)
     rw [hsum] at hh
     exact hh

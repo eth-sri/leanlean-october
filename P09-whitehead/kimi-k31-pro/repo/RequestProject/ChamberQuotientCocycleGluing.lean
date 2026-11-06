@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.BlockSpinePres
 public import RequestProject.OrderCocycleChains
 public import RequestProject.OrderCocyclePotential
@@ -8,6 +9,10 @@ public import RequestProject.GenusChainCollapse
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Explicit nonabelian cocycle gluing on the actual quotient Q.
 
 The transition function comes from the marked surface theorem, not an assumed
@@ -15,9 +20,6 @@ presentation of its fundamental group. This is the geometric construction
 needed for the reverse substituted-group comparison.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v w
@@ -35,7 +37,7 @@ theorem eq_of_val_eq {c d : OrdCocycle P G} (h : ∀ a b, c.val a b = d.val a b)
       rfl
 
 theorem comap_readPath (c : OrdCocycle Q G) (f : P → Q) (hf : Monotone f)
-    (p : List ((orderCx P).E × Bool)) :
+    (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     (c.comap f hf).readPath p = c.readPath (mapPath (orderCxMap f hf) p) := by
   induction p with
   | nil => rfl
@@ -49,7 +51,7 @@ def postcompose (c : OrdCocycle P G) (φ : G →* H) : OrdCocycle P H where
   comp hab hbc := by rw [← map_mul, c.comp hab hbc]
 
 theorem postcompose_readPath (c : OrdCocycle P G) (φ : G →* H)
-    (p : List ((orderCx P).E × Bool)) :
+    (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     (c.postcompose φ).readPath p = φ (c.readPath p) := by
   induction p with
   | nil => exact (map_one φ).symm

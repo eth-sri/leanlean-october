@@ -1,17 +1,19 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelatorConeFundamentalChain
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f)
 
 noncomputable def presCoverCircleInclusion (p : PresCoverRelator w f)
@@ -47,7 +49,7 @@ theorem presCoverRelatorFan_boundary (p : PresCoverRelator w f) :
 theorem presCoverRelatorFan_first (hpos : ∀ j, 0 < (w j).length)
     (p : PresCoverRelator w f) :
     presCoverRelatorFan w f hf p (presCoverRelatorTriangle w f hf hpos p) = 1 := by
-  rw (config := { transparency := .default }) [presCoverRelatorFan, strictTopConeEdgeChain_eq_mapDomain]
+  rwd [presCoverRelatorFan, strictTopConeEdgeChain_eq_mapDomain]
   have he := Finsupp.mapDomain_apply_of_injective
     (strictTopConeEdgeTriangle_injective (presCoverCircleInclusion w f hf p)
       (presCoverCircleInclusion_strictMono w f hf p) p.1.1
@@ -62,10 +64,10 @@ theorem presCoverRelatorChain_fan (hpos : ∀ j, 0 < (w j).length)
     presCoverRelatorChain w f hf hpos (presCoverRelatorFan w f hf p) = Finsupp.single p 1 := by
   classical
   ext q
-  rw (config := { transparency := .default }) [presCoverRelatorChain_apply]
+  rwd [presCoverRelatorChain_apply]
   by_cases h : q = p
   · subst q
-    rw (config := { transparency := .default }) [presCoverRelatorFan_first]
+    rwd [presCoverRelatorFan_first]
     simp
   · have hv : q.1.1 ≠ p.1.1 := by
       intro he
@@ -78,7 +80,7 @@ theorem presCoverRelatorChain_fan (hpos : ∀ j, 0 < (w j).length)
       (presCoverCircleInclusion_strictMono w f hf p) p.1.1
       (presCoverCircleInclusion_lt_apex w f hf p) (relatorCircleFundamentalChain w p.1.2)
       (presCoverRelatorTriangle w f hf hpos q) hv
-    rw (config := { transparency := .default }) [show presCoverRelatorFan w f hf p (presCoverRelatorTriangle w f hf hpos q) = 0 from hz]
+    rwd [show presCoverRelatorFan w f hf p (presCoverRelatorTriangle w f hf hpos q) = 0 from hz]
     simp [h]
 
 /-- A genuine integer-linear realization of finite lifted-relator chains by actual cone fans. -/
@@ -92,9 +94,9 @@ theorem presCoverRelatorChain_fanChain (hpos : ∀ j, 0 < (w j).length)
     presCoverRelatorChain w f hf hpos (presCoverRelatorFanChain w f hf c) = c := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd]
+  | add c d hc hd => rwd [map_add, map_add, hc, hd]
   | single p n =>
-    rw (config := { transparency := .default }) [presCoverRelatorFanChain, Finsupp.linearCombination_single, map_smul,
+    rwd [presCoverRelatorFanChain, Finsupp.linearCombination_single, map_smul,
       presCoverRelatorChain_fan]
     simp
 

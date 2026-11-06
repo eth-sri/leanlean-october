@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCoverConeCircleChains
 public import RequestProject.PresCoverCylinderElimination
 
@@ -8,7 +9,7 @@ public import RequestProject.PresCoverCylinderElimination
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f)
 
 /-- Actual two-cycles are detected by one genuine coefficient at each lifted relator apex. -/

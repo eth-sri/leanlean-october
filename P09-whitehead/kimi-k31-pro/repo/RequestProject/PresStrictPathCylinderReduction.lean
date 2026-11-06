@@ -1,17 +1,19 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeStrictExcursionReplacement
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-- Every strict lower vertex of an actual relator apex belongs to the actual cylinder. -/
 theorem presCone_lower_mem_cylinder (j : J) (x : PresPos w) (hx : x < apexOf w j) :
@@ -30,10 +32,10 @@ theorem presStrictGerm_in_cylinder (e : (strictOrderCx (PresPos w)).E × Bool)
 
 /-- Every actual strict presentation path with cylinder endpoints reduces to an actual cylinder path. -/
 theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length)
-    (p : List ((strictOrderCx (PresPos w)).E × Bool))
+    (p : FiniteChains.Comb.Oriented (strictOrderCx (PresPos w)).E)
     (a b : PresPos w) (ha : a ∈ coneAdjBaseSet (S := circSet w)) (hb : b ∈ coneAdjBaseSet (S := circSet w))
     (hp : IsPath (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt p a b) :
-    ∃ q : List ((orderCx (PresPos w)).E × Bool),
+    ∃ q : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E,
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt q a b ∧
       PathIn (fun x => x ∈ coneAdjBaseSet (S := circSet w)) q ∧
       Htpy (orderCx (PresPos w)) a b (mapPath (strictOrderIncl (PresPos w)) p) q := by
@@ -87,11 +89,11 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
 
 /-- Every actual weak presentation path with cylinder endpoints reduces to an actual cylinder path. -/
 theorem exists_presPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length)
-    (p : List ((orderCx (PresPos w)).E × Bool))
+    (p : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E)
     (a b : PresPos w) (ha : a ∈ coneAdjBaseSet (S := circSet w))
     (hb : b ∈ coneAdjBaseSet (S := circSet w))
     (hp : IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt p a b) :
-    ∃ q : List ((orderCx (PresPos w)).E × Bool),
+    ∃ q : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E,
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt q a b ∧
       PathIn (fun x => x ∈ coneAdjBaseSet (S := circSet w)) q ∧
       Htpy (orderCx (PresPos w)) a b p q := by

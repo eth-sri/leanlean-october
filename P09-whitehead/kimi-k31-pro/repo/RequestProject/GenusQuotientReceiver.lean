@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ChamberQuotientCocycleGluing
 public import RequestProject.GenusReceivedSpineCover
 public import RequestProject.PresUniversalGroupCoordinates
@@ -7,14 +8,15 @@ public import RequestProject.GenusNonemptyMarkedReading
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Construct the old-piece cocycle from the actual finite-spine receiver,
 then glue it to a base receiver using only the genuine marked readings.
 This source is part of the pending reverse-comparison proof.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 open SpanningTree
@@ -48,7 +50,7 @@ theorem fromTreeReceiver_readGerm (e : (orderCx P).E × Bool) :
     rw [dif_pos hab]
     rfl
 
-theorem fromTreeReceiver_readPath (p : List ((orderCx P).E × Bool)) :
+theorem fromTreeReceiver_readPath (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     (fromTreeReceiver T φ).readPath p = φ (wordClass T p) := by
   induction p with
   | nil => simp [wordClass, pathWord_nil]

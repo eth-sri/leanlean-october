@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeStrictGerms
 
 @[expose] public section
@@ -7,12 +8,12 @@ public import RequestProject.PresConeStrictGerms
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 /-- An actual strict-edge excursion through a relator apex has a genuine cylinder path replacement. -/
 theorem exists_presCone_strictEdge_excursion_replacement (hpos : 0 < (w j).length)
     (e d : StrictOrdEdge (PresPos w)) (he : e.val.2 = apexOf w j) (hd : d.val.2 = apexOf w j) :
-    ∃ l : List ((orderCx (PresPos w)).E × Bool),
+    ∃ l : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E,
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt l e.val.1 d.val.1 ∧
       PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w)) l ∧
       Htpy (orderCx (PresPos w)) e.val.1 d.val.1

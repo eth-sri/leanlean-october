@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordEmbeddingFoxPi2
 public import RequestProject.PresWordEmbeddingTopology
 public import RequestProject.PresWordEmbeddingPi1
@@ -7,14 +8,15 @@ public import RequestProject.PresValidPi2
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
 variable {α β J K : Type}
-variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
+variable {w : J → FiniteChains.Comb.Oriented α} {v : K → FiniteChains.Comb.Oriented β}
   (h : PresWordEmbedding w v)
 
 noncomputable def realizationMap :

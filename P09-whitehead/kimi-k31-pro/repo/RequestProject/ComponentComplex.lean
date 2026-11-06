@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombData
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The connected component of a two-complex, and `π₂`
@@ -29,9 +34,6 @@ of universal covers, hence carries the condition "zero on `π₂`" along.
   zero on `π₂` is inherited by the corestriction to a component and by precomposition.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -47,7 +49,7 @@ def Reach (X : Complex2.{u}) (x₀ v : X.V) : Prop := ∃ p, IsPath X.src X.tgt 
 
 theorem reach_self (X : Complex2.{u}) (x₀ : X.V) : Reach X x₀ x₀ := ⟨[], rfl⟩
 
-theorem Reach.trans_path {x₀ a b : X.V} (h : Reach X x₀ a) {p : List (X.E × Bool)}
+theorem Reach.trans_path {x₀ a b : X.V} (h : Reach X x₀ a) {p : FiniteChains.Comb.Oriented X.E}
     (hp : IsPath X.src X.tgt p a b) : Reach X x₀ b := by
   obtain ⟨q, hq⟩ := h
   exact ⟨q ++ p, hq.append hp⟩
@@ -81,7 +83,7 @@ theorem Reach.germSrc_of_src {x₀ : X.V} {eb : X.E × Bool}
 
 /-- Every edge of a path issued from a reachable vertex is reachable. -/
 theorem reach_of_mem_path {x₀ : X.V} :
-    ∀ {l : List (X.E × Bool)} {a b : X.V}, IsPath X.src X.tgt l a b → Reach X x₀ a →
+    ∀ {l : FiniteChains.Comb.Oriented X.E} {a b : X.V}, IsPath X.src X.tgt l a b → Reach X x₀ a →
       ∀ eb ∈ l, Reach X x₀ (X.src eb.1)
   | [], _, _, _, _, _, hm => absurd hm List.not_mem_nil
   | eb :: t, a, b, hl, ha, eb', hm => by
@@ -117,18 +119,18 @@ def cTgt (e : CE X x₀) : CV X x₀ := ⟨X.tgt e.1, e.2.tgt_of_src⟩
 open Classical in
 /-- The list of oriented edges of the component carried by a list of oriented edges of the
 ambient complex: unreachable edges are dropped (they never occur in the lists we lift). -/
-noncomputable def liftGerms (X : Complex2.{u}) (x₀ : X.V) (l : List (X.E × Bool)) :
-    List (CE X x₀ × Bool) :=
+noncomputable def liftGerms (X : Complex2.{u}) (x₀ : X.V) (l : FiniteChains.Comb.Oriented X.E) :
+    FiniteChains.Comb.Oriented (CE X x₀) :=
   l.filterMap fun eb => if h : Reach X x₀ (X.src eb.1) then some (⟨eb.1, h⟩, eb.2) else none
 
 @[simp] theorem liftGerms_nil (X : Complex2.{u}) (x₀ : X.V) : liftGerms X x₀ [] = [] := rfl
 
-@[simp] theorem liftGerms_append (X : Complex2.{u}) (x₀ : X.V) (l l' : List (X.E × Bool)) :
+@[simp] theorem liftGerms_append (X : Complex2.{u}) (x₀ : X.V) (l l' : FiniteChains.Comb.Oriented X.E) :
     liftGerms X x₀ (l ++ l') = liftGerms X x₀ l ++ liftGerms X x₀ l' := by
   simp [liftGerms, List.filterMap_append]
 
 theorem liftGerms_cons {eb : X.E × Bool} (h : Reach X x₀ (X.src eb.1))
-    (l : List (X.E × Bool)) :
+    (l : FiniteChains.Comb.Oriented X.E) :
     liftGerms X x₀ (eb :: l) = ((⟨eb.1, h⟩ : CE X x₀), eb.2) :: liftGerms X x₀ l := by
   classical
   simp [liftGerms, h]
@@ -136,7 +138,7 @@ theorem liftGerms_cons {eb : X.E × Bool} (h : Reach X x₀ (X.src eb.1))
 /-- The forgetful map on oriented edges of the component. -/
 def cForget (eb : CE X x₀ × Bool) : X.E × Bool := (eb.1.1, eb.2)
 
-@[simp] theorem liftGerms_map_cForget (L : List (CE X x₀ × Bool)) :
+@[simp] theorem liftGerms_map_cForget (L : FiniteChains.Comb.Oriented (CE X x₀)) :
     liftGerms X x₀ (L.map cForget) = L := by
   induction L with
   | nil => rfl
@@ -144,7 +146,7 @@ def cForget (eb : CE X x₀ × Bool) : X.E × Bool := (eb.1.1, eb.2)
       rw [List.map_cons, liftGerms_cons (eb := cForget eb) eb.1.2, ih]
       rfl
 
-theorem map_cForget_liftGerms {l : List (X.E × Bool)}
+theorem map_cForget_liftGerms {l : FiniteChains.Comb.Oriented X.E}
     (h : ∀ eb ∈ l, Reach X x₀ (X.src eb.1)) :
     (liftGerms X x₀ l).map cForget = l := by
   induction l with
@@ -171,7 +173,7 @@ theorem map_cForget_liftGerms {l : List (X.E × Bool)}
 /-- A path of the ambient complex issued from a reachable vertex lifts to a path of the
 component. -/
 theorem isPath_liftGerms :
-    ∀ {l : List (X.E × Bool)} {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b),
+    ∀ {l : FiniteChains.Comb.Oriented X.E} {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b),
       IsPath X.src X.tgt l a b →
         IsPath (cSrc (X := X) (x₀ := x₀)) cTgt (liftGerms X x₀ l) ⟨a, ha⟩ ⟨b, hb⟩
   | [], a, b, ha, hb, hl => by
@@ -283,7 +285,7 @@ noncomputable def Hom.toComponent (f : Hom A X) (x₀ : X.V)
 /-- An elementary homotopy of the ambient complex between paths issued from a reachable
 vertex lifts to the component. -/
 theorem step_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
-    {l l' : List (X.E × Bool)} (hstep : Step X a b l l') :
+    {l l' : FiniteChains.Comb.Oriented X.E} (hstep : Step X a b l l') :
     Htpy (component X x₀) ⟨a, ha⟩ ⟨b, hb⟩ (liftGerms X x₀ l) (liftGerms X x₀ l') := by
   obtain ⟨hl, hl', hc⟩ := hstep
   have hPl : IsPath (component X x₀).src (component X x₀).tgt (liftGerms X x₀ l)
@@ -328,7 +330,7 @@ theorem step_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
 /-- **A homotopy of the ambient complex between paths issued from a reachable vertex already
 takes place inside the component.** -/
 theorem htpy_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
-    {l l' : List (X.E × Bool)} (h : Htpy X a b l l') :
+    {l l' : FiniteChains.Comb.Oriented X.E} (h : Htpy X a b l l') :
     Htpy (component X x₀) ⟨a, ha⟩ ⟨b, hb⟩ (liftGerms X x₀ l) (liftGerms X x₀ l') := by
   induction h with
   | refl => exact Htpy.refl _
@@ -340,7 +342,7 @@ theorem htpy_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
 
 /-! ### The universal cover of a component -/
 
-theorem mapPath_componentIncl (x₀ : X.V) (l : List ((component X x₀).E × Bool)) :
+theorem mapPath_componentIncl (x₀ : X.V) (l : FiniteChains.Comb.Oriented (component X x₀).E) :
     mapPath (componentIncl X x₀) l = l.map cForget := rfl
 
 /-! ### Functoriality of the lift to universal covers -/

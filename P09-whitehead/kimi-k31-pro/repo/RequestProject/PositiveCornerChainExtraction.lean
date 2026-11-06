@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PositiveCornerLink
 public import RequestProject.MinimalCornerChains
 public import RequestProject.SurfaceFullCubeConeChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual surface chains extracted from the restored positive corner. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SingularChains
 public import Mathlib.Data.Fin.Tuple.Basic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! # Integral chains of ordered vertex lists
 
@@ -15,9 +21,6 @@ no acyclicity or subdivision identity is assumed.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 

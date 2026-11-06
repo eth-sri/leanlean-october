@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusCollapseIteration
 public import RequestProject.OrderComplexMaximalPath
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -22,7 +24,7 @@ theorem genus_free_face_loop_representative
       d.1.spx.card = 3 → qCubeToCoordinate d.1 ∈ S)
     (hfree : Collapse.IsFree (spineInc (ASC.orderComplex (GenusVertex q))) S
       (truncatedFaceIndex f) (qCubeToCoordinate t.1))
-    (a : GenusTruncatedCell q) (p : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (p : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : C a ∧ a ≠ f)
     (hp : IsPath (orderCx (GenusTruncatedCell q)).src (orderCx (GenusTruncatedCell q)).tgt p a a)
     (hC : PathIn C p) :
@@ -70,7 +72,7 @@ theorem genus_ordinary_pair_loop_representative
     (hf : f.1.spx.card = 2) (ht : t.1.spx.card = 3) (hordinary : t.1.sgn ≠ 0)
     (hsplit : genusChainCollapse q = left ++
       ((qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)) :: right))
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q
       (left ++ [(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1))]) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
@@ -124,7 +126,7 @@ theorem genus_cut_pair_loop_representative
     (hne : t.1.spx.Nonempty) (ht : t.1.spx.card = 3) (hpositive : t.1.sgn = 0)
     (hsplit : genusChainCollapse q = left ++
       ((qCubeToCoordinate t.1, Sum.inr t.1.spx) :: right))
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q
       (left ++ [(qCubeToCoordinate t.1, Sum.inr t.1.spx)]) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
@@ -179,7 +181,7 @@ theorem genus_old_pair_loop_representative
     (left right : List (GenusCollapsePair q))
     (f t : QOld (cmpRel (GenusVertex q)))
     (hsplit : genusChainCollapse q = left ++ ((qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)) :: right))
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1))]) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
       (orderCx (GenusTruncatedCell q)).tgt loop a a)
@@ -206,7 +208,7 @@ theorem genus_recorded_cut_pair_loop_representative
     (left right : List (GenusCollapsePair q))
     (σ : CutCell (cmpRel (GenusVertex q))) (t : QOld (cmpRel (GenusVertex q)))
     (hsplit : genusChainCollapse q = left ++ ((qCubeToCoordinate t.1, Sum.inr σ.1) :: right))
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inr σ.1)]) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
       (orderCx (GenusTruncatedCell q)).tgt loop a a)
@@ -256,7 +258,7 @@ theorem genus_pair_loop_representative
     (left right : List (GenusCollapsePair q))
     (p : GenusCollapsePair q)
     (hsplit : genusChainCollapse q = left ++ (p :: right))
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q (left ++ [p]) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
       (orderCx (GenusTruncatedCell q)).tgt loop a a)
@@ -279,7 +281,7 @@ theorem genus_pair_loop_representative
 theorem genus_collapse_suffix_loop_representative
     (right left : List (GenusCollapsePair q))
     (hsplit : genusChainCollapse q = left ++ right)
-    (a : GenusTruncatedCell q) (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (a : GenusTruncatedCell q) (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : genusCollapseStage q (left ++ right) a)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
       (orderCx (GenusTruncatedCell q)).tgt loop a a)
@@ -304,7 +306,7 @@ theorem genus_collapse_suffix_loop_representative
 
 /-- Every loop of the truncated block based in its surviving spine is represented in that spine. -/
 theorem genusSpine_loop_representative (a : GenusTruncatedCell q)
-    (loop : List ((orderCx (GenusTruncatedCell q)).E × Bool))
+    (loop : FiniteChains.Comb.Oriented (orderCx (GenusTruncatedCell q)).E)
     (ha : a ∈ genusSpineCellSet q)
     (hpath : IsPath (orderCx (GenusTruncatedCell q)).src
       (orderCx (GenusTruncatedCell q)).tgt loop a a) :

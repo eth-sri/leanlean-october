@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCellAttachmentMaps
 public import RequestProject.SigmaCylinderHomotopyExtension
@@ -9,14 +11,15 @@ public import RequestProject.TopologicalPi2HomotopyTransport
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Homotopy invariance for arbitrary families of actual disk attachments.
 All extension inputs are discharged by the explicit ball/cylinder maps.
 The forward map retains the disk labels and is the given map on old points. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical

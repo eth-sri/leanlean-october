@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import Mathlib
@@ -10,6 +12,10 @@ public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! # Explicit integral singular chains of actual topological spaces
 
 The generators are continuous maps from the standard topological simplex.
@@ -17,9 +23,6 @@ The simplicial identities give the chain relation through Mathlib's
 alternating-face complex. No exactness or homotopy comparison is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -88,14 +91,12 @@ theorem boundary_single (n : ℕ) (σ : Simplex X (n + 1)) (a : ℤ) :
     Finsupp.mapDomain_single]
 
 theorem boundary_squared (n : ℕ) :
-    (boundary (X := X) n).comp (boundary (n + 1)) = 0 := by
-  exact congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules X) n)
+    (boundary (X := X) n).comp (boundary (n + 1)) = 0 := congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules X) n)
 
 theorem boundary_boundary (n : ℕ) (c : Chain X (n + 2)) : boundary n (boundary (n + 1) c) = 0 :=
   DFunLike.congr_fun (boundary_squared n) c
 
-theorem complex_d (n : ℕ) : (complex X).d (n + 1) n = ModuleCat.ofHom (boundary n) := by
-  exact AlternatingFaceMapComplex.obj_d_eq (modules X) n
+theorem complex_d (n : ℕ) : (complex X).d (n + 1) n = ModuleCat.ofHom (boundary n) := AlternatingFaceMapComplex.obj_d_eq (modules X) n
 
 noncomputable def augmentation : Chain X 0 →ₗ[ℤ] ℤ :=
   Finsupp.linearCombination ℤ (fun _ : Simplex X 0 => (1 : ℤ))

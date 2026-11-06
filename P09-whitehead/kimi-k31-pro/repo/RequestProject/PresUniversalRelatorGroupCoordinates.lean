@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresUniversalGroupCoordinates
 public import RequestProject.PresCoverRelatorChains
 public import RequestProject.OrderUniversalPoset
@@ -9,7 +10,7 @@ public import RequestProject.OrderUniversalPoset
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- Actual lifted relators are indexed by their apex reading and actual relator label. -/

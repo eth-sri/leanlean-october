@@ -1,17 +1,19 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresStrictPathCylinderReduction
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (hpos : ∀ j, 0 < (w j).length)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (hpos : ∀ j, 0 < (w j).length)
 
 include hpos in
 /-- The actual cylinder inclusion is surjective on the actual presentation fundamental group. -/
@@ -30,7 +32,7 @@ theorem presCylinder_pi1_surjective
     refine ⟨Pi1.mk ⟨r, hr⟩, Quotient.sound ?_⟩
     change Htpy (orderCx (PresPos w)) a.val a.val
       (mapPath (subposetHom (coneAdjBaseSet (S := circSet w))) (liftPathIn q hqc)) p.val
-    rw (config := { transparency := .default }) [mapPath_liftPathIn]
+    rwd [mapPath_liftPathIn]
     exact hh.symm
 
 end FiniteChains.PresModel

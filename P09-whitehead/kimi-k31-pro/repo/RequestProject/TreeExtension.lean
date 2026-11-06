@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.TreePresentation
 
 @[expose] public section
@@ -49,7 +50,7 @@ section Extension
 
 /-- The lengths of the edge paths from `a` to the image of `X`. -/
 def imReach (h : Hom X Y) (a : Y.V) : Set ℕ :=
-  {n | ∃ p : List (Y.E × Bool), p.length = n ∧ ∃ x : X.V, IsPath Y.src Y.tgt p a (h.onV x)}
+  {n | ∃ p : FiniteChains.Comb.Oriented Y.E, p.length = n ∧ ∃ x : X.V, IsPath Y.src Y.tgt p a (h.onV x)}
 
 /-- The distance from a vertex of `Y` to the image of `X`. -/
 noncomputable def imDist (h : Hom X Y) (a : Y.V) : ℕ := sInf (imReach h a)
@@ -65,7 +66,7 @@ include hconn x₀ in
 theorem imDist_mem (a : Y.V) : imDist h a ∈ imReach h a :=
   Nat.sInf_mem (imReach_nonempty h hconn x₀ a)
 
-theorem imDist_le {a : Y.V} {p : List (Y.E × Bool)} {x : X.V}
+theorem imDist_le {a : Y.V} {p : FiniteChains.Comb.Oriented Y.E} {x : X.V}
     (hp : IsPath Y.src Y.tgt p a (h.onV x)) : imDist h a ≤ p.length :=
   Nat.sInf_le ⟨p, rfl, x, hp⟩
 
@@ -97,7 +98,7 @@ theorem imDist_step {a : Y.V} (ha : imDist h a ≠ 0) :
     intro hp0
     subst hp0
     exact ha (by simpa using hlen.symm)
-  obtain ⟨g, q, rfl⟩ : ∃ (g : Y.E × Bool) (q : List (Y.E × Bool)), p = g :: q := by
+  obtain ⟨g, q, rfl⟩ : ∃ (g : Y.E × Bool) (q : FiniteChains.Comb.Oriented Y.E), p = g :: q := by
     cases p with
     | nil => exact absurd rfl hne
     | cons g q => exact ⟨g, q, rfl⟩
@@ -280,7 +281,7 @@ theorem germWord_onE (g : X.E × Bool) :
     cases b <;> simp [germWord, hT, hT', nonTreeIncl]
 
 /-- **The word spelled by an edge path is transported by the inclusion of generators.** -/
-theorem pathWord_mapPath (l : List (X.E × Bool)) :
+theorem pathWord_mapPath (l : FiniteChains.Comb.Oriented X.E) :
     pathWord T' (mapPath h l) = FreeGroup.map (nonTreeIncl hiff) (pathWord T l) := by
   induction l with
   | nil => simp [mapPath]

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderNerveRealizationCW
 
 @[expose] public section
@@ -22,8 +23,7 @@ theorem orderNerveRealizationVertex_mem_simplex {P : Type} [PartialOrder P]
   have h := congrArg (fun k => k default) (orderNerveRealizationSimplex_operator P a s)
   change orderNerveRealizationSimplex P s (SimplexCategory.toTop.map a default) =
     orderNerveRealizationSimplex P ((nerve P).map a.op s) default at h
-  have hs : (nerve P).map a.op s = ComposableArrows.mk₀ (s.obj i) := by
-    exact CategoryTheory.Functor.ext (fun _ => rfl)
+  have hs : (nerve P).map a.op s = ComposableArrows.mk₀ (s.obj i) := CategoryTheory.Functor.ext (fun _ => rfl)
   rw [hs] at h
   exact h
 
@@ -50,7 +50,7 @@ theorem orderNerveRealizationVertex_joined_of_le {P : Type} [PartialOrder P]
 
 /-- Actual realization vertices joined by a combinatorial edge path are topologically joined. -/
 theorem orderNerveRealizationVertex_joined_of_isPath {P : Type} [PartialOrder P]
-    {a b : P} {p : List (OrdEdge P × Bool)}
+    {a b : P} {p : FiniteChains.Comb.Oriented (OrdEdge P)}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     Joined (orderNerveRealizationVertex a) (orderNerveRealizationVertex b) := by
   induction p generalizing a with

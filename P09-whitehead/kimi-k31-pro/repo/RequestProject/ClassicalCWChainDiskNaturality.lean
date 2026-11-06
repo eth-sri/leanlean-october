@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCWChainDiskModels
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The coherent word-disk models form actual commuting squares with
 the original subcomplex inclusions. Thus original topological pi2
 vanishing transfers to the constructed model inclusions. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment

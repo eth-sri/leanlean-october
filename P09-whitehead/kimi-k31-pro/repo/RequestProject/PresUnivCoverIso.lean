@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi2
 public import RequestProject.CombPresPi1
 public import RequestProject.UnivCoverIncl
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The two models of the universal cover of a presentation complex agree
@@ -26,9 +31,6 @@ This file constructs an isomorphism between them and deduces that the two readin
 condition (1) of Theorem A coincide.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -49,7 +51,7 @@ def uvWord : UV (presComplex ρ) PUnit.unit → PresGroup ρ :=
     uvWord ρ (UV.mk p) = presWord ρ p.1 := rfl
 
 /-- Every list of oriented edges is a path of the presentation complex. -/
-def presPath (l : List (α × Bool)) : PathFrom (presComplex ρ) PUnit.unit :=
+def presPath (l : FiniteChains.Comb.Oriented α) : PathFrom (presComplex ρ) PUnit.unit :=
   ⟨l, isPath_of_subsingleton _ _ _ _ _⟩
 
 theorem uvWord_surjective : Function.Surjective (uvWord ρ) := by
@@ -115,7 +117,7 @@ def uvEdge (E : UE (presComplex ρ) PUnit.unit) : (univCover ρ).E := (uvWord ρ
 def uvFace (F : UF (presComplex ρ) PUnit.unit) : (univCover ρ).F := (uvWord ρ F.1.1, F.1.2)
 
 /-- **The lift of a word in the two models agree.** -/
-theorem map_uLiftPath_pres : ∀ (L : List (α × Bool)) (c : UV (presComplex ρ) PUnit.unit),
+theorem map_uLiftPath_pres : ∀ (L : FiniteChains.Comb.Oriented α) (c : UV (presComplex ρ) PUnit.unit),
     (uLiftPath L c).map (fun Eb => (uvEdge ρ Eb.1, Eb.2)) = liftPath L (uvWord ρ c) := by
   intro L
   induction L with
@@ -273,7 +275,7 @@ theorem zeroPi2_presInclHom_iff :
 /-! ### The same for the fundamental group -/
 
 /-- The word spelled by the image of an edge path. -/
-theorem presWord_mapPath (l : List (α × Bool)) :
+theorem presWord_mapPath (l : FiniteChains.Comb.Oriented α) :
     presWord σ (mapPath (presInclHom f hf ρ σ g hg) l)
       = presInclGroupHom f ρ σ g hg (presWord ρ l) := by
   rw [show presWord ρ l = QuotientGroup.mk (FreeGroup.mk l) from rfl, presInclGroupHom_mk]
@@ -281,7 +283,7 @@ theorem presWord_mapPath (l : List (α × Bool)) :
 
 /-- An edge loop of a presentation complex spelling the trivial element of the presented group
 is null-homotopic. -/
-theorem htpy_of_presWord_eq_one {l : List (β × Bool)} (h : presWord σ l = 1) :
+theorem htpy_of_presWord_eq_one {l : FiniteChains.Comb.Oriented β} (h : presWord σ l = 1) :
     Htpy (presComplex σ) PUnit.unit PUnit.unit l [] := by
   have hone :
       (Pi1.mk ⟨l, isPath_of_subsingleton _ _ _ _ _⟩ : Pi1 (presComplex σ) PUnit.unit) = 1 := by

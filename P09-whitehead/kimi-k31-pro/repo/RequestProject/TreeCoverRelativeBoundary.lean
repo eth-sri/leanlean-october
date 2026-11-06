@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TreeCoverAcyclic
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Prescribed nonzero boundaries survive the actual spanning-tree collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u

@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CoverChainComplex
 public import RequestProject.FoxCommutator
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # From the requirements (2.2) to an acyclic cover
@@ -19,9 +25,6 @@ finite presentation, and perfectness of `N = Ñ / ⟪r_1, …, r_m⟫` is expres
 `Ñ ≤ ⟪r_1, …, r_m⟫ ⊔ [Ñ, Ñ]`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

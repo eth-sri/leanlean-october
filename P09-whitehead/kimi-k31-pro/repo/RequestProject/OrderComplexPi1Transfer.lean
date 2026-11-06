@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexRetraction
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Transferring path statements along monotone maps and order isomorphisms
@@ -22,9 +27,6 @@ complex — into statements about the map of fundamental groups induced by a mon
   classes inside the whole poset, then the induced map of fundamental groups is injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -34,7 +36,7 @@ universe u
 variable {P Q R : Type u} [Preorder P] [Preorder Q] [Preorder R]
 
 /-- A homotopy inside the whole poset is an ordinary homotopy. -/
-theorem htpyIn_true_iff {a b : P} {p q : List ((orderCx P).E × Bool)} :
+theorem htpyIn_true_iff {a b : P} {p q : FiniteChains.Comb.Oriented (orderCx P).E} :
     HtpyIn (fun _ : P => True) a b p q ↔ Htpy (orderCx P) a b p q := by
   constructor
   · exact HtpyIn.htpy
@@ -46,7 +48,7 @@ theorem htpyIn_true_iff {a b : P} {p q : List ((orderCx P).E × Bool)} :
 /-- A monotone map followed by a monotone left inverse returns an edge path unchanged. -/
 theorem mapPath_comp_eq_self {f : Q → P} (hf : Monotone f) {g : P → Q} (hg : Monotone g)
     (hgf : ∀ y, g (f y) = y) :
-    ∀ l : List ((orderCx Q).E × Bool),
+    ∀ l : FiniteChains.Comb.Oriented (orderCx Q).E,
       mapPath (orderCxMap g hg) (mapPath (orderCxMap f hf) l) = l
   | [] => rfl
   | e :: t => by
@@ -85,7 +87,7 @@ path. -/
 theorem mapPath_liftPathIn_mapPath {Bp : P → Prop} {f : Q → P} (hf : Monotone f)
     (hfB : ∀ y, Bp (f y)) {g : {z : P // Bp z} → Q} (hg : Monotone g)
     (hgf : ∀ y, g ⟨f y, hfB y⟩ = y) :
-    ∀ (l : List ((orderCx Q).E × Bool)) (hl : PathIn Bp (mapPath (orderCxMap f hf) l)),
+    ∀ (l : FiniteChains.Comb.Oriented (orderCx Q).E) (hl : PathIn Bp (mapPath (orderCxMap f hf) l)),
       mapPath (orderCxMap g hg) (liftPathIn (mapPath (orderCxMap f hf) l) hl) = l
   | [], _ => rfl
   | e :: t, hl => by
@@ -100,7 +102,7 @@ theorem mapPath_liftPathIn_mapPath {Bp : P → Prop} {f : Q → P} (hf : Monoton
 
 /-- The image of an edge path under a monotone map with values in `Bp` lies inside `Bp`. -/
 theorem pathIn_mapPath_of_image {Bp : P → Prop} {f : Q → P} (hf : Monotone f)
-    (hfB : ∀ y, Bp (f y)) (l : List ((orderCx Q).E × Bool)) :
+    (hfB : ∀ y, Bp (f y)) (l : FiniteChains.Comb.Oriented (orderCx Q).E) :
     PathIn Bp (mapPath (orderCxMap f hf) l) := by
   intro e he
   simp only [mapPath, List.mem_map] at he
@@ -113,7 +115,7 @@ loop of the source which becomes null-homotopic in the target is null-homotopic.
 theorem htpy_nil_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp)
     {f : Q → P} (hf : Monotone f) (hfB : ∀ y, Bp (f y))
     {g : {z : P // Bp z} → Q} (hg : Monotone g) (hgf : ∀ y, g ⟨f y, hfB y⟩ = y)
-    {y : Q} {p : List ((orderCx Q).E × Bool)}
+    {y : Q} {p : FiniteChains.Comb.Oriented (orderCx Q).E}
     (hp : IsPath (orderCx Q).src (orderCx Q).tgt p y y)
     (h : Htpy (orderCx P) (f y) (f y) (mapPath (orderCxMap f hf) p) []) :
     Htpy (orderCx Q) y y p [] := by
@@ -124,7 +126,7 @@ theorem htpy_nil_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp
     hinj (f y) _ (hfB y) hloop hpB (htpyIn_true_iff.mpr h)
   have hlift : Htpy (orderCx {z : P // Bp z}) ⟨f y, hfB y⟩ ⟨f y, hfB y⟩
       (liftPathIn (mapPath (orderCxMap f hf) p) hpB)
-      (liftPathIn ([] : List ((orderCx P).E × Bool)) (pathIn_nil Bp)) :=
+      (liftPathIn ([] : FiniteChains.Comb.Oriented (orderCx P).E) (pathIn_nil Bp)) :=
     htpy_lift_of_htpyIn hIn (hfB y) (hfB y) hpB (pathIn_nil Bp)
   have hpush := mapPath_htpy (orderCxMap g hg) hlift
   rw [mapPath_liftPathIn_mapPath hf hfB hg hgf p hpB] at hpush

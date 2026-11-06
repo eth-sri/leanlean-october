@@ -52,8 +52,7 @@ noncomputable def squareToTriangle : C((Fin 2 → I), Domain 2) where
     · exact ((continuous_apply 0).subtype_val).min ((continuous_apply 1).subtype_val)
 
 theorem squareToTriangle_triangle1 (z : Domain 2) : squareToTriangle (cubeTriangle1 z) = z := by
-  have hs : z.val 0 + z.val 1 + z.val 2 = 1 := by
-    exact (Fin.sum_univ_three z.val).symm.trans z.property.2
+  have hs : z.val 0 + z.val 1 + z.val 2 = 1 := (Fin.sum_univ_three z.val).symm.trans z.property.2
   have h : z.val 2 ≤ 1 - z.val 0 := by linarith [z.property.1 1]
   apply Subtype.ext
   change ![1 - (1 - z.val 0), max ((1 - z.val 0) - z.val 2) 0,
@@ -69,8 +68,7 @@ theorem squareToTriangle_triangle1 (z : Domain 2) : squareToTriangle (cubeTriang
 
 theorem squareToTriangle_triangle0_zero (z : Domain 2) :
     (squareToTriangle (cubeTriangle0 z)).val 1 = 0 := by
-  have hs : z.val 0 + z.val 1 + z.val 2 = 1 := by
-    exact (Fin.sum_univ_three z.val).symm.trans z.property.2
+  have hs : z.val 0 + z.val 1 + z.val 2 = 1 := (Fin.sum_univ_three z.val).symm.trans z.property.2
   change max (z.val 2 - (1 - z.val 0)) 0 = 0
   apply max_eq_right
   linarith [z.property.1 1]

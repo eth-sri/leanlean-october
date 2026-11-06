@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCWChainConnectivity
 public import RequestProject.ClassicalGraphTreeWordNaturality
 public import RequestProject.DiskRoseMaps
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A simultaneous tree collapse of the actual graph-and-disk models.
 The original two-cell labels and disk parameters are retained. Compatible
@@ -12,9 +18,6 @@ trees are constructed from connectedness, not supplied as a new input.
 Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -120,7 +123,7 @@ theorem graphCollapse_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
       cases u
       rfl
     · rintro ⟨e, x⟩
-      rw (config := { transparency := .default }) [graphRoseMap, diskFamilyMap_cell]
+      rwd [graphRoseMap, diskFamilyMap_cell]
   rwa [he] at H
 
 def collapsedAttaching (i : Fin (n + 1)) :
@@ -136,7 +139,7 @@ theorem collapsedAttaching_natural {i k : Fin (n + 1)} (hik : i ≤ k)
     (graphCollapse_natural K C hC hconn hik)
   change _ = graphCollapse K C hC hconn k
     (subcomplexGraphDiskMap (hC hik) (wordAttaching C hC i ⟨j, a⟩)) at H
-  rw (config := { transparency := .default }) [wordAttaching_natural] at H
+  rwd [wordAttaching_natural] at H
   exact H
 
 def collapsedDiskInclusion {i k : Fin (n + 1)} (hik : i ≤ k) :=
@@ -188,9 +191,9 @@ theorem collapsedDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) 
     Whitehead.KillsPi2 (collapsedDiskInclusion K C hC hconn hik) ↔
       Whitehead.KillsPi2 (⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ :
         C((C i : Set K), (C k : Set K))) := by
-  rw (config := { transparency := .default }) [← wordDiskInclusion_killsPi2_iff K C hC hik]
+  rwd [← wordDiskInclusion_killsPi2_iff K C hC hik]
   apply Whitehead.killsPi2_homotopyEquiv_square_iff
     (collapsedDiskChange K C hC hconn i) (collapsedDiskChange K C hC hconn k)
-  rw (config := { transparency := .default }) [collapsedDiskChange_natural]
+  rwd [collapsedDiskChange_natural]
 
 end FiniteChains.ClassicalCW.ChainWords

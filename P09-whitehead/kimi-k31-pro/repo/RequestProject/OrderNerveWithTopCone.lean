@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveFiniteCoordinates
 public import RequestProject.OrderNerveRealizationContraction
 public import Mathlib.Data.Fintype.Option
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual realization of `WithTop P` is the radial cone on the actual
 realization of `P`. The equal-fiber statement records the collapsed radius-zero
 face exactly; no abstract cone-realization comparison is assumed. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open scoped Classical unitInterval
@@ -80,7 +83,7 @@ theorem orderNerveRadialCone_eq_iff (a b : I × orderNerveRealization P) :
       have hp := (orderNerveRadialCone_coordinate P a.1 a.2 p).symm.trans
         ((congrArg (fun z => orderNerveRealizationCoordinates (WithTop P) z (p : WithTop P)) h).trans
           (orderNerveRadialCone_coordinate P b.1 b.2 p))
-      rw (config := { transparency := .default }) [← hr] at hp
+      rwd [← hr] at hp
       have hn : (a.1 : ℝ) ≠ 0 := fun ha => hz (Subtype.ext ha)
       exact (mul_left_cancel₀ hn) hp
   · rintro ⟨hr, hz | hx⟩
@@ -100,7 +103,7 @@ theorem orderNerveRadialCone_surjective [Fintype P] [Nonempty P] :
   have hsum : c ⊤ + ∑ p : P, c p = 1 := by
     have hs := orderNerveRealizationCoordinates_sum x
     change (∑ p : Option P, c p) = 1 at hs
-    rw (config := { transparency := .default }) [Fintype.sum_option] at hs
+    rwd [Fintype.sum_option] at hs
     exact hs
   have hsnonneg : 0 ≤ ∑ p : P, c p := Finset.sum_nonneg (fun p _ => hc p)
   let r : I := ⟨1 - c ⊤, by constructor <;> linarith [hc ⊤]⟩
@@ -108,7 +111,7 @@ theorem orderNerveRadialCone_surjective [Fintype P] [Nonempty P] :
   by_cases hr : r = 0
   · let p₀ : P := Classical.choice inferInstance
     refine ⟨(0, orderNerveRealizationVertex p₀), ?_⟩
-    rw (config := { transparency := .default }) [orderNerveRadialCone_zero]
+    rwd [orderNerveRadialCone_zero]
     apply orderNerveRealizationCoordinates_injective (WithTop P)
     funext p
     induction p using WithTop.recTopCoe with
@@ -122,7 +125,7 @@ theorem orderNerveRadialCone_surjective [Fintype P] [Nonempty P] :
         have hp : c p ≤ ∑ q : P, c q :=
           Finset.single_le_sum (f := fun q : P => c (q : WithTop P))
             (fun q _ => hc q) (Finset.mem_univ p)
-        rw (config := { transparency := .default }) [hsumr, hr] at hp
+        rwd [hsumr, hr] at hp
         simp only [Set.Icc.coe_zero] at hp
         simp only [orderNerveRealizationCoordinates_vertex, WithTop.top_ne_coe, ite_false]
         exact (le_antisymm hp (hc p)).symm
@@ -132,7 +135,7 @@ theorem orderNerveRadialCone_surjective [Fintype P] [Nonempty P] :
     have hd : ∀ p, 0 ≤ d p := fun p => div_nonneg (hc p) r.property.1
     have hdsum : ∑ p, d p = 1 := by
       dsimp [d]
-      rw (config := { transparency := .default }) [← Finset.sum_div, hsumr, div_self (ne_of_gt hrpos)]
+      rwd [← Finset.sum_div, hsumr, div_self (ne_of_gt hrpos)]
     have hdchain : IsChain (· ≤ ·) {p | 0 < d p} := by
       intro p hp q hq hpq
       have hp' : 0 < c p := (div_pos_iff_of_pos_right hrpos).mp hp
@@ -147,11 +150,11 @@ theorem orderNerveRadialCone_surjective [Fintype P] [Nonempty P] :
     funext p
     induction p using WithTop.recTopCoe with
     | top =>
-        rw (config := { transparency := .default }) [orderNerveRadialCone_top]
+        rwd [orderNerveRadialCone_top]
         change 1 - (1 - c ⊤) = c ⊤
         ring
     | coe p =>
-        rw (config := { transparency := .default }) [orderNerveRadialCone_coordinate, hy p]
+        rwd [orderNerveRadialCone_coordinate, hy p]
         change (r : ℝ) * (c p / (r : ℝ)) = c p
         field_simp [ne_of_gt hrpos]
 

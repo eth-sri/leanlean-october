@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombEdgeLabels
 public import RequestProject.CombPushout
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The upstairs fundamental group embeds in the actual cellular pushout.
 The retraction is read from actual edge labels and path homotopies. Thus
@@ -13,9 +18,6 @@ No van Kampen or factor-injection hypothesis is introduced. Unverified. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -75,7 +77,7 @@ theorem labels_pushE (e : L.E) : labels p i hiV hiE hD hL d₀ (pushE p i e) =
     rfl
 
 include ht in
-theorem read_pushPath (l : List (L.E × Bool)) :
+theorem read_pushPath (l : FiniteChains.Comb.Oriented L.E) :
     EdgeLabels.read (labels p i hiV hiE hD hL d₀)
       (l.map (fun e => (pushE p i e.1, e.2))) =
       EdgeLabels.read (RootPaths.relative i hiV hD hL d₀).edge l := by
@@ -94,7 +96,7 @@ theorem labels_rel (f : (pushoutComplex p i hiV hiE).F) :
   | inl f =>
       change EdgeLabels.read (labels p i hiV hiE hD hL d₀)
         ((K.att f).map (fun e => (Sum.inl e.1, e.2))) = 1
-      have h : ∀ l : List (K.E × Bool), EdgeLabels.read (labels p i hiV hiE hD hL d₀)
+      have h : ∀ l : FiniteChains.Comb.Oriented K.E, EdgeLabels.read (labels p i hiV hiE hD hL d₀)
           (l.map (fun e => (Sum.inl e.1, e.2))) = 1 := by
         intro l
         induction l with

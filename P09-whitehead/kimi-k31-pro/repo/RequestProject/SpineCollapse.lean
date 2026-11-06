@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Collapse
 public import RequestProject.BarycentricSurface
 public import RequestProject.MomentAngleExample
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Lemma 3.2 (ii) for the explicit model: the three-cubes of `C(L)` collapse away
@@ -37,9 +43,6 @@ surface used in the paper: every edge lies in at most two triangles, the dual gr
 connected, and every vertex lies in a triangle.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

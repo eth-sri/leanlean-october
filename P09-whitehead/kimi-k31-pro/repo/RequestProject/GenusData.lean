@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfaceReading
 public import RequestProject.BlockSurfaceFilling
 
@@ -42,7 +43,7 @@ def sLet (k : ℕ) : α × Bool :=
 
 /-- **The surface word of genus `n`**: the product of the commutators
 `a_h b_h a_h⁻¹ b_h⁻¹`, written out as a list of letters. -/
-def surfWord : ℕ → List (α × Bool)
+def surfWord : ℕ → FiniteChains.Comb.Oriented α
   | 0 => []
   | n + 1 => surfWord n ++ [(a n, true), (b n, true), (a n, false), (b n, false)]
 
@@ -80,7 +81,7 @@ theorem surfWord_getElem? (n k : ℕ) (hk : k < 4 * n) :
 /-! ### The surface word as a product of commutators -/
 
 /-- The two distinguished generators of the block of the genus `h`. -/
-def genLw : ℕ × Bool → List (α × Bool) := fun x => if x.2 then [(b x.1, true)] else [(a x.1, true)]
+def genLw : ℕ × Bool → FiniteChains.Comb.Oriented α := fun x => if x.2 then [(b x.1, true)] else [(a x.1, true)]
 
 /-- The list of pairs of distinguished generators of the surface block. -/
 def genPairs (n : ℕ) : List ((ℕ × Bool) × (ℕ × Bool)) :=

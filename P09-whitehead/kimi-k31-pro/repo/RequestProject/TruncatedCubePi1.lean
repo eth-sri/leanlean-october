@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TruncatedCubePoset
 public import RequestProject.OrderCxNatHtpy
 public import RequestProject.StrictOrderComplex
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Based path comparison for the actual truncated face poset, before collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -64,8 +67,7 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
       ([ordPos (truncatedCell_le_retraction a)] ++
         ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
           [ordPos (truncatedCell_le_retraction a)]) ++
-        [ordNeg (truncatedCell_le_retraction a)]) [] := by
-    exact hstep.trans (by simpa using hc)
+        [ordNeg (truncatedCell_le_retraction a)]) [] := hstep.trans (by simpa using hc)
   exact Quotient.sound (hstrip.symm.trans hkill)
 
 theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :

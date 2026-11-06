@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveOneDictionary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Recovering genuine cellular one-cycles from homogeneous increasing nerve cycles. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup

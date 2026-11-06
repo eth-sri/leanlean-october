@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.OrderTriangleBoundaryWords
 public import RequestProject.ClassicalGraphTreeBoundaryWords
@@ -10,6 +11,10 @@ public import RequestProject.PresCanonicalWords
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The canonical presentation of a strict order complex is an actual
 homotopy model of its realization. The prescribed spanning tree is
 transported to the literal interval graph without changing edge labels.
@@ -17,9 +22,6 @@ Pending the final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology ContinuousMap
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel PresModel SpanningTree
@@ -79,7 +81,7 @@ def graphTree : SpanningTree (graphCx (graphAttaching P)) where
       apply hv
       simpa only [Equiv.apply_symm_apply] using congrArg (vertexEquiv P) h
 
-theorem graphTree_pathWord (l : List (StrictOrdEdge P × Bool)) :
+theorem graphTree_pathWord (l : FiniteChains.Comb.Oriented (StrictOrdEdge P)) :
     pathWord (graphTree P T) l = pathWord T l := rfl
 
 def collapsedWords (t : StrictOrdTri P) : BoundaryWords (roseAttaching (NonTree T)) :=

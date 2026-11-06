@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderUniversalThree
 public import RequestProject.CombPi2
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Naturality of genuine lifted tetrahedra, including the transported first face. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

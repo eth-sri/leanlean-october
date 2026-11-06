@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderCollapsedRoseLinear
 public import RequestProject.PresCoverRelatorKernelEquiv
 
@@ -8,7 +9,7 @@ public import RequestProject.PresCoverRelatorKernelEquiv
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f)
 
 /-- Actual generator-incidence coefficients of the genuine collapsed attaching-boundary map. -/

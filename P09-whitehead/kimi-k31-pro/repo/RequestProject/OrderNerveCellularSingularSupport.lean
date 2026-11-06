@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveCellularSingularChains
 public import RequestProject.OrderNerveSingularCarrierExactness
 public import RequestProject.OrderNerveDecoding
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory TopologicalSingular
@@ -28,7 +31,7 @@ theorem orderCellSingularDecode1List_supported {P : Type} [PartialOrder P]
       | cons c l => simp [decodeOrdEdgeList]
       | nil =>
         have hab : a ≤ b := by simpa [List.isChain_cons] using hl
-        rw (config := { transparency := .default }) [decodeOrdEdgeList, dif_pos hab, orderCellSingularChain1_single]
+        rwd [decodeOrdEdgeList, dif_pos hab, orderCellSingularChain1_single]
         apply single_mem_subChains
         intro z
         apply orderNerveSingularSimplex_supported
@@ -45,7 +48,7 @@ theorem orderCellSingularDecode1_supported {P : Type} [PartialOrder P]
   induction hc using AddSubgroup.closure_induction with
   | mem x hx =>
     rcases hx with ⟨l, hl, rfl⟩
-    rw (config := { transparency := .default }) [decodeOrdNerve1_of]
+    rwd [decodeOrdNerve1_of]
     exact orderCellSingularDecode1List_supported A l hl.1 hl.2
   | zero => simp
   | add x y _ _ hx hy => simpa only [map_add] using Submodule.add_mem _ hx hy
@@ -69,7 +72,7 @@ theorem orderCellSingularDecode2List_supported {P : Type} [PartialOrder P]
         | cons d l => simp [decodeOrdTriList]
         | nil =>
           have habc : a ≤ b ∧ b ≤ c := by simpa [List.isChain_cons] using hl
-          rw (config := { transparency := .default }) [decodeOrdTriList, dif_pos habc, orderCellSingularChain2_single]
+          rwd [decodeOrdTriList, dif_pos habc, orderCellSingularChain2_single]
           apply single_mem_subChains
           intro z
           apply orderNerveSingularSimplex_supported
@@ -87,7 +90,7 @@ theorem orderCellSingularDecode2_supported {P : Type} [PartialOrder P]
   induction hc using AddSubgroup.closure_induction with
   | mem x hx =>
     rcases hx with ⟨l, hl, rfl⟩
-    rw (config := { transparency := .default }) [decodeOrdNerve2_of]
+    rwd [decodeOrdNerve2_of]
     exact orderCellSingularDecode2List_supported A l hl.1 hl.2
   | zero => simp
   | add x y _ _ hx hy => simpa only [map_add] using Submodule.add_mem _ hx hy

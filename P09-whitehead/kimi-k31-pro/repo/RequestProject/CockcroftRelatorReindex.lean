@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenerationStep
 public import RequestProject.CockcroftExtStep
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Relabelling the actual relators preserves Cockcroftness. All group,
 coefficient, cycle and augmentation maps are constructed from the relator
@@ -12,9 +18,6 @@ equivalence and its literal word equality. Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelatorReindex
 

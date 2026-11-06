@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.UniversalCoefficients
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The requirements (2.2) modulo an integer
@@ -31,9 +37,6 @@ Two things are proved here.
   (`foxCokernel_torsionFree_of_foxSatMod`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

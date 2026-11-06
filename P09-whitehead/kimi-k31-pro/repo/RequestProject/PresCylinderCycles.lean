@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetDimension
 public import RequestProject.OrderComparableCycleHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
@@ -22,7 +24,7 @@ theorem rose_strict_triangles_empty : IsEmpty (StrictOrdTri (Rose α)) := by
   have hhi : roseDimension t.1.2.2 ≤ 2 := by cases t.1.2.2 <;> simp [roseDimension]
   omega
 
-theorem cylinder_strict_three_flags_empty (w : J → List (α × Bool)) :
+theorem cylinder_strict_three_flags_empty (w : J → FiniteChains.Comb.Oriented α) :
     IsEmpty (StrictOrdTet (CylBase w)) := by
   refine ⟨fun t => ?_⟩
   have h01 := cylinderDimension_strictMono w t.2.1

@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RelativeRuleOneNaturality
 public import RequestProject.RelativeCoreSlides
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Simultaneous core slides respect all restrictions of the shared ambient
 relator labels. This completes actual zero-arrow preservation for rules
@@ -13,9 +19,6 @@ relator labels. This completes actual zero-arrow preservation for rules
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open BlockFamily

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetAlphaW
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import RequestProject.PresPosetAlphaW
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
 /-- The actual presentation reading homomorphism is surjective by its proved marked section. -/

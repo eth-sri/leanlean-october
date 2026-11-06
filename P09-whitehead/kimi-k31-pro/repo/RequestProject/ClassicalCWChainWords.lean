@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalSubcomplexBoundaryWords
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Simultaneous original-cell words for a finite filtration. Each actual
 two-cell is straightened exactly once, at its first stage. The later
@@ -10,9 +16,6 @@ words, bases, and attaching homotopies are transported from this choice.
 There is no finite-cell hypothesis. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment

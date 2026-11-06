@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfaceLabel
 public import RequestProject.SurfaceFilling
 public import RequestProject.AttCycleLoop
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The boundary of the polygon reads the word
@@ -22,9 +27,6 @@ backtrackings which cancel, exactly the loop `letterLoop w (w j₀)[k]` of that 
   is the loop of the letter.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -35,7 +37,7 @@ universe u
 
 section Reading
 
-variable {α J : Type u} {w : J → List (α × Bool)} {j₀ : J}
+variable {α J : Type u} {w : J → FiniteChains.Comb.Oriented α} {j₀ : J}
   {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
   {vc : Fin M → κ} {ec : Fin M → ι}
   {vlab : κ → Rose α} {elb : ι → Rose α}

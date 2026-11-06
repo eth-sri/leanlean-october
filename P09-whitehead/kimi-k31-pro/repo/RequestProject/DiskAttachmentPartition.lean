@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCellAttachmentMaps
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Partition an arbitrary disk family and attach its two parts successively.
 The homeomorphism is constructed directly from both quotient universal maps. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped Topology Classical

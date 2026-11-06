@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.MirrorSimplyConnected
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Gluing two subposets along a connected intersection
@@ -30,9 +35,6 @@ loop is cut at its returns to `J` into segments lying on one side, each segment 
 the chosen `J`-paths to the base vertex, and each resulting loop is killed on its own side.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -67,15 +69,15 @@ section PathIn
 variable {P : Type u} [Preorder P]
 
 /-- Every edge of the path `l` has both endpoints in `A`. -/
-def PathIn (A : P → Prop) (l : List ((orderCx P).E × Bool)) : Prop :=
+def PathIn (A : P → Prop) (l : FiniteChains.Comb.Oriented (orderCx P).E) : Prop :=
   ∀ e ∈ l, A e.1.1.1 ∧ A e.1.1.2
 
-theorem pathIn_nil (A : P → Prop) : PathIn A ([] : List ((orderCx P).E × Bool)) := by
+theorem pathIn_nil (A : P → Prop) : PathIn A ([] : FiniteChains.Comb.Oriented (orderCx P).E) := by
   intro e he
   exact absurd he (by simp)
 
 theorem pathIn_cons {A : P → Prop} {e : (orderCx P).E × Bool}
-    {l : List ((orderCx P).E × Bool)} (he : A e.1.1.1 ∧ A e.1.1.2) (hl : PathIn A l) :
+    {l : FiniteChains.Comb.Oriented (orderCx P).E} (he : A e.1.1.1 ∧ A e.1.1.2) (hl : PathIn A l) :
     PathIn A (e :: l) := by
   intro x hx
   rcases List.mem_cons.1 hx with rfl | h
@@ -83,24 +85,24 @@ theorem pathIn_cons {A : P → Prop} {e : (orderCx P).E × Bool}
   · exact hl x h
 
 theorem pathIn_of_cons {A : P → Prop} {e : (orderCx P).E × Bool}
-    {l : List ((orderCx P).E × Bool)} (h : PathIn A (e :: l)) :
+    {l : FiniteChains.Comb.Oriented (orderCx P).E} (h : PathIn A (e :: l)) :
     (A e.1.1.1 ∧ A e.1.1.2) ∧ PathIn A l :=
   ⟨h e (by simp), fun x hx => h x (by simp [hx])⟩
 
-theorem pathIn_append {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
+theorem pathIn_append {A : P → Prop} {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : PathIn A l) (h' : PathIn A l') : PathIn A (l ++ l') := by
   intro x hx
   rcases List.mem_append.1 hx with hx | hx
   · exact h x hx
   · exact h' x hx
 
-theorem pathIn_of_append_left {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
+theorem pathIn_of_append_left {A : P → Prop} {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : PathIn A (l ++ l')) : PathIn A l := fun x hx => h x (by simp [hx])
 
-theorem pathIn_of_append_right {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
+theorem pathIn_of_append_right {A : P → Prop} {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : PathIn A (l ++ l')) : PathIn A l' := fun x hx => h x (by simp [hx])
 
-theorem pathIn_revPath {A : P → Prop} {l : List ((orderCx P).E × Bool)} (h : PathIn A l) :
+theorem pathIn_revPath {A : P → Prop} {l : FiniteChains.Comb.Oriented (orderCx P).E} (h : PathIn A l) :
     PathIn A (revPath l) := by
   intro x hx
   simp only [revPath, List.mem_reverse, List.mem_map] at hx
@@ -108,7 +110,7 @@ theorem pathIn_revPath {A : P → Prop} {l : List ((orderCx P).E × Bool)} (h : 
   exact h y hy
 
 theorem pathIn_mono {A B : P → Prop} (hAB : ∀ p, A p → B p)
-    {l : List ((orderCx P).E × Bool)} (h : PathIn A l) : PathIn B l :=
+    {l : FiniteChains.Comb.Oriented (orderCx P).E} (h : PathIn A l) : PathIn B l :=
   fun x hx => ⟨hAB _ (h x hx).1, hAB _ (h x hx).2⟩
 
 end PathIn
@@ -133,12 +135,12 @@ def liftGermIn (e : (orderCx P).E × Bool) (h : A e.1.1.1 ∧ A e.1.1.2) :
   ((⟨(⟨e.1.1.1, h.1⟩, ⟨e.1.1.2, h.2⟩), e.1.2⟩ : OrdEdge {p : P // A p}), e.2)
 
 /-- The lift of a path all of whose edges have endpoints in `A`. -/
-def liftPathIn : (l : List ((orderCx P).E × Bool)) → PathIn A l →
-    List ((orderCx {p : P // A p}).E × Bool)
+def liftPathIn : (l : FiniteChains.Comb.Oriented (orderCx P).E) → PathIn A l →
+    FiniteChains.Comb.Oriented (orderCx {p : P // A p}).E
   | [], _ => []
   | e :: t, h => liftGermIn e (pathIn_of_cons h).1 :: liftPathIn t (pathIn_of_cons h).2
 
-theorem mapPath_liftPathIn : ∀ (l : List ((orderCx P).E × Bool)) (h : PathIn A l),
+theorem mapPath_liftPathIn : ∀ (l : FiniteChains.Comb.Oriented (orderCx P).E) (h : PathIn A l),
     mapPath (subposetHom A) (liftPathIn l h) = l
   | [], _ => rfl
   | e :: t, h => by
@@ -147,7 +149,7 @@ theorem mapPath_liftPathIn : ∀ (l : List ((orderCx P).E × Bool)) (h : PathIn 
         (pathIn_of_cons h).2)) = t from mapPath_liftPathIn t (pathIn_of_cons h).2]
       rfl
 
-theorem isPath_liftPathIn : ∀ (l : List ((orderCx P).E × Bool)) (h : PathIn A l) {u v : P}
+theorem isPath_liftPathIn : ∀ (l : FiniteChains.Comb.Oriented (orderCx P).E) (h : PathIn A l) {u v : P}
     (hu : A u) (hv : A v), IsPath (orderCx P).src (orderCx P).tgt l u v →
     IsPath (orderCx {p : P // A p}).src (orderCx {p : P // A p}).tgt (liftPathIn l h)
       ⟨u, hu⟩ ⟨v, hv⟩
@@ -168,7 +170,7 @@ theorem isPath_liftPathIn : ∀ (l : List ((orderCx P).E × Bool)) (h : PathIn A
 
 /-- **A loop inside a simply connected subposet is null-homotopic in the ambient complex.** -/
 theorem htpy_nil_of_pathIn (hA : SimplyConnected (orderCx {p : P // A p}))
-    {v : P} (hv : A v) {l : List ((orderCx P).E × Bool)}
+    {v : P} (hv : A v) {l : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
     Htpy (orderCx P) v v l [] := by
   have hlift := isPath_liftPathIn l hl hv hv hp
@@ -188,7 +190,7 @@ variable {P : Type u} [Preorder P]
 /-- Every loop of the ambient order complex all of whose edges lie in `A` is null-homotopic in
 the ambient complex. -/
 def NullIn (A : P → Prop) : Prop :=
-  ∀ (v : P) (l : List ((orderCx P).E × Bool)), A v →
+  ∀ (v : P) (l : FiniteChains.Comb.Oriented (orderCx P).E), A v →
     IsPath (orderCx P).src (orderCx P).tgt l v v → PathIn A l → Htpy (orderCx P) v v l []
 
 /-- Any two elements of `A` are joined by a path all of whose edges lie in `A`. -/
@@ -201,7 +203,7 @@ theorem nullIn_of_simplyConnected {A : P → Prop}
   fun _ _ hv hp hl => htpy_nil_of_pathIn hA hv hp hl
 
 /-- The image of a path of the subposet complex lies in the subposet. -/
-theorem pathIn_mapPath (A : P → Prop) (l : List ((orderCx {p : P // A p}).E × Bool)) :
+theorem pathIn_mapPath (A : P → Prop) (l : FiniteChains.Comb.Oriented (orderCx {p : P // A p}).E) :
     PathIn A (mapPath (subposetHom A) l) := by
   intro e he
   simp only [mapPath, List.mem_map] at he
@@ -216,7 +218,7 @@ theorem connectedIn_of_isConnected {A : P → Prop} (h : IsConnected (orderCx {p
   exact ⟨mapPath (subposetHom A) l, isPath_mapPath (subposetHom A) hl, pathIn_mapPath A l⟩
 
 theorem pathIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p)
-    {l : List ((orderCx P).E × Bool)} (hl : PathIn A l) : PathIn A' l :=
+    {l : FiniteChains.Comb.Oriented (orderCx P).E} (hl : PathIn A l) : PathIn A' l :=
   pathIn_mono (fun p hp => (h p).1 hp) hl
 
 theorem nullIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p) (hA : NullIn A) : NullIn A' :=
@@ -232,9 +234,9 @@ theorem connectedIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p) (hA : Co
 side runs inside `S` until it first meets `S ∩ S'`. -/
 theorem split_side {S S' U : P → Prop}
     (hmix : ∀ a b : P, a ≤ b → U a → U b → (S a ∧ S b) ∨ (S' a ∧ S' b)) :
-    ∀ (t : List ((orderCx P).E × Bool)) (w v : P),
+    ∀ (t : FiniteChains.Comb.Oriented (orderCx P).E) (w v : P),
       IsPath (orderCx P).src (orderCx P).tgt t w v → PathIn U t → (S v ∧ S' v) → S w →
-      ∃ (t₁ t₂ : List ((orderCx P).E × Bool)) (z : P), t = t₁ ++ t₂ ∧
+      ∃ (t₁ t₂ : FiniteChains.Comb.Oriented (orderCx P).E) (z : P), t = t₁ ++ t₂ ∧
         IsPath (orderCx P).src (orderCx P).tgt t₁ w z ∧
         IsPath (orderCx P).src (orderCx P).tgt t₂ z v ∧ (S z ∧ S' z) ∧ PathIn S t₁ := by
   intro t
@@ -285,7 +287,7 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
     {j : P} (hj : A j ∧ B j) :
     NullIn U := by
   classical
-  have hex : ∀ u : P, ∃ g : List ((orderCx P).E × Bool),
+  have hex : ∀ u : P, ∃ g : FiniteChains.Comb.Oriented (orderCx P).E,
       ((A u ∧ B u) → IsPath (orderCx P).src (orderCx P).tgt g j u ∧
         PathIn (fun p => A p ∧ B p) g) ∧ (u = j → g = []) := by
     intro u
@@ -297,7 +299,7 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
         exact ⟨g, fun _ => hg, fun hc => absurd hc hu⟩
       · exact ⟨[], fun hc => absurd hc h, fun _ => rfl⟩
   choose γ hγ hγj using hex
-  have key : ∀ (n : ℕ) (l : List ((orderCx P).E × Bool)) (u v : P), l.length ≤ n →
+  have key : ∀ (n : ℕ) (l : FiniteChains.Comb.Oriented (orderCx P).E) (u v : P), l.length ≤ n →
       IsPath (orderCx P).src (orderCx P).tgt l u v → PathIn U l →
       (A u ∧ B u) → (A v ∧ B v) →
       Htpy (orderCx P) j j (γ u ++ l ++ revPath (γ v)) [] := by

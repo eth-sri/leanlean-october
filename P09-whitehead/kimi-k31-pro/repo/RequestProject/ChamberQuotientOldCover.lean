@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockSpinePres
 public import RequestProject.ChamberQuotientOldStar
 public import RequestProject.ChamberQuotientEquivariantGeneration
@@ -7,10 +9,11 @@ public import RequestProject.ChamberZConnected
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The old-block part of the actual quotient universal cover is an actual poset cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

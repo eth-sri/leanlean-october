@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresUniversalGroupBoundaryColumns
 public import RequestProject.GroupCellChainCoordinates
 
@@ -8,7 +9,7 @@ public import RequestProject.GroupCellChainCoordinates
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The actual universal boundary in group-ring cell coordinates. -/

@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusCappedSpineHurewicz
 public import RequestProject.PresCockcroftDictionary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual capped spine and the Fox complex of its genuine presentation agree. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open scoped Classical

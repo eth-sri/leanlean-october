@@ -1,12 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.CycleClasses
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
@@ -41,8 +44,7 @@ noncomputable def singularCycleClassLinear (n : ℕ) :
     LinearMap.ker (boundary (X := X) n) →ₗ[ℤ] (complex X).homology (n + 1) where
   toFun c := singularCycleClass n c.val c.property
   map_add' c d := singularCycleClass_add n c.val d.val c.property d.property
-  map_smul' r c := by
-    exact (singularCycleClass_smul n r c.val c.property).trans
+  map_smul' r c := (singularCycleClass_smul n r c.val c.property).trans
       (int_smul_eq_zsmul (inferInstance : Module ℤ ((complex X).homology (n + 1))) r _).symm
 
 theorem singularCycleClass_representative (n : ℕ) (q : (complex X).homology (n + 1)) :

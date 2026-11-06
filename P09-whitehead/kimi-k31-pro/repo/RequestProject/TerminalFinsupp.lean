@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenerationStepFinsupp
 public import RequestProject.BlockFamilyBlockwiseFinsupp
 public import RequestProject.LemmaTerminal
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The terminal inclusion and the Cockcroft/trivial-group vanishing argument
 for arbitrary presentations.  Only chains, not cell sets, are finite.
@@ -13,9 +19,6 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCocycleCoverCoordinates
 public import RequestProject.CoverFoxPrefixSum
 public import RequestProject.CoverComplexFinsupp
@@ -9,11 +10,11 @@ public import RequestProject.CoverComplexFinsupp
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
 universe u
-variable {α J : Type u} [DecidableEq α] (w : J → List (α × Bool))
+variable {α J : Type u} [DecidableEq α] (w : J → FiniteChains.Comb.Oriented α)
   (N : Subgroup (FreeGroup α)) [N.Normal]
 
 omit [DecidableEq α] in
-theorem quotient_wordVal (l : List (α × Bool)) :
+theorem quotient_wordVal (l : FiniteChains.Comb.Oriented α) :
     wordVal (qof N) l = (QuotientGroup.mk (FreeGroup.mk l) : FreeGroup α ⧸ N) := by
   have h : FreeGroup.lift (qof N) = QuotientGroup.mk' N := by
     apply FreeGroup.ext_hom

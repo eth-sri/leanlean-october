@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusBoundaryCoordinates
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Distinguished first-edge detection for the actual geometric marking loops. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
@@ -64,7 +66,7 @@ def markingBedMidFlag (i : Fin q × Bool) (b : Bool) : MarkingSurfaceEdge q :=
 /-- The edge detecting the marking `i`, traversed positively at its start. -/
 def markingFirstEdge (i : Fin q × Bool) : MarkingSurfaceEdge q := markingBaseFlag q i false
 
-def markingTail (i : Fin q × Bool) : List (MarkingSurfaceEdge q × Bool) :=
+def markingTail (i : Fin q × Bool) : FiniteChains.Comb.Oriented (MarkingSurfaceEdge q) :=
   [(markingBedBaseFlag q i false, false),
     (markingBedMidFlag q i false, true),
     (markingMidFlag q i false, false),

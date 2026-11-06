@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderConePathReplacement
 public import RequestProject.RelatorCircleConnected
 public import RequestProject.RelatorConeFundamentalChain
@@ -10,10 +11,10 @@ public import RequestProject.ConeAdjBaseCover
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 /-- Actual mapped circle paths remain below their actual presentation apex. -/
-theorem relatorCirclePath_below_apex (l : List ((orderCx (RelatorCircle w j)).E × Bool)) :
+theorem relatorCirclePath_below_apex (l : FiniteChains.Comb.Oriented (orderCx (RelatorCircle w j)).E) :
     PathIn (fun p => p ≤ apexOf w j)
       (mapPath (orderCxMap (relatorCirclePresInclusion w j)
         (relatorCirclePresInclusion_strictMono w j).monotone) l) := by
@@ -23,7 +24,7 @@ theorem relatorCirclePath_below_apex (l : List ((orderCx (RelatorCircle w j)).E 
     (relatorCirclePresInclusion_lt_apex w j r.1.val.2).le⟩
 
 /-- Actual mapped circle paths stay in the actual cylinder part of the presentation poset. -/
-theorem relatorCirclePath_in_cylinder (l : List ((orderCx (RelatorCircle w j)).E × Bool)) :
+theorem relatorCirclePath_in_cylinder (l : FiniteChains.Comb.Oriented (orderCx (RelatorCircle w j)).E) :
     PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w))
       (mapPath (orderCxMap (relatorCirclePresInclusion w j)
         (relatorCirclePresInclusion_strictMono w j).monotone) l) := by
@@ -35,7 +36,7 @@ theorem relatorCirclePath_in_cylinder (l : List ((orderCx (RelatorCircle w j)).E
 /-- An actual two-edge apex excursion can be replaced by an actual path in the cylinder. -/
 theorem exists_presCone_excursion_replacement (hpos : 0 < (w j).length)
     (x y : RelatorCircle w j) :
-    ∃ l : List ((orderCx (PresPos w)).E × Bool),
+    ∃ l : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E,
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt l (iCirc w x.val) (iCirc w y.val) ∧
       PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w)) l ∧
       Htpy (orderCx (PresPos w)) (iCirc w x.val) (iCirc w y.val)
@@ -53,7 +54,7 @@ theorem exists_presCone_excursion_replacement (hpos : 0 < (w j).length)
 /-- Every genuine apex excursion, with arbitrary actual strict lower endpoints, has a cylinder replacement. -/
 theorem exists_presCone_strict_excursion_replacement (hpos : 0 < (w j).length)
     (x y : PresPos w) (hx : x < apexOf w j) (hy : y < apexOf w j) :
-    ∃ l : List ((orderCx (PresPos w)).E × Bool),
+    ∃ l : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E,
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt l x y ∧
       PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w)) l ∧
       Htpy (orderCx (PresPos w)) x y [ordPos hx.le, ordNeg hy.le] l := by

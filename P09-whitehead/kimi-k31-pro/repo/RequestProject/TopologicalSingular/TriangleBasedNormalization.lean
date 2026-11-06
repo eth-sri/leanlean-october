@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.SimplexBoundaryGluing
 public import RequestProject.TopologicalSingular.SingularEdgeNullHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology

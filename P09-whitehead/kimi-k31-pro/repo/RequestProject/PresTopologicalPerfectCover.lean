@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCocyclePerfectCover
 public import RequestProject.OrderAcyclicRegularCover
 public import RequestProject.PresPosetDimension
@@ -13,7 +14,7 @@ regularity and singular-acyclicity data are constructed, not additional inputs.
 noncomputable section
 namespace FiniteChains.PresModel
 open Comb PresCocycleCover CategoryTheory
-variable {α J : Type} [DecidableEq α] (w : J → List (α × Bool))
+variable {α J : Type} [DecidableEq α] (w : J → FiniteChains.Comb.Oriented α)
   (hpos : ∀ j, 0 < (w j).length)
 
 def coveredPresentationTwoComplex : Whitehead.TwoComplex := by

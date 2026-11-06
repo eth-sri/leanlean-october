@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderNerveLowerCone
 public import RequestProject.RelatorCircleBoundaryHomeomorph
 
@@ -14,7 +15,7 @@ namespace FiniteChains.PresModel
 open Comb RelativeAttachment
 open scoped Classical
 
-variable {α J : Type} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type} (w : J → FiniteChains.Comb.Oriented α) (j : J)
     (hn : 0 < (w j).length)
 
 noncomputable instance relatorCircle_fintype : Fintype (RelatorCircle w j) :=

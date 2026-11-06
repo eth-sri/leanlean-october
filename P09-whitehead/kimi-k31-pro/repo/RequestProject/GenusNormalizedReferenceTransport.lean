@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusUniversalPolygonTransport
 public import RequestProject.GenusSingleSpineReference
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The chosen source spine filling and its exact marking corrections map
 to the actual substituted reference. This supplies its geometric reference
@@ -11,16 +16,13 @@ class, not an additional B2 hypothesis. Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {K X Y : Complex2.{u}}
 
 theorem univLiftV_extendList (f : Hom X Y) (a : X.V)
-    (v : UV X a) {p : List (X.E × Bool)} {b : X.V}
+    (v : UV X a) {p : FiniteChains.Comb.Oriented X.E} {b : X.V}
     (hp : IsPath X.src X.tgt p (endV v) b) :
     univLiftV a f (extendList p v) =
       extendList (mapPath f p) (univLiftV a f v) := by

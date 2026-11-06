@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CellComplex
 public import RequestProject.CoverAcyclic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The presentation complex, its covers, and the dictionary with the Fox complex
@@ -35,9 +40,6 @@ the requirements (2.2) produces a connected acyclic regular cover of the present
 complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -52,7 +54,7 @@ variable {J : Type u} [Fintype J] [DecidableEq J]
 /-! ### Paths in a complex with one vertex -/
 
 theorem isPath_of_subsingleton {V E : Type*} [Subsingleton V] (src tgt : E → V)
-    (p : List (E × Bool)) (a b : V) : IsPath src tgt p a b := by
+    (p : FiniteChains.Comb.Oriented E) (a b : V) : IsPath src tgt p a b := by
   induction p generalizing a with
   | nil => exact Subsingleton.elim _ _
   | cons e p ih => exact ⟨Subsingleton.elim _ _, ih _⟩
@@ -81,8 +83,8 @@ def qof (i : α) : FreeGroup α ⧸ Nsub := QuotientGroup.mk (FreeGroup.of i)
 variable {Nsub}
 
 /-- The lift at the vertex `q` of the edge path spelled by a word. -/
-def liftPath : List (α × Bool) → (FreeGroup α ⧸ Nsub) →
-    List (((FreeGroup α ⧸ Nsub) × α) × Bool)
+def liftPath : FiniteChains.Comb.Oriented α → (FreeGroup α ⧸ Nsub) →
+    FiniteChains.Comb.Oriented (((FreeGroup α ⧸ Nsub) × α))
   | [], _ => []
   | (i, true) :: L, q => ((q, i), true) :: liftPath L (q * qof Nsub i)
   | (i, false) :: L, q => ((q * (qof Nsub i)⁻¹, i), false) :: liftPath L (q * (qof Nsub i)⁻¹)
@@ -91,27 +93,27 @@ omit [Fintype α] [DecidableEq α] in
 @[simp] theorem liftPath_nil (q : FreeGroup α ⧸ Nsub) : liftPath [] q = [] := rfl
 
 omit [Fintype α] [DecidableEq α] in
-@[simp] theorem liftPath_cons_true (i : α) (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+@[simp] theorem liftPath_cons_true (i : α) (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     liftPath ((i, true) :: L) q = ((q, i), true) :: liftPath L (q * qof Nsub i) := rfl
 
 omit [Fintype α] [DecidableEq α] in
-@[simp] theorem liftPath_cons_false (i : α) (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+@[simp] theorem liftPath_cons_false (i : α) (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     liftPath ((i, false) :: L) q
       = ((q * (qof Nsub i)⁻¹, i), false) :: liftPath L (q * (qof Nsub i)⁻¹) := rfl
 
 omit [Fintype α] in
-theorem mk_cons_true (i : α) (L : List (α × Bool)) :
+theorem mk_cons_true (i : α) (L : FiniteChains.Comb.Oriented α) :
     FreeGroup.mk ((i, true) :: L) = FreeGroup.of i * FreeGroup.mk L :=
   FreeGroup.toWord_inj.mp rfl
 
 omit [Fintype α] in
-theorem mk_cons_false (i : α) (L : List (α × Bool)) :
+theorem mk_cons_false (i : α) (L : FiniteChains.Comb.Oriented α) :
     FreeGroup.mk ((i, false) :: L) = (FreeGroup.of i)⁻¹ * FreeGroup.mk L :=
   FreeGroup.toWord_inj.mp rfl
 
 omit [Fintype α] [DecidableEq α] in
 /-- The projection of the lift of a word is the word itself. -/
-theorem map_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+theorem map_liftPath (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     (liftPath L q).map (fun eb => (eb.1.2, eb.2)) = L := by
   induction L generalizing q with
   | nil => rfl
@@ -123,7 +125,7 @@ theorem map_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
 
 omit [Fintype α] [DecidableEq α] in
 /-- The lift of a word is equivariant for left translation. -/
-theorem liftPath_translate (L : List (α × Bool)) (q₀ q : FreeGroup α ⧸ Nsub) :
+theorem liftPath_translate (L : FiniteChains.Comb.Oriented α) (q₀ q : FreeGroup α ⧸ Nsub) :
     liftPath L (q₀ * q) = (liftPath L q).map (fun eb => ((q₀ * eb.1.1, eb.1.2), eb.2)) := by
   induction L generalizing q with
   | nil => rfl
@@ -137,14 +139,14 @@ variable (Nsub)
 
 omit [Fintype α] in
 /-- The lift at `q` of the word `w` is an edge path from `q` to `q · w`. -/
-theorem liftPath_isPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+theorem liftPath_isPath (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     IsPath (fun e : (FreeGroup α ⧸ Nsub) × α => e.1)
       (fun e : (FreeGroup α ⧸ Nsub) × α => e.1 * qof Nsub e.2) (liftPath L q) q
       (q * QuotientGroup.mk (FreeGroup.mk L)) := by
   induction L generalizing q with
   | nil =>
-      show q = q * QuotientGroup.mk (FreeGroup.mk ([] : List (α × Bool)))
-      rw [show FreeGroup.mk ([] : List (α × Bool)) = 1 from rfl]
+      show q = q * QuotientGroup.mk (FreeGroup.mk ([] : FiniteChains.Comb.Oriented α))
+      rw [show FreeGroup.mk ([] : FiniteChains.Comb.Oriented α) = 1 from rfl]
       simp
   | cons a L ih =>
       obtain ⟨i, b⟩ := a
@@ -233,7 +235,7 @@ theorem coords_single (β : Type u) [Fintype β] [DecidableEq β] (q : FreeGroup
 /-- **The dictionary between the cellular boundary and the Fox derivative.**  In the
 coordinates above, the cellular chain carried by the lift at `q` of the word `w` is the
 Fox vector `q · (∂w/∂x_i)_i`. -/
-theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+theorem coords_pathChain_liftPath (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     coords Nsub α (pathChain (liftPath L q))
       = fun i => (MonoidAlgebra.single q (1 : ℤ) : CoverRing Nsub) *
           proj Nsub (fox i (FreeGroup.mk L)) := by
@@ -241,7 +243,7 @@ theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ 
   induction L generalizing q with
   | nil =>
       funext i
-      rw [show FreeGroup.mk ([] : List (α × Bool)) = 1 from rfl]
+      rw [show FreeGroup.mk ([] : FiniteChains.Comb.Oriented α) = 1 from rfl]
       simp
   | cons a L ih =>
       obtain ⟨i₀, b⟩ := a

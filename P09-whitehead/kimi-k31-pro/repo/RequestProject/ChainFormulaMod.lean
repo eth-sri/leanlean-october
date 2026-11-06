@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ChainFormula
 public import RequestProject.FoxRequirementMod
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Formula (2.3) modulo an integer
@@ -25,9 +31,6 @@ Taking `m = 0` the statement specializes to the integral one, since `CycleLiftsM
 trivially.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

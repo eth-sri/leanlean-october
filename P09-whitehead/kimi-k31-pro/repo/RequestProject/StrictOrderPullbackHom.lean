@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PosetCoverPullback
 public import RequestProject.StrictOrderComplex
 public import RequestProject.PosetCoverUpTransform
@@ -7,12 +9,13 @@ public import RequestProject.ComponentComplex
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual cellular maps into a pulled-back ordered cover.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -30,8 +33,7 @@ noncomputable def strictPullbackProjection :
 
 omit [PartialOrder Q] in
 theorem pullback_lt {a b : PosetCoverPullback f g}
-    (hp : a.1.1 ≤ b.1.1) (hr : a.1.2 < b.1.2) : a < b := by
-  exact lt_iff_le_not_ge.mpr ⟨⟨hp, hr.le⟩, fun h => (not_le_of_gt hr) h.2⟩
+    (hp : a.1.1 ≤ b.1.1) (hr : a.1.2 < b.1.2) : a < b := lt_iff_le_not_ge.mpr ⟨⟨hp, hr.le⟩, fun h => (not_le_of_gt hr) h.2⟩
 
 variable {K : Complex2.{u}} (r : Hom K (orderCx P)) (s : Hom K (strictOrderCx R))
   (h : (orderCxMap f hf.mono).comp r =

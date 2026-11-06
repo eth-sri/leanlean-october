@@ -1,16 +1,18 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusQuotientRelativeSupport
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Lift the actual surface markings to the genuine attaching cover and apply
 the relative old-chain filling theorem. Pending final Lean verification.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -20,13 +22,13 @@ theorem universalNerveChain1_uOrderHom (c : OrdEdge (UOrder P a) →₀ ℤ) :
     universalNerveChain1 (chain1 uOrderHom c) = ordNerveChain1 c := by
   change ordNerveChain1
     (Finsupp.mapDomain uOrderHomInv.onE (Finsupp.mapDomain uOrderHom.onE c)) = _
-  rw (config := { transparency := .default }) [← Finsupp.mapDomain_comp]
+  rwd [← Finsupp.mapDomain_comp]
   have h : (uOrderHomInv (P := P) (a := a)).onE ∘ uOrderHom.onE = id := by
     funext e
     exact homInv_onE_comp uOrderHom Function.bijective_id
       ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
       ⟨uOrderFace_injective, uOrderFace_surjective⟩ e
-  rw (config := { transparency := .default }) [h, Finsupp.mapDomain_id]
+  rwd [h, Finsupp.mapDomain_id]
 
 end FiniteChains.Comb
 
@@ -38,8 +40,7 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V}
 
 /-- The attaching-cover projection reconstructs its actual endpoint in the quotient. -/
 theorem qAttachingCoverEnd_spec (a : Qpos A X att) (p : QLiftedAttaching a) :
-    qOldIncl (att := att) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := by
-  exact congrArg Subtype.val
+    qOldIncl (att := att) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := congrArg Subtype.val
     ((qPositiveOldOrderIso (att := att)).symm_apply_apply ⟨uOrderEnd p.1, p.2⟩)
 
 end FiniteChains.Davis
@@ -118,14 +119,14 @@ theorem namedAttachingReference_projects
     (posQCube (qAttachingCoverEnd (namedQuotientBase ρ q u)
       (namedAttachingReference q ρ u hrho g))) =
     qOldIncl (att := namedAtt ρ q u) (posQCube (gBase q))
-  rw (config := { transparency := .default }) [qAttachingCoverEnd_spec]
+  rwd [qAttachingCoverEnd_spec]
   change endV (deckV _ (quotientCylinderVertex q ρ u)) = _
-  rw (config := { transparency := .default }) [endV_deckV, quotientCylinderVertex_end]
+  rwd [endV_deckV, quotientCylinderVertex_end]
   rfl
 
 theorem exists_namedAttachingMarkingPath
     (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool) :
-    ∃ p : List ((orderCx (namedAttachingCover q ρ u)).E × Bool),
+    ∃ p : FiniteChains.Comb.Oriented (orderCx (namedAttachingCover q ρ u)).E,
       ∃ b : namedAttachingCover q ρ u,
         IsPath (orderCx (namedAttachingCover q ρ u)).src
           (orderCx (namedAttachingCover q ρ u)).tgt p
@@ -133,12 +134,12 @@ theorem exists_namedAttachingMarkingPath
         mapPath (namedAttachingProjection q ρ u) p = gSig q (i.1.val, i.2) := by
   apply exists_liftPathAt (namedAttachingProjection_isCovering q ρ u)
     (gSig q (i.1.val, i.2)) (namedAttachingReference q ρ u hrho g) (gBase q)
-  rw (config := { transparency := .default }) [namedAttachingReference_projects]
+  rwd [namedAttachingReference_projects]
   exact isPath_gSig q (i.1.val, i.2)
 
 noncomputable def namedAttachingMarkingPath
     (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool) :
-    List ((orderCx (namedAttachingCover q ρ u)).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (namedAttachingCover q ρ u)).E :=
   Classical.choose (exists_namedAttachingMarkingPath q ρ u hrho g i)
 
 noncomputable def namedAttachingMarkingEnd
@@ -186,7 +187,7 @@ theorem namedAttachingMarkingPath_image
   have hsurf : mapPath (namedSurfaceIntoQuotient q ρ u) (gSig q (i.1.val, i.2)) =
       mapPath (oldIntoNamedQuotient q ρ u) (surfaceOldMarking q i) :=
     (mapPath_comp (oldIntoNamedQuotient q ρ u) (surfCx _) (gSig q (i.1.val, i.2))).symm
-  rw (config := { transparency := .default }) [hproj, hsurf] at he
+  rwd [hproj, hsurf] at he
   exact he
 
 noncomputable def namedAttachingMarkingChains :
@@ -201,14 +202,14 @@ theorem namedAttachingMarkingChains_image
       quotientSurfaceMarkingChains q ρ u hrho c := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add]
+  | add c d hc hd => rwd [map_add, map_add, hc, hd, map_add]
   | single x n =>
-      rw (config := { transparency := .default }) [namedAttachingMarkingChains, quotientSurfaceMarkingChains,
+      rwd [namedAttachingMarkingChains, quotientSurfaceMarkingChains,
         Finsupp.linearCombination_single, Finsupp.linearCombination_single, map_smul]
       apply congrArg (fun z => n • z)
       change Finsupp.mapDomain (namedAttachingIntoUniversal q ρ u).onE
         (pathChain (namedAttachingMarkingPath q ρ u hrho x.1 x.2)) = _
-      rw (config := { transparency := .default }) [← pathChain_map]
+      rwd [← pathChain_map]
       exact congrArg pathChain (namedAttachingMarkingPath_image q ρ u hrho x.1 x.2)
 
 noncomputable def namedAttachingNerveBoundary :
@@ -225,12 +226,12 @@ theorem namedAttachingNerveBoundary_image
     (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
     universalNerveChain1 (quotientSurfaceMarkingChains q ρ u hrho c) =
       cmap Subtype.val (namedAttachingNerveBoundary q ρ u hrho c) := by
-  rw (config := { transparency := .default }) [← namedAttachingMarkingChains_image q ρ u hrho c]
+  rwd [← namedAttachingMarkingChains_image q ρ u hrho c]
   change universalNerveChain1 (chain1
       (uOrderHom.comp (orderCxMap Subtype.val (fun _ _ h => h)))
       (namedAttachingMarkingChains q ρ u hrho c)) =
     cmap Subtype.val (ordNerveChain1 (namedAttachingMarkingChains q ρ u hrho c))
-  rw (config := { transparency := .default }) [chain1_comp_apply, universalNerveChain1_uOrderHom, ordNerveChain1_chain1]
+  rwd [chain1_comp_apply, universalNerveChain1_uOrderHom, ordNerveChain1_chain1]
 
 /-- The actual B2 coordinate equation supplies an actual attaching-cover two-chain
 with the original marked boundary, and an old three-chain correcting its image. -/
@@ -255,7 +256,7 @@ theorem quotientCorrectedRelative_attaching_filling
     (namedAttachingNerveBoundary q ρ u hrho
       ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i))))
     (namedAttachingNerveBoundary_mem_inc q ρ u hrho _)
-  rw (config := { transparency := .default }) [quotientCorrectedRelativeChain_boundary q ρ u hrho β hβ,
+  rwd [quotientCorrectedRelativeChain_boundary q ρ u hrho β hβ,
     namedAttachingNerveBoundary_image]
 
 end FiniteChains.Davis.Genus

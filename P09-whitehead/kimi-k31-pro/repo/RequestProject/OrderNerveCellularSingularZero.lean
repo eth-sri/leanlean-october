@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveCellularSingularChains
 public import RequestProject.OrderNerveSmallHomotopyZero
 public import RequestProject.OrderNerveSmallCellularChainMap
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory TopologicalSingular SingularSubdivision
@@ -35,10 +38,10 @@ theorem orderCellSingularChain1_boundary {P : Type} [PartialOrder P] (c : OrdEdg
     have h1 : (nerve P).δ (1 : Fin 2) (ordEdgeNerveEquiv P e) =
         ComposableArrows.mk₀ e.val.1 := by
       apply CategoryTheory.Functor.ext (fun i => by fin_cases i; rfl)
-    rw (config := { transparency := .default }) [orderCellSingularChain1_single, boundary_single, Fin.sum_univ_two]
+    rwd [orderCellSingularChain1_single, boundary_single, Fin.sum_univ_two]
     simp only [orderNerveSingularSimplex_face, h0, h1, Fin.val_zero, Fin.val_one,
       pow_zero, pow_one, one_smul, neg_smul]
-    rw (config := { transparency := .default }) [bdry1_single, map_smul, map_sub,
+    rwd [bdry1_single, map_smul, map_sub,
       orderCellSingularChain0_single, orderCellSingularChain0_single]
     simp [orderCx, sub_eq_add_neg]
 

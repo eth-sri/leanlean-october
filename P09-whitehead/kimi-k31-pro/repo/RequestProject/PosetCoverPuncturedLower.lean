@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PosetCoverLowerInterval
 public import RequestProject.PosetCoverTargetIso
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! A punctured lower link stays in the sheet of its specified lifted top cell. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.IsPosetCover
 universe u

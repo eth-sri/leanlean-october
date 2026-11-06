@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.TreePi2Reflection
 public import RequestProject.CombPushout
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Undo a spanning-tree collapse relative to the original complex.
 New generators are actual loops at the original tree root. An old
@@ -13,9 +18,6 @@ paths. Original vertices, edges and two-cells are retained literally.
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.RelativeTreeExtension
 open SpanningTree
@@ -35,17 +37,17 @@ def loopGraph : Complex2 where
   att := PEmpty.elim
   att_isLoop f := PEmpty.elim f
 
-def oldPath (l : List (D.E × Bool)) : List ((D.E ⊕ Z) × Bool) :=
+def oldPath (l : FiniteChains.Comb.Oriented D.E) : FiniteChains.Comb.Oriented ((D.E ⊕ Z)) :=
   l.map (fun e => (Sum.inl e.1, e.2))
 
-theorem oldPath_isPath {l : List (D.E × Bool)} {a b : D.V}
+theorem oldPath_isPath {l : FiniteChains.Comb.Oriented D.E} {a b : D.V}
     (hl : IsPath D.src D.tgt l a b) :
     IsPath (source T) (target T) (oldPath (Z := Z) l) a b :=
   FiniteChains.Comb.isPath_map (src := D.src) (tgt := D.tgt)
     (src' := source T) (tgt' := target T) (fun x : D.V => x)
     (Sum.inl : D.E → D.E ⊕ Z) (fun _ => rfl) (fun _ => rfl) hl
 
-def generatorLoop : NonTree T ⊕ Z → List ((D.E ⊕ Z) × Bool)
+def generatorLoop : NonTree T ⊕ Z → FiniteChains.Comb.Oriented ((D.E ⊕ Z))
   | Sum.inl e => oldPath (conjPath T [(e.val, true)] (D.src e.val) (D.tgt e.val))
   | Sum.inr z => [(Sum.inr z, true)]
 
@@ -55,7 +57,7 @@ theorem generatorLoop_isPath (a : NonTree T ⊕ Z) :
   | inl e => exact oldPath_isPath T (conjPath_isLoop T (isPath_single (e.val, true)))
   | inr z => exact ⟨rfl, rfl⟩
 
-def signedLoop (e : (NonTree T ⊕ Z) × Bool) : List ((D.E ⊕ Z) × Bool) :=
+def signedLoop (e : (NonTree T ⊕ Z) × Bool) : FiniteChains.Comb.Oriented ((D.E ⊕ Z)) :=
   if e.2 then generatorLoop T e.1 else revPath (X := loopGraph (Z := Z) T) (generatorLoop T e.1)
 
 theorem signedLoop_isPath (e : (NonTree T ⊕ Z) × Bool) :
@@ -65,10 +67,10 @@ theorem signedLoop_isPath (e : (NonTree T ⊕ Z) × Bool) :
   · exact isPath_revPath (X := loopGraph (Z := Z) T) (generatorLoop_isPath T a)
   · exact generatorLoop_isPath T a
 
-def readWord (l : List ((NonTree T ⊕ Z) × Bool)) : List ((D.E ⊕ Z) × Bool) :=
+def readWord (l : FiniteChains.Comb.Oriented ((NonTree T ⊕ Z))) : FiniteChains.Comb.Oriented ((D.E ⊕ Z)) :=
   l.flatMap (signedLoop T)
 
-theorem readWord_isPath (l : List ((NonTree T ⊕ Z) × Bool)) :
+theorem readWord_isPath (l : FiniteChains.Comb.Oriented ((NonTree T ⊕ Z))) :
     IsPath (source T) (target T) (readWord T l) T.root T.root := by
   induction l with
   | nil => rfl
@@ -137,7 +139,7 @@ def generatorEquiv : NonTree (tree T extra) ≃ NonTree T ⊕ Z where
   left_inv e := by rcases e with ⟨e | z, he⟩ <;> rfl
   right_inv a := by cases a <;> rfl
 
-theorem oldPath_collapsed (l : List (D.E × Bool)) :
+theorem oldPath_collapsed (l : FiniteChains.Comb.Oriented D.E) :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (oldPath (Z := Z) l)) =
         FreeGroup.map Sum.inl (pathWord T l) := by
@@ -160,7 +162,7 @@ theorem generatorLoop_collapsed (a : NonTree T ⊕ Z) :
       rw [pathWord_cons, pathWord_nil, mul_one]
       simp [germWord, tree, generatorEquiv]
 
-theorem readWord_collapsed (l : List ((NonTree T ⊕ Z) × Bool)) :
+theorem readWord_collapsed (l : FiniteChains.Comb.Oriented ((NonTree T ⊕ Z))) :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (readWord T l)) = FreeGroup.mk l := by
   induction l with

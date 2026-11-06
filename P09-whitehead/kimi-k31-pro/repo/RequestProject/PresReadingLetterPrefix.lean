@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetReading
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import RequestProject.PresPosetReading
 namespace FiniteChains.PresModel
 universe u v
 variable {α J : Type u} {G : Type v} [Group G]
-  (w : J → List (α × Bool)) (gen : α → G)
+  (w : J → FiniteChains.Comb.Oriented α) (gen : α → G)
 
 /-- The actual cone trivialization at a letter midpoint has the signed prefix value. -/
 theorem trivVal_cmid_of_get (j : J) (k : ℕ) (a : α × Bool)

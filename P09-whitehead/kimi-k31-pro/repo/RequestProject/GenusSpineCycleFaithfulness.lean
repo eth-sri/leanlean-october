@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusSpineRetractionHomotopy
 public import RequestProject.OrderNormalizedMapInjectivity
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual normalized full-cube map reflects zero on surviving-spine two-cycles. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -29,7 +32,7 @@ theorem genusSpineCellToFullCube_injOn_ordinary :
   have hab : a = b := Subtype.ext (by
     simpa [genusSpineCellToFullCube, genusSpineCellToOld, truncatedCellRetraction, ha, hb] using he)
   apply Subtype.ext
-  rw (config := { transparency := .default }) [ha, hb, hab]
+  rwd [ha, hb, hab]
 
 theorem genusSpineRetraction_ordinary (c : GenusSpineCell q) :
     genusSpineRetraction q c ∈ genusSpineOrdinaryCells q :=
@@ -47,7 +50,7 @@ theorem genusSpine_normalized_retraction_support
   change a ∈ (Finsupp.mapDomain
     (orderCxMap (genusSpineRetraction q) (genusSpineRetraction_monotone q)).onF z).support at ha
   obtain ⟨b, _, hb⟩ := Finset.mem_image.mp (Finsupp.mapDomain_support ha)
-  rw (config := { transparency := .default }) [← he, ← hb]
+  rwd [← he, ← hb]
   exact ⟨genusSpineRetraction_ordinary q b.1.1,
     genusSpineRetraction_ordinary q b.1.2.1, genusSpineRetraction_ordinary q b.1.2.2⟩
 
@@ -61,10 +64,10 @@ theorem genusSpine_cycle_ordinary_support (d : (genusSpineCx q).F →₀ ℤ)
   change Comb.bdry2 (strictOrderCx (GenusSpineCell q)) d = 0 at hd
   let z := chain2 (strictOrderIncl (GenusSpineCell q)) d
   have hcycle : Comb.bdry2 (orderCx (GenusSpineCell q)) z = 0 := by
-    rw (config := { transparency := .default }) [bdry2_chain2, hd, map_zero]
+    rwd [bdry2_chain2, hd, map_zero]
   have he := genusSpine_normalized_retraction_cycle q z hcycle
   have hnorm : normalizeOrdChain2 z = d := normalizeOrdChain2_inclusion d
-  rw (config := { transparency := .default }) [hnorm] at he
+  rwd [hnorm] at he
   apply genusSpine_normalized_retraction_support q z t
   rwa [he]
 

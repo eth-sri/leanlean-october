@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi2
 public import RequestProject.CellularHomotopyChain
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Lifted finite chain witnesses for actual path homotopies and their cellular images. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -25,7 +27,7 @@ theorem hurewicz_univLift_chain2 (d : (uCover X a).F →₀ ℤ) :
   rfl
 
 /-- A homotopy lifts to a finite chain correction, whose cellular image has the exact boundary. -/
-theorem exists_mapped_lifted_homotopy_chain {v : UV X a} {p q : List (X.E × Bool)} {b : X.V}
+theorem exists_mapped_lifted_homotopy_chain {v : UV X a} {p q : FiniteChains.Comb.Oriented X.E} {b : X.V}
     (hp : IsPath X.src X.tgt p (endV v) b) (h : Htpy X (endV v) b p q) :
     ∃ d : (uCover X a).F →₀ ℤ,
       bdry2 (uCover Y (f.onV a)) (chain2 (univLift X f a) d) =
@@ -34,7 +36,7 @@ theorem exists_mapped_lifted_homotopy_chain {v : UV X a} {p q : List (X.E × Boo
   obtain ⟨d, hd⟩ := (htpy_uLiftPath hp h).exists_boundary
   refine ⟨d, ?_⟩
   rw [bdry2_chain2, hd, map_sub]
-  have key (r : List (X.E × Bool)) (hr : IsPath X.src X.tgt r (endV v) b) :
+  have key (r : FiniteChains.Comb.Oriented X.E) (hr : IsPath X.src X.tgt r (endV v) b) :
       chain1 (univLift X f a) (pathChain (uLiftPath r v)) =
         pathChain (uLiftPath (mapPath f r) (univLiftV a f v)) := by
     change Finsupp.mapDomain (univLift X f a).onE (pathChain _) = _

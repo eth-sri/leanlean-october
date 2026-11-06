@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresSubcomplex
 
 @[expose] public section
@@ -33,7 +34,7 @@ universe u
 variable {X Y : Complex2.{u}}
 
 /-- The one-chains carried by the image of an edge path. -/
-theorem pathChain_map (p : Hom X Y) (l : List (X.E × Bool)) :
+theorem pathChain_map (p : Hom X Y) (l : FiniteChains.Comb.Oriented X.E) :
     pathChain (l.map (fun eb => (p.onE eb.1, eb.2)))
       = Finsupp.mapDomain p.onE (pathChain l) := by
   induction l with
@@ -82,7 +83,7 @@ theorem liftPath_map {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
     {Msub : Subgroup (FreeGroup β)} [Msub.Normal] (f : α → β)
     (Ψ : (FreeGroup α ⧸ Nsub) →* (FreeGroup β ⧸ Msub))
     (hΨ : ∀ i, Ψ (qof Nsub i) = qof Msub (f i))
-    (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+    (L : FiniteChains.Comb.Oriented α) (q : FreeGroup α ⧸ Nsub) :
     liftPath (L.map (fun p => (f p.1, p.2))) (Ψ q)
       = (liftPath L q).map (fun eb => ((Ψ eb.1.1, f eb.1.2), eb.2)) := by
   induction L generalizing q with
@@ -143,12 +144,4 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
     (univCoverInclHom f hf ρ σ g hg).onF = Prod.map (presInclGroupHom f ρ σ g hg) g := rfl
 
 end Comb
-
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-end PresChain
 end FiniteChains

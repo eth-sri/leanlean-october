@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.SimplexCoordinates
 public import RequestProject.ReducedSimplexBall
 public import RequestProject.OrderNerveRealizationWeakTopology
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -19,8 +22,7 @@ noncomputable def orderNerveSimplexClosedBallHomeomorph (n : ℕ) :
 
 theorem orderNerveSimplexClosedBallHomeomorph_positive_iff (n : ℕ)
     (z : Convexity.StdSimplex ℝ (Fin (n + 1))) :
-    (∀ i, 0 < z.weights i) ↔ (orderNerveSimplexClosedBallHomeomorph n z).val ∈ Metric.ball 0 1 := by
-  exact standardSimplexClosedBallHomeomorph_positive_iff n
+    (∀ i, 0 < z.weights i) ↔ (orderNerveSimplexClosedBallHomeomorph n z).val ∈ Metric.ball 0 1 := standardSimplexClosedBallHomeomorph_positive_iff n
     (TopologicalSingular.simplexCoordinates n z)
 
 /-- A genuine continuous closed-ball characteristic chart in the actual realization. -/

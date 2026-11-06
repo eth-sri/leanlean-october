@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.AttachmentHomotopyExtension
 public import Mathlib.Topology.Homotopy.Equiv
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual maps under change of the base of a cell attachment. The first
 homotopy inverse is constructed from disk homotopy extension. This file does
@@ -11,9 +17,6 @@ not assume that the induced map on attachments is an equivalence. -/
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical

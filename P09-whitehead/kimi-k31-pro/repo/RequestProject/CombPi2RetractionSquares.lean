@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ComponentComplex
 public import RequestProject.ZeroPi2Descent
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Transfer vanishing through a commuting square whose target vertical
 map admits a cellular left inverse. Pending final Lean verification. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

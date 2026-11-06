@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.DavisNerveCover
 public import RequestProject.DavisCellularAcyclic
 public import RequestProject.OrderUniversalThree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Full-nerve degree-two exactness for the actual path-class universal cover of the cube quotient. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

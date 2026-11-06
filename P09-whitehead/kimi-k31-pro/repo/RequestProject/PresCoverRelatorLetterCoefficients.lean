@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CylinderCoverCollapsedLetterCoefficients
 public import RequestProject.PresCoverRelatorGeneratorBoundary
 
@@ -8,7 +9,7 @@ public import RequestProject.PresCoverRelatorGeneratorBoundary
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f)
 
 /-- The genuine cylinder projection of a lifted attaching circle is the actual outer circle. -/

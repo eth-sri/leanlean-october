@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.VertexSubdivision
@@ -8,6 +10,10 @@ public import Mathlib.Analysis.Convex.StdSimplex
 public import Mathlib.Analysis.Normed.Module.Basic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! # Realization of vertex chains as affine singular simplices
 
@@ -18,9 +24,6 @@ the genuine equally weighted barycenters.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.AffineVertexChains
 

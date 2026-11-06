@@ -15,11 +15,8 @@ namespace Whitehead
 /-- Theorem A, including its finite acyclic clause, without any sufficiency premise. -/
 theorem TheoremA (K : TwoComplex) :
     ((∀ n : ℕ, 1 ≤ n → HasChain K n false) ↔
-        HasAcyclicRegularCover K) ∧ (FiniteCells K → Acyclic K → ∀ n : ℕ, 1 ≤ n → HasChain K n true) := by
-  refine ⟨⟨hasAcyclicRegularCover_of_chains K, ?_⟩, ?_⟩
-  · intro h n hn
-    exact hasChain_of_acyclicRegularCover K h n hn
-  · intro hfinite hacyclic n hn
-    exact hasFiniteChain_of_acyclic K hfinite hacyclic n hn
+        HasAcyclicRegularCover K) ∧ (FiniteCells K → Acyclic K → ∀ n : ℕ, 1 ≤ n → HasChain K n true) :=
+  ⟨⟨hasAcyclicRegularCover_of_chains K, hasChain_of_acyclicRegularCover K⟩,
+    hasFiniteChain_of_acyclic K⟩
 
 end Whitehead

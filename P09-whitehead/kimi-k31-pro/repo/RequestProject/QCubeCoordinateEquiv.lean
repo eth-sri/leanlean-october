@@ -66,8 +66,7 @@ theorem qCubeToCoordinate_sgn_zero (c : QCube A) (hc : c.sgn = 0) :
 /-- Recover the parity sign from the actual fixed coordinate. -/
 theorem qCubeToCoordinate_parity (c : QCube A) (v : V) :
     (match qCubeToCoordinate c v with | CubeCoord.neg => (1 : ZMod 2) | _ => 0) =
-      c.sgn v := by
-  exact congrArg (fun d : QCube A => d.sgn v) (qCubeCoordinateEquiv.left_inv c)
+      c.sgn v := congrArg (fun d : QCube A => d.sgn v) (qCubeCoordinateEquiv.left_inv c)
 
 /-- A coordinate cube is a face of another when each coordinate of the larger cube is
  free or agrees with the smaller cube. -/

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CellularHomotopyChain
 public import RequestProject.GenusFiniteMarking
 
@@ -13,7 +14,7 @@ universe u
 variable {X : Complex2.{u}} {a : X.V} {ι : Type u}
 
 /-- The edge path spelling a product of commutators of marked loops. -/
-def surfacePath (f : ι → Loop X a) : List (ι × ι) → List (X.E × Bool)
+def surfacePath (f : ι → Loop X a) : List (ι × ι) → FiniteChains.Comb.Oriented X.E
   | [] => []
   | p :: ps => (f p.1).1 ++ (f p.2).1 ++ revPath (f p.1).1 ++
       revPath (f p.2).1 ++ surfacePath f ps

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresRealizationWordDisks
 public import RequestProject.RelatorCircleBoundaryHomeomorph
 
@@ -13,7 +14,7 @@ namespace FiniteChains.PresModel
 open Comb RelativeAttachment
 open scoped Topology
 
-variable {A J : Type} (w : J → List (A × Bool)) (hw : ∀ j, w j ≠ [])
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A) (hw : ∀ j, w j ≠ [])
 
 def presCircleBoundaryHomeomorph (j : J) :
     orderNerveRealization (RelatorCircle w j) ≃ₜ UnitBoundary (Fin 2 → ℝ) :=

@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RACGCayleyGraph
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The Cayley graph covers the one-skeleton of `C(L)`
@@ -32,9 +38,6 @@ a median graph, this identifies the Cayley graph with the one-skeleton of the un
 of `C(L)`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace RACG

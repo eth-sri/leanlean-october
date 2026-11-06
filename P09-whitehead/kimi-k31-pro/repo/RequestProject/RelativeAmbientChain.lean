@@ -25,8 +25,7 @@ def stageCellEquivFull {S : Type} (p : S → Prop) (hall : ∀ s, p s) :
   right_inv := by rintro (c | s) <;> rfl
 
 theorem stageIntoFull_generates {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
-    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (stageIntoFull core extra p) := by
-  exact PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
+    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (stageIntoFull core extra p) := PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
     (stageCellEquivFull (C := C) p hall) (by
       intro j
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])
@@ -40,8 +39,7 @@ def fullIntoStage {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])
 
 theorem fullIntoStage_generates {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
-    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (fullIntoStage core extra p hall) := by
-  exact PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
+    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (fullIntoStage core extra p hall) := PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
     (stageCellEquivFull (C := C) p hall).symm (by
       intro j
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])

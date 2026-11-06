@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RoseStrictEdges
 public import RequestProject.RelatorCircleEdges
 
@@ -8,7 +9,7 @@ public import RequestProject.RelatorCircleEdges
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 /-- The actual attaching map preserves strict comparability on each valid relator circle. -/
 theorem relatorCircleAttaching_strictMono :

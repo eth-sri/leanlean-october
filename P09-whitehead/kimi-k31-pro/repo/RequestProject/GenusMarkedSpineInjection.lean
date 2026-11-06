@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusMarkedSpineBlock
 public import RequestProject.GenusWordInjection
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Structural injectivity for substitution by the actual finite surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily

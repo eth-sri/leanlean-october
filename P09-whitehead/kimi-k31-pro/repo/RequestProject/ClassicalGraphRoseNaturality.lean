@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalGraphRose
 public import RequestProject.DiskFamilyMap
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Compatible spanning trees give an actual commuting graph-to-rose
 square. The forward collapse is canonical on every characteristic
 interval even though its homotopy inverse uses tree paths. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment

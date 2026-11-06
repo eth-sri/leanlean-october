@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordEmbedding
 public import RequestProject.PresSubcomplex
 
@@ -11,7 +12,7 @@ variable {α β J K : Type u} [DecidableEq α] [DecidableEq β]
 
 /-- Reduced words with a cancelling pair. Choosing a compatible generator makes
 these nonempty representatives commute literally with generator embeddings. -/
-def presCanonicalWords (ρ : J → FreeGroup α) (a : α) (j : J) : List (α × Bool) :=
+def presCanonicalWords (ρ : J → FreeGroup α) (a : α) (j : J) : FiniteChains.Comb.Oriented α :=
   (ρ j).toWord ++ [(a, true), (a, false)]
 
 theorem presCanonicalWords_ne_nil (ρ : J → FreeGroup α) (a : α) (j : J) :

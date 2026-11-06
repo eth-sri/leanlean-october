@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalGraphTreeWords
 public import RequestProject.ClassicalGraphBoundaryWords
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Collapsing the graph's spanning tree changes the actual boundary
 map to the word obtained by deleting tree letters. The homotopy is
 constructed on all four sides with fixed corner values. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment

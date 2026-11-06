@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.UniversalTreeGauge
 public import RequestProject.GenusFullCubeMarking
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact lifted path translations for the genuine capped presentation group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -28,7 +30,7 @@ theorem rootedCappedFullVertex_end (g : PresGroup (cappedSpinePresentation q))
 
 /-- Traversing any genuine spine path updates the comparison vertex by its capped-group word. -/
 theorem rootedCappedFullVertex_path (g : PresGroup (cappedSpinePresentation q))
-    {a b : (markedSpineCx q).V} {p : List ((markedSpineCx q).E × Bool)}
+    {a b : (markedSpineCx q).V} {p : FiniteChains.Comb.Oriented (markedSpineCx q).E}
     (hp : IsPath (markedSpineCx q).src (markedSpineCx q).tgt p a b) :
     extendList (mapPath (markedSpineToFullCube q) p) (rootedCappedFullVertex q g a) =
       rootedCappedFullVertex q

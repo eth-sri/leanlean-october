@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ReceivedTreeRootedChainFaithfulness
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact marked relative boundaries in the actual receiving-group cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -17,11 +19,11 @@ variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G) {I : Type u}
 
 /-- The actual sum of the lifted marked paths, before choosing coordinates. -/
-noncomputable def markedChainMap (p : I → List (K.E × Bool)) :
+noncomputable def markedChainMap (p : I → FiniteChains.Comb.Oriented K.E) :
     ((G × I) →₀ ℤ) →ₗ[ℤ] ((G × K.E) →₀ ℤ) :=
   Finsupp.linearCombination ℤ (fun x => pathChain (liftPath T φ (p x.2) x.1))
 
-theorem markedChainMap_single (p : I → List (K.E × Bool)) (g : G) (i : I) (n : ℤ) :
+theorem markedChainMap_single (p : I → FiniteChains.Comb.Oriented K.E) (g : G) (i : I) (n : ℤ) :
     markedChainMap T φ p (Finsupp.single (g, i) n) =
       n • pathChain (liftPath T φ (p i) g) :=
   Finsupp.linearCombination_single ℤ n (g, i)
@@ -50,7 +52,7 @@ theorem markedChainMap_boundary_off_root (p : I → Loop K T.root)
 
 variable [Fintype I] [DecidableEq (NonTree T)]
 
-theorem cellCoefficient_markedChainMap (p : I → List (K.E × Bool))
+theorem cellCoefficient_markedChainMap (p : I → FiniteChains.Comb.Oriented K.E)
     (c : (G × I) →₀ ℤ) (z : NonTree T) :
     cellCoefficient z.1 (markedChainMap T φ p c) =
       ∑ i, cellCoefficient i c * coefficientMap T φ (fox z (pathWord T (p i))) := by

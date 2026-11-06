@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombUniversalCover
 public import RequestProject.UnivCoverIncl
 
@@ -36,7 +37,7 @@ variable {X Y Z : Complex2.{u}}
 
 /-! ### Functoriality of the universal cover -/
 
-theorem endpt_mapPath (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (a : X.V),
+theorem endpt_mapPath (h : Hom X Y) : ∀ (q : FiniteChains.Comb.Oriented X.E) (a : X.V),
     endpt Y (h.onV a) (mapPath h q) = h.onV (endpt X a q) := by
   intro q
   induction q with
@@ -123,7 +124,7 @@ theorem univLiftV_liftGerm (h : Hom X Y) {c : UV X x₀} {eb : X.E × Bool}
       refine Subtype.ext (Prod.ext ?_ rfl)
       exact (univLiftV_extend x₀ h (eb := (e, false)) hc).symm
 
-theorem uLiftPath_univLiftV (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem uLiftPath_univLiftV (h : Hom X Y) : ∀ (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       uLiftPath (mapPath h q) (univLiftV x₀ h c)
         = (uLiftPath q c).map (fun Eb => (univLiftE x₀ h Eb.1, Eb.2)) := by

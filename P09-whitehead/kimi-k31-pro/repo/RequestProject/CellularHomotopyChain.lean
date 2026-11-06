@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombHurewicz1Pres
 
 @[expose] public section
@@ -10,7 +11,7 @@ namespace FiniteChains.Comb
 universe u
 variable {X : Complex2.{u}}
 
-theorem pathChain_revPath (p : List (X.E × Bool)) :
+theorem pathChain_revPath (p : FiniteChains.Comb.Oriented X.E) :
     pathChain (revPath p) = -pathChain p := by
   induction p with
   | nil => simp
@@ -20,7 +21,7 @@ theorem pathChain_revPath (p : List (X.E × Bool)) :
     cases b <;> simp [revGerm, pathChain_cons]
 
 /-- An elementary path cancellation has an explicit cellular two-chain witness. -/
-theorem Cancels.exists_boundary {p q : List (X.E × Bool)} (h : Cancels X p q) :
+theorem Cancels.exists_boundary {p q : FiniteChains.Comb.Oriented X.E} (h : Cancels X p q) :
     ∃ c : X.F →₀ ℤ, bdry2 X c = pathChain p - pathChain q := by
   rcases h with ⟨l, r, e, rfl, rfl⟩ | ⟨l, r, f, rfl, rfl⟩
   · refine ⟨0, ?_⟩
@@ -31,7 +32,7 @@ theorem Cancels.exists_boundary {p q : List (X.E × Bool)} (h : Cancels X p q) :
     abel
 
 /-- Homotopic paths differ by the boundary of a finitely supported integral two-chain. -/
-theorem Htpy.exists_boundary {a b : X.V} {p q : List (X.E × Bool)}
+theorem Htpy.exists_boundary {a b : X.V} {p q : FiniteChains.Comb.Oriented X.E}
     (h : Htpy X a b p q) :
     ∃ c : X.F →₀ ℤ, bdry2 X c = pathChain p - pathChain q := by
   induction h with

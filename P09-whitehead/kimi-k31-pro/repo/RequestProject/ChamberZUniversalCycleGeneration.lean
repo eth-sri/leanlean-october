@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ChamberZCoverCellularGeneration
 public import RequestProject.OrderUniversalPosetThree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Base-cycle generation in the genuine path-class universal-cover cells. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -39,7 +42,7 @@ theorem exists_uCover_base_cellular_cycle (a : Zpos A X M att)
     exact hb
   · exact (uOrderHom_cycle_iff c).mpr hcc
   · have h := congrArg (chain2 uOrderHom) he
-    rw (config := { transparency := .default }) [hd, map_add, uOrderHom_ordBoundary3] at h
+    rwd [hd, map_add, uOrderHom_ordBoundary3] at h
     exact h
 
 end FiniteChains.Davis

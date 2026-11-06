@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusSurfaceMarkingCoefficients
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The boundary of the actual polygon reconstruction recovers the complete
 marked boundary before old-chain comparison. No independent marking-scalar
@@ -10,9 +16,6 @@ hypothesis remains.  -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open Nerve

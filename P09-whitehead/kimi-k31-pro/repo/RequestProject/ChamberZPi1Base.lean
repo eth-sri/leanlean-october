@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ChamberZChain
 public import RequestProject.ChamberZPi1
 public import RequestProject.OrderComplexPi1Transfer
 public import RequestProject.CombCoveringLift
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # A copy of the base is injective in `π₁(Z)` — with no extension over the cone
@@ -36,9 +42,6 @@ The conclusion is `FiniteChains.Davis.pi1Map_zNew_injective_uncond`: for every m
 injectivity itself.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

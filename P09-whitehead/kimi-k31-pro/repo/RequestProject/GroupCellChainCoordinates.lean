@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib.LinearAlgebra.Finsupp.Defs
 public import Mathlib.Algebra.MonoidAlgebra.Basic
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains
 universe u v

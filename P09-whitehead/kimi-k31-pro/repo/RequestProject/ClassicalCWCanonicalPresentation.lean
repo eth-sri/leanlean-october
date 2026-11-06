@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWWordDiskModel
 public import RequestProject.ClassicalRoseWordNaturality
@@ -33,7 +34,7 @@ def canonicalRelators : CanonicalRel K → FreeGroup (CanonicalGen K)
 
 /-- This is literally the selector used by the presentation-chain
 construction, including its final cancelling pair. -/
-def canonicalWords : CanonicalRel K → List (CanonicalGen K × Bool) :=
+def canonicalWords : CanonicalRel K → FiniteChains.Comb.Oriented (CanonicalGen K) :=
   presCanonicalWords (canonicalRelators K) (canonicalDummy K)
 
 theorem canonicalWords_ne_nil (j : CanonicalRel K) : canonicalWords K j ≠ [] :=

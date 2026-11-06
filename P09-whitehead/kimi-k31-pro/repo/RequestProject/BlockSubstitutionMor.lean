@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenerationStep
 public import RequestProject.FoxNaturality
 public import RequestProject.CockcroftExtStep
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Rule 3 as a structural map
@@ -39,9 +45,6 @@ generation property (B2) is *not* proved, and by
 `FiniteChains.BlockSubst.baseHom_not_injective` it cannot be, from presentations alone.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace BlockMor

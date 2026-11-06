@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.BlockSpinePres
 public import RequestProject.SubstOneWayQuotientW
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The block over a model built on prescribed relator words
@@ -17,9 +22,6 @@ The spine of the block, its internal generators `FiniteChains.Davis.spineGens` a
 `FiniteChains.Davis.spineBeta` do not involve the base at all and are reused unchanged.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -32,8 +34,8 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 section SpineW
 
-variable {α J : Type u} (w : J → List (α × Bool)) (att : NeSpx A →o PresPos w) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (PresPos w)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (att : NeSpx A →o PresPos w) (σ₀ : NeSpx A)
+  (cb : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E) (T : SpanningTree (orderCx (QOld A)))
 
 /-- The cellular map of the inclusion of the base copy in the quotient. -/
 noncomputable abbrev qInclCxW : Hom (orderCx (PresPos w)) (orderCx (Qpos A (PresPos w) att)) :=
@@ -60,7 +62,7 @@ theorem surfBaseW_monotone : Monotone (surfBaseW w att) :=
   qNew_monotone.comp att.monotone
 
 /-- The path from the base point of the copy of the base to the block. -/
-noncomputable def cylPathW : List ((orderCx (Qpos A (PresPos w) att)).E × Bool) :=
+noncomputable def cylPathW : FiniteChains.Comb.Oriented (orderCx (Qpos A (PresPos w) att)).E :=
   mapPath (qInclCxW w att) cb ++ [ordPos (qNew_att_le_qOldIncl (att := att) σ₀)]
 
 omit [Fintype V] in
@@ -71,7 +73,7 @@ theorem isPath_cylPathW (hcb : IsPath (orderCx (PresPos w)).src (orderCx (PresPo
   isPath_append_iff.mpr ⟨_, isPath_mapPath (qInclCxW w att) hcb, isPath_ordPos _⟩
 
 /-- The path from the base point of the copy of the base to the root of the spanning tree. -/
-noncomputable def rootPathW : List ((orderCx (Qpos A (PresPos w) att)).E × Bool) :=
+noncomputable def rootPathW : FiniteChains.Comb.Oriented (orderCx (Qpos A (PresPos w) att)).E :=
   cylPathW w att σ₀ cb ++
     revPath (mapPath (blockCx A (PresPos w) att) (T.treePath (posQCube σ₀)))
 
@@ -96,7 +98,7 @@ omit [Fintype V] in
 /-- **The cylinder computation.** -/
 theorem blockToQW_surfLoop
     (hcb : IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt cb (ptBase w) (att σ₀))
-    {p : List ((orderCx (NeSpx A)).E × Bool)}
+    {p : FiniteChains.Comb.Oriented (orderCx (NeSpx A)).E}
     (hp : IsPath (orderCx (NeSpx A)).src (orderCx (NeSpx A)).tgt p σ₀ σ₀) :
     blockToQW w att σ₀ cb T hcb (SpanningTree.loopOf T (isPath_mapPath (surfCx A) hp))
       = pi1Map (qInclCxW w att) (ptBase w)
@@ -176,9 +178,9 @@ end SpineW
 
 section ApplicationW
 
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (att : NeSpx A →o PresPos w) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (PresPos w)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
+  (cb : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E) (T : SpanningTree (orderCx (QOld A)))
   {Su : Type u}
 
 include hw

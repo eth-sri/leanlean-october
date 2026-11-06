@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusCollapseIteration
 public import RequestProject.SurfaceCellularCycle
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The canonical surface relation fills in the actual surviving genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

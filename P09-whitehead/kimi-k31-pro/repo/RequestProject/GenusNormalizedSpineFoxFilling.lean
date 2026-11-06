@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusUniversalCoveredSpine
 public import RequestProject.GenusSpineSubstitutedBoundary
 public import RequestProject.ReceivedTreeMarkedChains
@@ -8,15 +10,16 @@ public import RequestProject.BlockFamilyBlockwiseFinsupp
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Convert a geometrically normalized pre-substitution spine filling to the
 full named Fox filling, preserving the marked coefficients and the original
 face coordinates. The geometric choice is made by the surface construction;
 this file supplies its exact algebraic interface. Awaiting Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
@@ -60,7 +63,7 @@ theorem namedSpineSurfaceWord_fox_internal (z : SpinePresentationGen q) :
   have hw : namedSpineSurfaceWord q = FreeGroup.map Sum.inr
       (commWord (fun i : Fin q × Bool => FreeGroup.of i) (finitePairs q)) := by
     simp only [namedSpineSurfaceWord, map_commWord, FreeGroup.map.of]
-  rw (config := { transparency := .default }) [hw]
+  rwd [hw]
   exact fox_map_of_not_mem_range Sum.inr (fun _ => Sum.inl_ne_inr) _
 
 /-- An initial filling with this exact boundary exists before geometric
@@ -74,7 +77,7 @@ theorem exists_universalNamedSpine_markedFilling :
   have hw : namedSpineSurfaceWord q ∈ relSub (namedSpinePresentation q) := by
     apply (QuotientGroup.eq_one_iff _).mp
     change (QuotientGroup.mk' (relSub (namedSpinePresentation q))) (namedSpineSurfaceWord q) = 1
-    rw (config := { transparency := .default }) [namedSpineSurfaceWord, map_commWord]
+    rwd [namedSpineSurfaceWord, map_commWord]
     exact namedSpine_surface_filling q
   obtain ⟨c, hc⟩ := exists_coverSecondBoundary_of_mem_normalClosure
     (N := relSub (namedSpinePresentation q)) (ρ := namedSpinePresentation q)
@@ -83,11 +86,11 @@ theorem exists_universalNamedSpine_markedFilling :
       (∑ m, c m * foxMatrixPres (namedSpinePresentation q) a m) =
         quotRingHom ℤ (relSub (namedSpinePresentation q)) (fox a (namedSpineSurfaceWord q)) := by
     have h := congrArg (fun x => x a) hc
-    rw (config := { transparency := .default }) [fsCoverSecondBoundary_apply, Finsupp.sum_fintype _ _ (fun _ => zero_mul _)] at h
+    rwd [fsCoverSecondBoundary_apply, Finsupp.sum_fintype _ _ (fun _ => zero_mul _)] at h
     exact h
   have hm (i : Fin q × Bool) : c (Sum.inr i) = namedSpineSurfaceMarkingCoefficient q i := by
     have h := hrow (Sum.inr i)
-    rw (config := { transparency := .default }) [sum_namedSpineRel] at h
+    rwd [sum_namedSpineRel] at h
     simpa [namedSpinePresentation,
       NamedPresentation.matrix_marked_relator, NamedPresentation.matrix_marked_name,
       namedSpineSurfaceMarkingCoefficient] using h
@@ -98,12 +101,12 @@ theorem exists_universalNamedSpine_markedFilling :
     (markedSpineTree q) (universalSpineWordReceiver q)
     (treeMarkedSpineLoop q) (namedSpineSurfaceMarkingCoefficient q) d
   intro z
-  rw (config := { transparency := .default }) [ReceivedTree.cellCoefficient_bdry2]
+  rwd [ReceivedTree.cellCoefficient_bdry2]
   simp only [d, ReceivedTree.cellCoefficient_coordinates_symm,
     universalSpineWordCoefficient, treeMarkedSpineLoop]
   have hz := hrow (Sum.inl z)
-  rw (config := { transparency := .default }) [namedSpineSurfaceWord_fox_internal, map_zero] at hz
-  rw (config := { transparency := .default }) [sum_namedSpineRel] at hz
+  rwd [namedSpineSurfaceWord_fox_internal, map_zero] at hz
+  rwd [sum_namedSpineRel] at hz
   simp only [namedSpinePresentation, NamedPresentation.matrix_internal_relator,
     NamedPresentation.matrix_internal_name, mul_neg, Finset.sum_neg_distrib,
     ← sub_eq_add_neg] at hz
@@ -127,17 +130,17 @@ theorem normalizedNamedSpineVector_boundary
   cases a with
   | inl z =>
       have h := congrArg (ReceivedTree.cellCoefficient z.1) hd
-      rw (config := { transparency := .default }) [ReceivedTree.cellCoefficient_bdry2, ReceivedTree.cellCoefficient_markedChain] at h
+      rwd [ReceivedTree.cellCoefficient_bdry2, ReceivedTree.cellCoefficient_markedChain] at h
       simp only [universalSpineWordCoefficient, treeMarkedSpineLoop] at h
-      rw (config := { transparency := .default }) [namedSpineSurfaceWord_fox_internal, map_zero]
-      rw (config := { transparency := .default }) [sum_namedSpineRel]
+      rwd [namedSpineSurfaceWord_fox_internal, map_zero]
+      rwd [sum_namedSpineRel]
       simp only [namedSpinePresentation, NamedPresentation.matrix_internal_relator,
         NamedPresentation.matrix_internal_name, normalizedNamedSpineVector,
         Sum.elim_inl, Sum.elim_inr, mul_neg, Finset.sum_neg_distrib]
       convert sub_eq_zero.mpr h using 1 <;>
         simp only [sub_eq_add_neg, spinePresentation, spinePresentationMarkedWord] <;> rfl
   | inr i =>
-      rw (config := { transparency := .default }) [sum_namedSpineRel]
+      rwd [sum_namedSpineRel]
       simp [namedSpinePresentation, NamedPresentation.matrix_marked_relator,
         NamedPresentation.matrix_marked_name, normalizedNamedSpineVector,
         namedSpineSurfaceMarkingCoefficient]

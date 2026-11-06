@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderConeCoverVertices
 public import RequestProject.CombPi2
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Finite lifted cone fans with their exact cellular boundary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -20,12 +22,12 @@ noncomputable def coneCoverFan :
     ((orderCx P).E →₀ ℤ) →ₗ[ℤ] ((uCover (orderCx Q) o).F →₀ ℤ) :=
   Finsupp.linearCombination ℤ (fun e => Finsupp.single (coneCoverFace f hf c hc k hk e) 1)
 
-noncomputable def coneCoverPath (p : List ((orderCx P).E × Bool)) :
-    List ((uCover (orderCx Q) o).E × Bool) :=
+noncomputable def coneCoverPath (p : FiniteChains.Comb.Oriented (orderCx P).E) :
+    FiniteChains.Comb.Oriented (uCover (orderCx Q) o).E :=
   p.map (fun eb => (coneCoverSurfaceEdge f hf c hc k hk eb.1, eb.2))
 
 /-- A lifted fan has the surface path boundary plus the initial radial edge minus the final one. -/
-theorem coneCoverFan_path_boundary {a b : P} {p : List ((orderCx P).E × Bool)}
+theorem coneCoverFan_path_boundary {a b : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     bdry2 _ (coneCoverFan f hf c hc k hk (pathChain p)) =
       pathChain (coneCoverPath f hf c hc k hk p) +
@@ -53,7 +55,7 @@ theorem coneCoverFan_path_boundary {a b : P} {p : List ((orderCx P).E × Bool)}
         abel
 
 /-- The radial terms cancel for a loop, giving a concrete finite universal-cover filling. -/
-theorem coneCoverFan_loop_boundary {a : P} {p : List ((orderCx P).E × Bool)}
+theorem coneCoverFan_loop_boundary {a : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) :
     bdry2 _ (coneCoverFan f hf c hc k hk (pathChain p)) =
       pathChain (coneCoverPath f hf c hc k hk p) := by
@@ -79,7 +81,7 @@ theorem coneCoverSurfaceGerm_tgt (eb : (orderCx P).E × Bool) :
   · exact coneCoverReference_edge f hf c hc k hk e
 
 /-- The fan's surface path is an actual path between the lifted reference vertices. -/
-theorem coneCoverPath_isPath {a b : P} {p : List ((orderCx P).E × Bool)}
+theorem coneCoverPath_isPath {a b : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     IsPath (uCover (orderCx Q) o).src (uCover (orderCx Q) o).tgt
       (coneCoverPath f hf c hc k hk p)
@@ -96,7 +98,7 @@ theorem coneCoverPath_isPath {a b : P} {p : List ((orderCx P).E × Bool)}
         exact ih hp
 
 /-- The fan follows the canonical actual lift of the included surface path. -/
-theorem coneCoverPath_eq_lift {a b : P} {p : List ((orderCx P).E × Bool)}
+theorem coneCoverPath_eq_lift {a b : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     coneCoverPath f hf c hc k hk p =
       uLiftPath (mapPath (orderCxMap f hf) p) (coneCoverReference f c hc k a) := by
@@ -109,7 +111,7 @@ theorem coneCoverPath_eq_lift {a b : P} {p : List ((orderCx P).E × Bool)}
   exact h
 
 /-- The explicit lifted fan fills the canonical universal-cover lift of any surface loop. -/
-theorem coneCoverFan_loop_lift_boundary {a : P} {p : List ((orderCx P).E × Bool)}
+theorem coneCoverFan_loop_lift_boundary {a : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) :
     bdry2 _ (coneCoverFan f hf c hc k hk (pathChain p)) =
       pathChain (uLiftPath (mapPath (orderCxMap f hf) p) (coneCoverReference f c hc k a)) := by

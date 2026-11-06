@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusCappedLiftedPaths
 public import RequestProject.GenusFullCubeCoverFillings
 public import RequestProject.DeckChainTransport
@@ -7,15 +8,16 @@ public import RequestProject.DavisUniversalThree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The constructed two-chain comparison from the genuine capped tree cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {X Y : Complex2.{u}}
-theorem pathChain_map_edges (f : X.E → Y.E) (p : List (X.E × Bool)) :
+theorem pathChain_map_edges (f : X.E → Y.E) (p : FiniteChains.Comb.Oriented X.E) :
     pathChain (p.map (fun eb => (f eb.1, eb.2))) = Finsupp.mapDomain f (pathChain p) := by
   induction p with
   | nil => simp

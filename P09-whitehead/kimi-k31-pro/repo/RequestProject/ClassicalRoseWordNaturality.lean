@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalRoseWordReduction
 public import RequestProject.BoundaryWordsLoopMatching
@@ -9,22 +10,23 @@ public import RequestProject.FinitePosetCycleNaturality
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual word-reading naturality and the boundary of the added filled
 circle. All statements concern the continuous attaching maps themselves.
 Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
 
 variable {A B : Type}
 
-theorem classicalRoseRead_map (f : A → B) (l : List (A × Bool)) (t : I) :
+theorem classicalRoseRead_map (f : A → B) (l : FiniteChains.Comb.Oriented A) (t : I) :
     diskRoseMap f (classicalRoseRead l t) =
       classicalRoseRead (l.map (fun p => (f p.1, p.2))) t := by
   induction l generalizing t with
@@ -39,14 +41,14 @@ theorem classicalRoseRead_map (f : A → B) (l : List (A × Bool)) (t : I) :
     · simp only [List.map_cons, classicalRoseRead, Path.trans_apply, dif_neg ht, if_neg ht]
       exact ih _
 
-theorem classicalRoseWordBoundary_map (f : A → B) (l : List (A × Bool)) :
+theorem classicalRoseWordBoundary_map (f : A → B) (l : FiniteChains.Comb.Oriented A) :
     (diskRoseMap f).comp (classicalRoseWordBoundary l) =
       classicalRoseWordBoundary (l.map (fun p => (f p.1, p.2))) := by
   apply ContinuousMap.ext
   intro z
   exact classicalRoseRead_map f l _
 
-theorem classicalRoseRead_eq_realize_apply (l : List (A × Bool))
+theorem classicalRoseRead_eq_realize_apply (l : FiniteChains.Comb.Oriented A)
     {a b : PUnit}
     (hl : IsPath (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A)) l a b) (t : I) :
     classicalRoseRead l t = realize (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A))

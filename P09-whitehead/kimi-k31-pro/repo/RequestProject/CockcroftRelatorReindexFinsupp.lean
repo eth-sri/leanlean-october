@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CockcroftRelatorReindex
 public import RequestProject.GenerationStepFinsupp
 public import RequestProject.BlockFamilyBlockwiseFinsupp
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Relator reindexing for arbitrary presentations and finitely supported
 chains. No finiteness of the generators or relators is imposed.
@@ -13,9 +19,6 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelatorReindex
 open BlockFamily

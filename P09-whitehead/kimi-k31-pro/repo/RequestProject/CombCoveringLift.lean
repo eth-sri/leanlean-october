@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 
 @[expose] public section
@@ -33,13 +34,13 @@ universe u
 
 /-! ### Endpoints of edge paths -/
 
-theorem isPath_start_eq {V E : Type*} {src tgt : E → V} {l : List (E × Bool)} {a a' b b' : V}
+theorem isPath_start_eq {V E : Type*} {src tgt : E → V} {l : FiniteChains.Comb.Oriented E} {a a' b b' : V}
     (h : IsPath src tgt l a b) (h' : IsPath src tgt l a' b') (hl : l ≠ []) : a = a' := by
   cases l with
   | nil => exact absurd rfl hl
   | cons eb l => exact h.1.trans h'.1.symm
 
-theorem isPath_endpoint_eq {V E : Type*} {src tgt : E → V} {l : List (E × Bool)} {a b b' : V}
+theorem isPath_endpoint_eq {V E : Type*} {src tgt : E → V} {l : FiniteChains.Comb.Oriented E} {a b b' : V}
     (h : IsPath src tgt l a b) (h' : IsPath src tgt l a b') : b = b' := by
   induction l generalizing a with
   | nil => exact h.symm.trans h'
@@ -98,8 +99,8 @@ theorem mapPath_att (g : X.F) : mapPath p (X.att g) = Y.att (p.onF g) := (p.att_
 /-- **Path lifting**: every edge path of the base issued from `p a` lifts to an edge path
 issued from `a`. -/
 theorem exists_liftPathAt (hcov : IsCovering p) :
-    ∀ (l : List (Y.E × Bool)) (a : X.V) (b : Y.V), IsPath Y.src Y.tgt l (p.onV a) b →
-      ∃ (m : List (X.E × Bool)) (c : X.V), IsPath X.src X.tgt m a c ∧ mapPath p m = l := by
+    ∀ (l : FiniteChains.Comb.Oriented Y.E) (a : X.V) (b : Y.V), IsPath Y.src Y.tgt l (p.onV a) b →
+      ∃ (m : FiniteChains.Comb.Oriented X.E) (c : X.V), IsPath X.src X.tgt m a c ∧ mapPath p m = l := by
   intro l
   induction l with
   | nil => intro a b _; exact ⟨[], a, rfl, rfl⟩
@@ -117,7 +118,7 @@ theorem exists_liftPathAt (hcov : IsCovering p) :
 /-- **Uniqueness of lifts**: two lifts of the same edge path with the same initial vertex
 coincide. -/
 theorem liftPath_unique (hcov : IsCovering p) :
-    ∀ (m m' : List (X.E × Bool)) (a b b' : X.V), IsPath X.src X.tgt m a b →
+    ∀ (m m' : FiniteChains.Comb.Oriented X.E) (a b b' : X.V), IsPath X.src X.tgt m a b →
       IsPath X.src X.tgt m' a b' → mapPath p m = mapPath p m' → m = m' := by
   intro m
   induction m with
@@ -141,7 +142,7 @@ theorem liftPath_unique (hcov : IsCovering p) :
 
 /-- The lift of the attaching path of a two-cell issued from a lift of its basepoint is the
 attaching path of the lifted two-cell. -/
-theorem eq_att_of_lift (hcov : IsCovering p) {A : List (X.E × Bool)} {v w : X.V} {g : X.F}
+theorem eq_att_of_lift (hcov : IsCovering p) {A : FiniteChains.Comb.Oriented X.E} {v w : X.V} {g : X.F}
     (hA : IsPath X.src X.tgt A v w) (hg : X.base g = v)
     (hmap : mapPath p A = Y.att (p.onF g)) : A = X.att g := by
   refine liftPath_unique hcov A (X.att g) v w (X.base g) hA (hg ▸ X.att_isLoop g) ?_
@@ -149,8 +150,8 @@ theorem eq_att_of_lift (hcov : IsCovering p) {A : List (X.E × Bool)} {v w : X.V
 
 /-! ### Lifting elementary cancellations -/
 
-theorem lift_cancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
-    (hm : IsPath X.src X.tgt m a c) {l' : List (Y.E × Bool)}
+theorem lift_cancels (hcov : IsCovering p) {a c : X.V} {m : FiniteChains.Comb.Oriented X.E}
+    (hm : IsPath X.src X.tgt m a c) {l' : FiniteChains.Comb.Oriented Y.E}
     (hc : Cancels Y (mapPath p m) l') :
     ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l' ∧ Htpy X a c m m' := by
   rcases hc with ⟨P, Q, x, hl, hl'⟩ | ⟨P, Q, f, hl, hl'⟩
@@ -220,8 +221,8 @@ theorem lift_cancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
       · refine Htpy.of_step ⟨hm, hpath', Or.inr ⟨M₁, Q', g, ?_, rfl⟩⟩
         rw [hAg]
 
-theorem lift_uncancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
-    (hm : IsPath X.src X.tgt m a c) {l : List (Y.E × Bool)}
+theorem lift_uncancels (hcov : IsCovering p) {a c : X.V} {m : FiniteChains.Comb.Oriented X.E}
+    (hm : IsPath X.src X.tgt m a c) {l : FiniteChains.Comb.Oriented Y.E}
     (hpath : IsPath Y.src Y.tgt l (p.onV a) (p.onV c))
     (hc : Cancels Y l (mapPath p m)) :
     ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l ∧ Htpy X a c m m' := by
@@ -288,8 +289,8 @@ theorem lift_uncancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)
 
 /-- **Homotopy lifting**: a homotopy of the projection of a lifted path is covered by a
 homotopy of the lift, with the same endpoints. -/
-theorem lift_htpy (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
-    (hm : IsPath X.src X.tgt m a c) {l' : List (Y.E × Bool)}
+theorem lift_htpy (hcov : IsCovering p) {a c : X.V} {m : FiniteChains.Comb.Oriented X.E}
+    (hm : IsPath X.src X.tgt m a c) {l' : FiniteChains.Comb.Oriented Y.E}
     (h : Htpy Y (p.onV a) (p.onV c) (mapPath p m) l') :
     ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l' ∧ Htpy X a c m m' := by
   induction h with

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CoverComplex
 public import RequestProject.CombLoopWord
 public import RequestProject.UniversalPathGauge
@@ -8,13 +9,14 @@ public import RequestProject.ZeroPi2Descent
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact Fox expansion for a word of actual lifted loops. This is an
 identity of edge chains, not merely of homology classes. Unverified source. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -74,7 +76,7 @@ include hψ in
 /-- Replace each formal generator edge by its actual lifted loop. Negative
 letters contribute the reverse path at the preceding sheet, exactly as Fox
 differentiation requires. -/
-theorem loopCoefficientChainMap_liftPath (l : List (I × Bool)) (g : FreeGroup I ⧸ N) :
+theorem loopCoefficientChainMap_liftPath (l : FiniteChains.Comb.Oriented I) (g : FreeGroup I ⧸ N) :
     loopCoefficientChainMap N p ψ (pathChain (liftPath (Nsub := N) l g)) =
       pathChain (uLiftPath (wordPath p l) (loopCoefficientVertex N ψ g)) := by
   induction l generalizing g with
@@ -108,7 +110,7 @@ variable [Fintype I] [DecidableEq I]
 include hψ in
 /-- The full coefficient vector is the projected Fox gradient of the word;
 the result keeps each individual translated generator-loop chain. -/
-theorem lifted_wordPath_fox (l : List (I × Bool)) :
+theorem lifted_wordPath_fox (l : FiniteChains.Comb.Oriented I) :
     pathChain (uLiftPath (wordPath p l) (UV.base X a)) =
       loopCoefficientChainMap N p ψ
         ((coords N I).symm (fun i => proj N (fox i (FreeGroup.mk l)))) := by

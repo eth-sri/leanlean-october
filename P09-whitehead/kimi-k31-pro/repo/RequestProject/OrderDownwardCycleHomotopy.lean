@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveCellMaps
 public import RequestProject.NerveDegree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual finite three-chains for downward order homotopies on two-cycles. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

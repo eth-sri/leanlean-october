@@ -58,8 +58,7 @@ def reducedSimplexHomeomorph (n : ℕ) :
     · exact continuous_const.sub (continuous_finset_sum _ (fun j _ =>
         (continuous_apply j).comp continuous_subtype_val))
     · exact (continuous_apply j).comp continuous_subtype_val
-  continuous_invFun := by
-    exact Continuous.subtype_mk (continuous_pi (fun i =>
+  continuous_invFun := Continuous.subtype_mk (continuous_pi (fun i =>
       (continuous_apply i.succ).comp continuous_subtype_val)) _
 
 /-- The reduced simplex is closed in its ambient finite-dimensional space. -/

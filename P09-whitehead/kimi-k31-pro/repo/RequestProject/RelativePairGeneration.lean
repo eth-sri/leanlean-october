@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RelativePairInjection
 public import RequestProject.RelativeCoreSlides
 public import RequestProject.FoxCoordinateSubstitution
 public import RequestProject.Pi2Extension
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual simultaneous rule-1 generation. Distinct pairs have disjoint
 Fox coordinates. The first coordinate of the pair at z is multiplied by
@@ -16,9 +22,6 @@ All cell and coefficient chains are finitely supported. Unverified source.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

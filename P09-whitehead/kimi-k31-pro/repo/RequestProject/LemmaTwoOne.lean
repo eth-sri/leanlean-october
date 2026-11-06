@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.GroupRingReduction
 public import RequestProject.QuotientInjectivity
 public import RequestProject.TorsionFreeGroupRing
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Lemma 2.1: injectivity detected by the quotient `Q → Q/H`
@@ -28,9 +34,6 @@ is the commutative-algebra core proved in
 `RequestProject/QuotientInjectivity.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 800000
 

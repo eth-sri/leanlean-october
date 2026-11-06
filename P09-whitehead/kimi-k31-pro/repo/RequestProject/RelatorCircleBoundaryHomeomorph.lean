@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RelatorCircleFinite
 public import RequestProject.RelatorCircleEdges
 public import RequestProject.PresPosetDimension
@@ -30,7 +31,7 @@ def cPosCyclicIndex : CPos ≃ Fin 4 where
   left_inv t := by cases t <;> rfl
   right_inv i := by fin_cases i <;> rfl
 
-variable {A J : Type} (w : J → List (A × Bool)) (j : J)
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A) (j : J)
 
 def relatorCircleProductEquiv : RelatorCircle w j ≃ Fin (w j).length × CPos where
   toFun x := (⟨x.val.2.1, x.property.2⟩, x.val.2.2)

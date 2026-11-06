@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Statement
 public import RequestProject.ClassicalCellAttachmentCW
 public import Mathlib.Analysis.Normed.Module.Connected
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Disk attachments as the actual two-complexes of the challenge. The
 old space is a closed subcomplex retaining precisely its original cells.
@@ -14,9 +20,6 @@ noncomputable section
 open scoped Classical Topology
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 

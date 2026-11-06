@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCellAttachmentHausdorff
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The classical CW structure on an actual disk attachment. The original
 cells are retained with their original dimensions and images; all added cells
@@ -14,9 +20,6 @@ noncomputable section
 open scoped Classical
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 

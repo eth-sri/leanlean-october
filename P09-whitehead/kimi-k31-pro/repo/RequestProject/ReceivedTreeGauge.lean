@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ReceivedTreeCover
 public import RequestProject.UniversalTreeGauge
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact geometric reference paths for the cover over a receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -33,7 +35,7 @@ theorem receiver_word (w : FreeGroup (NonTree T)) :
 
 include hψ in
 /-- The actual geometric endpoint changes by exactly the received tree word. -/
-theorem receiverVertex_path (g : G) {a b : K.V} {p : List (K.E × Bool)}
+theorem receiverVertex_path (g : G) {a b : K.V} {p : FiniteChains.Comb.Oriented K.E}
     (hp : IsPath K.src K.tgt p a b) :
     extendList (mapPath f p) (receiverVertex T f ψ g a) =
       receiverVertex T f ψ (g * wordValue T φ p) b := by

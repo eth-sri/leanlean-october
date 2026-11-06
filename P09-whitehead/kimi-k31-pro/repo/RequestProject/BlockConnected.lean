@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockSpinePres
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The block is connected, so it carries a spanning tree
@@ -23,9 +29,6 @@ never met.
   prescribed root, in particular rooted at a cell of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

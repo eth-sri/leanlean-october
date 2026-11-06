@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCocycleCoverCoordinates
 public import RequestProject.CombCoveringLift
 public import RequestProject.CombPerfectOneFillings
@@ -7,9 +8,10 @@ public import RequestProject.StrictNormalizedOneMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u
@@ -31,7 +33,7 @@ theorem coverGerm_sheet (e : (orderCx c.Cover).E × Bool) :
     rw [← e.property.2]
     simp only [mul_assoc, mul_inv_cancel, mul_one]
 
-theorem coverPath_sheet {a b : c.Cover} {p : List ((orderCx c.Cover).E × Bool)}
+theorem coverPath_sheet {a b : c.Cover} {p : FiniteChains.Comb.Oriented (orderCx c.Cover).E}
     (hp : IsPath (orderCx c.Cover).src (orderCx c.Cover).tgt p a b) :
     a.sheet * c.readPath (mapPath c.coverHom p) = b.sheet := by
   induction p generalizing a with

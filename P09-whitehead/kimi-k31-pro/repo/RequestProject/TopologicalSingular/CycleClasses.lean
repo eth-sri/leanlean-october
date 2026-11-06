@@ -1,12 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.SingularChainHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
@@ -100,8 +103,7 @@ theorem singularCycleClass_add (n : ℕ) (c d : Chain X (n + 1))
 theorem singularCycleClass_natural {Y : Type u} [TopologicalSpace Y] (f : C(X, Y))
     (n : ℕ) (c : Chain X (n + 1)) (hc : boundary n c = 0) :
     (HomologicalComplex.homologyMap (chainMap f) (n + 1)) (singularCycleClass n c hc) =
-      singularCycleClass n (map f (n + 1) c) (by rw [← map_boundary, hc, map_zero]) := by
-  exact shortComplexCycleClass_natural
+      singularCycleClass n (map f (n + 1) c) (by rw [← map_boundary, hc, map_zero]) := shortComplexCycleClass_natural
     ((HomologicalComplex.shortComplexFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) (n + 1)).map
       (chainMap f)) c (singularCycle_condition n hc) _
 

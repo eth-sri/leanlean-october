@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusLoops
 public import RequestProject.BlockSurfaceApplyW
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The theorem applied to the block of the article, over the closed surface of genus `q`
@@ -30,9 +35,6 @@ side `4h+1` reads `b_h`; the polygon itself is filled by the triangles of the su
   injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -45,7 +47,7 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit → FreeGroup α) (a b : ℕ → α) 
 
 /-- The words of the presentation: the chosen words of the retained relators, and the surface
 word of genus `q` for the relator of the block. -/
-noncomputable def genusW : Jr ⊕ PUnit → List (α × Bool) :=
+noncomputable def genusW : Jr ⊕ PUnit → FiniteChains.Comb.Oriented α :=
   Sum.elim (fun jr => presWords ρ (Sum.inl jr)) (fun _ => surfWord a b q)
 
 omit [NeZero q] in
@@ -68,14 +70,14 @@ noncomputable abbrev genusAtt :
 
 /-- The word read by the loop of the distinguished generator `x = (h, i)`: the letter `a_h` for
 `i = false`, the letter `b_h` for `i = true`. -/
-def genusLw (_ : PUnit) (x : ℕ × Bool) : List (α × Bool) :=
+def genusLw (_ : PUnit) (x : ℕ × Bool) : FiniteChains.Comb.Oriented α :=
   [sLet a b (4 * (x.1 % q) + (if x.2 then 1 else 0))]
 
 /-! ### The base point -/
 
 theorem genusAtt_base :
     genusAtt ρ a b q (gBase q) = ptBase (genusW ρ a b q) := by
-  rw (config := { transparency := .default }) [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
+  rwd [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
   rfl
 
 theorem genus_hcb :

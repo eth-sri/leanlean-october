@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderRoseCover
 public import RequestProject.ConeAdjBaseCover
 
@@ -8,7 +9,7 @@ public import RequestProject.ConeAdjBaseCover
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w)
 
 /-- The actual rose-preimage fibre is exactly the corresponding presentation-cover fibre. -/

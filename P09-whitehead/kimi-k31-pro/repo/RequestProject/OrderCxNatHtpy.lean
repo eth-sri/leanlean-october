@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxMonodromy
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Two monotone maps in the relation `f ≤ g` induce homotopic maps of order complexes
@@ -22,9 +27,6 @@ inclusion of its image in the base, and the natural transformation is the defini
 `FiniteChains.Comb.htpy_loop_mapPath_le` is what the filling of a relator uses.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -72,7 +74,7 @@ path under `f` followed by the edge at its end is homotopic to the edge at its s
 the image under `g`. -/
 theorem htpy_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
     (hfg : ∀ x, f x ≤ g x) :
-    ∀ (p : List ((orderCx P).E × Bool)) {u v : P},
+    ∀ (p : FiniteChains.Comb.Oriented (orderCx P).E) {u v : P},
       IsPath (orderCx P).src (orderCx P).tgt p u v →
       Htpy (orderCx Q) (f u) (g v)
         (mapPath (orderCxMap f hf) p ++ [ordPos (hfg v)])
@@ -134,7 +136,7 @@ theorem htpy_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
 /-- **The conjugation form of the naturality homotopy for a loop.**  The image of a loop under
 `g` is homotopic to the image under `f` conjugated by the edge at the basepoint. -/
 theorem htpy_loop_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
-    (hfg : ∀ x, f x ≤ g x) {u : P} {p : List ((orderCx P).E × Bool)}
+    (hfg : ∀ x, f x ≤ g x) {u : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p u u) :
     Htpy (orderCx Q) (g u) (g u) (mapPath (orderCxMap g hg) p)
       ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p ++ [ordPos (hfg u)]) := by

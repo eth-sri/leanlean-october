@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfacePoset
 
 @[expose] public section
@@ -198,32 +199,32 @@ theorem cW1_le_cI (p : Fin M) : cW hc (p + 1) ≤ cI hc p :=
 
 /-- The boundary edge at `p`, crossed from the vertex at `p` to the vertex at `p+1`. -/
 def bdEdge (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   edgeHop (cV_le_cE hc p) ++ edgeHopRev (cV1_le_cE hc p)
 
 /-- From the collar vertex at `p` to the boundary vertex at `p`. -/
 def delta (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   edgeHop (cW_le_cD hc p) ++ edgeHopRev (cV_le_cD hc p)
 
 /-- Along the collar, from `p` to `p+1`. -/
 def gam (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   edgeHop (cW_le_cF hc p) ++ edgeHopRev (cW1_le_cF hc p)
 
 /-- The diagonal, from the boundary vertex at `p` to the collar vertex at `p+1`. -/
 def gg (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   edgeHop (cV_le_cG hc p) ++ edgeHopRev (cW1_le_cG hc p)
 
 /-- From the centre to the collar vertex at `p`. -/
 def alph (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   edgeHop (cC_le_cR hc p) ++ edgeHopRev (cW_le_cR hc p)
 
 /-- From the centre to the boundary vertex at `p`. -/
 def ray (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E × Bool) :=
+    FiniteChains.Comb.Oriented (orderCx (NeSpx (cmpRel (SCell vc ec hc)))).E :=
   alph hc p ++ delta hc p
 
 theorem isPath_bdEdge (p : Fin M) :

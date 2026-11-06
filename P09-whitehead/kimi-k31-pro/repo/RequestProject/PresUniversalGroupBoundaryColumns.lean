@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresUniversalLetterGroupCoordinates
 public import RequestProject.PresUniversalRelatorGroupCoordinates
 
@@ -8,7 +9,7 @@ public import RequestProject.PresUniversalRelatorGroupCoordinates
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The genuine universal relator boundary expressed in actual group coordinates. -/

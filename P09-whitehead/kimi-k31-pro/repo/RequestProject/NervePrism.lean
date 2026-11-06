@@ -234,12 +234,7 @@ theorem of_mem_inc {l : List P} (hl : List.IsChain (· ≤ ·) l) : of l ∈ Inc
 /-- Removing an element from an increasing list leaves an increasing list. -/
 theorem isChain_append_of_isChain_append_cons {pre t : List P} {a : P}
     (h : List.IsChain (· ≤ ·) (pre ++ a :: t)) : List.IsChain (· ≤ ·) (pre ++ t) := by
-  rw [List.isChain_append] at h ⊢
-  obtain ⟨hpre, hat, hlast⟩ := h
-  rw [List.isChain_cons] at hat
-  refine ⟨hpre, hat.2, ?_⟩
-  intro x hx y hy
-  exact le_trans (hlast x hx a (by simp)) (hat.1 y hy)
+  grind
 
 /-- The boundary of an increasing list, with any increasing prefix adjoined, is an increasing
 chain. -/

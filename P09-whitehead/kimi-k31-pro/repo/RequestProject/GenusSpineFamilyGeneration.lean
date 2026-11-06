@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockFamilyB1Finsupp
 public import RequestProject.CrowellFinsupp
 public import RequestProject.GenusSpineFactorComparison
@@ -8,6 +10,10 @@ public import RequestProject.PrincipalCycleBaseChange
 public import RequestProject.GenusNormalizedSpineReference
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 Finite-support generation for the actual arbitrary family of genus spines.
@@ -24,9 +30,6 @@ Written proof terms; this source has not been compiled under the current workflo
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -109,8 +112,7 @@ def markedSpineFilling (n : ℕ) [NeZero n] :
 
 theorem markedSpineFilling_boundary (n : ℕ) [NeZero n] (i : MarkedSpineGen n) :
     (∑ m, markedSpineFilling n m * foxMatrixPres (markedSpineBeta n) i m) =
-      quotRingHom ℤ (relSub (markedSpineBeta n)) (fox i (markedSpineSurfaceWord n)) := by
-  exact normalizedMarkedSpineFilling_boundary n (normalizedSpineReference n)
+      quotRingHom ℤ (relSub (markedSpineBeta n)) (fox i (markedSpineSurfaceWord n)) := normalizedMarkedSpineFilling_boundary n (normalizedSpineReference n)
     (normalizedSpineReference_boundary n) i
 
 @[simp] theorem markedSpineFilling_named_coeff (n : ℕ) [NeZero n] (m : NamedSpineRel n) :

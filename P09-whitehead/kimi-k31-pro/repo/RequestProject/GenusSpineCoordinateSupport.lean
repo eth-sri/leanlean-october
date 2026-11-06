@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusSquareCoefficientSupport
 public import RequestProject.GenusOldCoordinateCollapse
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual recovered coordinate chains are supported on the surviving genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

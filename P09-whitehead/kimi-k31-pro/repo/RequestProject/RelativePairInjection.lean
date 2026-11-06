@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RelativeNormalizedWords
 public import RequestProject.HNNEmbedding
 public import Mathlib.GroupTheory.PushoutI
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Simultaneous rule 1 is injective for arbitrary presentations. Independent
 HNN receivers share the old group through a wide amalgam; no finite ordering
@@ -14,9 +20,6 @@ of the set of extra generators is needed. Awaiting final Lean verification.
 noncomputable section
 open scoped Classical commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 

@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PushoutUniversalEmbedding
 public import RequestProject.ZeroPi2Descent
 public import RequestProject.CellularChainMapZero
 public import RequestProject.DeckChainTransport
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Genuine copies of the acyclic cover inside the universal cover of
 K∪D L, with explicit supported H1 fillings and H2 vanishing. The same
@@ -14,9 +20,6 @@ statements hold after every actual deck translation. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v

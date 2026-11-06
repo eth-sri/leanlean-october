@@ -1,15 +1,17 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ReceivedTreeGauge
 public import RequestProject.CellularHomotopyChain
 public import RequestProject.ComponentComplex
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! A constructed cellular comparison, including the lifted attaching paths. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -45,7 +47,7 @@ theorem comparison_liftGerm (g : G) (e : K.E × Bool) :
 
 include hψ in
 /-- Every actual lifted edge path has the claimed geometric image. -/
-theorem comparison_liftPath (g : G) {a b : K.V} {p : List (K.E × Bool)}
+theorem comparison_liftPath (g : G) {a b : K.V} {p : FiniteChains.Comb.Oriented K.E}
     (hp : IsPath K.src K.tgt p a b) :
     (liftPath T φ p g).map (receiverGerm T f ψ) =
       uLiftPath (mapPath f p) (receiverVertex T f ψ g a) := by

@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.SquareSideQuotient
 public import Mathlib.Topology.Homotopy.Path
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A genuine once-around interval parametrization of the square boundary.
 Its only repeated point is the pair of interval endpoints, so based loop
@@ -15,9 +21,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 

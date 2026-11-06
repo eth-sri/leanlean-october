@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderConstructionConnected
 public import RequestProject.PresPosetNonemptyWords
 
@@ -23,7 +24,7 @@ theorem rose_isConnected : IsConnected (orderCx (Rose α)) := by
   exact (orderComponentLabel_eq_iff _ _).mp ((h x).trans (h y).symm)
 
 /-- Nonempty attaching words give connected genuine presentation poset models. -/
-theorem presPos_isConnected (w : J → List (α × Bool)) (hw : ∀ j, w j ≠ []) :
+theorem presPos_isConnected (w : J → FiniteChains.Comb.Oriented α) (hw : ∀ j, w j ≠ []) :
     IsConnected (orderCx (PresPos w)) := by
   apply coneAdj_isConnected (circSet w)
     (cylP_isConnected (aHom w) rose_isConnected)

@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.StrictOrderChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Explicit degree-two normalization homotopy in the full weak order nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

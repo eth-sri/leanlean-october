@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderPi1Surjective
 public import RequestProject.OrderIsoPi1Surjective
 public import RequestProject.CylinderPi1Surjective
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (hpos : ∀ j, 0 < (w j).length)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (hpos : ∀ j, 0 < (w j).length)
 
 include hpos in
 /-- The concrete cylinder inclusion surjects onto the presentation fundamental group. -/
@@ -26,7 +28,7 @@ theorem presCylinderInclusion_pi1_surjective (a : CylP (aHom w)) :
   obtain ⟨q, hq⟩ := presCylinder_pi1_surjective w hpos b z
   obtain ⟨p, hp⟩ := orderIso_pi1_surjective e.symm a q
   refine ⟨p, ?_⟩
-  rw (config := { transparency := .default }) [← hp] at hq
+  rwd [← hp] at hq
   have hmap : pi1Map (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h)) a p =
       pi1Map (subposetHom (coneAdjBaseSet (S := circSet w))) b
         (pi1Map (orderCxMap e.symm e.symm.monotone) a p) := by
@@ -42,7 +44,7 @@ theorem presCylinderInclusion_pi1_surjective (a : CylP (aHom w)) :
         (mapPath (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h)) r.val)
         (mapPath (subposetHom (coneAdjBaseSet (S := circSet w)))
           (mapPath (orderCxMap e.symm e.symm.monotone) r.val))
-      rw (config := { transparency := .default }) [heq]
+      rwd [heq]
       exact Htpy.refl _
   exact hmap.trans hq
 
@@ -55,7 +57,7 @@ theorem presRoseInclusion_pi1_surjective (x : Rose α) :
   obtain ⟨q, hq⟩ := presCylinderInclusion_pi1_surjective w hpos (cylIn (aHom w) x) z
   obtain ⟨p, hp⟩ := cylinder_pi1_surjective (aHom w) x q
   refine ⟨p, ?_⟩
-  rw (config := { transparency := .default }) [← hp] at hq
+  rwd [← hp] at hq
   have he : pi1Map (orderCxMap (iRose w)
       (iRose_monotone w)) x p =
       pi1Map (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h))

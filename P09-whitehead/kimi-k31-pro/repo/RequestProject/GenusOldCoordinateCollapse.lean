@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusCutCoefficientCycles
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual recovered ordinary old-spine coefficients vanish under the genus collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

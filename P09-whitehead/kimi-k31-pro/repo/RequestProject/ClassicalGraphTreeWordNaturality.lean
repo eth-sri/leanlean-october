@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ClassicalGraphTreeBoundaryWords
 public import RequestProject.BoundaryWordNaturality
 
@@ -24,7 +25,7 @@ variable {V W J K : Type} [TopologicalSpace V] [TopologicalSpace W]
 
 omit [TopologicalSpace V] [TopologicalSpace W] [DiscreteTopology V] [DiscreteTopology W]
 
-theorem treeLetters_map (l : List (J × Bool)) :
+theorem treeLetters_map (l : FiniteChains.Comb.Oriented J) :
     treeLetters s U (Comb.mapPath h l) =
       (treeLetters r T l).map (fun g => (graphNonTreeMap r s T U h ht g.1, g.2)) := by
   induction l with

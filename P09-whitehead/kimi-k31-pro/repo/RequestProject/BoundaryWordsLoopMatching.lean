@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalGraphBoundaryWords
 public import RequestProject.ContinuousEdgeWordHomotopies
@@ -7,14 +8,15 @@ public import RequestProject.SquareBoundaryLoopQuotient
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual four-side attaching map is homotopic to the descended
 continuous realization of its based edge word. This retains a homotopy
 of circle maps, not merely equality in the fundamental group. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel.BoundaryWords
 open RelativeAttachment ContinuousEdgeWords
@@ -45,7 +47,7 @@ theorem corner00Eq : squareSideMap (1, false) 0 = squareSideMap (0, false) 0 := 
 
 theorem realize_cast_eq {V E X : Type} [TopologicalSpace X]
     (src tgt : E → V) (v : V → X) (edge : ∀ e, Path (v (src e)) (v (tgt e)))
-    (l : List (E × Bool)) {a b a' b' : V}
+    (l : FiniteChains.Comb.Oriented E) {a b a' b' : V}
     (hl : Comb.IsPath src tgt l a b) (hl' : Comb.IsPath src tgt l a' b')
     (ha : a' = a) (hb : b' = b) :
     (realize src tgt v edge l hl).cast (congrArg v ha) (congrArg v hb) =

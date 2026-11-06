@@ -1,19 +1,22 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderUniversalPosetConnected
 public import RequestProject.OrderNerveOneDictionary
 public import RequestProject.ChamberQuotientAttachingRelativeChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Convert genuine universal-cover cellular chains into lifted-order nerve chains.
 The conversion preserves coefficients, boundaries, projection, and subposet support.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -30,15 +33,13 @@ noncomputable def universalNerveChain2 :
   ordNerveChain2.comp (chain2 uOrderHomInv)
 
 theorem uOrderHomInv_edge_projection (e : UE (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onE (uOrderHomInv.onE e) = e.1.2 := by
-  exact congrArg (fun e : UE (orderCx P) a => e.1.2)
+    (orderCxMap uOrderEnd uOrderEnd_monotone).onE (uOrderHomInv.onE e) = e.1.2 := congrArg (fun e : UE (orderCx P) a => e.1.2)
     (homInv_onE_apply uOrderHom Function.bijective_id
       ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
       ⟨uOrderFace_injective, uOrderFace_surjective⟩ e)
 
 theorem uOrderHomInv_face_projection (t : UF (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onF (uOrderHomInv.onF t) = t.1.2 := by
-  exact congrArg (fun t : UF (orderCx P) a => t.1.2)
+    (orderCxMap uOrderEnd uOrderEnd_monotone).onF (uOrderHomInv.onF t) = t.1.2 := congrArg (fun t : UF (orderCx P) a => t.1.2)
     (homInv_onF_apply uOrderHom Function.bijective_id
       ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
       ⟨uOrderFace_injective, uOrderFace_surjective⟩ t)

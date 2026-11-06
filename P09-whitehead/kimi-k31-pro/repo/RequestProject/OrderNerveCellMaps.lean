@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderPosetCoverThree
 public import RequestProject.UnivCoverIncl
 public import RequestProject.OrderNerveDecoding
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Naturality of actual cellular order chains in the full nerve. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

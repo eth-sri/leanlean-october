@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockSpineSubst
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # From a surface filling to the hypothesis `hfill` of the substitution
@@ -36,9 +42,6 @@ its boundary being that product of commutators.
   attaching map and the filling of the surface relator.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

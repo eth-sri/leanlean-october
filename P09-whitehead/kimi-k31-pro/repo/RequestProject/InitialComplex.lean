@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Cockcroft
 public import RequestProject.AbelianElimination
 public import RequestProject.FoxNaturality
@@ -7,6 +9,10 @@ public import RequestProject.InitialPair
 public import RequestProject.Pi2Dictionary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The initial Cockcroft pair `D ⊂ Y_D` of Lemma 3.1
@@ -35,9 +41,6 @@ augmentation, and the cycle equations at the generators `x_i` then say that the 
 augmentation vector is killed by `M`, hence is zero because `D` is acyclic.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

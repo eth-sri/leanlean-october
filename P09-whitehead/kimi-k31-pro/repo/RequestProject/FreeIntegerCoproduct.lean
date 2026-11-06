@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 public import Mathlib.Algebra.Category.ModuleCat.Products
 public import Mathlib.LinearAlgebra.DFinsupp
@@ -7,9 +9,10 @@ public import Mathlib.Algebra.Category.ModuleCat.Colimits
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains
 open CategoryTheory CategoryTheory.Limits

@@ -1,12 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationMapCoordinates
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -20,14 +23,13 @@ theorem orderNerveRealizationSimplex_subtype {P : Type} [PartialOrder P] (A : Se
       (orderNerveRealizationSimplex A (orderNerveSimplexSubtype A s hs) z) =
       orderNerveRealizationSimplex P s z := by
   have ht : (nerveMap (show Monotone (Subtype.val : A → P) from
-      fun _ _ h => h).functor).app _ (orderNerveSimplexSubtype A s hs) = s := by
-    exact CategoryTheory.Functor.ext (fun _ => rfl)
+      fun _ _ h => h).functor).app _ (orderNerveSimplexSubtype A s hs) = s := CategoryTheory.Functor.ext (fun _ => rfl)
   have he := congrArg (fun k => k z)
     (orderNerveRealizationSimplex_natural (Subtype.val : A → P)
       (fun _ _ h => h) (orderNerveSimplexSubtype A s hs))
   change orderNerveRealizationMap _ _ (orderNerveRealizationSimplex A _ z) =
     orderNerveRealizationSimplex P ((nerveMap _).app _ _) z at he
-  rw (config := { transparency := .default }) [ht] at he
+  rwd [ht] at he
   exact he
 
 /-- Induced-subposet realization inclusions are closed maps in the actual CW topology. -/
@@ -39,7 +41,7 @@ theorem orderNerveRealizationSubtype_isClosedMap {P : Type} [PartialOrder P] (A 
     (f '' B) ?_).mpr
   · intro n j
     change IsClosed (f '' B ∩ orderNerveCharacteristicMap j.val '' Metric.closedBall 0 1)
-    rw (config := { transparency := .default }) [orderNerveCharacteristicMap_closedCell]
+    rwd [orderNerveCharacteristicMap_closedCell]
     haveI : CompactSpace (SimplexCategory.toTop.obj (SimplexCategory.mk n)) :=
       inferInstanceAs (CompactSpace (ULift.{0} (Convexity.StdSimplex ℝ (Fin (n + 1)))))
     let t := orderNerveSimplexSubtype A j.val.val j.property
@@ -56,13 +58,13 @@ theorem orderNerveRealizationSubtype_isClosedMap {P : Type} [PartialOrder P] (A 
           rw [orderNerveRealizationSimplex_subtype]
           exact hzx.trans hxy.symm
         change orderNerveRealizationSimplex A t z ∈ B
-        rw (config := { transparency := .default }) [orderNerveRealizationMap_injective (Subtype.val : A → P)
+        rwd [orderNerveRealizationMap_injective (Subtype.val : A → P)
           (fun _ _ h => h) Subtype.val_injective hz]
         exact hy
       · rintro ⟨z, hz, rfl⟩
         exact ⟨⟨orderNerveRealizationSimplex A t z, hz,
           orderNerveRealizationSimplex_subtype A j.val.val j.property z⟩, ⟨z, rfl⟩⟩
-    rw (config := { transparency := .default }) [he]
+    rwd [he]
     exact ((hB.preimage (orderNerveRealizationSimplex A t).hom.continuous).isCompact.image
       (orderNerveRealizationSimplex P j.val.val).hom.continuous).isClosed
   · rintro x ⟨y, _, rfl⟩

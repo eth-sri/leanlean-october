@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.StrictTopLinkChains
 public import RequestProject.PresConeIntervals
 public import RequestProject.PosetCoverUpTransform
@@ -9,7 +10,7 @@ public import RequestProject.PosetCoverUpTransform
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
 
 theorem presPos_apex_maximal (j : J) (p : PresPos w) (hp : apexOf w j ≤ p) :
     p = apexOf w j := by

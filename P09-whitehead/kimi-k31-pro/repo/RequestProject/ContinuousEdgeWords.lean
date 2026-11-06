@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CellComplex
 public import RequestProject.OpenCoverPathReplacement
 
@@ -25,7 +26,7 @@ def germPath (g : E × Bool) : Path (v (Comb.germSrc src tgt g))
   | (e, false) => (edge e).symm
 
 /-- Read a genuinely composable finite list as a continuous path. -/
-def realize : (l : List (E × Bool)) → {a b : V} →
+def realize : (l : FiniteChains.Comb.Oriented E) → {a b : V} →
     Comb.IsPath src tgt l a b → Path (v a) (v b)
   | [], a, _, h => (Path.refl (v a)).cast rfl (congrArg v h.symm)
   | g :: l, _, _, h =>
@@ -34,7 +35,7 @@ def realize : (l : List (E × Bool)) → {a b : V} →
 
 @[simp] theorem realize_nil (a : V) : realize src tgt v edge [] (a := a) rfl = Path.refl (v a) := rfl
 
-theorem realize_append (l m : List (E × Bool)) {a b c : V}
+theorem realize_append (l m : FiniteChains.Comb.Oriented E) {a b c : V}
     (hl : Comb.IsPath src tgt l a b) (hm : Comb.IsPath src tgt m b c) :
     Path.Homotopic
       ((realize src tgt v edge l hl).trans (realize src tgt v edge m hm))
@@ -52,7 +53,7 @@ theorem realize_append (l m : List (E × Bool)) {a b c : V}
       ((Path.Homotopic.refl _).hcomp (ih hl.2))
 
 def IsWord {a b : V} (p : Path (v a) (v b)) : Prop :=
-  ∃ l : List (E × Bool), ∃ hl : Comb.IsPath src tgt l a b,
+  ∃ l : FiniteChains.Comb.Oriented E, ∃ hl : Comb.IsPath src tgt l a b,
     Path.Homotopic p (realize src tgt v edge l hl)
 
 theorem isWord_refl (a : V) : IsWord src tgt v edge (Path.refl (v a)) :=

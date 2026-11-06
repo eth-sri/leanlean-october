@@ -1,15 +1,17 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusCappedRootedGauge
 public import RequestProject.GenusCappedSpine
 public import RequestProject.TreeCover
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact lifted-path comparison between the capped tree cover and the full cube cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -52,7 +54,7 @@ theorem rootedCapped_liftGerm (g : PresGroup (cappedSpinePresentation q))
 
 /-- The comparison sends the entire genuine tree-cover lift to the actual path-class lift. -/
 theorem rootedCapped_liftPath (g : PresGroup (cappedSpinePresentation q))
-    {a b : (markedSpineCx q).V} {p : List ((markedSpineCx q).E × Bool)}
+    {a b : (markedSpineCx q).V} {p : FiniteChains.Comb.Oriented (markedSpineCx q).E}
     (hp : IsPath (markedSpineCx q).src (markedSpineCx q).tgt p a b) :
     (SpanningTree.liftK (cappedSpineTree q) (relSub (cappedSpinePresentation q)) p g).map
       (rootedCappedEdgeGerm q) =

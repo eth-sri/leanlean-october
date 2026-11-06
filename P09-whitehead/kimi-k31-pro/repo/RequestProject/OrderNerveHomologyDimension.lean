@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNervePositiveHomologyIso
 public import Mathlib.AlgebraicTopology.DoldKan.HomotopyEquivalence
 public import Mathlib.AlgebraicTopology.DoldKan.Degeneracies
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual singular homology vanishes above the dimension of the order nerve. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory CategoryTheory.Category CategoryTheory.Limits
@@ -26,10 +29,10 @@ theorem freeSSet_PInfty_eq_zero (X : SSet) (d n : ℕ)
   change ((DoldKan.PInfty (X := X ⋙ ModuleCat.free ℤ)).f n).hom c = 0
   induction c using Finsupp.induction_linear with
   | zero => exact map_zero _
-  | add c e hc he => rw (config := { transparency := .default }) [map_add, hc, he, add_zero]
+  | add c e hc he => rwd [map_add, hc, he, add_zero]
   | single s r =>
     have hs : s ∈ X.degenerate n := by
-      rw (config := { transparency := .default }) [X.degenerate_eq_top_of_hasDimensionLT d n hn]
+      rwd [X.degenerate_eq_top_of_hasDimensionLT d n hn]
       trivial
     obtain ⟨m, hm, θ, y, rfl⟩ := hs
     have hθ : ¬ Mono θ := by
@@ -47,15 +50,15 @@ theorem freeSSet_homology_isZero_of_dimension (X : SSet) (d n : ℕ)
   let p : K ⟶ K := DoldKan.PInfty
   have hp : p.f n = 0 := freeSSet_PInfty_eq_zero X d n hn
   have hz : HomologicalComplex.homologyMap p n = 0 := by
-    rw (config := { transparency := .default }) [← cancel_epi (K.homologyπ n), HomologicalComplex.homologyπ_naturality,
+    rwd [← cancel_epi (K.homologyπ n), HomologicalComplex.homologyπ_naturality,
       comp_zero]
     have hc : HomologicalComplex.cyclesMap p n = 0 := by
-      rw (config := { transparency := .default }) [← cancel_mono (K.iCycles n), HomologicalComplex.cyclesMap_i, hp,
+      rwd [← cancel_mono (K.iCycles n), HomologicalComplex.cyclesMap_i, hp,
         zero_comp, comp_zero]
-    rw (config := { transparency := .default }) [hc, zero_comp]
+    rwd [hc, zero_comp]
   apply (IsZero.iff_id_eq_zero _).mpr
   have hh := (DoldKan.homotopyPInftyToId (X ⋙ ModuleCat.free ℤ)).homologyMap_eq n
-  rw (config := { transparency := .default }) [HomologicalComplex.homologyMap_id] at hh
+  rwd [HomologicalComplex.homologyMap_id] at hh
   exact hh.symm.trans hz
 
 /-- The dimension bound controls the precise singular homology used in Challenge. -/

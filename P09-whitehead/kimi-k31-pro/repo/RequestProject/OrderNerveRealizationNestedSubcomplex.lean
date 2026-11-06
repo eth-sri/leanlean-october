@@ -1,12 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationSubtypeCells
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -21,7 +24,7 @@ theorem orderNerveRealizationMap_comp {P Q R : Type}
       orderNerveRealizationMap (g ∘ f) (hg.comp hf) x := by
   change (SSet.toTop.map (nerveMap hf.functor) ≫
     SSet.toTop.map (nerveMap hg.functor)) x = _
-  rw (config := { transparency := .default }) [← Functor.map_comp]
+  rwd [← Functor.map_comp]
   rfl
 
 end FiniteChains.Comb

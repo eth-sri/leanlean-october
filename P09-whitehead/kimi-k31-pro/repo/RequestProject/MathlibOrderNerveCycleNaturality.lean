@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.MathlibOrderNerveNaturality
 public import RequestProject.MathlibOrderNerveCycles
 public import RequestProject.OrderNerveH2Maps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]

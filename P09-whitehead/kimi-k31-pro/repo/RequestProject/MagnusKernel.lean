@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CoverChainComplex
 public import RequestProject.SchreierTransversal
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The Magnus/Blanchfield theorem: the kernel of the Fox vector map is `[Ñ, Ñ]`
@@ -29,9 +35,6 @@ The proof is the elementary one, via the Schreier transversal `T` of
   be injective on `Ñ/[Ñ, Ñ]` (`FiniteChains.foxVec_eq_zero_iff`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

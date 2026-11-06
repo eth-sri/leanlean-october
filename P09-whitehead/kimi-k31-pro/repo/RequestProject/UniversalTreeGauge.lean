@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.UniversalPathGauge
 public import RequestProject.TreePresentation
 public import RequestProject.ZeroPi2Descent
@@ -19,7 +20,7 @@ theorem mappedTreeReference_end (a : K.V) :
   endV_extendList (isPath_mapPath f (T.treePath_isPath a))
 
 /-- The geometric comparison reference paths have exactly the translation read by the tree. -/
-theorem mappedTreeReference_path {a b : K.V} {p : List (K.E × Bool)}
+theorem mappedTreeReference_path {a b : K.V} {p : FiniteChains.Comb.Oriented K.E}
     (hp : IsPath K.src K.tgt p a b) :
     extendList (mapPath f p) (mappedTreeReference T f a) =
       deckV (pi1Map f T.root (freeToPi1 T (pathWord T p)))

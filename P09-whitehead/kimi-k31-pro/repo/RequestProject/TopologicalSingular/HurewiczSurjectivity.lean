@@ -20,8 +20,7 @@ noncomputable def pi2CycleClassLinear (x : X) :
     Additive (HomotopyGroup (Fin 2) X x) →ₗ[ℤ] (complex X).homology 2 where
   toFun := pi2CycleClassAddHom x
   map_add' := (pi2CycleClassAddHom x).map_add
-  map_smul' r a := by
-    exact (map_zsmul (pi2CycleClassAddHom x) r a).trans
+  map_smul' r a := (map_zsmul (pi2CycleClassAddHom x) r a).trans
       (int_smul_eq_zsmul (inferInstance : Module ℤ ((complex X).homology 2)) r _).symm
 
 variable [SimplyConnectedSpace X]

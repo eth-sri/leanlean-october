@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PresentationInclusionFinsupp
 public import RequestProject.RelativeNormalizedRestrictions
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual chain squares for restricted genus replacement. The filling
 coefficients are the fixed marked-spine coefficients, transported by the
@@ -14,9 +20,6 @@ actual inclusion of stage groups. No commuting-square hypothesis is used.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.BlockFamily
 

@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.NerveUpperRetraction
 public import RequestProject.PosetCoverUpTransform
 public import RequestProject.PosetCoverRestriction
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Deleting the whole inverse image of a free face preserves finite chain homology. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

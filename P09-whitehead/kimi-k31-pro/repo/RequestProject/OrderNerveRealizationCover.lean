@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationSubtypeHomeomorph
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A family of induced subposets containing every simplex realizes as
 an actual quotient cover, even for infinitely many pieces. This is a
 weak-topology assertion, not a finite closed-cover argument. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology

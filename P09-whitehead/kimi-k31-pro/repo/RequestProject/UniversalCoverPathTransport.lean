@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi2
 public import RequestProject.CombPi1Conj
 
@@ -20,7 +21,7 @@ namespace FiniteChains.Comb
 
 universe u
 
-variable {K : Complex2.{u}} {x y : K.V} {a : List (K.E × Bool)}
+variable {K : Complex2.{u}} {x y : K.V} {a : FiniteChains.Comb.Oriented K.E}
   (ha : IsPath K.src K.tgt a x y)
 
 /-- Prefix the actual path from `x` to `y` to a path starting at `y`. -/
@@ -101,7 +102,7 @@ theorem liftGerm_pathTransportV {c : UV K y} {eb : K.E × Bool}
       exact Prod.ext (extend_pathTransportV ha (e, false) c) rfl
 
 theorem uLiftPath_pathTransportV :
-    ∀ (p : List (K.E × Bool)) (c : UV K y) (z : K.V),
+    ∀ (p : FiniteChains.Comb.Oriented K.E) (c : UV K y) (z : K.V),
       IsPath K.src K.tgt p (endV c) z →
         uLiftPath p (pathTransportV ha c) =
           (uLiftPath p c).map (fun eb => (pathTransportE ha eb.1, eb.2)) := by

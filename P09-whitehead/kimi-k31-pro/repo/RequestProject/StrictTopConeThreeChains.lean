@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.StrictTopConeChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Genuine strict tetrahedron fans, with their alternating boundary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -30,8 +33,8 @@ theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
   simp only [pathChain, strictOrderCx, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
   simp [map_add, map_neg, Finsupp.linearCombination_single, strictOrdTetBoundary, strictTopConeTriangleTetrahedron, strictTopConeEdgeChain, strictTopConeEdgeTriangle,
     bdry2, strictOrderCx, strictOrderCxMap, pathChain]
-  rw (config := { transparency := .default }) [map_add, map_add, map_neg]
-  rw (config := { transparency := .default }) [Finsupp.linearCombination_single,
+  rwd [map_add, map_add, map_neg]
+  rwd [Finsupp.linearCombination_single,
     Finsupp.linearCombination_single, Finsupp.linearCombination_single]
   simp only [one_smul]
   abel

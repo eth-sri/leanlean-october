@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ChamberQuotient
 public import RequestProject.OrderPosetCovering
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The projection `Z → Q = Z/Γ` is a covering
@@ -25,9 +30,6 @@ projection identifies the cells above `z` with the cells above `zProj z`, and li
   supplied by the construction, not assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -294,7 +296,7 @@ theorem isCovering_orderCxMap_zProj :
 
 omit [Fintype V] in
 theorem mapPath_zProj_zNew (w : {w : CayGroup A // IsGamma A w})
-    (l : List ((orderCx X).E × Bool)) :
+    (l : FiniteChains.Comb.Oriented (orderCx X).E) :
     Comb.mapPath (orderCxMap (zProj (A := A) (X := X) (att := att)) zProj_monotone)
         (Comb.mapPath (orderCxMap (zNew (A := A) (X := X) (M := IsGamma A) (att := att) w)
           (zNew_monotone w)) l)

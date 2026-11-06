@@ -80,12 +80,10 @@ theorem rightRectangle_horizontal_boundary (a v : I) (hv : v = 0 ∨ v = 1) (z :
   simpa [rightRectangle, cubeEdge, Whitehead.squareEdge] using hv
 
 theorem leftRectangle_outer_boundary (a : I) (z : Domain 1) :
-    leftRectangle a (cubeEdge 0 0 z) ∈ Cube.boundary (Fin 2) := by
-  exact ⟨0, Or.inl (by simp [leftRectangle, cubeEdge, Whitehead.squareEdge])⟩
+    leftRectangle a (cubeEdge 0 0 z) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inl (by simp [leftRectangle, cubeEdge, Whitehead.squareEdge])⟩
 
 theorem rightRectangle_outer_boundary (a : I) (z : Domain 1) :
-    rightRectangle a (cubeEdge 0 1 z) ∈ Cube.boundary (Fin 2) := by
-  exact ⟨0, Or.inr (by simp [rightRectangle, cubeEdge, Whitehead.squareEdge])⟩
+    rightRectangle a (cubeEdge 0 1 z) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inr (by simp [rightRectangle, cubeEdge, Whitehead.squareEdge])⟩
 
 theorem leftRectangle_zero_boundary (z : Fin 2 → I) :
     leftRectangle 0 z ∈ Cube.boundary (Fin 2) :=

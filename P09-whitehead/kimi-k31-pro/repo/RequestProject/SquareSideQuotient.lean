@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SquareBoundary
 public import Mathlib.Topology.ContinuousMap.Compact
 public import Mathlib.Topology.Separation.Hausdorff
@@ -7,14 +9,15 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The four closed sides give an actual compact quotient presentation
 of the square boundary. Maps and homotopies on the sides descend whenever
 their values agree at the corners. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped Topology unitInterval Classical

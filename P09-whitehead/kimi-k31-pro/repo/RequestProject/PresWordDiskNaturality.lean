@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresClassicalDiskComparison
 public import RequestProject.RelatorCircleBoundaryNaturality
 public import RequestProject.DiskRoseMaps
@@ -15,7 +16,7 @@ namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb RelativeAttachment ClassicalGraphModel
 open scoped Topology
 
-variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
+variable {A B J K : Type} {w : J → FiniteChains.Comb.Oriented A} {v : K → FiniteChains.Comb.Oriented B}
   (h : PresWordEmbedding w v) (hw : ∀ j, w j ≠ []) (hv : ∀ k, v k ≠ [])
 
 theorem actualPresWordAttaching_natural (z : BoundaryFamily J (Fin 2 → ℝ)) :

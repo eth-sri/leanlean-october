@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveCoverLiftGluing
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual continuous comparison from the reconstructed poset cover
 to the given covering space, commuting with the projection. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Simplicial Topology
@@ -41,19 +44,19 @@ theorem localComparison_projection (v : Cover p hp)
     p (localComparison p hp v z) = realizedProjection p hp
       (orderNervePieceMap (orderNerveVertexStar (Cover p hp)) v z) := by
   change p (starLift p hp v _) = _
-  rw (config := { transparency := .default }) [starLift_projection]
+  rwd [starLift_projection]
   change orderNerveRealizationMap Subtype.val _
     (orderNerveRealizationMap (starProjection p hp v) _ z) =
     orderNerveRealizationMap (projection p hp) _
       (orderNerveRealizationMap Subtype.val _ z)
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
+  rwd [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
   rfl
 
 theorem localComparison_vertex (v : Cover p hp)
     (w : orderNerveVertexStar (Cover p hp) v) :
     localComparison p hp v (orderNerveRealizationVertex w) = point p hp w.val := by
   change starLift p hp v (orderNerveRealizationMap _ _ _) = _
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_vertex]
+  rwd [orderNerveRealizationMap_vertex]
   exact starLift_vertex p hp v w.val w.property
 
 theorem vertexStars_cover_simplices (S : Type) [PartialOrder S]
@@ -78,9 +81,9 @@ theorem realizationComparison_vertex (v : Cover p hp) :
   have he : orderNervePieceMap (orderNerveVertexStar (Cover p hp)) v
       (orderNerveRealizationVertex w) = orderNerveRealizationVertex v :=
     orderNerveRealizationMap_vertex _ _ w
-  rw (config := { transparency := .default }) [← he]
+  rwd [← he]
   change orderNerveCoverLift p hp _ _ _ _ _ _ _ _ = _
-  rw (config := { transparency := .default }) [orderNerveCoverLift_piece]
+  rwd [orderNerveCoverLift_piece]
   exact localComparison_vertex p hp v w
 
 end FiniteChains.Comb.TopologicalOrderCover

@@ -1,18 +1,20 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderCycles
 public import RequestProject.PosetCoverUpTransform
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   {f : P → CylBase w} (hf : IsPosetCover f)
 include hf
 

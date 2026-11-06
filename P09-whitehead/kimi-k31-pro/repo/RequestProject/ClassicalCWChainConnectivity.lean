@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCWChainDiskNaturality
 public import RequestProject.GraphWordDiskConnectedReflection
 public import RequestProject.TopologicalAcyclicCoverHomotopy
@@ -7,14 +9,15 @@ public import RequestProject.TreeChain
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Connectedness and compatible spanning trees for the simultaneous
 original-cell models. The input is exactly connectedness of the given
 CW subcomplexes. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPresPi1
 
 @[expose] public section
@@ -47,7 +48,7 @@ omit [DecidableEq α] in
   simp [expVec]
 
 omit [DecidableEq α] in
-theorem pathChain_append (l l' : List (α × Bool)) :
+theorem pathChain_append (l l' : FiniteChains.Comb.Oriented α) :
     pathChain (l ++ l') = pathChain l + pathChain l' := by
   simp [pathChain]
 
@@ -68,7 +69,7 @@ theorem expVec_single_germ (x : α × Bool) :
 omit [DecidableEq α] in
 /-- The exponent-sum vector of a word is the one-chain carried by the edge path spelling
 it. -/
-theorem expVec_pathChain (L : List (α × Bool)) :
+theorem expVec_pathChain (L : FiniteChains.Comb.Oriented α) :
     expVec (FreeGroup.mk L) = Multiplicative.ofAdd (pathChain L) := by
   induction L with
   | nil => simp [expVec, pathChain]

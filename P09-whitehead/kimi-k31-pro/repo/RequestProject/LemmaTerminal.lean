@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.RuleOneComposite
 public import RequestProject.WedgeSigma
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Lemma 3.10: the terminal extension `Q`
@@ -57,9 +63,6 @@ The collapse isomorphism and (B3) are exactly the inputs that Lemma 3.10 imports
 Theorem 3.2, just as (B2) is the one input carried by the moves of Lemma 3.9.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -220,53 +223,5 @@ omit [Fintype α] [DecidableEq J] [DecidableEq L] in
     (addRelsMor ρ ν).hom (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 end AddRels
-
-/-! ### The terminal extension of a point of the space of presentations -/
-
-namespace PresPoint
-
-end PresPoint
-
-/-! ### Lemma 3.10 -/
-
-section Terminal
-
-variable {P Q : PresPoint.{u}} {L : Type u} [Fintype L] [DecidableEq L]
-
-end Terminal
-
-/-! ### Cockcroftness of the terminal extension -/
-
-section Collapse
-
-variable {γ M : Type u} [Fintype γ] [DecidableEq γ] [Fintype M] {σ : M → FreeGroup γ}
-variable {S : Type u} [Fintype S] [DecidableEq S] {β K : S → Type u}
-  [∀ s, Fintype (β s)] [∀ s, DecidableEq (β s)] [∀ s, Fintype (K s)]
-
-end Collapse
-
-/-! ### Lemma 3.10 -/
-
-section Statement
-
-variable {P Q : PresPoint.{u}} {L : Type u} [Fintype L] [DecidableEq L]
-variable {S : Type u} [Fintype S] [DecidableEq S] {β K : S → Type u}
-  [∀ s, Fintype (β s)] [∀ s, DecidableEq (β s)] [∀ s, Fintype (K s)]
-
-end Statement
-
-/-! ### Rule 1 with one extra generator: the terminal extension without any hypothesis -/
-
-section RuleOne
-
-variable (P : PresPoint.{u}) (zg : P.gens)
-
-end RuleOne
-
-/-! ### The hypotheses are satisfiable -/
-
-section Example
-
-end Example
 
 end FiniteChains

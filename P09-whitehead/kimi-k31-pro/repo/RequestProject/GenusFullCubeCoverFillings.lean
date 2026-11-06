@@ -1,15 +1,17 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusFullCubeMarking
 public import RequestProject.CombUniversalCover
 public import RequestProject.CellularHomotopyChain
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Genuine cap fillings in the path-class universal cover of the full cube quotient. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -17,7 +19,7 @@ variable {X : Complex2.{u}} {a : X.V}
 
 /-- A null-homotopic loop has a finite chain filling after lifting at any cover vertex. -/
 theorem exists_lifted_boundary_of_null {v : UV X a}
-    {p : List (X.E × Bool)}
+    {p : FiniteChains.Comb.Oriented X.E}
     (hp : IsPath X.src X.tgt p (endV v) (endV v))
     (hn : Htpy X (endV v) (endV v) p []) :
     ∃ c : (uCover X a).F →₀ ℤ,

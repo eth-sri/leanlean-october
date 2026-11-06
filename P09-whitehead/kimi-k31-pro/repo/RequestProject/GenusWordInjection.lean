@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusFiniteMarking
 public import RequestProject.SurfaceWordExpansion
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Structural group injectivity for substitution of arbitrary words in a finite genus block. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 

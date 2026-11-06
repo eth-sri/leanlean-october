@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.Pi2GenerationDescent
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Change the base vertex in an actual spherical generation statement.
 Both directions are genuine universal-cover path transports. Unverified source. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
-variable {X : Complex2.{u}} {x y : X.V} {p : List (X.E × Bool)}
+variable {X : Complex2.{u}} {x y : X.V} {p : FiniteChains.Comb.Oriented X.E}
 
 theorem shiftV_reverse_cancel (hp : IsPath X.src X.tgt p x y) (v : UV X x) :
     shiftV hp (shiftV (isPath_revPath hp) v) = v := by

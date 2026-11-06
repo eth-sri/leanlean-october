@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.LiftedHomotopyChains
 public import RequestProject.GenusEquivariantCapFillings
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Genuine old-block cover chains correcting the surviving-spine marking to its surface loop. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -49,7 +52,7 @@ theorem exists_lifted_marking_correction (x : Fin q × Bool) :
         (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
     simp only [mapPath, List.map_map]
     rfl
-  rw (config := { transparency := .default }) [he1, he2] at hd
+  rwd [he1, he2] at hd
   exact hd
 
 noncomputable def liftedMarkingCorrection (x : Fin q × Bool) :

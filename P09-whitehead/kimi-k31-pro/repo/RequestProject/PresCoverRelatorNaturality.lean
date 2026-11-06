@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCoverConeCircleProjection
 public import RequestProject.PosetCoverTopTriangle
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 universe u
@@ -27,7 +29,7 @@ namespace FiniteChains.PresModel
 open Comb
 universe u
 variable {α J P Q : Type u} [PartialOrder P] [PartialOrder Q]
-  (w : J → List (α × Bool)) (f : P → PresPos w) (hf : IsPosetCover f)
+  (w : J → FiniteChains.Comb.Oriented α) (f : P → PresPos w) (hf : IsPosetCover f)
   (hpos : ∀ j, 0 < (w j).length)
 
 /-- The distinguished coordinate triangle is the unique triangle over its actual

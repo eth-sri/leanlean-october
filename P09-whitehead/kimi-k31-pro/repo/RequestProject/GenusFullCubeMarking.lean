@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SurfaceFullCubeFilling
 public import RequestProject.GenusSpinePresentation
 public import RequestProject.ZeroPi2Descent
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual surviving-spine marking contracts in the full cube quotient. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -40,10 +43,10 @@ theorem markedSpineToFullCube_mark_null (x : Fin q × Bool) :
         (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
     simp only [mapPath, List.map_map]
     rfl
-  rw (config := { transparency := .default }) [he] at h
+  rwd [he] at h
   have hh := h.trans hf
   unfold markedSpineToFullCube
-  rw (config := { transparency := .default }) [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
+  rwd [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
   exact hh
 
 noncomputable def spineFreeToFullCube :
@@ -62,20 +65,20 @@ theorem spineFreeToFullCube_capped_rel
       change pi1Map (markedSpineToFullCube q) _
         (SpanningTree.freeToPi1 (markedSpineTree q)
           (SpanningTree.treeRel (markedSpineTree q) f)) = 1
-      rw (config := { transparency := .default }) [SpanningTree.freeToPi1_treeRel, map_one]
+      rwd [SpanningTree.freeToPi1_treeRel, map_one]
   | inr x =>
       change pi1Map (markedSpineToFullCube q) _
         (SpanningTree.freeToPi1 (markedSpineTree q)
           (SpanningTree.pathWord (markedSpineTree q) (markedSpineLoop q x).1)) = 1
-      rw (config := { transparency := .default }) [SpanningTree.freeToPi1_pathWord _ (markedSpineLoop q x).2]
+      rwd [SpanningTree.freeToPi1_pathWord _ (markedSpineLoop q x).2]
       change pi1Map (markedSpineToFullCube q) _
         (pi1Conj ((markedSpineTree q).treePath_isPath (markedSpineBase q))
           (Pi1.mk (markedSpineLoop q x))) = 1
-      rw (config := { transparency := .default }) [pi1Map_pi1Conj]
+      rwd [pi1Map_pi1Conj]
       have hz : pi1Map (markedSpineToFullCube q) (markedSpineBase q)
           (Pi1.mk (markedSpineLoop q x)) = 1 :=
         Quotient.sound (markedSpineToFullCube_mark_null q x)
-      rw (config := { transparency := .default }) [hz, map_one]
+      rwd [hz, map_one]
 
 /-- The genuine capped presentation maps to the full-cube fundamental group. -/
 noncomputable def cappedPresentationToFullCube :

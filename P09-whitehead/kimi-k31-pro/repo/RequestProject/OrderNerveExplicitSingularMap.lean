@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationSubcomplex
 public import RequestProject.TopologicalSingular.MathlibComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory Opposite AlgebraicTopology
@@ -20,7 +23,7 @@ theorem orderNerveRealizationUnit_simplex {P : Type} [PartialOrder P]
     ((orderNerveRealizationUnit P).app (op n) s).down =
       orderNerveRealizationSimplex P s := by
   unfold orderNerveRealizationUnit sSetTopAdj
-  rw (config := { transparency := .default }) [Presheaf.uliftYonedaAdjunction_unit_app_app]
+  rwd [Presheaf.uliftYonedaAdjunction_unit_app_app]
   rfl
 
 /-- The actual continuous singular simplex associated with an order simplex. -/
@@ -32,8 +35,7 @@ noncomputable def orderNerveSingularSimplex {P : Type} [PartialOrder P]
 
 theorem orderNerveSingularSimplex_apply {P : Type} [PartialOrder P]
     {n : ℕ} (s : (nerve P).obj (op ⦋n⦌)) (z : Domain n) :
-    orderNerveSingularSimplex s z = orderNerveRealizationSimplex P s (ULift.up ((simplexCoordinates n).symm z)) := by
-  exact congrArg (fun f : SimplexCategory.toTop.obj ⦋n⦌ ⟶ orderNerveRealization P =>
+    orderNerveSingularSimplex s z = orderNerveRealizationSimplex P s (ULift.up ((simplexCoordinates n).symm z)) := congrArg (fun f : SimplexCategory.toTop.obj ⦋n⦌ ⟶ orderNerveRealization P =>
     f (ULift.up ((simplexCoordinates n).symm z))) (orderNerveRealizationUnit_simplex s)
 
 theorem orderNerveSingularSimplex_face {P : Type} [PartialOrder P]
@@ -41,7 +43,7 @@ theorem orderNerveSingularSimplex_face {P : Type} [PartialOrder P]
     face i (orderNerveSingularSimplex s) = orderNerveSingularSimplex ((nerve P).δ i s) := by
   apply ContinuousMap.ext
   intro z
-  rw (config := { transparency := .default }) [face_apply, orderNerveSingularSimplex_apply, orderNerveSingularSimplex_apply]
+  rwd [face_apply, orderNerveSingularSimplex_apply, orderNerveSingularSimplex_apply]
   have h := congrArg (fun f => f (ULift.up ((simplexCoordinates n).symm z)))
     (orderNerveRealizationSimplex_operator P (SimplexCategory.δ i) s)
   change orderNerveRealizationSimplex P s
@@ -58,7 +60,7 @@ theorem orderNerveSingularSimplex_supported {P : Type} [PartialOrder P]
     (hs : ∀ i, s.obj i ∈ A) (z : Domain n) :
     orderNerveSingularSimplex s z ∈ (orderNerveRealizationSubcomplex P A :
       Set (orderNerveRealization P)) := by
-  rw (config := { transparency := .default }) [orderNerveSingularSimplex_apply]
+  rwd [orderNerveSingularSimplex_apply]
   exact orderNerveRealizationSimplex_supported A s hs ⟨ULift.up ((simplexCoordinates n).symm z), rfl⟩
 
 /-- The canonical chain comparison, with explicit continuous simplices as basis. -/

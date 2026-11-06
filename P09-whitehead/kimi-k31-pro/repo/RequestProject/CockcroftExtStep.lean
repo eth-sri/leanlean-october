@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Pi2ExtensionInjective
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The extension steps of rule 1 preserve the Cockcroft property
@@ -23,9 +29,6 @@ integer combination of the augmentations of those cycles, hence zero.  Together 
   no hypothesis on the fundamental groups beyond the infinite-order condition of the paper.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

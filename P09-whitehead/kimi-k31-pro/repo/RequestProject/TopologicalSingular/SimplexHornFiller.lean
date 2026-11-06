@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /-
 Copyright (c) 2026 Vasily Ilin. All rights reserved.
 Released under Apache 2.0 license.
@@ -11,14 +13,15 @@ public import Mathlib.Topology.LocallyFinite
 
 @[expose] public section
 
+backwardOptions
+
+
+
 
 open scoped Topology
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 

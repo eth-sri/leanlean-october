@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.SurfaceCells
 public import RequestProject.NerveDegree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Explicit oriented chains of the polygon's triangulation, before identifying its sides. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open FreeAbelianGroup
@@ -36,8 +39,7 @@ theorem flagTriangle_mem_inc {P : Type} [Preorder P] {a e t : P}
 theorem triangleFlagChain_mem_inc {P : Type} [Preorder P] {a b c ab bc ca t : P}
     (ha : a ≤ ab) (hb : b ≤ ab) (hb' : b ≤ bc) (hc : c ≤ bc)
     (hc' : c ≤ ca) (ha' : a ≤ ca) (hab : ab ≤ t) (hbc : bc ≤ t) (hca : ca ≤ t) :
-    triangleFlagChain a b c ab bc ca t ∈ Nerve.Inc P := by
-  exact (Nerve.Inc P).add_mem
+    triangleFlagChain a b c ab bc ca t ∈ Nerve.Inc P := (Nerve.Inc P).add_mem
     ((Nerve.Inc P).add_mem
       ((Nerve.Inc P).sub_mem (flagTriangle_mem_inc ha hab) (flagTriangle_mem_inc hb hab))
       ((Nerve.Inc P).sub_mem (flagTriangle_mem_inc hb' hbc) (flagTriangle_mem_inc hc hbc)))

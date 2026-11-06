@@ -72,14 +72,4 @@ def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGrou
     (presInclHom f hf ρ σ g hg).onF = g := rfl
 
 end Comb
-
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-variable [DecidableEq α]
-
-end PresChain
 end FiniteChains

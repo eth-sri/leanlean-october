@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.UnivCoverCopies
 public import RequestProject.DeckChainTransport
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual components of the pullback of a universal cover to L, described
 without choosing coset representatives.  The label keeps the L-vertex as
@@ -12,9 +18,6 @@ distinct old vertices. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.UniversalCopy
 universe u

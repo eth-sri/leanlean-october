@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Statement
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.TopologicalOrderCover
@@ -7,14 +9,15 @@ public import RequestProject.StrictPosetCovering
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Genuine topological deck transformations act on the reconstructed
 ordered cover and its strict cells. Compatibility holds on vertices,
 edges and faces, not only on vertices. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Topology

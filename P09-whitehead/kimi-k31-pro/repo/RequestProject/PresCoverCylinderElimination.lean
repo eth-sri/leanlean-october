@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderCoverCycles
 public import RequestProject.ConeAdjBaseCover
 public import RequestProject.StrictSubposetChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → PresPos w) (hf : IsPosetCover f)
 include hf
 
@@ -37,7 +39,7 @@ theorem presCover_cycle_zero_of_cylinder_support (c : StrictOrdTri P →₀ ℤ)
       coneAdjBaseSet_down_closed hlast (hf.mono t.2.2.le), hlast⟩
   obtain ⟨d, hd, hdc⟩ := exists_strictSubposet_cycle S c hsup hc
   have hz : d = 0 := presCover_cylinder_preimage_cycle_zero w f hf d hdc
-  rw (config := { transparency := .default }) [hz, map_zero] at hd
+  rwd [hz, map_zero] at hd
   exact hd.symm
 
 /-- Equality of relator-cone triangle coefficients detects equality of actual cover cycles. -/
@@ -47,7 +49,7 @@ theorem presCover_cycles_eq_of_cone_coefficients (c d : StrictOrdTri P →₀ �
     (he : ∀ t, f t.1.2.2 ∉ coneAdjBaseSet (S := circSet w) → c t = d t) : c = d := by
   classical
   have hcd : Comb.bdry2 (strictOrderCx P) (c - d) = 0 := by
-    rw (config := { transparency := .default }) [map_sub, hc, hd, sub_self]
+    rwd [map_sub, hc, hd, sub_self]
   have hs : ∀ t ∈ (c - d).support, f t.1.2.2 ∈ coneAdjBaseSet (S := circSet w) := by
     intro t ht
     by_contra hn

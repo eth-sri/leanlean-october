@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusSpineMarking
 public import RequestProject.TruncatedCubePi1
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Factor the marked spine comparison through the genuine truncated face poset. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

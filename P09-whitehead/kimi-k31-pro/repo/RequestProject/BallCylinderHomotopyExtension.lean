@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.AttachmentHomotopyExtension
 public import Mathlib.Analysis.Normed.Group.Constructions
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Homotopy extension on the entire boundary of `I × D`, including both
 ends. The cylinder is the unit ball for the product supremum norm. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical

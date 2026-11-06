@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxNatHtpy
 public import RequestProject.StrictOrderComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 universe u
@@ -21,7 +23,7 @@ theorem htpy_ordNegSelf_nil (a : P) :
     List.map_cons, List.map_nil, revGerm, ordPos, ordNeg, Bool.not] using h
 
 /-- Reflexive edge conjugation does not alter the actual based loop class. -/
-theorem htpy_reflexive_conjugation {a : P} (p : List ((orderCx P).E × Bool))
+theorem htpy_reflexive_conjugation {a : P} (p : FiniteChains.Comb.Oriented (orderCx P).E)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) :
     Htpy (orderCx P) a a ([ordNeg (le_refl a)] ++ p ++ [ordPos (le_refl a)]) p := by
   have h1 := (htpy_ordNegSelf_nil a).congr_append (isPath_nil' a)
@@ -37,7 +39,7 @@ theorem htpy_reflexive_conjugation {a : P} (p : List ((orderCx P).E × Bool))
 /-- Order-homotopic actual maps agreeing at the basepoint induce homotopic based loops. -/
 theorem htpy_loop_mapPath_le_fixed {Q : Type u} [PartialOrder Q]
     {f g : P → Q} (hf : Monotone f) (hg : Monotone g) (hfg : ∀ x, f x ≤ g x)
-    {a : P} (hfix : f a = g a) (p : List ((orderCx P).E × Bool))
+    {a : P} (hfix : f a = g a) (p : FiniteChains.Comb.Oriented (orderCx P).E)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) :
     Htpy (orderCx Q) (f a) (f a) (mapPath (orderCxMap f hf) p)
       (mapPath (orderCxMap g hg) p) := by

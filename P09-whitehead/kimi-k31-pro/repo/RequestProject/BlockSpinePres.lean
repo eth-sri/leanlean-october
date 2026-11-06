@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SubstOneWayBlockLoops
 public import RequestProject.TreePresentation
 public import RequestProject.CombPi1Conj
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The block of the article: its spine, its marked presentation, its loops and its fillings
@@ -46,9 +51,6 @@ two-dimensional order complex of that poset:
   prescribed old word `u_h` along the chosen loop of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -105,7 +107,7 @@ end Block
 section Spine
 
 variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
+  (cb : FiniteChains.Comb.Oriented (orderCx (presModelPos ρ)).E) (T : SpanningTree (orderCx (QOld A)))
 
 end Spine
 
@@ -122,7 +124,7 @@ abbrev spineRels (Su : Type u) : Type u := (orderCx (QOld A)).F ⊕ Su
 section Application
 
 variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
+  (cb : FiniteChains.Comb.Oriented (orderCx (presModelPos ρ)).E) (T : SpanningTree (orderCx (QOld A)))
   {Su : Type u}
 
 end Application

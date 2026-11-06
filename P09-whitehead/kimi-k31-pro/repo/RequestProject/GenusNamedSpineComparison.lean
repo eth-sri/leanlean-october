@@ -38,8 +38,7 @@ noncomputable def treeMarkedSpineLoop (x : Fin q × Bool) :
 
 theorem namedSpinePi1Equiv_marked (x : Fin q × Bool) :
     namedSpinePi1Equiv q (Pi1.mk (treeMarkedSpineLoop q x)) =
-      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := by
-  exact (namedSpine_generator q x).symm
+      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := (namedSpine_generator q x).symm
 
 /-- The distinguished names correspond exactly to the verified old block marking. -/
 theorem namedSpineToOld_marked (x : Fin q × Bool) :

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresRelatorCircleEmbedding
 public import RequestProject.OrderNerveConeBallNaturality
 public import RequestProject.PresConeBall
@@ -7,19 +8,20 @@ public import RequestProject.RelatorCircleBoundaryNaturality
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! A literal presentation embedding preserves the actual parameters of
 each old cone disk as soon as its circle parametrization is preserved. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb RelativeAttachment
 open scoped Classical
 
-variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
+variable {A B J K : Type} {w : J → FiniteChains.Comb.Oriented A} {v : K → FiniteChains.Comb.Oriented B}
   (h : PresWordEmbedding w v) (j : J)
 
 def coneLowerMap : Set.Iic (apexOf w j) ↪o Set.Iic (apexOf v (h.cell j)) where

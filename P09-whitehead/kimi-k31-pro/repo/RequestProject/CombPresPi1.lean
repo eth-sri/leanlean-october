@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 public import RequestProject.CoverComplex
 public import RequestProject.PresentationDictionary
@@ -39,13 +40,13 @@ variable (ρ : J → FreeGroup α)
 
 /-- The class in `G = F/R` of the word spelled by an edge path of the presentation
 complex. -/
-def presWord (l : List (α × Bool)) : PresGroup ρ := QuotientGroup.mk (FreeGroup.mk l)
+def presWord (l : FiniteChains.Comb.Oriented α) : PresGroup ρ := QuotientGroup.mk (FreeGroup.mk l)
 
 omit [DecidableEq α] in
 @[simp] theorem presWord_nil : presWord ρ [] = 1 := rfl
 
 omit [DecidableEq α] in
-theorem presWord_append (l l' : List (α × Bool)) :
+theorem presWord_append (l l' : FiniteChains.Comb.Oriented α) :
     presWord ρ (l ++ l') = presWord ρ l * presWord ρ l' := by
   unfold presWord
   rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul]
@@ -58,7 +59,7 @@ theorem presWord_att (j : J) : presWord ρ ((presComplex ρ).att j) = 1 := by
   exact Subgroup.subset_normalClosure ⟨j, rfl⟩
 
 /-- Elementary cancellations of edge paths do not change the class of the spelled word. -/
-theorem presWord_cancels {l l' : List (α × Bool)} (h : Cancels (presComplex ρ) l l') :
+theorem presWord_cancels {l l' : FiniteChains.Comb.Oriented α} (h : Cancels (presComplex ρ) l l') :
     presWord ρ l = presWord ρ l' := by
   rcases h with ⟨p, q, eb, hl, hl'⟩ | ⟨p, q, j, hl, hl'⟩
   · obtain ⟨x, b⟩ := eb
@@ -69,7 +70,7 @@ theorem presWord_cancels {l l' : List (α × Bool)} (h : Cancels (presComplex ρ
     rw [presWord_append, presWord_append, presWord_append, presWord_att, mul_one]
 
 /-- Homotopic edge paths spell the same element of `G`. -/
-theorem presWord_htpy {a b : (presComplex ρ).V} {l l' : List (α × Bool)}
+theorem presWord_htpy {a b : (presComplex ρ).V} {l l' : FiniteChains.Comb.Oriented α}
     (h : Htpy (presComplex ρ) a b l l') : presWord ρ l = presWord ρ l' := by
   induction h with
   | refl => rfl
@@ -89,10 +90,10 @@ def pi1ToPres : Pi1 (presComplex ρ) PUnit.unit →* PresGroup ρ where
 /-! ### From the presented group to edge loops -/
 
 /-- The class of an arbitrary word, read as an edge loop of the presentation complex. -/
-def loopClass (l : List (α × Bool)) : Pi1 (presComplex ρ) PUnit.unit :=
+def loopClass (l : FiniteChains.Comb.Oriented α) : Pi1 (presComplex ρ) PUnit.unit :=
   Pi1.mk ⟨l, isPath_of_subsingleton _ _ _ _ _⟩
 
-theorem loopClass_append (l l' : List (α × Bool)) :
+theorem loopClass_append (l l' : FiniteChains.Comb.Oriented α) :
     loopClass ρ (l ++ l') = loopClass ρ l * loopClass ρ l' := rfl
 
 @[simp] theorem loopClass_nil : loopClass ρ [] = 1 := rfl
@@ -111,7 +112,7 @@ theorem loopClass_att (j : J) : loopClass ρ ((presComplex ρ).att j) = 1 := by
 /-- The homomorphism `F → π₁(K)` sending a generator to its edge loop. -/
 def freeToPi1 : FreeGroup α →* Pi1 (presComplex ρ) PUnit.unit := FreeGroup.lift (genLoop ρ)
 
-theorem freeToPi1_mk (l : List (α × Bool)) :
+theorem freeToPi1_mk (l : FiniteChains.Comb.Oriented α) :
     freeToPi1 ρ (FreeGroup.mk l) = loopClass ρ l := by
   induction l with
   | nil =>

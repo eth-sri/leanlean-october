@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeSquareInternalBoundary
 public import RequestProject.QCubeSquareCoefficientSigns
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The genuine square radial boundary matrix has one-dimensional integral kernel. -/
 set_option maxHeartbeats 1000000
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

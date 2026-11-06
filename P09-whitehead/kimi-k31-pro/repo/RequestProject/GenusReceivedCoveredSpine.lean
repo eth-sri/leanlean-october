@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusQuotientRelativeSupport
 public import RequestProject.GenusOldCoverSpineFaithfulness
 public import RequestProject.ChamberQuotientOldCover
@@ -9,12 +11,13 @@ public import RequestProject.UniversalCoverPi1Injection
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {K Y Z : Complex2}
@@ -37,7 +40,7 @@ theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
   apply Hom.ext'
   · funext x
     change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+    rwd [uOrderHomInv_vertex]
     rfl
   · funext e
     exact uOrderHomInv_edge_projection e

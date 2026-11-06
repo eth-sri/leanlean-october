@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWGraphCoordinates
 public import RequestProject.ClassicalGraphBoundaryWords
@@ -111,7 +112,7 @@ def originalWordDiskHomotopyEquiv : K ≃ₕ OriginalWordDiskModel K :=
     (diskAttachingHomotopyEquiv (originalRoseAttaching K) (originalRoseWordAttaching K)
       (originalRoseAttachingHomotopy K))
 
-def originalRelatorWords (j : OriginalRoseRel K) : List (OriginalRoseGen K × Bool) :=
+def originalRelatorWords (j : OriginalRoseRel K) : FiniteChains.Comb.Oriented (OriginalRoseGen K) :=
   (originalRoseWords K j).loopWord
 
 def originalRelators (j : OriginalRoseRel K) : FreeGroup (OriginalRoseGen K) :=

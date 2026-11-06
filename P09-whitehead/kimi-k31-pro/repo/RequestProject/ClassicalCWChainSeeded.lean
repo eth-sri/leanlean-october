@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCWChainPresentation
 public import RequestProject.ClassicalChartedGraphComparison
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Prescribed original graph words are retained at stage zero. The
 remaining cells still obtain actual words and homotopies from the graph
 approximation theorem. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel

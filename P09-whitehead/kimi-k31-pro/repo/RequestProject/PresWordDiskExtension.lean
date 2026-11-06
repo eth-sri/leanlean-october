@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.DiskPresentationExtensionHomeomorph
 public import RequestProject.PresWordDiskNaturality
 
@@ -15,7 +16,7 @@ namespace FiniteChains.PresModel.PresWordEmbedding
 open RelativeAttachment ClassicalGraphModel
 open scoped Classical
 
-variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
+variable {A B J K : Type} {w : J → FiniteChains.Comb.Oriented A} {v : K → FiniteChains.Comb.Oriented B}
     (h : PresWordEmbedding w v) (hw : ∀ j, w j ≠ []) (hv : ∀ k, v k ≠ [])
 
 def classicalDiskExtension :

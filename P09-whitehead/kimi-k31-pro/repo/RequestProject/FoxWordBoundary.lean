@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.Fox
 
 @[expose] public section
@@ -34,13 +35,13 @@ theorem fox_letter_incidence (i : α) (p : α × Bool) :
 /-- The actual signed edge sum of a word path, starting at the translate `g`.
 Negative letters contribute at the terminal generator coordinate. -/
 noncomputable def foxWordPathBoundary (i : α) (g : FreeGroup α) :
-    List (α × Bool) → FreeGroupRing α
+    FiniteChains.Comb.Oriented α → FreeGroupRing α
   | [] => 0
   | p :: l => grp g * foxWordIncidence i p +
       foxWordPathBoundary i (g * foxWordLetter p) l
 
 /-- The signed edge sum equals the translated Fox derivative of the actual word. -/
-theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool)) :
+theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : FiniteChains.Comb.Oriented α) :
     foxWordPathBoundary i g l = grp g * fox i (FreeGroup.mk l) := by
   induction l generalizing g with
   | nil => simp [foxWordPathBoundary, ← FreeGroup.one_eq_mk]
@@ -52,7 +53,7 @@ theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool
       mul_add, mul_assoc]
 
 /-- At the identity vertex, the word edge sum is exactly the Fox boundary entry. -/
-theorem foxWordPathBoundary_one (i : α) (l : List (α × Bool)) :
+theorem foxWordPathBoundary_one (i : α) (l : FiniteChains.Comb.Oriented α) :
     foxWordPathBoundary i 1 l = fox i (FreeGroup.mk l) := by
   rw [foxWordPathBoundary_eq, grp_one, one_mul]
 

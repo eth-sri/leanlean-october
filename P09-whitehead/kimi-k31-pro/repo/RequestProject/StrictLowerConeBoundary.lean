@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.StrictTopConeInjectivity
 public import RequestProject.StrictLowerIntervalChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Vanishing of an actual top-cone internal boundary reflects lower-interval two-cycles. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -29,10 +32,10 @@ theorem strictLowerChain_filter_top (c : P) (z : (strictOrderCx (Set.Iio c)).F â
       (fun t : (strictOrderCx P).F => t.1.2.2 = c) = 0 := by
   induction z using Finsupp.induction_linear with
   | zero => simp [Finsupp.filter_zero]
-  | add z w hz hw => rw (config := { transparency := .default }) [map_add, Finsupp.filter_add, hz, hw, add_zero]
+  | add z w hz hw => rwd [map_add, Finsupp.filter_add, hz, hw, add_zero]
   | single t n =>
       change (Finsupp.mapDomain (strictLowerIncl c).onF (Finsupp.single t n)).filter _ = 0
-      rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+      rwd [Finsupp.mapDomain_single]
       apply Finsupp.filter_single_of_neg
       exact t.1.2.2.2.ne
 
@@ -46,7 +49,7 @@ theorem strictLowerCone_internal_boundary_reflects_cycle (c : P)
     bdry2 (strictOrderCx (Set.Iio c)) z = 0 := by
   have hzero := strictLowerChain_filter_top c z
   simp only [strictLowerIncl] at hzero
-  rw (config := { transparency := .default }) [strictTopConeTriangleChain_boundary, Finsupp.filter_sub,
+  rwd [strictTopConeTriangleChain_boundary, Finsupp.filter_sub,
     strictTopConeEdgeChain_filter_top, hzero, sub_zero] at hz
   apply strictTopConeEdgeChain_injective Subtype.val (fun _ _ h => h) c
     (fun x : Set.Iio c => x.2) Subtype.val_injective

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordDiskExtension
 public import RequestProject.PresWordDiskComparisonNaturality
 public import RequestProject.PresWordEmbeddingCombPi2
@@ -9,15 +10,16 @@ public import RequestProject.PresentationChainFinsupp
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual relative disk models turn an algebraic presentation chain
 into a chain retaining the original CW cells. The only initial comparison
 input is a homotopy equivalence of spaces; no homeomorphism of the original
 CW structure with a canonical presentation model is required. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 200000
 
@@ -32,7 +34,7 @@ def successiveEmbedding (f : ∀ i, α i ↪ α (i + 1)) (i j : ℕ) (hij : i �
     (fun {k} e => e.trans (f k)) (Function.Embedding.refl _)
 
 variable [∀ i, DecidableEq (α i)]
-  (w : ∀ i, J i → List (α i × Bool))
+  (w : ∀ i, J i → FiniteChains.Comb.Oriented (α i))
   (e : ∀ i, PresWordEmbedding (w i) (w (i + 1)))
   (ρ : ∀ i, J i → FreeGroup (α i))
   (hw : ∀ i j, FreeGroup.mk (w i j) = ρ i j)

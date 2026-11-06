@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusUniversalPolygonFoxBoundary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The marked filling is selected before substitution with the geometric
 class of the explicit degree-one polygon. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

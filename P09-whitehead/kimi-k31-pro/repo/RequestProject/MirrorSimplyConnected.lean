@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.MirrorContraction
 public import RequestProject.CombPi1
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Simple connectivity of the attaching subcomplex, by paths and triangular relations
@@ -39,9 +44,6 @@ of `L`.  In the right-angled Coxeter model of this project `L` is the clique com
 simplex; for a general `L` this is the flagness hypothesis and it may not be dropped.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -95,7 +97,7 @@ theorem isPath_ordNeg {a b : P} (h : a ≤ b) :
     IsPath (orderCx P).src (orderCx P).tgt [ordNeg h] b a := ⟨rfl, rfl⟩
 
 theorem isPath_nil' (a : P) :
-    IsPath (orderCx P).src (orderCx P).tgt ([] : List ((orderCx P).E × Bool)) a a := rfl
+    IsPath (orderCx P).src (orderCx P).tgt ([] : FiniteChains.Comb.Oriented (orderCx P).E) a a := rfl
 
 /-- Backtrack cancellation for an edge traversed forwards and then backwards. -/
 theorem htpy_ordPos_ordNeg {a b : P} (h : a ≤ b) :
@@ -115,7 +117,7 @@ theorem htpy_orderCx_tri {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
   have hac : a ≤ c := hab.trans hbc
   have hp : IsPath (orderCx P).src (orderCx P).tgt [ordPos hab, ordPos hbc] a c :=
     ⟨rfl, rfl, rfl⟩
-  have hq : IsPath (orderCx P).src (orderCx P).tgt ([] : List ((orderCx P).E × Bool)) c c := rfl
+  have hq : IsPath (orderCx P).src (orderCx P).tgt ([] : FiniteChains.Comb.Oriented (orderCx P).E) c c := rfl
   have h1 : Htpy (orderCx P) a c ([ordPos hab, ordPos hbc] ++ [])
       ([ordPos hab, ordPos hbc] ++ [ordNeg hac, ordPos hac]) :=
     Htpy.append_congr hp hq (Htpy.refl _) (htpy_ordNeg_ordPos hac).symm
@@ -137,7 +139,7 @@ variable {P : Type u} [Preorder P]
 
 /-- The path `p_σ = [σ,ρσ]⁻¹[ρσ,d]` of the text: from `σ` down to `ρσ` and up to `d`. -/
 def ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x) (htop : ∀ x, rho x ≤ d) (x : P) :
-    List ((orderCx P).E × Bool) := [ordNeg (hle x), ordPos (htop x)]
+    FiniteChains.Comb.Oriented (orderCx P).E := [ordNeg (hle x), ordPos (htop x)]
 
 theorem isPath_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x) (htop : ∀ x, rho x ≤ d)
     (x : P) :
@@ -214,7 +216,7 @@ theorem htpy_ordNeg_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
 `p · p_τ ≃ p_σ`; in particular every path `σ → τ` is homotopic to `p_σ p_τ⁻¹`. -/
 theorem htpy_path_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
     (htop : ∀ x, rho x ≤ d) (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) :
-    ∀ (p : List ((orderCx P).E × Bool)) {x y : P},
+    ∀ (p : FiniteChains.Comb.Oriented (orderCx P).E) {x y : P},
       IsPath (orderCx P).src (orderCx P).tgt p x y →
       Htpy (orderCx P) x d (p ++ ordPth d rho hle htop y) (ordPth d rho hle htop x) := by
   intro p

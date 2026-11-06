@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusLiftedMarkingCorrection
 public import RequestProject.OrderConeCoverFans
 public import RequestProject.SurfaceFullCubeConeChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Controlled cap fillings in the actual full cube universal cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -45,7 +48,7 @@ theorem markingCoverConeFan_boundary (x : Fin q × Bool) :
       pathChain (uLiftPath (mapPath (orderCxMap (surfaceFullCube (cmpRel (GenusVertex q)))
         (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)))
         (UV.base _ (fullCubeMarkBase q))) := by
-  rw (config := { transparency := .default }) [markingCoverConeFan, coneCoverFan_loop_lift_boundary _ _ _ _ _ _
+  rwd [markingCoverConeFan, coneCoverFan_loop_lift_boundary _ _ _ _ _ _
     (isPath_gSig q (x.1.val, x.2)), markingCornerLift_reference_base]
 
 noncomputable def markingOldImage (x : Fin q × Bool) : (fullCubeMarkCover q).F →₀ ℤ :=
@@ -59,7 +62,7 @@ theorem controlledCoverCap_boundary (x : Fin q × Bool) :
     Comb.bdry2 (fullCubeMarkCover q) (controlledCoverCap q x) =
       pathChain (uLiftPath (mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1)
         (UV.base _ (fullCubeMarkBase q))) := by
-  rw (config := { transparency := .default }) [controlledCoverCap, map_add, markingOldImage, liftedMarkingCorrection_boundary, markingCoverConeFan_boundary]
+  rwd [controlledCoverCap, map_add, markingOldImage, liftedMarkingCorrection_boundary, markingCoverConeFan_boundary]
   abel
 
 /-- Its projection splits into old-block faces and the explicit positive-corner cone fan. -/
@@ -67,11 +70,11 @@ theorem controlledCoverCap_hurewicz (x : Fin q × Bool) :
     hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x) =
       chain2 (oldToFullCube q) (hurewicz _ (posQCube (gBase q)) (liftedMarkingCorrection q x)) +
         surfaceCornerFan (cmpRel (GenusVertex q)) (pathChain (gSig q (x.1.val, x.2))) := by
-  rw (config := { transparency := .default }) [controlledCoverCap, map_add]
+  rwd [controlledCoverCap, map_add]
   apply congrArg₂ (· + ·)
   · exact hurewicz_univLift_chain2 (posQCube (gBase q)) (oldToFullCube q)
       (liftedMarkingCorrection q x)
-  · rw (config := { transparency := .default }) [markingCoverConeFan, coneCoverFan_hurewicz]
+  · rwd [markingCoverConeFan, coneCoverFan_hurewicz]
     rfl
 
 end FiniteChains.Davis.Genus

@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.IntervalEndpointHomotopyExtension
 public import RequestProject.ClassicalCWLoopCellularization
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Cellular representatives for actual attaching circle maps, including
 maps whose chosen starting point is not in the one-skeleton. Four endpoint
@@ -14,9 +20,6 @@ and corner-compatible homotopy pasting finish the construction. -/
 noncomputable section
 open scoped Topology unitInterval Classical
 open Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open RelativeAttachment

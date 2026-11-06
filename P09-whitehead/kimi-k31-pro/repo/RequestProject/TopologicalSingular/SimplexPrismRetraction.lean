@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalSingular.SingularChains
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! An explicit retraction of a simplex prism onto its bottom and its sides.
 The radial projection is taken from height two above the barycentre. Its
 denominator is bounded below by one half, including at the barycentre. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -28,8 +31,7 @@ theorem simplexMin_attained {n : ℕ} (z : Domain n) : ∃ i, simplexMin z = z.v
   obtain ⟨i, _, hi⟩ := Finset.exists_mem_eq_inf' Finset.univ_nonempty z.val
   exact ⟨i, hi⟩
 
-theorem simplexMin_continuous (n : ℕ) : Continuous (simplexMin (n := n)) := by
-  exact Continuous.finset_inf'_apply Finset.univ_nonempty
+theorem simplexMin_continuous (n : ℕ) : Continuous (simplexMin (n := n)) := Continuous.finset_inf'_apply Finset.univ_nonempty
     (fun i _ => (continuous_apply i).comp continuous_subtype_val)
 
 def simplexBoundary (n : ℕ) : Set (Domain n) := {z | ∃ i, z.val i = 0}
@@ -65,8 +67,7 @@ theorem prismDenom_le_one {n : ℕ} (w : I × Domain n) : prismDenom w ≤ 1 := 
   · have hp : 0 ≤ (n + 1 : ℝ) * simplexMin w.2 := mul_nonneg (by positivity) (simplexMin_nonneg _)
     linarith
 
-theorem prismDenom_continuous (n : ℕ) : Continuous (prismDenom (n := n)) := by
-  exact (continuous_const.sub (continuous_fst.subtype_val.div_const 2)).max
+theorem prismDenom_continuous (n : ℕ) : Continuous (prismDenom (n := n)) := (continuous_const.sub (continuous_fst.subtype_val.div_const 2)).max
     (continuous_const.sub (continuous_const.mul ((simplexMin_continuous n).comp continuous_snd)))
 
 theorem prismDenom_eq_one {n : ℕ} (w : I × Domain n)

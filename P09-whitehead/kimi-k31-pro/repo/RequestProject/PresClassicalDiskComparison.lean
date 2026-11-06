@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.PresRealizationWordDiskComparison
 public import RequestProject.OrderRoseRealizationHomeomorph
@@ -15,7 +16,7 @@ namespace FiniteChains.PresModel
 open Comb RelativeAttachment
 open scoped Topology
 
-variable {A J : Type} (w : J → List (A × Bool)) (hw : ∀ j, w j ≠ [])
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A) (hw : ∀ j, w j ≠ [])
 
 def classicalPresWordAttaching :
     C(BoundaryFamily J (Fin 2 → ℝ), ClassicalGraphModel.Rose A) :=

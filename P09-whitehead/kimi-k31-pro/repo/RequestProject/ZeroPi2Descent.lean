@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.UniversalToCover
 public import RequestProject.PushoutChain
 
@@ -46,7 +47,7 @@ section Unique
 
 variable {X Z W : Complex2.{u}}
 
-theorem mapPath_comp (g : Hom Z W) (h : Hom X Z) (l : List (X.E × Bool)) :
+theorem mapPath_comp (g : Hom Z W) (h : Hom X Z) (l : FiniteChains.Comb.Oriented X.E) :
     mapPath g (mapPath h l) = mapPath (g.comp h) l := by
   simp [mapPath, List.map_map, Function.comp_def, Hom.comp]
 
@@ -99,13 +100,13 @@ section Lift
 
 variable {D Y : Complex2.{u}}
 
-theorem mapPath_revPath (f : Hom D Y) (m : List (D.E × Bool)) :
+theorem mapPath_revPath (f : Hom D Y) (m : FiniteChains.Comb.Oriented D.E) :
     mapPath f (revPath m) = revPath (mapPath f m) := by
   simp [mapPath, revPath, revGerm, List.map_map, Function.comp_def, List.map_reverse]
 
 /-- A map which kills `π₁` sends any two paths with the same endpoints to homotopic paths. -/
 theorem htpy_mapPath_of_pi1Trivial {f : Hom D Y} (htriv : Pi1Trivial f)
-    {m m' : List (D.E × Bool)} {a b : D.V} (hm : IsPath D.src D.tgt m a b)
+    {m m' : FiniteChains.Comb.Oriented D.E} {a b : D.V} (hm : IsPath D.src D.tgt m a b)
     (hm' : IsPath D.src D.tgt m' a b) :
     Htpy Y (f.onV a) (f.onV b) (mapPath f m) (mapPath f m') := by
   have hP : IsPath Y.src Y.tgt (mapPath f m) (f.onV a) (f.onV b) := isPath_mapPath f hm
@@ -134,13 +135,13 @@ theorem htpy_mapPath_of_pi1Trivial {f : Hom D Y} (htriv : Pi1Trivial f)
 variable (f : Hom D Y) (hconn : IsConnected D) (d₀ : D.V)
 
 /-- A chosen edge path from the base vertex. -/
-noncomputable def cPath (v : D.V) : List (D.E × Bool) := (hconn d₀ v).choose
+noncomputable def cPath (v : D.V) : FiniteChains.Comb.Oriented D.E := (hconn d₀ v).choose
 
 theorem cPath_isPath (v : D.V) : IsPath D.src D.tgt (cPath hconn d₀ v) d₀ v :=
   (hconn d₀ v).choose_spec
 
 /-- The image of a path issued from `d₀`, as a path of `Y` issued from `f d₀`. -/
-def pathFromMap {v : D.V} {m : List (D.E × Bool)} (hm : IsPath D.src D.tgt m d₀ v) :
+def pathFromMap {v : D.V} {m : FiniteChains.Comb.Oriented D.E} (hm : IsPath D.src D.tgt m d₀ v) :
     PathFrom Y (f.onV d₀) :=
   ⟨mapPath f m, by
     have h := isPath_mapPath f hm
@@ -154,7 +155,7 @@ noncomputable def liftV (v : D.V) : UV Y (f.onV d₀) :=
 
 variable {f d₀}
 
-theorem liftV_eq (htriv : Pi1Trivial f) {v : D.V} {m : List (D.E × Bool)}
+theorem liftV_eq (htriv : Pi1Trivial f) {v : D.V} {m : FiniteChains.Comb.Oriented D.E}
     (hm : IsPath D.src D.tgt m d₀ v) :
     liftV f hconn d₀ v = UV.mk (pathFromMap f d₀ hm) := by
   refine UV.sound ?_
@@ -205,7 +206,7 @@ theorem uTgt_liftE (htriv : Pi1Trivial f) (e : D.E) :
 
 /-- The lift sends edge paths to edge paths of the universal cover. -/
 theorem isPath_map_liftE (htriv : Pi1Trivial f) :
-    ∀ (m : List (D.E × Bool)) (a b : D.V), IsPath D.src D.tgt m a b →
+    ∀ (m : FiniteChains.Comb.Oriented D.E) (a b : D.V), IsPath D.src D.tgt m a b →
       IsPath (uCover Y (f.onV d₀)).src (uCover Y (f.onV d₀)).tgt
         (m.map fun eb => (liftE f hconn d₀ eb.1, eb.2))
         (liftV f hconn d₀ a) (liftV f hconn d₀ b) := by

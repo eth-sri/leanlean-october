@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Topology.Constructions.SumProd
 public import Mathlib.Topology.ContinuousMap.Basic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! An explicit attachment space retaining every point of its base. The
 base is proved to embed as a closed subspace when the boundary inclusion is
@@ -16,8 +22,6 @@ noncomputable section
 open scoped Classical
 open Set Topology TopologicalSpace
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 
 namespace FiniteChains.RelativeAttachment
 

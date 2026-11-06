@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexGluing
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The genuine simplicial two-skeleton of a partial order: no degenerate edges or triangles. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -48,13 +50,13 @@ variable {P}
 
 /-- Erase a degenerate germ, retaining each genuine edge with its orientation. -/
 noncomputable def normalizeOrdGerm (e : (orderCx P).E × Bool) :
-    List ((strictOrderCx P).E × Bool) := by
+    FiniteChains.Comb.Oriented (strictOrderCx P).E := by
   classical
   exact if h : e.1.1.1 = e.1.1.2 then [] else
     [(⟨e.1.1, lt_of_le_of_ne e.1.2 h⟩, e.2)]
 
-noncomputable def normalizeOrdPath (p : List ((orderCx P).E × Bool)) :
-    List ((strictOrderCx P).E × Bool) := p.flatMap normalizeOrdGerm
+noncomputable def normalizeOrdPath (p : FiniteChains.Comb.Oriented (orderCx P).E) :
+    FiniteChains.Comb.Oriented (strictOrderCx P).E := p.flatMap normalizeOrdGerm
 
 theorem normalizeOrdGerm_isPath (e : (orderCx P).E × Bool) :
     IsPath (strictOrderCx P).src (strictOrderCx P).tgt (normalizeOrdGerm e)
@@ -70,7 +72,7 @@ theorem normalizeOrdGerm_isPath (e : (orderCx P).E × Bool) :
   · exact isPath_single _
 
 /-- Normalizing an edge path preserves both endpoints. -/
-theorem normalizeOrdPath_isPath {p : List ((orderCx P).E × Bool)} {a b : P}
+theorem normalizeOrdPath_isPath {p : FiniteChains.Comb.Oriented (orderCx P).E} {a b : P}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     IsPath (strictOrderCx P).src (strictOrderCx P).tgt (normalizeOrdPath p) a b := by
   induction p generalizing a with
@@ -116,7 +118,7 @@ theorem normalizeOrdGerm_htpy (e : (orderCx P).E × Bool) :
   · exact Htpy.refl _
 
 /-- Erasing degenerate edges does not change an edge path's homotopy class. -/
-theorem normalizeOrdPath_htpy {p : List ((orderCx P).E × Bool)} {a b : P}
+theorem normalizeOrdPath_htpy {p : FiniteChains.Comb.Oriented (orderCx P).E} {a b : P}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     Htpy (orderCx P) a b (mapPath (strictOrderIncl P) (normalizeOrdPath p)) p := by
   induction p generalizing a with
@@ -132,7 +134,7 @@ theorem normalizeOrdPath_htpy {p : List ((orderCx P).E × Bool)} {a b : P}
       (isPath_mapPath (strictOrderIncl P) (normalizeOrdPath_isPath hp))
       (normalizeOrdGerm_htpy e) (ih hp)
 
-@[simp] theorem normalizeOrdPath_append (p q : List ((orderCx P).E × Bool)) :
+@[simp] theorem normalizeOrdPath_append (p q : FiniteChains.Comb.Oriented (orderCx P).E) :
     normalizeOrdPath (p ++ q) = normalizeOrdPath p ++ normalizeOrdPath q := by
   simp [normalizeOrdPath]
 
@@ -173,7 +175,7 @@ theorem normalizeOrdTri_nullhomotopic (f : (orderCx P).F) :
       simpa [t, strictOrderCx, orderCx, normalizeOrdPath, normalizeOrdGerm, he, hf, hac] using ht
 
 /-- Normalize an elementary cancellation while retaining its endpoints. -/
-theorem normalizeOrdPath_step {a b : P} {l l' : List ((orderCx P).E × Bool)}
+theorem normalizeOrdPath_step {a b : P} {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : Step (orderCx P) a b l l') :
     Htpy (strictOrderCx P) a b (normalizeOrdPath l) (normalizeOrdPath l') := by
   obtain ⟨hl, _, hc⟩ := h
@@ -198,7 +200,7 @@ theorem normalizeOrdPath_step {a b : P} {l l' : List ((orderCx P).E × Bool)}
     simpa only [normalizeOrdPath_append (P := P), List.append_assoc, List.nil_append] using ht
 
 /-- Normalization preserves edge-path homotopy. -/
-theorem normalizeOrdPath_homotopic {a b : P} {p q : List ((orderCx P).E × Bool)}
+theorem normalizeOrdPath_homotopic {a b : P} {p q : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : Htpy (orderCx P) a b p q) :
     Htpy (strictOrderCx P) a b (normalizeOrdPath p) (normalizeOrdPath q) := by
   induction h with
@@ -228,7 +230,7 @@ theorem normalizeOrdGerm_strict (e : (strictOrderCx P).E × Bool) :
   have hn := e.1.2.ne
   simp [normalizeOrdGerm, strictOrderIncl, hn]
 
-theorem normalizeOrdPath_map_strict (p : List ((strictOrderCx P).E × Bool)) :
+theorem normalizeOrdPath_map_strict (p : FiniteChains.Comb.Oriented (strictOrderCx P).E) :
     normalizeOrdPath (mapPath (strictOrderIncl P) p) = p := by
   induction p with
   | nil => rfl

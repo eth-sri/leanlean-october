@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetModel
 public import RequestProject.OrderConstructionPartialOrder
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
@@ -22,7 +24,7 @@ instance rose_partialOrder : PartialOrder (Rose α) :=
       change Rose.le y x at hyx
       cases x <;> cases y <;> simp_all [Rose.le] }
 
-instance tCirc_partialOrder (w : J → List (α × Bool)) : PartialOrder (TCirc w) :=
+instance tCirc_partialOrder (w : J → FiniteChains.Comb.Oriented α) : PartialOrder (TCirc w) :=
   { (inferInstance : Preorder (TCirc w)) with
     le_antisymm := by
       intro x y hxy hyx
@@ -34,7 +36,7 @@ instance tCirc_partialOrder (w : J → List (α × Bool)) : PartialOrder (TCirc 
       have hr := TCirc.lt_right_tag w h'
       rcases hl with hl | hl <;> rcases hr with hr | hr <;> simp_all }
 
-instance presPos_partialOrder (w : J → List (α × Bool)) : PartialOrder (PresPos w) :=
+instance presPos_partialOrder (w : J → FiniteChains.Comb.Oriented α) : PartialOrder (PresPos w) :=
   inferInstanceAs (PartialOrder (ConeAdj (circSet w)))
 
 end FiniteChains.PresModel

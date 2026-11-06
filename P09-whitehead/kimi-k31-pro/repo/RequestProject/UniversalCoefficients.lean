@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.FoxCommutator
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The universal-coefficient input of Section 2
@@ -32,9 +38,6 @@ topological input that is not formalized here — this is the hypothesis
 `RequestProject/FoxCommutator.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

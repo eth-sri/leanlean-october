@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeSquareFlagIndex
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual coefficients of the square fundamental subdivision in its faithful flag index. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

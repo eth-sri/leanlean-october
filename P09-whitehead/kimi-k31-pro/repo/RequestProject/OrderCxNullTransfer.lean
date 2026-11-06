@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxNatHtpy
 public import RequestProject.OrderCxConeNull
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Null homotopies transfer through an actual order homotopy, including changing bases. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
 theorem htpy_nil_of_conjugate {X : Complex2} {a b : X.V}
-    {e p : List (X.E × Bool)} (he : IsPath X.src X.tgt e a b)
+    {e p : FiniteChains.Comb.Oriented X.E} (he : IsPath X.src X.tgt e a b)
     (hp : IsPath X.src X.tgt p a a)
     (h : Htpy X b b (revPath e ++ p ++ e) []) : Htpy X a a p [] := by
   have hc := htpy_append_revPath he
@@ -32,7 +34,7 @@ variable {P Q : Type} [Preorder P] [Preorder Q]
 /-- Pointwise comparable monotone maps preserve and reflect null homotopy of their images.
 The proof uses the connecting edge at the base and cancels it, so fixed bases are unnecessary. -/
 theorem htpy_nil_mapPath_le_iff {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
-    (hfg : ∀ x, f x ≤ g x) {a : P} {p : List ((orderCx P).E × Bool)}
+    (hfg : ∀ x, f x ≤ g x) {a : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) :
     Htpy (orderCx Q) (f a) (f a) (mapPath (orderCxMap f hf) p) [] ↔
       Htpy (orderCx Q) (g a) (g a) (mapPath (orderCxMap g hg) p) [] := by
@@ -62,7 +64,7 @@ theorem simplyConnected_orderCx_of_zigzag {f g : P → P}
 theorem isConnected_orderCx_of_zigzag {f g : P → P}
     (hig : ∀ x, x ≤ g x) (hfg : ∀ x, f x ≤ g x)
     (d : P) (hfd : ∀ x, f x ≤ d) : IsConnected (orderCx P) := by
-  let p (a : P) : List ((orderCx P).E × Bool) :=
+  let p (a : P) : FiniteChains.Comb.Oriented (orderCx P).E :=
     [ordPos (hig a), ordNeg (hfg a), ordPos (hfd a)]
   have hp (a : P) : IsPath (orderCx P).src (orderCx P).tgt (p a) a d :=
     ⟨rfl, rfl, rfl, rfl⟩

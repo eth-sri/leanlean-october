@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PresentationChain
 public import RequestProject.Pi2DictionaryFinsupp
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Chains of presentation complexes with arbitrary generator and relator sets.
 The two-cycle condition is imposed on actual cellular universal-cover chains. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

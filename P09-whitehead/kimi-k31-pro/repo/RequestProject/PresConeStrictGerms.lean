@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeExcursionReplacement
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import RequestProject.PresConeExcursionReplacement
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 /-- Actual relator apices are maximal vertices in the actual presentation poset. -/
 theorem presCone_apex_maximal (p : PresPos w) (h : apexOf w j ≤ p) : p = apexOf w j := by

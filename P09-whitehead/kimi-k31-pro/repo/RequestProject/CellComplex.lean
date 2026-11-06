@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import Mathlib
 
 @[expose] public section
@@ -54,18 +55,18 @@ def germTgt (src tgt : E → V) (e : E × Bool) : V := if e.2 then tgt e.1 else 
 
 /-- `IsPath src tgt p a b` : the list of oriented edges `p` is an edge path from `a`
 to `b`. -/
-def IsPath (src tgt : E → V) : List (E × Bool) → V → V → Prop
+def IsPath (src tgt : E → V) : FiniteChains.Comb.Oriented E → V → V → Prop
   | [], a, b => a = b
   | e :: p, a, b => a = germSrc src tgt e ∧ IsPath src tgt p (germTgt src tgt e) b
 
 @[simp] theorem isPath_nil (src tgt : E → V) (a b : V) :
     IsPath src tgt [] a b ↔ a = b := Iff.rfl
 
-@[simp] theorem isPath_cons (src tgt : E → V) (e : E × Bool) (p : List (E × Bool)) (a b : V) :
+@[simp] theorem isPath_cons (src tgt : E → V) (e : E × Bool) (p : FiniteChains.Comb.Oriented E) (a b : V) :
     IsPath src tgt (e :: p) a b ↔
       a = germSrc src tgt e ∧ IsPath src tgt p (germTgt src tgt e) b := Iff.rfl
 
-theorem IsPath.append {src tgt : E → V} {p q : List (E × Bool)} {a b c : V}
+theorem IsPath.append {src tgt : E → V} {p q : FiniteChains.Comb.Oriented E} {a b c : V}
     (hp : IsPath src tgt p a b) (hq : IsPath src tgt q b c) : IsPath src tgt (p ++ q) a c := by
   induction p generalizing a with
   | nil => cases hp; exact hq
@@ -89,7 +90,7 @@ structure Complex2 : Type (u + 1) where
   /-- Basepoint of a two-cell. -/
   base : F → V
   /-- Attaching path of a two-cell. -/
-  att : F → List (E × Bool)
+  att : F → FiniteChains.Comb.Oriented E
   /-- The attaching path is a loop at the basepoint. -/
   att_isLoop : ∀ f, IsPath src tgt (att f) (base f) (base f)
 
@@ -101,12 +102,12 @@ def IsConnected : Prop := ∀ a b : X.V, ∃ p, IsPath X.src X.tgt p a b
 /-! ### The cellular chain complex -/
 
 /-- The one-chain carried by an edge path: the signed sum of its edges. -/
-noncomputable def pathChain (p : List (E × Bool)) : E →₀ ℤ :=
+noncomputable def pathChain (p : FiniteChains.Comb.Oriented E) :E →₀ ℤ :=
   (p.map (fun e => if e.2 then Finsupp.single e.1 (1 : ℤ) else -Finsupp.single e.1 (1 : ℤ))).sum
 
-@[simp] theorem pathChain_nil : pathChain ([] : List (E × Bool)) = 0 := rfl
+@[simp] theorem pathChain_nil : pathChain ([] : FiniteChains.Comb.Oriented E) = 0 := rfl
 
-theorem pathChain_cons (e : E × Bool) (p : List (E × Bool)) :
+theorem pathChain_cons (e : E × Bool) (p : FiniteChains.Comb.Oriented E) :
     pathChain (e :: p) =
       (if e.2 then Finsupp.single e.1 (1 : ℤ) else -Finsupp.single e.1 (1 : ℤ)) +
         pathChain p := by
@@ -140,7 +141,7 @@ variable {X}
   simp [augC]
 
 /-- The boundary of the chain of an edge path is the difference of its endpoints. -/
-theorem bdry1_pathChain_of_isPath {p : List (X.E × Bool)} {a b : X.V}
+theorem bdry1_pathChain_of_isPath {p : FiniteChains.Comb.Oriented X.E} {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) :
     bdry1 X (pathChain p) = Finsupp.single b (1 : ℤ) - Finsupp.single a (1 : ℤ) := by
   induction p generalizing a with
@@ -156,7 +157,7 @@ theorem bdry1_pathChain_of_isPath {p : List (X.E × Bool)} {a b : X.V}
           cases b <;> simp [ha, germSrc, germTgt]
 
 /-- The chain complex condition `∂₁ ∘ ∂₂ = 0`. -/
-theorem bdry1_bdry2 (c : X.F →₀ ℤ) : bdry1 X (bdry2 X c) = 0 := by
+theorem bdry1_bdry2 (c :X.F →₀ ℤ) : bdry1 X (bdry2 X c) = 0 := by
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
@@ -170,9 +171,9 @@ structure IsAcyclic (X : Complex2.{u}) : Prop where
   /-- `H₂ = ker ∂₂ = 0`. -/
   h2 : Function.Injective (bdry2 X)
   /-- `H₁ = 0`: every cycle is a boundary. -/
-  h1 : ∀ c : X.E →₀ ℤ, bdry1 X c = 0 → ∃ u : X.F →₀ ℤ, bdry2 X u = c
+  h1 : ∀ c :X.E →₀ ℤ, bdry1 X c = 0 → ∃ u :X.F →₀ ℤ, bdry2 X u = c
   /-- `H̃₀ = 0`: every zero-chain of augmentation `0` is a boundary. -/
-  h0 : ∀ c : X.V →₀ ℤ, augC X c = 0 → ∃ u : X.E →₀ ℤ, bdry1 X u = c
+  h0 : ∀ c :X.V →₀ ℤ, augC X c = 0 → ∃ u :X.E →₀ ℤ, bdry1 X u = c
 
 /-! ### Cellular maps and coverings -/
 

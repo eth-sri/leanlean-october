@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetModel
 public import RequestProject.PresentationDictionary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The generators of a presentation as loops of the poset model
@@ -24,9 +29,6 @@ Injectivity of `alphaHom` is proved in `RequestProject/PresPosetReading.lean` by
 left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace PresModel
@@ -35,7 +37,7 @@ open Comb
 
 universe u
 
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-! ### The attaching circle as a path -/
 
@@ -196,14 +198,14 @@ theorem htpy_wordLoop_nil (j : J) :
 /-! ### The comparison homomorphism -/
 
 /-- The class of the loop of a word. -/
-def wordClass (l : List (α × Bool)) : Pi1 (orderCx (PresPos w)) (ptBase w) :=
+def wordClass (l : FiniteChains.Comb.Oriented α) : Pi1 (orderCx (PresPos w)) (ptBase w) :=
   Pi1.mk ⟨wordLoop w l, isPath_wordLoop w l⟩
 
 /-- The class of the loop of a generator. -/
 def genClass (i : α) : Pi1 (orderCx (PresPos w)) (ptBase w) :=
   Pi1.mk ⟨genLoop w i, isPath_genLoop w i⟩
 
-theorem wordClass_append (l l' : List (α × Bool)) :
+theorem wordClass_append (l l' : FiniteChains.Comb.Oriented α) :
     wordClass w (l ++ l') = wordClass w l * wordClass w l' := by
   refine Quotient.sound ?_
   show Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w) (wordLoop w (l ++ l'))
@@ -222,7 +224,7 @@ def alphaFree : FreeGroup α →* Pi1 (orderCx (PresPos w)) (ptBase w) :=
 theorem alphaFree_of (i : α) : alphaFree w (FreeGroup.of i) = genClass w i := by
   simp [alphaFree]
 
-theorem alphaFree_mk (l : List (α × Bool)) : alphaFree w (FreeGroup.mk l) = wordClass w l := by
+theorem alphaFree_mk (l : FiniteChains.Comb.Oriented α) : alphaFree w (FreeGroup.mk l) = wordClass w l := by
   induction l with
   | nil =>
       simp only [alphaFree, FreeGroup.lift_mk, List.map_nil, List.prod_nil]
@@ -246,7 +248,7 @@ theorem alphaFree_relator (j : J) : alphaFree w (FreeGroup.mk (w j)) = 1 := by
 /-! ### The model of a presentation -/
 
 /-- A word representing each relator of the presentation `ρ`. -/
-noncomputable def presWords (ρ : J → FreeGroup α) : J → List (α × Bool) := fun j => Quot.out (ρ j)
+noncomputable def presWords (ρ : J → FreeGroup α) : J → FiniteChains.Comb.Oriented α := fun j => Quot.out (ρ j)
 
 theorem mk_presWords (ρ : J → FreeGroup α) (j : J) :
     FreeGroup.mk (presWords ρ j) = ρ j := Quot.out_eq _

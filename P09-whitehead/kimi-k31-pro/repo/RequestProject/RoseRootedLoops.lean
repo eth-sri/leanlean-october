@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RoseStrictEdges
 public import RequestProject.RootedPathClasses
 public import RequestProject.OrderReflexiveConjugation
@@ -7,9 +8,10 @@ public import RequestProject.CombLoopWord
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
@@ -17,7 +19,7 @@ universe u
 variable {α : Type u}
 
 /-- Concrete paths from the rose base along the chosen spanning tree. -/
-def roseRootPath : Rose α → List ((orderCx (Rose α)).E × Bool)
+def roseRootPath : Rose α → FiniteChains.Comb.Oriented (orderCx (Rose α)).E
   | .base => []
   | .mid i => [ordPos (Rose.base_le_edg i false), ordNeg (Rose.mid_le_edg i false)]
   | .edg i b => [ordPos (Rose.base_le_edg i b)]

@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ZeroPi2Descent
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # From generation of `π₂` to the vanishing of the arrows of the descended chain
@@ -29,9 +34,6 @@ statement (3.5) itself.
   classes coming from `L`, then `j` is zero on `π₂`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -42,7 +44,7 @@ universe u
 
 section Shift
 
-variable {X : Complex2.{u}} {y₀ w₀ : X.V} {q : List (X.E × Bool)}
+variable {X : Complex2.{u}} {y₀ w₀ : X.V} {q : FiniteChains.Comb.Oriented X.E}
 
 /-- Prepending a fixed path to a path issued from its endpoint. -/
 def shiftP (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) : PathFrom X y₀ :=
@@ -123,7 +125,7 @@ theorem liftGerm_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) {c : UV X w₀} {e
       exact extend_shiftV hq (e, false) c
 
 theorem uLiftPath_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) :
-    ∀ (l : List (X.E × Bool)) (c : UV X w₀) (v : X.V), IsPath X.src X.tgt l (endV c) v →
+    ∀ (l : FiniteChains.Comb.Oriented X.E) (c : UV X w₀) (v : X.V), IsPath X.src X.tgt l (endV c) v →
       uLiftPath l (shiftV hq c) = (uLiftPath l c).map (fun Eb => (shiftE hq Eb.1, Eb.2)) := by
   intro l
   induction l with

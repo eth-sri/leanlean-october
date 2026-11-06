@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.FoxWordBoundary
 
 @[expose] public section
@@ -9,7 +10,7 @@ variable {α : Type*} [DecidableEq α]
 
 /-- The actual Fox word boundary is its finite signed-prefix sum. -/
 theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
-    (l : List (α × Bool)) :
+    (l : FiniteChains.Comb.Oriented α) :
     foxWordPathBoundary i g l =
       ∑ k : Fin l.length, grp (g * FreeGroup.mk (l.take k.val)) *
         foxWordIncidence i l[k.val] := by
@@ -31,7 +32,7 @@ theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
     rw [hm, mul_assoc]
 
 /-- The actual Fox derivative is the finite signed-prefix sum at the identity. -/
-theorem fox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
+theorem fox_mk_prefix_sum (i : α) (l : FiniteChains.Comb.Oriented α) :
     fox i (FreeGroup.mk l) =
       ∑ k : Fin l.length, grp (FreeGroup.mk (l.take k.val)) *
         foxWordIncidence i l[k.val] := by

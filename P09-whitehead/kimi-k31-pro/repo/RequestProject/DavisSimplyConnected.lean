@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.DavisChamberGluing
 
 @[expose] public section
@@ -185,11 +186,11 @@ theorem nullIn_upto (A : CommRel V) : ∀ n : ℕ,
 /-! ### Simple connectivity of the whole complex -/
 
 /-- A bound on the lengths of the representatives occurring along an edge path. -/
-noncomputable def pathBound (l : List ((orderCx (Sph A)).E × Bool)) : ℕ :=
+noncomputable def pathBound (l : FiniteChains.Comb.Oriented (orderCx (Sph A)).E) : ℕ :=
   (l.map (fun e => RACG.clen A (e.1.1.1).rep + RACG.clen A (e.1.1.2).rep)).sum
 
 omit [Fintype V] in
-theorem pathIn_upto_pathBound (l : List ((orderCx (Sph A)).E × Bool)) :
+theorem pathIn_upto_pathBound (l : FiniteChains.Comb.Oriented (orderCx (Sph A)).E) :
     PathIn (Upto (A := A) (pathBound l)) l := by
   intro e he
   have hmem : RACG.clen A (e.1.1.1).rep + RACG.clen A (e.1.1.2).rep ∈

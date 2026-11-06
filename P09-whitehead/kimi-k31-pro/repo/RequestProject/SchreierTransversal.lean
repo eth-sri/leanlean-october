@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import Mathlib
 
 @[expose] public section
@@ -33,7 +34,7 @@ variable {α : Type*} (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
 
 /-- The lengths of the words representing the coset `q`. -/
 def cosetLengths (q : FreeGroup α ⧸ Nsub) : Set ℕ :=
-  {n | ∃ L : List (α × Bool), L.length = n ∧
+  {n | ∃ L : FiniteChains.Comb.Oriented α, L.length = n ∧
     (QuotientGroup.mk (FreeGroup.mk L) : FreeGroup α ⧸ Nsub) = q}
 
 /-- The length of a shortest word representing the coset `q`. -/
@@ -50,7 +51,7 @@ theorem clen_mem (q : FreeGroup α ⧸ Nsub) : clen Nsub q ∈ cosetLengths Nsub
   Nat.sInf_mem (cosetLengths_nonempty Nsub q)
 
 omit [Nsub.Normal] in
-theorem clen_le {q : FreeGroup α ⧸ Nsub} {L : List (α × Bool)}
+theorem clen_le {q : FreeGroup α ⧸ Nsub} {L : FiniteChains.Comb.Oriented α}
     (h : (QuotientGroup.mk (FreeGroup.mk L) : FreeGroup α ⧸ Nsub) = q) :
     clen Nsub q ≤ L.length :=
   Nat.sInf_le ⟨L, rfl, h⟩
@@ -63,7 +64,7 @@ theorem clen_eq_zero_iff {q : FreeGroup α ⧸ Nsub} : clen Nsub q = 0 ↔ q = 1
     subst hL
     rw [← hLq, ← FreeGroup.one_eq_mk, QuotientGroup.mk_one]
   · rintro rfl
-    have : clen Nsub (1 : FreeGroup α ⧸ Nsub) ≤ ([] : List (α × Bool)).length :=
+    have : clen Nsub (1 : FreeGroup α ⧸ Nsub) ≤ ([] : FiniteChains.Comb.Oriented α).length :=
       clen_le Nsub (by
         show (QuotientGroup.mk (1 : FreeGroup α) : FreeGroup α ⧸ Nsub) = 1
         rfl)
@@ -205,9 +206,9 @@ theorem mul_inv_rep_mem_closure (w : FreeGroup α) :
   obtain ⟨L, rfl⟩ := Quot.exists_rep w
   induction L using List.reverseRecOn with
   | nil =>
-      show FreeGroup.mk ([] : List (α × Bool)) *
-        (rep Nsub (QuotientGroup.mk (FreeGroup.mk ([] : List (α × Bool)))))⁻¹ ∈ _
-      have h1 : (FreeGroup.mk ([] : List (α × Bool))) = 1 := rfl
+      show FreeGroup.mk ([] : FiniteChains.Comb.Oriented α) *
+        (rep Nsub (QuotientGroup.mk (FreeGroup.mk ([] : FiniteChains.Comb.Oriented α))))⁻¹ ∈ _
+      have h1 : (FreeGroup.mk ([] : FiniteChains.Comb.Oriented α)) = 1 := rfl
       rw [h1]
       simp
   | append_singleton L' y ih =>

@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderComponentLabels
 public import RequestProject.CellularHomotopyChain
 public import RequestProject.OrderNervePositiveFillings
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Finite one-cycle fillings when every component has trivial edge-path pi1. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

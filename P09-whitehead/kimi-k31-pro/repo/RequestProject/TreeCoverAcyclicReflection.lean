@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TreeCoverRelativeBoundary
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The converse homology comparison for spanning-tree collapse.
 No finiteness assumption on the original cells or cover is used.
 Pending final Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u

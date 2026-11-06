@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Pi2Generation
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Structural maps with the generation property, and their composites
@@ -36,9 +42,6 @@ The elementary move of rule 1 is packaged as a `PresMor` in
 treated.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

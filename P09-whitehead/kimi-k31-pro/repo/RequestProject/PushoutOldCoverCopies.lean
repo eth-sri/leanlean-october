@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.PushoutOldCoverAcyclic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual old copies cover every old cell. Two copies meeting at a
 vertex agree after a genuine deck transformation of D, on all cells.
@@ -12,9 +18,6 @@ Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutOldCover
 universe u v
@@ -29,7 +32,7 @@ theorem translated_projection_V
     (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) (d : D.V) :
     endV ((translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onV d) = Sum.inl (p.onV d) := by
   change endV (deckV g (liftV (oldMap p i hiV hiE) hconn d₀ d)) = _
-  rw (config := { transparency := .default }) [endV_deckV, endV_liftV]
+  rwd [endV_deckV, endV_liftV]
   rfl
 
 theorem translated_projection_F
@@ -43,9 +46,9 @@ theorem old_vertices_covered
     ∃ g d, (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onV d = v := by
   obtain ⟨d, hd⟩ := hp.surjV k
   have hend : endV ((oldLift p i hiV hiE hiF hconn d₀ ht).onV d) = endV v := by
-    rw (config := { transparency := .default }) [hv]
+    rwd [hv]
     change endV (liftV (oldMap p i hiV hiE) hconn d₀ d) = Sum.inl k
-    rw (config := { transparency := .default }) [endV_liftV]
+    rwd [endV_liftV]
     exact congrArg Sum.inl hd
   obtain ⟨g, hg, _⟩ := (isRegular_univProj (X := pushoutComplex p i hiV hiE)
     (x₀ := Sum.inl (p.onV d₀))).simply_transitive
@@ -57,17 +60,17 @@ theorem old_faces_covered
     (f : UF (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) (k : K.F)
     (hf' : f.val.2 = Sum.inl k) :
     ∃ g d, (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onF d = f := by
-  have hv : endV f.val.1 = Sum.inl (K.base k) := by rw (config := { transparency := .default }) [f.property, hf']; rfl
+  have hv : endV f.val.1 = Sum.inl (K.base k) := by rwd [f.property, hf']; rfl
   obtain ⟨g, d, hd⟩ := old_vertices_covered p hp i hiV hiE hiF hconn d₀ ht f.val.1 (K.base k) hv
   have hbase : K.base k = p.onV d := by
     have h := translated_projection_V p i hiV hiE hiF hconn d₀ ht g d
-    rw (config := { transparency := .default }) [hd, hv] at h
+    rwd [hd, hv] at h
     exact Sum.inl.inj h
   obtain ⟨l, ⟨hlp, hl⟩, _⟩ := exists_unique_liftCell hp k hbase
   refine ⟨g, l, Subtype.ext (Prod.ext ?_ ?_)⟩
   · have h := (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).base_onF l
     exact h.trans ((congrArg _ hl).trans hd)
-  · rw (config := { transparency := .default }) [translated_projection_F, hf']
+  · rwd [translated_projection_F, hf']
     exact congrArg Sum.inl hlp
 
 include hr he hf in
@@ -88,7 +91,7 @@ theorem copies_identified_of_meet
         (translatedOldLift p i hiV hiE hiF hconn d₀ ht h).onF (a.smulF q f)) := by
   have hpde : p.onV d = p.onV e := by
     have h' := congrArg endV hmeet
-    rw (config := { transparency := .default }) [translated_projection_V, translated_projection_V] at h'
+    rwd [translated_projection_V, translated_projection_V] at h'
     exact Sum.inl.inj h'
   obtain ⟨q, hq, _⟩ := hr.simply_transitive d e hpde
   let F := translatedOldLift p i hiV hiE hiF hconn d₀ ht g
@@ -97,15 +100,15 @@ theorem copies_identified_of_meet
       (univProj (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).onE (G.onE l) := by
     intro l
     change Sum.inl (p.onE l) = Sum.inl (p.onE (a.smulE q l))
-    rw (config := { transparency := .default }) [he]
+    rwd [he]
   have hF : ∀ l, (univProj (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).onF (F.onF l) =
       (univProj (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).onF (G.onF l) := by
     intro l
     change Sum.inl (p.onF l) = Sum.inl (p.onF (a.smulF q l))
-    rw (config := { transparency := .default }) [hf]
+    rwd [hf]
   have hb : F.onV d = G.onV d := by
     change _ = (translatedOldLift p i hiV hiE hiF hconn d₀ ht h).onV (a.smulV q d)
-    rw (config := { transparency := .default }) [hq]
+    rwd [hq]
     exact hmeet
   have hV := lift_onV_eq (isCovering_univProj (X := pushoutComplex p i hiV hiE)
     (x₀ := Sum.inl (p.onV d₀)) hEconn) hconn hE hb

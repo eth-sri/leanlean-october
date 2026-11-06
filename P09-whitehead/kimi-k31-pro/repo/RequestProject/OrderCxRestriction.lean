@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderComplexGluing
 public import RequestProject.ComponentComplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Corestrict an actual cellular map to an induced subposet using only its
 vertex support. The other face vertices are recovered from the attaching path.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

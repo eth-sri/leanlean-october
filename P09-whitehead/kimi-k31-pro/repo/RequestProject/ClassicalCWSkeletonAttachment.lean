@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCellAttachmentMaps
 public import Mathlib.Topology.MetricSpace.ProperSpace
 public import Mathlib.Tactic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The original cells identify consecutive classical CW skeleta with an
 actual disk attachment. Cell families may be infinite, and the statement
@@ -15,9 +21,6 @@ noncomputable section
 open scoped Classical
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalSkeletonAttachment
 open RelativeAttachment

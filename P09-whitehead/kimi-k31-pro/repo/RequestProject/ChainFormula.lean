@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.FoxCommutator
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Formula (2.3): a chain of two-complexes produces normal subgroups of `G = π₁(K)`
@@ -41,9 +47,6 @@ requirements that hypothesis is now a theorem about the cell-level data of the
 chain.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

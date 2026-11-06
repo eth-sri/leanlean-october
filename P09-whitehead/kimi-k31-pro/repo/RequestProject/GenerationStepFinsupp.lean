@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenerationStep
 public import RequestProject.FoxFinsupp
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Structural maps and equation (3.3) with actual finite-support chains.
 
@@ -15,9 +21,6 @@ it does not assert an inclusion of a stage in its own replacement.
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

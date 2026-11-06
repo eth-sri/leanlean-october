@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCocycleCoverPi1
 public import RequestProject.PresPosetReading
 public import RequestProject.PresCoverRelatorLetterCoefficients
@@ -11,7 +12,7 @@ noncomputable section
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
 universe u
-variable {α J G : Type u} [Group G] (w : J → List (α × Bool))
+variable {α J G : Type u} [Group G] (w : J → FiniteChains.Comb.Oriented α)
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)
 
 abbrev Coc := presCoc w gen hrel

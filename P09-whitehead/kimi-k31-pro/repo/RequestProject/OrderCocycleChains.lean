@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxMonodromy
 public import RequestProject.UnivCoverIncl
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Integral cellular cocycles obtained from actual order cocycles. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
@@ -18,7 +20,7 @@ variable {P : Type u} [Preorder P] {M : Type v} [AddCommGroup M]
 noncomputable def chain1 : ((orderCx P).E →₀ ℤ) →ₗ[ℤ] M :=
   Finsupp.linearCombination ℤ (fun e => Multiplicative.toAdd (c.val e.1.1 e.1.2))
 
-theorem chain1_pathChain (p : List ((orderCx P).E × Bool)) :
+theorem chain1_pathChain (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     c.chain1 (pathChain p) = Multiplicative.toAdd (c.readPath p) := by
   induction p with
   | nil => simp [chain1, readPath, pathChain]
@@ -42,7 +44,7 @@ def pullback {Q : Type u} [Preorder Q] (f : Q → P) (hf : Monotone f) :
   comp hab hbc := c.comp (hf hab) (hf hbc)
 
 theorem pullback_readPath {Q : Type u} [Preorder Q] (f : Q → P) (hf : Monotone f)
-    (p : List ((orderCx Q).E × Bool)) :
+    (p : FiniteChains.Comb.Oriented (orderCx Q).E) :
     (c.pullback f hf).readPath p = c.readPath (mapPath (orderCxMap f hf) p) := by
   induction p with
   | nil => rfl

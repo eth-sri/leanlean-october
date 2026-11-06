@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockFamilyBlockwiseFinsupp
 public import RequestProject.BaseChangeExactFinsupp
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 The actual B1 chain identity for simultaneous block substitution, with finite
@@ -19,9 +25,6 @@ inputs. This source has not been compiled under the current workflow.
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

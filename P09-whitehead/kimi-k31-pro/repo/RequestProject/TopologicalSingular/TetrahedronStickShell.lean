@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /-
 The generic codimension-two stick-coordinate lemma below is adapted from
 Vilin97/homotopy-groups-lean, c66523531ff172d7f41913d94e56921e790a1b47,
@@ -12,9 +14,10 @@ public import RequestProject.TopologicalSingular.BasedTetrahedronDisks
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology

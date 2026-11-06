@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombEdgeLabels
 public import RequestProject.CombCoveringLift
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Actual group-valued sheet coordinates of a regular cellular covering.
 Edge compatibility of its deck maps is recorded explicitly: the older
@@ -13,9 +18,6 @@ of a genuine topological covering has both properties. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.RegularCoverLabels
 universe u v
@@ -90,7 +92,7 @@ theorem edge_projection (e : D.E) :
   group
 
 include he in
-theorem read_projected_path {l : List (D.E × Bool)} {d e : D.V}
+theorem read_projected_path {l : FiniteChains.Comb.Oriented D.E} {d e : D.V}
     (hl : IsPath D.src D.tgt l d e) :
     EdgeLabels.read (edge p hp a hr) (mapPath p l) =
       (sheet p hp a hr d)⁻¹ * sheet p hp a hr e := by

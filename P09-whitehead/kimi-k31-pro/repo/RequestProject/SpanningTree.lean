@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 
 @[expose] public section
@@ -71,7 +72,7 @@ theorem isTree_up {a : K.V} (ha : a ≠ T.root) : T.isTree (T.up a ha).1 :=
 
 open Classical in
 /-- The tree path from the root to a vertex. -/
-noncomputable def treePath (T : SpanningTree K) (a : K.V) : List (K.E × Bool) :=
+noncomputable def treePath (T : SpanningTree K) (a : K.V) : FiniteChains.Comb.Oriented K.E :=
   if h : a = T.root then [] else
     treePath T (T.parent a h) ++ [revGerm (T.up a h)]
   termination_by T.ht a
@@ -128,7 +129,7 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
 section Existence
 
 /-- The lengths of edge paths from a fixed vertex. -/
-def reach (K : Complex2.{u}) (r a : K.V) : Set ℕ := {n | ∃ p : List (K.E × Bool),
+def reach (K : Complex2.{u}) (r a : K.V) : Set ℕ := {n | ∃ p : FiniteChains.Comb.Oriented K.E,
   p.length = n ∧ IsPath K.src K.tgt p r a}
 
 theorem reach_nonempty (hconn : IsConnected K) (r a : K.V) :
@@ -143,7 +144,7 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
   set d : K.V → ℕ := fun a => sInf (reach K r a) with hd
   have hmem : ∀ a, d a ∈ reach K r a := fun a =>
     Nat.sInf_mem (reach_nonempty hconn r a)
-  have hle : ∀ (a : K.V) (p : List (K.E × Bool)), IsPath K.src K.tgt p r a → d a ≤ p.length :=
+  have hle : ∀ (a : K.V) (p : FiniteChains.Comb.Oriented K.E), IsPath K.src K.tgt p r a → d a ≤ p.length :=
     fun a p hp => Nat.sInf_le ⟨p, rfl, hp⟩
   have hd_root : d r = 0 := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
   have hd_eq_zero : ∀ a, d a = 0 → a = r := by
@@ -160,7 +161,7 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
       intro h
       subst h
       exact ha (hd_eq_zero a (by simpa using hlen.symm))
-    obtain ⟨q, g, rfl⟩ : ∃ (q : List (K.E × Bool)) (g : K.E × Bool), p = q ++ [g] :=
+    obtain ⟨q, g, rfl⟩ : ∃ (q : FiniteChains.Comb.Oriented K.E) (g : K.E × Bool), p = q ++ [g] :=
       ⟨p.dropLast, p.getLast hne, (List.dropLast_append_getLast hne).symm⟩
     obtain ⟨m, hq, hg⟩ := isPath_append_iff.1 hp
     have hgs : germSrc K.src K.tgt g = m := hg.1.symm

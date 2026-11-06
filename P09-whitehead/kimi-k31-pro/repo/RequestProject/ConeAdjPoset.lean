@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxMonodromy
 
 @[expose] public section
@@ -168,7 +169,7 @@ def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
 
 /-- **A loop all of whose edges lie under a fixed element is null-homotopic.** -/
 theorem htpy_nil_of_pathIn_le {Pp : Type u} [Preorder Pp] (d : Pp) {v : Pp} (hv : v ≤ d)
-    {l : List ((orderCx Pp).E × Bool)}
+    {l : FiniteChains.Comb.Oriented (orderCx Pp).E}
     (hp : IsPath (orderCx Pp).src (orderCx Pp).tgt l v v)
     (hl : PathIn (fun x => x ≤ d) l) :
     Htpy (orderCx Pp) v v l [] :=

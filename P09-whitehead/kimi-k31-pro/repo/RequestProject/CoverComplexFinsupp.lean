@@ -1,16 +1,18 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CoverComplex
 public import RequestProject.CrowellFinsupp
 public import RequestProject.PresentationNecessityFinsupp
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Actual presentation covers with arbitrarily many edges and faces. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -46,14 +48,14 @@ theorem fsCoords_single (β : Type u) (q : FreeGroup α ⧸ N) (i : β) (n : ℤ
   by_cases hj : j = i <;> by_cases hr : r = q <;>
     simp [hj, hr]
 
-theorem fsCoords_pathChain_liftPath_apply (L : List (α × Bool))
+theorem fsCoords_pathChain_liftPath_apply (L : FiniteChains.Comb.Oriented α)
     (q : FreeGroup α ⧸ N) (i : α) :
     fsCoords N α (pathChain (liftPath L q)) i =
       (MonoidAlgebra.single q (1 : ℤ) : CoverRing N) * proj N (fox i (FreeGroup.mk L)) := by
   classical
   induction L generalizing q with
   | nil =>
-      rw [show FreeGroup.mk ([] : List (α × Bool)) = 1 from rfl]
+      rw [show FreeGroup.mk ([] : FiniteChains.Comb.Oriented α) = 1 from rfl]
       simp
   | cons a L ih =>
       obtain ⟨k, b⟩ := a

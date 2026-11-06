@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusMarkedSpineFamily
 public import RequestProject.GenusCappedSpineFox
 public import RequestProject.BlockSubstitutionFoxCoordinates
@@ -7,10 +9,11 @@ public import RequestProject.NamedPresentationRelativeBoundary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact relative boundary of a genuinely substituted finite genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily

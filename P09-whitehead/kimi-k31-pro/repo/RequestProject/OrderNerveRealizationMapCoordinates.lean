@@ -1,12 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationSubcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -117,8 +120,7 @@ theorem orderNerveRealizationSubtype_range {P : Type} [PartialOrder P] (A : Set 
     let t := orderNerveSimplexSubtype A s.val.val s.property
     refine ⟨orderNerveRealizationSimplex A t z, ?_⟩
     have ht : (nerveMap (show Monotone (Subtype.val : A → P) from
-        fun _ _ h => h).functor).app _ t = s.val.val := by
-      exact CategoryTheory.Functor.ext (fun _ => rfl)
+        fun _ _ h => h).functor).app _ t = s.val.val := CategoryTheory.Functor.ext (fun _ => rfl)
     have he := congrArg (fun k => k z)
       (orderNerveRealizationSimplex_natural (Subtype.val : A → P)
         (fun _ _ h => h) t)

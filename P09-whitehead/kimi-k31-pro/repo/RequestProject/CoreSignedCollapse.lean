@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CoreCollapse
 public import RequestProject.FoxCoordinateSubstitution
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! The actual core-collapse map, including reversed orientations of surviving cells.
 The only input describing the quotient is an equality of free-group words.  The
@@ -13,9 +19,6 @@ Written proof terms; not compiled in the current proof-first workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.CoreSignedCollapse
 

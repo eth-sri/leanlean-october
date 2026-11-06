@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalGraphPathStraightening
 public import RequestProject.IntervalEndpointHomotopyExtension
@@ -25,7 +26,7 @@ variable {V J : Type} [TopologicalSpace V]
 /-- Finite words on the four sides, with their exact corner incidences. -/
 structure BoundaryWords where
   vertex : SquareBoundary → V
-  word : SquareSide → List (J × Bool)
+  word : SquareSide → FiniteChains.Comb.Oriented J
   isPath : ∀ s, Comb.IsPath (graphSrc r) (graphTgt r) (word s)
     (vertex (squareSideMap s 0)) (vertex (squareSideMap s 1))
 
@@ -60,7 +61,7 @@ def boundaryMap : C(UnitBoundary (Fin 2 → ℝ), DiskAttachment r) :=
 
 /-- The based combinatorial word obtained by travelling around the four
 sides, reversing the two sides whose coordinate direction opposes travel. -/
-def loopWord : List (J × Bool) :=
+def loopWord : FiniteChains.Comb.Oriented J :=
   List.append (α := J × Bool)
     (List.append (α := J × Bool)
       (List.append (W.word (0, false)) (W.word (1, true)))

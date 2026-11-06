@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexGluing
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Reading homomorphisms out of the fundamental group of an order complex
@@ -26,9 +31,6 @@ Both are used to build the comparison of a presentation with the order complex o
 model of its presentation complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -71,15 +73,15 @@ def readGerm (g : (orderCx P).E × Bool) : G :=
   cases b <;> simp [readGerm, revGerm]
 
 /-- The value of the cocycle on an edge path: the product of the values of its edges. -/
-def readPath (l : List ((orderCx P).E × Bool)) : G := (l.map c.readGerm).prod
+def readPath (l : FiniteChains.Comb.Oriented (orderCx P).E) : G := (l.map c.readGerm).prod
 
 @[simp] theorem readPath_nil : c.readPath [] = 1 := rfl
 
-@[simp] theorem readPath_cons (g : (orderCx P).E × Bool) (l : List ((orderCx P).E × Bool)) :
+@[simp] theorem readPath_cons (g : (orderCx P).E × Bool) (l : FiniteChains.Comb.Oriented (orderCx P).E) :
     c.readPath (g :: l) = c.readGerm g * c.readPath l := by
   simp [readPath]
 
-@[simp] theorem readPath_append (l l' : List ((orderCx P).E × Bool)) :
+@[simp] theorem readPath_append (l l' : FiniteChains.Comb.Oriented (orderCx P).E) :
     c.readPath (l ++ l') = c.readPath l * c.readPath l' := by
   simp [readPath]
 
@@ -91,7 +93,7 @@ def readPath (l : List ((orderCx P).E × Bool)) : G := (l.map c.readGerm).prod
     mul_inv_cancel]
 
 /-- An elementary cancellation does not change the value of a path. -/
-theorem readPath_cancels {l l' : List ((orderCx P).E × Bool)}
+theorem readPath_cancels {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : Cancels (orderCx P) l l') : c.readPath l = c.readPath l' := by
   rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, t, hl, hl'⟩
   · subst hl; subst hl'
@@ -100,7 +102,7 @@ theorem readPath_cancels {l l' : List ((orderCx P).E × Bool)}
     simp only [c.readPath_append, c.readPath_att, one_mul, mul_one]
 
 /-- Homotopic paths have the same value. -/
-theorem readPath_htpy {a b : P} {l l' : List ((orderCx P).E × Bool)}
+theorem readPath_htpy {a b : P} {l l' : FiniteChains.Comb.Oriented (orderCx P).E}
     (h : Htpy (orderCx P) a b l l') : c.readPath l = c.readPath l' := by
   induction h with
   | refl => rfl
@@ -129,7 +131,7 @@ end OrdCocycle
 /-- **A loop inside a subposet with a largest element is null-homotopic.**  The subposet need
 not be an interval: all that is used is an element of `A` above every element of `A`. -/
 theorem htpy_nil_of_pathIn_le_top {A : P → Prop} {d : P} (hd : A d)
-    (hAd : ∀ x, A x → x ≤ d) {v : P} (hv : A v) {l : List ((orderCx P).E × Bool)}
+    (hAd : ∀ x, A x → x ≤ d) {v : P} (hv : A v) {l : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
     Htpy (orderCx P) v v l [] := by
   refine htpy_nil_of_pathIn ?_ hv hp hl

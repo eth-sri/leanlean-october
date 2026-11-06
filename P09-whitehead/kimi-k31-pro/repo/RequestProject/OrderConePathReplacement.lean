@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ConeAdjPoset
 
 @[expose] public section
@@ -9,7 +10,7 @@ universe u
 
 /-- A null loop obtained by closing a path with a reverse path proves the two paths homotopic. -/
 theorem htpy_of_append_rev_null {X : Complex2.{u}} {a b : X.V}
-    {p q : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a b)
+    {p q : FiniteChains.Comb.Oriented X.E} (hp : IsPath X.src X.tgt p a b)
     (hq : IsPath X.src X.tgt q a b) (h : Htpy X a a (p ++ revPath q) []) :
     Htpy X a b p q := by
   have hc := (htpy_revPath_append hq).congr_append hp (show IsPath X.src X.tgt [] b b from rfl)
@@ -23,7 +24,7 @@ theorem htpy_of_append_rev_null {X : Complex2.{u}} {a b : X.V}
 /-- Every actual path below a fixed apex is homotopic to the two-edge path through that apex. -/
 theorem htpy_path_through_upper_bound {P : Type u} [Preorder P]
     (d : P) {a b : P} (ha : a ≤ d) (hb : b ≤ d)
-    {p : List ((orderCx P).E × Bool)}
+    {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b)
     (hs : PathIn (fun x => x ≤ d) p) :
     Htpy (orderCx P) a b p [ordPos ha, ordNeg hb] := by

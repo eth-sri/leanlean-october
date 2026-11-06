@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.GroupRingFree
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Reduction of group-ring coefficients along `Q → Q/H`
@@ -14,9 +20,6 @@ augmentation `k[H] → k`, of the same matrix written over the commutative ring
 `k[H]` in the basis of coset representatives.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -39,8 +42,7 @@ variable {k H}
   simp [augH]
 
 @[simp] theorem quotRingHom_single [H.Normal] (q : Q) (a : k) :
-    quotRingHom k H (single q a) = single (q : Q ⧸ H) a := by
-  exact MonoidAlgebra.mapDomain_single
+    quotRingHom k H (single q a) = single (q : Q ⧸ H) a := MonoidAlgebra.mapDomain_single
 
 variable (H) in
 /-- For a normal subgroup the right cosets are the elements of the quotient group. -/

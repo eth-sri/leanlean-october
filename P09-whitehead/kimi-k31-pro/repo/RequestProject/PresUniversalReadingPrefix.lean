@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetPartialOrder
 public import RequestProject.OrderUniversalCocycleComparability
 public import RequestProject.PresReadingLetterPrefix
@@ -10,7 +11,7 @@ namespace FiniteChains.PresModel
 open Comb
 universe u v
 variable {α J : Type u} {G : Type v} [Group G]
-  (w : J → List (α × Bool)) (gen : α → G)
+  (w : J → FiniteChains.Comb.Oriented α) (gen : α → G)
   (hrel : ∀ j, wordVal gen (w j) = 1) (a : PresPos w)
 
 /-- The actual lifted cone midpoint reads as its apex reading times the signed word prefix. -/

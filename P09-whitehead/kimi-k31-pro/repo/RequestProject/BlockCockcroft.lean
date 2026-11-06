@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CockcroftExtStep
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Subpresentations that are retracts: their Fox cycles have zero augmentation
@@ -25,9 +31,6 @@ retraction, so the base change statement of `RequestProject/BaseChangeCycles.lea
 block coordinates as a combination of images of Fox cycles of `ρ`, whose augmentations vanish.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

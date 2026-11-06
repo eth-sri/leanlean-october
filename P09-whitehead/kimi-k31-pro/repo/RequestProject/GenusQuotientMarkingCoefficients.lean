@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusMarkingFirstEdges
 public import RequestProject.LiftedMarkedPathCoefficients
 public import RequestProject.GenusQuotientAttachingFilling
@@ -7,14 +8,15 @@ public import RequestProject.GenusReceivedCoveredSpine
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Exact group-ring coefficient recovery from the original lifted surface
 markings in the actual quotient.  -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 variable {G H I : Type} [Group G] [Group H]
@@ -34,9 +36,9 @@ theorem cellCoefficient_translate (g : G) (c : (G × I) →₀ ℤ) (i : I) :
   | zero => simp [translateCellChain]
   | add c d hc hd =>
       simp only [translateCellChain, Finsupp.mapDomain_add, map_add] at hc hd ⊢
-      rw (config := { transparency := .default }) [hc, hd, mul_add]
+      rwd [hc, hd, mul_add]
   | single x n =>
-      rw (config := { transparency := .default }) [translateCellChain, Finsupp.mapDomain_single, cellCoefficient_single,
+      rwd [translateCellChain, Finsupp.mapDomain_single, cellCoefficient_single,
         cellCoefficient_single]
       by_cases h : x.2 = i
       · simp only [h, ↓reduceIte, MonoidAlgebra.single_mul_single, one_mul]
@@ -49,10 +51,10 @@ theorem cellCoefficient_multiply (w : MonoidAlgebra ℤ G)
   | zero => simp
   | add w z hw hz => simp only [map_add, hw, hz, add_mul]
   | single g n =>
-      rw (config := { transparency := .default }) [multiplyCellChain]
+      rwd [multiplyCellChain]
       erw [Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul, cellCoefficient_translate]
-      rw (config := { transparency := .default }) [← smul_mul_assoc]
+      rwd [map_smul, cellCoefficient_translate]
+      rwd [← smul_mul_assoc]
       congr 1
       simp [MonoidAlgebra.smul_single]
 
@@ -63,7 +65,7 @@ theorem cellCoefficient_map_group (f : G →* H) (c : (G × I) →₀ ℤ) (i : 
   | zero => simp
   | add c d hc hd => simp only [Finsupp.mapDomain_add, map_add, hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [Finsupp.mapDomain_single, cellCoefficient_single, cellCoefficient_single]
+      rwd [Finsupp.mapDomain_single, cellCoefficient_single, cellCoefficient_single]
       by_cases h : x.2 = i <;> simp [h, MonoidAlgebra.mapDomainRingHom]
 
 end FiniteChains.Comb.ReceivedTree
@@ -91,7 +93,7 @@ theorem namedSurfaceIntoQuotient_onE_injective :
 def quotientMarkingFirstEdge (i : Fin q × Bool) : (orderCx (namedQuotientPos ρ q u)).E :=
   (namedSurfaceIntoQuotient q ρ u).onE (markingFirstEdge q i)
 
-def quotientMarkingTail (i : Fin q × Bool) : List ((orderCx (namedQuotientPos ρ q u)).E × Bool) :=
+def quotientMarkingTail (i : Fin q × Bool) : FiniteChains.Comb.Oriented (orderCx (namedQuotientPos ρ q u)).E :=
   mapPath (namedSurfaceIntoQuotient q ρ u) (markingTail q i)
 
 theorem quotientSurfaceMarking_first_edge (i : Fin q × Bool) :
@@ -122,14 +124,14 @@ def allQuotientMarkingVertex
 theorem allQuotientMarkingVertex_end (g) :
     endV (allQuotientMarkingVertex q ρ u g) =
       (oldIntoNamedQuotient q ρ u).onV (spineOldBase q) := by
-  rw (config := { transparency := .default }) [allQuotientMarkingVertex, endV_deckV, quotientCylinderVertex_end]
+  rwd [allQuotientMarkingVertex, endV_deckV, quotientCylinderVertex_end]
 
 theorem quotientSurfaceMarking_isPath (i : Fin q × Bool) :
     IsPath (orderCx (namedQuotientPos ρ q u)).src (orderCx (namedQuotientPos ρ q u)).tgt
       ((quotientMarkingFirstEdge q ρ u i, true) :: quotientMarkingTail q ρ u i)
       ((oldIntoNamedQuotient q ρ u).onV (spineOldBase q))
       ((oldIntoNamedQuotient q ρ u).onV (spineOldBase q)) := by
-  rw (config := { transparency := .default }) [← quotientSurfaceMarking_first_edge]
+  rwd [← quotientSurfaceMarking_first_edge]
   exact isPath_mapPath _ (surfaceOldMarking_isPath q i)
 
 def allQuotientSurfaceMarkingChains :
@@ -141,8 +143,7 @@ def allQuotientSurfaceMarkingChains :
 /-- Every individual sheet coefficient is retained by the actual geometric
 marking chains. -/
 theorem allQuotientSurfaceMarkingChains_injective :
-    Function.Injective (allQuotientSurfaceMarkingChains q ρ u) := by
-  exact liftedMarkingChainMap_injective _ _ _ (quotientSurfaceMarking_isPath q ρ u)
+    Function.Injective (allQuotientSurfaceMarkingChains q ρ u) := liftedMarkingChainMap_injective _ _ _ (quotientSurfaceMarking_isPath q ρ u)
     _ (allQuotientMarkingVertex_end q ρ u) (quotientMarkingFirstEdge_injective q ρ u)
     (deckV_injective_in_group _ (quotientCylinderVertex q ρ u))
     (quotientMarkingTail_avoids q ρ u)
@@ -171,15 +172,15 @@ theorem allQuotientSurfaceMarkingChains_translate
   | zero => simp [ReceivedTree.translateCellChain]
   | add c d hc hd =>
       simp only [ReceivedTree.translateCellChain, Finsupp.mapDomain_add, map_add] at hc hd ⊢
-      rw (config := { transparency := .default }) [hc, hd]
+      rwd [hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [ReceivedTree.translateCellChain, Finsupp.mapDomain_single]
+      rwd [ReceivedTree.translateCellChain, Finsupp.mapDomain_single]
       simp only [allQuotientSurfaceMarkingChains, liftedMarkingChainMap]
       erw [Finsupp.linearCombination_single, Finsupp.linearCombination_single, map_smul]
       apply congrArg (fun z => n • z)
       have hp := quotientSurfaceMarking_isPath q ρ u x.2
-      rw (config := { transparency := .default }) [← allQuotientMarkingVertex_end q ρ u x.1] at hp
-      rw (config := { transparency := .default }) [univDeck_pathChain _ _ _ hp]
+      rwd [← allQuotientMarkingVertex_end q ρ u x.1] at hp
+      rwd [univDeck_pathChain _ _ _ hp]
       simp only [allQuotientMarkingVertex, deckV_mul]
 
 theorem allQuotientSurfaceMarkingChains_multiply
@@ -195,7 +196,7 @@ theorem allQuotientSurfaceMarkingChains_multiply
       simp only [ReceivedTree.multiplyCellChain, LinearMap.comp_apply,
         LinearEquiv.coe_toLinearMap, MonoidAlgebra.coeffLinearEquiv_apply,
         MonoidAlgebra.coeff_single, Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul,
+      rwd [map_smul,
         allQuotientSurfaceMarkingChains_translate]
 
 end FiniteChains.Davis.Genus

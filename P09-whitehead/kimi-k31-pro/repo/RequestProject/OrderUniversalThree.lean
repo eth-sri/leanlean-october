@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderPosetCoverThree
 public import RequestProject.SimplyConnectedCoverEquiv
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual lifted three-simplices of the path-class universal cover of an order nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

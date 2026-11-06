@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusNormalizedReferenceTransport
 public import RequestProject.GenusPolygonCoefficientGeneration
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! B2 for the actual finite genus spine, and its arbitrary-family
 finite-support consequence. All geometric reference hypotheses are discharged
@@ -13,9 +19,6 @@ This file does not assert the original topological MainClaim.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve

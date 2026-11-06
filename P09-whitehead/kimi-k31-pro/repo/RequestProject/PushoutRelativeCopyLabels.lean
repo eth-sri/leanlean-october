@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.UniversalCoverCopyLabels
 public import RequestProject.SupportedLabelChains
 public import RequestProject.CombPushout
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Outside K every lifted cell has exactly one L-cell label.  The labels
 below make the relative boundary block diagonal over the actual lifted
@@ -12,9 +18,6 @@ copies of L. No cycle-generation statement is assumed. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
 universe u

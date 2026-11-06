@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Commutators
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Rule 2 of Section 3.4: cancelling the exponent sums by core relators
@@ -28,9 +34,6 @@ substituted for it.
 
 open scoped commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

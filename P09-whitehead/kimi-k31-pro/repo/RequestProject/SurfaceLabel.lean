@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfaceCells
 public import RequestProject.AttCycle
 
@@ -36,7 +37,7 @@ universe u
 
 section Label
 
-variable {α J : Type u} {w : J → List (α × Bool)} {j₀ : J}
+variable {α J : Type u} {w : J → FiniteChains.Comb.Oriented α} {j₀ : J}
   {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
   {vc : Fin M → κ} {ec : Fin M → ι}
   {vlab : κ → Rose α} {elb : ι → Rose α}

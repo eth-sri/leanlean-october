@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.GenusData
 public import RequestProject.SurfaceRev
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The boundary of the polygon of genus `q`: the surface relator is filled
@@ -23,9 +28,6 @@ This is the hypothesis `hfilling` of `FiniteChains.Davis.injective_substHomF_of_
 obtained here from the actual filling of the genuine closed surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -89,7 +91,7 @@ theorem cV_even {k : ℕ} (hk : k % 2 = 0) :
 /-! ### The sides of the polygon, and the pairing -/
 
 /-- The side of the polygon starting at the position `m`. -/
-abbrev gPath (m : ℕ) : List ((sdCx (gc q)).E × Bool) := pPath (gc q) m
+abbrev gPath (m : ℕ) : FiniteChains.Comb.Oriented (sdCx (gc q)).E := pPath (gc q) m
 
 theorem isPath_gPath {m : ℕ} (hm : m % 2 = 0) :
     IsPath (sdCx (gc q)).src (sdCx (gc q)).tgt (gPath q m) (gBase q) (gBase q) := by
@@ -226,7 +228,7 @@ def gGen (x : ℕ × Bool) : Pi1 (sdCx (gc q)) (gBase q) :=
   gcl q (m := 8 * x.1 + (if x.2 then 2 else 0)) (gIdx_even x)
 
 /-- The sides of the block of the genus `h`, concatenated. -/
-abbrev gBlock (n : ℕ) : List ((sdCx (gc q)).E × Bool) :=
+abbrev gBlock (n : ℕ) : FiniteChains.Comb.Oriented (sdCx (gc q)).E :=
   ((gPath q (8 * n) ++ gPath q (8 * n + 2)) ++ gPath q (8 * n + 4)) ++ gPath q (8 * n + 6)
 
 theorem bdPath_block (n : ℕ) :
@@ -283,7 +285,7 @@ theorem bcl_eq_commWord {n : ℕ} (hn : n ≤ q) :
 
 /-- **The loop of the distinguished generator `(h, i)` of the block**: the side `4h + i` of the
 polygon, traversed once. -/
-def gSig (x : ℕ × Bool) : List ((sdCx (gc q)).E × Bool) :=
+def gSig (x : ℕ × Bool) : FiniteChains.Comb.Oriented (sdCx (gc q)).E :=
   gPath q (8 * (x.1 % q) + (if x.2 then 2 else 0))
 
 theorem gSig_eq (x : ℕ × Bool) :

@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.CellularChainMapZero
 public import RequestProject.StrictTopLinkChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.Comb
 universe u
@@ -51,8 +54,7 @@ theorem strictOrderCxMap_onE_injective {Q : Type u} [PartialOrder Q]
 theorem strictOrderCxMap_chain1_apply {Q : Type u} [PartialOrder Q]
     (f : P → Q) (hf : StrictMono f) (hi : Function.Injective f)
     (c : StrictOrdEdge P →₀ ℤ) (e : StrictOrdEdge P) :
-    chain1 (strictOrderCxMap f hf) c ((strictOrderCxMap f hf).onE e) = c e := by
-  exact Finsupp.mapDomain_apply_of_injective (strictOrderCxMap_onE_injective f hf hi) c e
+    chain1 (strictOrderCxMap f hf) c ((strictOrderCxMap f hf).onE e) = c e := Finsupp.mapDomain_apply_of_injective (strictOrderCxMap_onE_injective f hf hi) c e
 
 /-- An actual order isomorphism induces an equivalence of actual strict edges. -/
 def strictOrderEdgeEquiv {Q : Type u} [PartialOrder Q] (e : P ≃o Q) :

@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusNamedSurfaceCover
 public import RequestProject.SurfaceCoverPolygonEquivariance
 public import RequestProject.OrderUniversalDeck
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 Actual group-ring polygon coefficients for the named quotient's surface cover.
@@ -15,9 +21,6 @@ Written proof terms; no Lean verification has been run.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily

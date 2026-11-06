@@ -123,8 +123,7 @@ def positiveBoundaryExtension (t : QOld A) (ht : t.1.sgn = 0)
 theorem positiveBoundaryExtension_coordinates (t : QOld A) (ht : t.1.sgn = 0)
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : VertexPuncturedCube) :
     qCubeToCoordinate (positiveBoundaryExtension t ht e c).1.1 =
-      extendPositiveCoordinates t e c.1 := by
-  exact coordinateToQCube_toCoordinate _
+      extendPositiveCoordinates t e c.1 := coordinateToQCube_toCoordinate _
 
 def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) :

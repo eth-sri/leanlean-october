@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.ConeAdjPoset
 public import RequestProject.CylinderPoset
 public import RequestProject.OrderCxNatHtpy
@@ -9,7 +10,7 @@ public import RequestProject.OrderCxNatHtpy
 /-!
 # The poset model of a presentation complex
 
-Given the attaching words `w : J → List (α × Bool)` of a presentation this file builds a
+Given the attaching words `w : J → FiniteChains.Comb.Oriented α` of a presentation this file builds a
 **poset** whose order complex is a model of the presentation complex, in the precise form needed
 by the chamber comparison: the base of the chamber construction is a poset, so the comparison of
 the article's base with the model has to be made for an honest poset and not for an abstract
@@ -103,11 +104,11 @@ inductive CPos : Type
 /-- The disjoint union of the subdivided attaching circles of the relators with words `w`.  The
 element `(j, k, t)` belongs to the circle of the relator `j` at the position `k` of its word;
 positions beyond the length of the word carry no relation. -/
-def TCirc (_w : J → List (α × Bool)) : Type u := J × ℕ × CPos
+def TCirc (_w : J → FiniteChains.Comb.Oriented α) : Type u := J × ℕ × CPos
 
 namespace TCirc
 
-variable (w : J → List (α × Bool))
+variable (w : J → FiniteChains.Comb.Oriented α)
 
 /-- An element of a circle. -/
 def pt (j : J) (k : ℕ) (t : CPos) : TCirc w := (j, k, t)
@@ -185,7 +186,7 @@ end TCirc
 
 /-! ### The attaching map -/
 
-variable (w : J → List (α × Bool))
+variable (w : J → FiniteChains.Comb.Oriented α)
 
 /-- The attaching map of the circles onto the rose: a corner goes to the base vertex, the
 midpoint of a letter to the midpoint of its generator, and the two halves of a letter to the two
@@ -312,7 +313,7 @@ def ptBase : PresPos w := iRose w Rose.base
 /-! ### The loops of the generators -/
 
 /-- The loop of the generator `i`: the four-edge circuit of its subdivided loop. -/
-def genLoop (i : α) : List ((orderCx (PresPos w)).E × Bool) :=
+def genLoop (i : α) : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E :=
   [ordPos ((iRose_monotone w) (Rose.base_le_edg i false)),
    ordNeg ((iRose_monotone w) (Rose.mid_le_edg i false)),
    ordPos ((iRose_monotone w) (Rose.mid_le_edg i true)),
@@ -324,7 +325,7 @@ theorem isPath_genLoop (i : α) :
   ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- The loop of a generator traversed backwards. -/
-def genLoopRev (i : α) : List ((orderCx (PresPos w)).E × Bool) :=
+def genLoopRev (i : α) : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E :=
   [ordPos ((iRose_monotone w) (Rose.base_le_edg i true)),
    ordNeg ((iRose_monotone w) (Rose.mid_le_edg i true)),
    ordPos ((iRose_monotone w) (Rose.mid_le_edg i false)),
@@ -336,16 +337,16 @@ theorem isPath_genLoopRev (i : α) :
   ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- The loop of a letter: the loop of its generator, reversed for a negative letter. -/
-def letterLoop (p : α × Bool) : List ((orderCx (PresPos w)).E × Bool) :=
+def letterLoop (p : α × Bool) : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E :=
   if p.2 then genLoop w p.1 else genLoopRev w p.1
 
 /-- The loop read off a word. -/
-def wordLoop (l : List (α × Bool)) : List ((orderCx (PresPos w)).E × Bool) :=
+def wordLoop (l : FiniteChains.Comb.Oriented α) : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E :=
   l.flatMap (letterLoop w)
 
-@[simp] theorem wordLoop_nil : wordLoop w ([] : List (α × Bool)) = [] := rfl
+@[simp] theorem wordLoop_nil : wordLoop w ([] : FiniteChains.Comb.Oriented α) = [] := rfl
 
-@[simp] theorem wordLoop_append (l l' : List (α × Bool)) :
+@[simp] theorem wordLoop_append (l l' : FiniteChains.Comb.Oriented α) :
     wordLoop w (l ++ l') = wordLoop w l ++ wordLoop w l' := by
   simp [wordLoop]
 
@@ -357,7 +358,7 @@ theorem isPath_letterLoop (p : α × Bool) :
   | true => exact isPath_genLoop w i
   | false => exact isPath_genLoopRev w i
 
-theorem isPath_wordLoop (l : List (α × Bool)) :
+theorem isPath_wordLoop (l : FiniteChains.Comb.Oriented α) :
     IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (wordLoop w l)
       (ptBase w) (ptBase w) := by
   induction l with
@@ -371,19 +372,19 @@ theorem isPath_wordLoop (l : List (α × Bool)) :
 
 /-- The four edges of the circle of `j` at the position `k`, as a path of the order complex of
 the circles. -/
-def segAt (j : J) (k : ℕ) : List ((orderCx (TCirc w)).E × Bool) :=
+def segAt (j : J) (k : ℕ) : FiniteChains.Comb.Oriented (orderCx (TCirc w)).E :=
   if hk : k < (w j).length then
     [ordPos (TCirc.cor_le_cedgL w hk), ordNeg (TCirc.cmid_le_cedgL w hk),
      ordPos (TCirc.cmid_le_cedgR w hk), ordNeg (TCirc.cor_csucc_le_cedgR w hk)]
   else []
 
 /-- The path along the circle of `j` through its first `m` letters. -/
-def circPath (j : J) : ℕ → List ((orderCx (TCirc w)).E × Bool)
+def circPath (j : J) : ℕ → FiniteChains.Comb.Oriented (orderCx (TCirc w)).E
   | 0 => []
   | m + 1 => circPath j m ++ segAt w j m
 
 /-- The attaching loop of the relator `j`. -/
-def circLoop (j : J) : List ((orderCx (TCirc w)).E × Bool) := circPath w j (w j).length
+def circLoop (j : J) : FiniteChains.Comb.Oriented (orderCx (TCirc w)).E := circPath w j (w j).length
 
 end PresModel
 end FiniteChains

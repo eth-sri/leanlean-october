@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.FinitePosetCycleNaturality
 public import RequestProject.OrderNerveAffinePathWords
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A monotone image of an explicit cycle reads its ordered edge word by
 an actual endpoint-preserving path homotopy. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.FinitePosetCycle
 open RelativeAttachment ContinuousEdgeWords

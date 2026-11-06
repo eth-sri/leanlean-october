@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCoverRelatorNaturality
 public import RequestProject.OrderUniversalDeck
 public import RequestProject.OrderUniversalPosetCover
@@ -10,7 +11,7 @@ public import RequestProject.PresPosetConnected
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
   (hpos : ∀ j, 0 < (w j).length)
 
 include hpos

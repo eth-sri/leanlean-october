@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 
 @[expose] public section
@@ -18,7 +19,7 @@ variable {L E : Complex2.{u}} (ι : Hom L E)
 variable (hV : Function.Bijective ι.onV) (hE : Function.Bijective ι.onE)
   (hF : Function.Bijective ι.onF)
 
-theorem map_surjInv_map (q : List (L.E × Bool)) :
+theorem map_surjInv_map (q : FiniteChains.Comb.Oriented L.E) :
     ((q.map fun eb => (ι.onE eb.1, eb.2)).map
       fun eb => (Function.surjInv hE.2 eb.1, eb.2)) = q := by
   induction q with
@@ -66,7 +67,7 @@ noncomputable def homInv : Hom E L where
 @[simp] theorem homInv_onF_comp (f : L.F) : (homInv ι hV hE hF).onF (ι.onF f) = f :=
   surjInv_apply_apply hF f
 
-theorem mapPath_homInv (q : List (L.E × Bool)) :
+theorem mapPath_homInv (q : FiniteChains.Comb.Oriented L.E) :
     mapPath (homInv ι hV hE hF) (mapPath ι q) = q :=
   map_surjInv_map ι hE q
 

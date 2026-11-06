@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationCover
 public import RequestProject.OrderNerveRealizationNestedSubcomplex
 public import RequestProject.ConeAdjBaseCover
@@ -8,15 +10,16 @@ public import RequestProject.AttachmentQuotientHomeomorph
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The realization of a poset obtained by adjoining cone points is the
 actual attachment of the realized lower ideals to the realized old part.
 The family can be infinite: the quotient argument uses the simplexwise
 weak topology, not a finite closed-cover assertion. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology

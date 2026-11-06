@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetAlpha
 
 @[expose] public section
@@ -10,7 +11,7 @@ variable {α J : Type u}
 
 /-- Nonempty attaching-word representatives, using a cancelling pair. -/
 noncomputable def presNonemptyWords (ρ : J → FreeGroup α) (a : α) (j : J) :
-    List (α × Bool) := presWords ρ j ++ [(a, true), (a, false)]
+    FiniteChains.Comb.Oriented α := presWords ρ j ++ [(a, true), (a, false)]
 
 theorem presNonemptyWords_ne_nil (ρ : J → FreeGroup α) (a : α) (j : J) :
     presNonemptyWords ρ a j ≠ [] := by

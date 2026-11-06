@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeThreeCoordinateIncidence
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Genuine finite truncated cube boundaries, including their cut-face coefficients. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

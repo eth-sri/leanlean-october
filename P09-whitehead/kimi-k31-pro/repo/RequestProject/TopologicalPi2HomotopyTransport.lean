@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.TopologicalCoverPi2
 public import RequestProject.SquareMovingBasepoint
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Invariance of the challenge's actual based-square zero condition under ordinary
 homotopies and homotopy equivalences. Base points need not be fixed by the homotopies. -/
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology

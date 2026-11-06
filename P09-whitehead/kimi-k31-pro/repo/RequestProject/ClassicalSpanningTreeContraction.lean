@@ -1,17 +1,20 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalGraphContraction
 public import Mathlib.Topology.Homotopy.Contractible
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! A genuine continuous contraction of the disk realization of an arbitrary
 spanning tree. Only each vertex's natural-number height is finite. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment

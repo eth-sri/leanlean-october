@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockFamilyAmalgamation
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Individual factors of a simultaneous substitution
@@ -19,9 +25,6 @@ calculation or property (B2).
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.BlockFamily
 

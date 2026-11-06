@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.NamedPresentation
 public import RequestProject.FoxNaturality
 public import RequestProject.PresentationDictionary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The actual Fox matrix after adjoining names for the marked words. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.NamedPresentation
 variable {α J I : Type} [DecidableEq α] [DecidableEq I]

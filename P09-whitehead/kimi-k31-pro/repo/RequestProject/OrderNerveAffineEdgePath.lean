@@ -1,11 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveRealizationContraction
 public import RequestProject.OrderNerveFiniteCoordinates
 public import RequestProject.OrderNerveRealizationMapCoordinates
 public import RequestProject.SimpleLoopBoundaryHomeomorph
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! Explicit affine paths along actual realization edges, with exact
 barycentric coordinates and injectivity. Unlike an arbitrary chosen path
@@ -16,9 +22,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial

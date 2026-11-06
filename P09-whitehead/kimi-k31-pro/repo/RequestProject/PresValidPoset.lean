@@ -1,18 +1,20 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeIntervals
 public import RequestProject.PresPosetConnected
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-- Keep all rose vertices and relator apices, and only actual positions of the words. -/
 def presValidVertices : Set (PresPos w)

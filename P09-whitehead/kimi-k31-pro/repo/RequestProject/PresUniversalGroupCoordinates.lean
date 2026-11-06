@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetGroupEquiv
 public import RequestProject.OrderUniversalCocycleReading
 public import RequestProject.PresPosetConnected
@@ -9,11 +10,11 @@ public import RequestProject.PresPosetConnected
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
 /-- Evaluating a word in the presentation group is its actual quotient image. -/
-theorem presGroup_wordVal (l : List (α × Bool)) :
+theorem presGroup_wordVal (l : FiniteChains.Comb.Oriented α) :
     wordVal (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ)) l =
       QuotientGroup.mk (FreeGroup.mk l) := by
   have h : (FreeGroup.lift fun i : α =>

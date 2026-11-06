@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusCapSurfaceExtraction
 public import RequestProject.GenusApply
 public import RequestProject.PresPosetReading
@@ -7,10 +9,11 @@ public import RequestProject.OrderCocycleChains
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Explicit integral characters separating the actual genus marking loops. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel
@@ -27,7 +30,7 @@ theorem characterRel_read (j : Empty ⊕ PUnit) :
     wordVal characterGen (genusW characterRel characterA characterB q j) = 1 := by
   obtain j | j := j
   · exact j.elim
-  · rw (config := { transparency := .default }) [genusW_inr, wordVal, mk_surfWord, map_commWord]
+  · rwd [genusW_inr, wordVal, mk_surfWord, map_commWord]
     simp [commWord, mul_comm]
 
 noncomputable def surfaceCharacterCocycle :
@@ -41,19 +44,19 @@ noncomputable def surfaceCharacterCocycle :
 theorem surfaceCharacterCocycle_gSig (x : Fin q × Bool) :
     (surfaceCharacterCocycle q).readPath (gSig q (x.1.val, x.2)) =
       Multiplicative.ofAdd (Finsupp.single (x.1.val, x.2) (1 : ℤ)) := by
-  rw (config := { transparency := .default }) [surfaceCharacterCocycle, OrdCocycle.pullback_readPath]
+  rwd [surfaceCharacterCocycle, OrdCocycle.pullback_readPath]
   have h := (presCoc (genusW characterRel characterA characterB q) characterGen
     (characterRel_read q)).readPath_htpy
       (genus_hread characterRel characterA characterB q PUnit.unit.{1} (x.1.val, x.2))
   simp only [List.nil_append, revPath_nil, List.append_nil] at h
-  rw (config := { transparency := .default }) [h]
+  rwd [h]
   have hl : genusLw characterA characterB q PUnit.unit.{1} (x.1.val, x.2) =
       [((x.1.val, x.2), true)] := by
     obtain ⟨i, b⟩ := x
     cases b <;>
       simp [genusLw, sLet, Nat.mod_eq_of_lt i.isLt, characterA, characterB,
         show (4 * i.val + 1) / 4 = i.val from by omega]
-  rw (config := { transparency := .default }) [hl]
+  rwd [hl]
   change reading _ characterGen (characterRel_read q) (genClass _ (x.1.val, x.2)) = _
   exact reading_genClass _ _ _ _
 
@@ -66,14 +69,14 @@ theorem surfaceCharacter_capSurfaceChain2 (c : (cappedSpineCx q).F →₀ ℤ)
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd =>
-      rw (config := { transparency := .default }) [map_add, map_add, Finsupp.add_apply, hc, hd, Finsupp.add_apply]
+      rwd [map_add, map_add, Finsupp.add_apply, hc, hd, Finsupp.add_apply]
   | single f n =>
-      rw (config := { transparency := .default }) [capSurfaceChain2, Finsupp.linearCombination_single, LinearMap.map_smul]
+      rwd [capSurfaceChain2, Finsupp.linearCombination_single, LinearMap.map_smul]
       obtain f | z := f
       · simp [capSurfaceFace]
       · change (n • (surfaceCharacterCocycle q).chain1
           (pathChain (gSig q (z.1.val, z.2)))) (x.1.val, x.2) = _
-        rw (config := { transparency := .default }) [OrdCocycle.chain1_pathChain, surfaceCharacterCocycle_gSig]
+        rwd [OrdCocycle.chain1_pathChain, surfaceCharacterCocycle_gSig]
         change (n • Finsupp.single (z.1.val, z.2) (1 : ℤ)) (x.1.val, x.2) =
           (Finsupp.single (Sum.inr z) n :
             ((markedSpineCx q).F ⊕ (Fin q × Bool)) →₀ ℤ) (Sum.inr x)
@@ -85,7 +88,7 @@ theorem cappedCoverCycle_cap_augmentation_zero (c : (cappedTreeCover q).F →₀
     Finsupp.mapDomain Prod.snd c (.inr x) = 0 := by
   obtain ⟨d, hd⟩ := capSurfaceCycle_boundary q c hc
   have h := (surfaceCharacterCocycle q).chain1_bdry2 d
-  rw (config := { transparency := .default }) [hd] at h
+  rwd [hd] at h
   have he := congrArg (fun z : (ℕ × Bool) →₀ ℤ => z (x.1.val, x.2)) h
   simpa only [surfaceCharacter_capSurfaceChain2, Finsupp.zero_apply] using he
 

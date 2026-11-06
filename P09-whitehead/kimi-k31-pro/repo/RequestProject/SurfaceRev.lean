@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.SurfaceFilling
 public import RequestProject.BlockSurfaceFilling
 
@@ -39,20 +40,20 @@ section Pi1Calc
 
 variable {X : Complex2.{u}} {a : X.V}
 
-theorem pi1_mk_append {p q : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
+theorem pi1_mk_append {p q : FiniteChains.Comb.Oriented X.E} (hp : IsPath X.src X.tgt p a a)
     (hq : IsPath X.src X.tgt q a a) (hpq : IsPath X.src X.tgt (p ++ q) a a) :
     Pi1.mk (⟨p ++ q, hpq⟩ : Loop X a) = Pi1.mk ⟨p, hp⟩ * Pi1.mk ⟨q, hq⟩ := rfl
 
-theorem pi1_mk_rev {p : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
+theorem pi1_mk_rev {p : FiniteChains.Comb.Oriented X.E} (hp : IsPath X.src X.tgt p a a)
     (hr : IsPath X.src X.tgt (revPath p) a a) :
     Pi1.mk (⟨revPath p, hr⟩ : Loop X a) = (Pi1.mk ⟨p, hp⟩)⁻¹ := rfl
 
-theorem pi1_mk_congr {p p' : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
+theorem pi1_mk_congr {p p' : FiniteChains.Comb.Oriented X.E} (hp : IsPath X.src X.tgt p a a)
     (hp' : IsPath X.src X.tgt p' a a) (e : p = p') :
     Pi1.mk (⟨p, hp⟩ : Loop X a) = Pi1.mk ⟨p', hp'⟩ := by
   subst e; rfl
 
-theorem pi1_mk_eq_one {p : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
+theorem pi1_mk_eq_one {p : FiniteChains.Comb.Oriented X.E} (hp : IsPath X.src X.tgt p a a)
     (h : Htpy X a a p []) : Pi1.mk (⟨p, hp⟩ : Loop X a) = 1 :=
   Quotient.sound h
 
@@ -104,7 +105,7 @@ theorem bdEdge_rev {p p' : Fin M} (he : ec p' = ec p) (hv : vc p' = vc (p + 1))
 /-! ### The boundary path cut into sides -/
 
 /-- The crossing of the two positions `m` and `m+1`, i.e. of a whole side of the polygon. -/
-def pPath (m : ℕ) : List ((sdCx hc).E × Bool) :=
+def pPath (m : ℕ) : FiniteChains.Comb.Oriented (sdCx hc).E :=
   bdEdge hc (cyc M m) ++ bdEdge hc (cyc M (m + 1))
 
 theorem pPath_eq (m : ℕ) :

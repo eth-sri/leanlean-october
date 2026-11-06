@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ExponentCorrection
 public import RequestProject.GenusStructuralFinsupp
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! A simultaneous labelled relative normal form.
 
@@ -17,9 +23,6 @@ relator label, so restricting a stage never repeats a choice.
 noncomputable section
 open scoped Classical commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

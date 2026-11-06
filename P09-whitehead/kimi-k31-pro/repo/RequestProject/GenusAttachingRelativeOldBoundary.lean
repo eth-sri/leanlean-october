@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusNamedSurfaceSubdivision
 public import RequestProject.GenusNamedPolygonCoefficients
 public import RequestProject.GenusQuotientAttachingFilling
@@ -9,15 +11,16 @@ public import RequestProject.GenusAllQuotientRelativeRigidity
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Polygon reconstruction yields a boundary supported on actual old cells.
 All deck coefficients are retained in the actual quotient group.
  -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 
 namespace FiniteChains.Comb

@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.UniversalCoverPi2
 public import RequestProject.CycleLifting
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The condition "the inclusion is zero on `π₂`" in cellular and in Fox coordinates
@@ -24,9 +30,6 @@ Thus the hypothesis carried by `FiniteChains.PresChain` is exactly condition (1)
 paper, read in the combinatorial model, and nothing more.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb

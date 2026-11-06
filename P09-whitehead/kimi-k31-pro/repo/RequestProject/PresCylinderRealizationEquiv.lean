@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.RankOneCylinderRealization
 public import RequestProject.PresPosetDimension
 
@@ -14,7 +15,7 @@ namespace FiniteChains.PresModel
 open Comb CategoryTheory
 open scoped Topology
 
-variable {A J : Type} (w : J → List (A × Bool))
+variable {A J : Type} (w : J → FiniteChains.Comb.Oriented A)
 
 def presCylinderRealizationHomotopyEquiv :
     ContinuousMap.HomotopyEquiv (orderNerveRealization (CylBase w))

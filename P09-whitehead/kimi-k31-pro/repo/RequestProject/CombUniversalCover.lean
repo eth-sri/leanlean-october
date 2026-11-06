@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi1
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The universal cover of a combinatorial two-complex
@@ -26,9 +31,6 @@ base vertex.
   `FiniteChains.Comb.isRegular_univProj` — the cover is regular with this deck group.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -40,33 +42,31 @@ variable {X : Complex2.{u}}
 /-! ### The endpoint of an edge path -/
 
 /-- The endpoint of a list of oriented edges read from `a`. -/
-def endpt (X : Complex2.{u}) : X.V → List (X.E × Bool) → X.V
+def endpt (X : Complex2.{u}) : X.V → FiniteChains.Comb.Oriented X.E → X.V
   | a, [] => a
   | _, eb :: t => endpt X (germTgt X.src X.tgt eb) t
 
 @[simp] theorem endpt_nil (a : X.V) : endpt X a [] = a := rfl
 
-@[simp] theorem endpt_cons (a : X.V) (eb : X.E × Bool) (t : List (X.E × Bool)) :
+@[simp] theorem endpt_cons (a : X.V) (eb : X.E × Bool) (t : FiniteChains.Comb.Oriented X.E) :
     endpt X a (eb :: t) = endpt X (germTgt X.src X.tgt eb) t := rfl
 
-theorem endpt_eq_of_isPath {p : List (X.E × Bool)} {a b : X.V}
+theorem endpt_eq_of_isPath {p : FiniteChains.Comb.Oriented X.E} {a b : X.V}
     (h : IsPath X.src X.tgt p a b) : endpt X a p = b := by
   induction p generalizing a with
   | nil => exact h
   | cons eb t ih => exact ih h.2
 
-theorem endpt_append (a : X.V) (p q : List (X.E × Bool)) :
+theorem endpt_append (a : X.V) (p q : FiniteChains.Comb.Oriented X.E) :
     endpt X a (p ++ q) = endpt X (endpt X a p) q := by
-  induction p generalizing a with
-  | nil => rfl
-  | cons eb t ih => simpa using ih (germTgt X.src X.tgt eb)
+  induction p generalizing a <;> simp_all [endpt]
 
 /-! ### The vertices of the universal cover -/
 
 variable (X) in
 /-- An edge path issued from `x₀`. -/
 def PathFrom (x₀ : X.V) : Type u :=
-  {p : List (X.E × Bool) // IsPath X.src X.tgt p x₀ (endpt X x₀ p)}
+  {p : FiniteChains.Comb.Oriented X.E // IsPath X.src X.tgt p x₀ (endpt X x₀ p)}
 
 variable {x₀ : X.V}
 
@@ -116,13 +116,13 @@ def endV (c : UV X x₀) : X.V :=
 
 /-! ### Extending a class by an edge -/
 
-theorem endpt_append_single (a : X.V) (p : List (X.E × Bool)) (eb : X.E × Bool)
+theorem endpt_append_single (a : X.V) (p : FiniteChains.Comb.Oriented X.E) (eb : X.E × Bool)
     (h : endpt X a p = germSrc X.src X.tgt eb) :
     endpt X a (p ++ [eb]) = germTgt X.src X.tgt eb := by
   rw [endpt_append, h]
   rfl
 
-theorem isPath_append_single {p : List (X.E × Bool)} {a : X.V}
+theorem isPath_append_single {p : FiniteChains.Comb.Oriented X.E} {a : X.V}
     (hp : IsPath X.src X.tgt p a (endpt X a p)) (eb : X.E × Bool)
     (h : endpt X a p = germSrc X.src X.tgt eb) :
     IsPath X.src X.tgt (p ++ [eb]) a (endpt X a (p ++ [eb])) := by
@@ -139,12 +139,12 @@ noncomputable def extendP (eb : X.E × Bool) (p : PathFrom X x₀) : PathFrom X 
 theorem extendP_pos {p : PathFrom X x₀} {eb : X.E × Bool}
     (h : endpt X x₀ p.1 = germSrc X.src X.tgt eb) : (extendP eb p).1 = p.1 ++ [eb] := by
   classical
-  simp only [extendP, dif_pos h]
+  simp [extendP, h]
 
 theorem extendP_neg {p : PathFrom X x₀} {eb : X.E × Bool}
     (h : ¬ endpt X x₀ p.1 = germSrc X.src X.tgt eb) : (extendP eb p).1 = p.1 := by
   classical
-  simp only [extendP, dif_neg h]
+  simp [extendP, h]
 
 /-- Appending an oriented edge to a class of paths. -/
 noncomputable def extend (eb : X.E × Bool) (c : UV X x₀) : UV X x₀ :=
@@ -198,23 +198,21 @@ theorem extend_revGerm {c : UV X x₀} {eb : X.E × Bool} (h : endV c = germSrc 
       simpa using hcongr
 
 /-- Extending a class by a whole path. -/
-noncomputable def extendList (q : List (X.E × Bool)) (c : UV X x₀) : UV X x₀ :=
+noncomputable def extendList (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) : UV X x₀ :=
   q.foldl (fun d eb => extend eb d) c
 
 @[simp] theorem extendList_nil (c : UV X x₀) : extendList [] c = c := rfl
 
-@[simp] theorem extendList_cons (eb : X.E × Bool) (q : List (X.E × Bool)) (c : UV X x₀) :
+@[simp] theorem extendList_cons (eb : X.E × Bool) (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) :
     extendList (eb :: q) c = extendList q (extend eb c) := rfl
 
-theorem extendList_append (q r : List (X.E × Bool)) (c : UV X x₀) :
+theorem extendList_append (q r : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) :
     extendList (q ++ r) c = extendList r (extendList q c) := by
-  induction q generalizing c with
-  | nil => rfl
-  | cons eb t ih => simpa using ih (extend eb c)
+  induction q generalizing c <;> simp_all [extendList]
 
 /-- Extending the class of `p` by a path `q` issued from its endpoint gives the class of the
 concatenation. -/
-theorem extendList_mk : ∀ {q : List (X.E × Bool)} {p r : PathFrom X x₀} {w : X.V},
+theorem extendList_mk : ∀ {q : FiniteChains.Comb.Oriented X.E} {p r : PathFrom X x₀} {w : X.V},
     IsPath X.src X.tgt q (endpt X x₀ p.1) w → r.1 = p.1 ++ q →
       extendList q (UV.mk p) = UV.mk r := by
   intro q
@@ -235,7 +233,7 @@ theorem extendList_mk : ∀ {q : List (X.E × Bool)} {p r : PathFrom X x₀} {w 
       · rw [hend]; exact hq.2
       · rw [extendP_pos h', hr]; simp
 
-theorem endV_extendList : ∀ {q : List (X.E × Bool)} {c : UV X x₀} {w : X.V},
+theorem endV_extendList : ∀ {q : FiniteChains.Comb.Oriented X.E} {c : UV X x₀} {w : X.V},
     IsPath X.src X.tgt q (endV c) w → endV (extendList q c) = w := by
   intro q
   induction q with
@@ -286,7 +284,7 @@ noncomputable def liftGerm (c : UV X x₀) :
 
 open Classical in
 /-- The lift of an edge path at a vertex of the cover. -/
-noncomputable def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x₀ × Bool)
+noncomputable def uLiftPath : FiniteChains.Comb.Oriented X.E → UV X x₀ → FiniteChains.Comb.Oriented (UE X x₀)
   | [], _ => []
   | eb :: t, c =>
       if h : endV c = germSrc X.src X.tgt eb then
@@ -295,13 +293,13 @@ noncomputable def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x�
 
 @[simp] theorem uLiftPath_nil (c : UV X x₀) : uLiftPath [] c = [] := rfl
 
-theorem uLiftPath_cons {eb : X.E × Bool} {t : List (X.E × Bool)} {c : UV X x₀}
+theorem uLiftPath_cons {eb : X.E × Bool} {t : FiniteChains.Comb.Oriented X.E} {c : UV X x₀}
     (h : endV c = germSrc X.src X.tgt eb) :
     uLiftPath (eb :: t) c = liftGerm c eb h :: uLiftPath t (extend eb c) := by
   rw [uLiftPath, dif_pos h]
 
 /-- The attaching path of a two-cell of the universal cover. -/
-noncomputable def uAtt (cf : UF X x₀) : List (UE X x₀ × Bool) :=
+noncomputable def uAtt (cf : UF X x₀) : FiniteChains.Comb.Oriented (UE X x₀) :=
   uLiftPath (X.att cf.1.2) cf.1.1
 
 theorem germSrc_liftGerm {c : UV X x₀} {eb : X.E × Bool}
@@ -319,12 +317,10 @@ theorem germTgt_liftGerm {c : UV X x₀} {eb : X.E × Bool}
     (h : endV c = germSrc X.src X.tgt eb) :
     germTgt uSrc uTgt (liftGerm c eb h) = extend eb c := by
   obtain ⟨e, b⟩ := eb
-  cases b with
-  | true => rfl
-  | false => rfl
+  cases b <;> rfl
 
 /-- The lift of a path is a path of the cover, from the given vertex to the extended one. -/
-theorem isPath_uLiftPath : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem isPath_uLiftPath : ∀ (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w → IsPath uSrc uTgt (uLiftPath q c) c (extendList q c) := by
   intro q
   induction q with
@@ -365,7 +361,7 @@ theorem uAtt_isLoop (cf : UF X x₀) : IsPath uSrc uTgt (uAtt cf) (uBase cf) (uB
   rwa [extendList_att h] at this
 
 /-- The lift of a path projects back to the path. -/
-theorem map_uLiftPath : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem map_uLiftPath : ∀ (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       (uLiftPath q c).map (fun eb => ((eb.1 : UE X x₀).1.2, eb.2)) = q := by
   intro q
@@ -469,7 +465,7 @@ theorem isCovering_univProj (hX : IsConnected X) : IsCovering (univProj X x₀) 
 
 theorem isConnected_univCover : IsConnected (uCover X x₀) := by
   -- every vertex is joined to the base vertex
-  have key : ∀ c : UV X x₀, ∃ l : List ((uCover X x₀).E × Bool),
+  have key : ∀ c : UV X x₀, ∃ l : FiniteChains.Comb.Oriented (uCover X x₀).E,
       IsPath (uCover X x₀).src (uCover X x₀).tgt l (UV.base X x₀) c := by
     intro c
     induction c using UV.ind with
@@ -491,7 +487,7 @@ theorem isConnected_univCover : IsConnected (uCover X x₀) := by
 /-! ### The cover is simply connected -/
 
 /-- Lifting is additive along concatenation. -/
-theorem uLiftPath_append : ∀ (l : List (X.E × Bool)) (m : List (X.E × Bool)) (c : UV X x₀)
+theorem uLiftPath_append : ∀ (l : FiniteChains.Comb.Oriented X.E) (m : FiniteChains.Comb.Oriented X.E) (c : UV X x₀)
     (w : X.V), IsPath X.src X.tgt l (endV c) w →
       uLiftPath (l ++ m) c = uLiftPath l c ++ uLiftPath m (extendList l c) := by
   intro l
@@ -505,7 +501,7 @@ theorem uLiftPath_append : ∀ (l : List (X.E × Bool)) (m : List (X.E × Bool))
       rfl
 
 /-- Homotopic paths extend a class in the same way. -/
-theorem extendList_htpy {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V}
+theorem extendList_htpy {c : UV X x₀} {l l' : FiniteChains.Comb.Oriented X.E} {w : X.V}
     (hl : IsPath X.src X.tgt l (endV c) w) (h : Htpy X (endV c) w l l') :
     extendList l c = extendList l' c := by
   induction c using UV.ind with
@@ -525,7 +521,7 @@ theorem extendList_htpy {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V}
       exact Htpy.append_congr p.2 hl (Htpy.refl _) h
 
 /-- Lifting turns an elementary homotopy of the base into a homotopy of the cover. -/
-theorem htpy_step_uLiftPath {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V}
+theorem htpy_step_uLiftPath {c : UV X x₀} {l l' : FiniteChains.Comb.Oriented X.E} {w : X.V}
     (hstep : Step X (endV c) w l l') :
     Htpy (uCover X x₀) c (extendList l c) (uLiftPath l c) (uLiftPath l' c) := by
   obtain ⟨hl, hl', hc⟩ := hstep
@@ -596,7 +592,7 @@ theorem htpy_step_uLiftPath {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V
 
 /-- **Lifting is compatible with homotopy**: homotopic paths of the base have homotopic
 lifts. -/
-theorem htpy_uLiftPath {c : UV X x₀} {q q' : List (X.E × Bool)} {w : X.V}
+theorem htpy_uLiftPath {c : UV X x₀} {q q' : FiniteChains.Comb.Oriented X.E} {w : X.V}
     (hq : IsPath X.src X.tgt q (endV c) w) (h : Htpy X (endV c) w q q') :
     Htpy (uCover X x₀) c (extendList q c) (uLiftPath q c) (uLiftPath q' c) := by
   induction h with
@@ -616,7 +612,7 @@ theorem htpy_uLiftPath {c : UV X x₀} {q q' : List (X.E × Bool)} {w : X.V}
         exact this.symm
 
 /-- **Unique path lifting**: a path of the cover is the lift of its projection. -/
-theorem eq_uLiftPath_of_isPath : ∀ (L : List ((uCover X x₀).E × Bool)) (c d : UV X x₀),
+theorem eq_uLiftPath_of_isPath : ∀ (L : FiniteChains.Comb.Oriented (uCover X x₀).E) (c d : UV X x₀),
     IsPath (uCover X x₀).src (uCover X x₀).tgt L c d →
       L = uLiftPath (mapPath (univProj X x₀) L) c := by
   intro L
@@ -694,7 +690,7 @@ theorem simplyConnected_univCover : SimplyConnected (uCover X x₀) := by
         have hA : Htpy X v v (revPath p.1 ++ (p.1 ++ q)) (revPath p.1 ++ p.1) :=
           Htpy.append_congr hrp hpq (Htpy.refl _) h1
         have hB : Htpy X v v (revPath p.1 ++ p.1) [] := htpy_revPath_append p.2
-        have hC : Htpy X v v ((revPath p.1 ++ p.1) ++ q) (([] : List (X.E × Bool)) ++ q) :=
+        have hC : Htpy X v v ((revPath p.1 ++ p.1) ++ q) (([] : FiniteChains.Comb.Oriented X.E) ++ q) :=
           Htpy.append_congr (isPath_append_iff.mpr ⟨x₀, hrp, p.2⟩) hq hB (Htpy.refl _)
         have hD : (revPath p.1 ++ p.1) ++ q = revPath p.1 ++ (p.1 ++ q) := by simp
         have hqA : Htpy X v v q (revPath p.1 ++ (p.1 ++ q)) := by
@@ -744,9 +740,7 @@ theorem deckV_one (c : UV X x₀) : deckV (1 : Pi1 X x₀) c = c := by
   induction c using UV.ind with
   | h p =>
       refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (deckP ⟨[], rfl⟩ p).1) (deckP (⟨[], rfl⟩ : Loop X x₀) p).1 p.1
-      show Htpy X x₀ (endpt X x₀ ([] ++ p.1)) ([] ++ p.1) p.1
-      simpa using Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ p.1) p.1
+      simp [deckP]
 
 theorem deckV_mul (γ δ : Pi1 X x₀) (c : UV X x₀) :
     deckV (γ * δ) c = deckV γ (deckV δ c) := by
@@ -757,11 +751,7 @@ theorem deckV_mul (γ δ : Pi1 X x₀) (c : UV X x₀) :
           induction c using UV.ind with
           | h p =>
               refine Quotient.sound ?_
-              show Htpy X x₀ (endpt X x₀ ((g.1 ++ g'.1) ++ p.1)) ((g.1 ++ g'.1) ++ p.1)
-                (g.1 ++ (g'.1 ++ p.1))
-              simpa using
-                Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ ((g.1 ++ g'.1) ++ p.1))
-                  ((g.1 ++ g'.1) ++ p.1)
+              simp [deckP, List.append_assoc]
 
 theorem extend_deckV (γ : Pi1 X x₀) (eb : X.E × Bool) (c : UV X x₀) :
     extend eb (deckV γ c) = deckV γ (extend eb c) := by
@@ -808,7 +798,7 @@ theorem liftGerm_deckV {c : UV X x₀} {eb : X.E × Bool} (γ : Pi1 X x₀)
       refine Subtype.ext (Prod.ext ?_ rfl)
       exact extend_deckV γ (e, false) c
 
-theorem uLiftPath_deckV (γ : Pi1 X x₀) : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem uLiftPath_deckV (γ : Pi1 X x₀) : ∀ (q : FiniteChains.Comb.Oriented X.E) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       uLiftPath q (deckV γ c) = (uLiftPath q c).map (fun Eb => (deckE γ Eb.1, Eb.2)) := by
   intro q

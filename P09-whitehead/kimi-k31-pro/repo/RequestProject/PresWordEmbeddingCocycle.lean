@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordEmbedding
 public import RequestProject.PresPosetReading
 public import RequestProject.OrderUniversalCocycleReading
@@ -7,20 +8,21 @@ public import RequestProject.CombPi2
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
 universe u t s
 variable {α β J K : Type u} {G : Type t} {H : Type s} [Group G] [Group H]
-variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
+variable {w : J → FiniteChains.Comb.Oriented α} {v : K → FiniteChains.Comb.Oriented β}
   (h : PresWordEmbedding w v) (a : α → G) (b : β → H) (φ : G →* H)
   (hb : ∀ i, b (h.gen i) = φ (a i))
 
 include hb in
-theorem wordVal_map (l : List (α × Bool)) :
+theorem wordVal_map (l : FiniteChains.Comb.Oriented α) :
     wordVal b (l.map (fun p => (h.gen p.1, p.2))) = φ (wordVal a l) := by
   have he : (FreeGroup.lift b).comp (FreeGroup.map h.gen) = φ.comp (FreeGroup.lift a) := by
     apply FreeGroup.ext_hom
@@ -103,7 +105,7 @@ theorem readGerm_map (e : (orderCx (PresPos w)).E × Bool) :
   · exact h.presCoc_map a b φ hb hw hv _ _
 
 include hb in
-theorem readPath_map (p : List ((orderCx (PresPos w)).E × Bool)) :
+theorem readPath_map (p : FiniteChains.Comb.Oriented (orderCx (PresPos w)).E) :
     (presCoc v b hv).readPath (mapPath (orderCxMap h.posMap h.posMap.monotone) p) =
       φ ((presCoc w a hw).readPath p) := by
   induction p with

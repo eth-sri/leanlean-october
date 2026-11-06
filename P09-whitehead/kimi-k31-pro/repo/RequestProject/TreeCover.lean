@@ -1,9 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.TreePresentation
 public import RequestProject.CoverComplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The cover of a two-complex attached to a normal subgroup of the collapsed presentation
@@ -26,9 +31,6 @@ non-tree edges of a spanning tree `T`.  This file builds, for every normal subgr
 The acyclicity of this cover is proved in `RequestProject/TreeCoverAcyclic.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -47,19 +49,19 @@ class of the generator otherwise. -/
 noncomputable def germQ (g : K.E × Bool) : CovQ T N := QuotientGroup.mk (germWord T g)
 
 /-- The translation attached to an edge path. -/
-noncomputable def wordQ (p : List (K.E × Bool)) : CovQ T N :=
+noncomputable def wordQ (p : FiniteChains.Comb.Oriented K.E) : CovQ T N :=
   QuotientGroup.mk (pathWord T p)
 
 variable {T N}
 
-@[simp] theorem wordQ_nil : wordQ T N ([] : List (K.E × Bool)) = 1 := rfl
+@[simp] theorem wordQ_nil : wordQ T N ([] : FiniteChains.Comb.Oriented K.E) = 1 := rfl
 
-theorem wordQ_cons (g : K.E × Bool) (p : List (K.E × Bool)) :
+theorem wordQ_cons (g : K.E × Bool) (p : FiniteChains.Comb.Oriented K.E) :
     wordQ T N (g :: p) = germQ T N g * wordQ T N p := by
   unfold wordQ germQ
   rw [pathWord_cons, QuotientGroup.mk_mul]
 
-theorem wordQ_append (p p' : List (K.E × Bool)) :
+theorem wordQ_append (p p' : FiniteChains.Comb.Oriented K.E) :
     wordQ T N (p ++ p') = wordQ T N p * wordQ T N p' := by
   unfold wordQ
   rw [pathWord_append, QuotientGroup.mk_mul]
@@ -98,7 +100,7 @@ noncomputable def liftGerm (q : CovQ T N) (g : K.E × Bool) : (CovQ T N × K.E) 
   if g.2 then ((q, g.1), true) else ((q * germQ T N g, g.1), false)
 
 /-- The lift at the vertex `q` of an edge path of `K`. -/
-noncomputable def liftK : List (K.E × Bool) → CovQ T N → List ((CovQ T N × K.E) × Bool)
+noncomputable def liftK : FiniteChains.Comb.Oriented K.E → CovQ T N → FiniteChains.Comb.Oriented ((CovQ T N × K.E))
   | [], _ => []
   | g :: L, q => liftGerm T N q g :: liftK L (q * germQ T N g)
 
@@ -106,7 +108,7 @@ variable {T N}
 
 @[simp] theorem liftK_nil (q : CovQ T N) : liftK T N [] q = [] := rfl
 
-@[simp] theorem liftK_cons (g : K.E × Bool) (L : List (K.E × Bool)) (q : CovQ T N) :
+@[simp] theorem liftK_cons (g : K.E × Bool) (L : FiniteChains.Comb.Oriented K.E) (q : CovQ T N) :
     liftK T N (g :: L) q = liftGerm T N q g :: liftK T N L (q * germQ T N g) := rfl
 
 @[simp] theorem liftGerm_fst_snd (q : CovQ T N) (g : K.E × Bool) :
@@ -127,12 +129,10 @@ theorem germTgt_liftGerm (q : CovQ T N) (g : K.E × Bool) :
     germTgt (covSrc T N) (covTgt T N) (liftGerm T N q g) =
       (q * germQ T N g, germTgt K.src K.tgt g) := by
   obtain ⟨e, b⟩ := g
-  cases b
-  · rfl
-  · rfl
+  cases b <;> rfl
 
 /-- The projection of a lifted path is the path itself. -/
-theorem map_liftK (L : List (K.E × Bool)) (q : CovQ T N) :
+theorem map_liftK (L : FiniteChains.Comb.Oriented K.E) (q : CovQ T N) :
     (liftK T N L q).map (fun eb => (eb.1.2, eb.2)) = L := by
   induction L generalizing q with
   | nil => rfl
@@ -140,7 +140,7 @@ theorem map_liftK (L : List (K.E × Bool)) (q : CovQ T N) :
 
 /-- The lift at `q` of a path from `a` to `b` is a path from `(q, a)` to `(q · w, b)`, where
 `w` is the word spelled by the path. -/
-theorem liftK_isPath {L : List (K.E × Bool)} {a b : K.V} (hL : IsPath K.src K.tgt L a b)
+theorem liftK_isPath {L : FiniteChains.Comb.Oriented K.E} {a b : K.V} (hL : IsPath K.src K.tgt L a b)
     (q : CovQ T N) :
     IsPath (covSrc T N) (covTgt T N) (liftK T N L q) (q, a) (q * wordQ T N L, b) := by
   induction L generalizing a q with
@@ -210,7 +210,7 @@ noncomputable def treeCoverProj (hN : ∀ f, treeRel T f ∈ N) : Hom (treeCover
 /-- Every element of the free group on the non-tree edges is spelled by a loop of `K` at the
 root. -/
 theorem exists_loop_spelling (w : FreeGroup (NonTree T)) :
-    ∃ p : List (K.E × Bool), IsPath K.src K.tgt p T.root T.root ∧ pathWord T p = w := by
+    ∃ p : FiniteChains.Comb.Oriented K.E, IsPath K.src K.tgt p T.root T.root ∧ pathWord T p = w := by
   classical
   induction w using FreeGroup.induction_on with
   | one => exact ⟨[], rfl, rfl⟩

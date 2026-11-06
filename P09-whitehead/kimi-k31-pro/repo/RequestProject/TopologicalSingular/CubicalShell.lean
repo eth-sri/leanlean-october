@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /-
 Copyright (c) 2026 Vasily Ilin. All rights reserved.
 Released under Apache 2.0 license.
@@ -13,6 +15,10 @@ public import Mathlib.Topology.UnitInterval
 public import Mathlib.Tactic
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # Cubical shells in a pointed space
@@ -32,9 +38,6 @@ open scoped Topology Topology.Homotopy unitInterval
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 

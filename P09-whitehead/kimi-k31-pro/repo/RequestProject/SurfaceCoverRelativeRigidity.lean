@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusReceivedPolygonCoefficient
 public import RequestProject.SurfaceDual
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Relative coefficient propagation in actual covers of the polygon surface. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open ASC
@@ -136,14 +139,9 @@ theorem surfaceBoundary_vertex_pair {a b e t : P}
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
-    by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h02, h12, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h02, h12, hAB.symm]
-      · simp [h01, h02, h12, hA, hB]
+    rwd [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    by_cases hA : r = A <;> by_cases hB : r = B <;>
+      simp_all [Finsupp.single_apply, h01, h02, h12, hAB]
 
 /-- At a vertex/face diagonal the two incident flags both occur negatively. -/
 theorem surfaceBoundary_edge_pair {v a b t : P}
@@ -184,14 +182,9 @@ theorem surfaceBoundary_edge_pair {v a b t : P}
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
-    by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h12, h02, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h12, h02, hAB.symm]
-      · simp [h01, h12, h02, hA, hB]
+    rwd [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    by_cases hA : r = A <;> by_cases hB : r = B <;>
+      simp_all [Finsupp.single_apply, h01, h12, h02, hAB]
 
 /-- At a vertex/edge incidence the two flags in the adjacent faces occur positively. -/
 theorem surfaceBoundary_face_pair {v e a b : P}
@@ -232,14 +225,9 @@ theorem surfaceBoundary_face_pair {v e a b : P}
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
-    by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h12, h02, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h12, h02, hAB.symm]
-      · simp [h01, h12, h02, hA, hB]
+    rwd [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    by_cases hA : r = A <;> by_cases hB : r = B <;>
+      simp_all [Finsupp.single_apply, h01, h12, h02, hAB]
 
 end Coefficients
 
@@ -247,19 +235,7 @@ theorem exactlyTwo_exhaust {X : Type} {R : X → Prop} (h : ExactlyTwo R)
     {a b : X} (ha : R a) (hb : R b) (hab : a ≠ b) :
     ∀ x, R x → x = a ∨ x = b := by
   obtain ⟨x, y, _, _, _, hall⟩ := h
-  rcases hall a ha with hax | hay
-  · rcases hall b hb with hbx | hby
-    · exact False.elim (hab (hax.trans hbx.symm))
-    · intro z hz
-      rcases hall z hz with hzx | hzy
-      · exact Or.inl (hzx.trans hax.symm)
-      · exact Or.inr (hzy.trans hby.symm)
-  · rcases hall b hb with hbx | hby
-    · intro z hz
-      rcases hall z hz with hzx | hzy
-      · exact Or.inr (hzx.trans hbx.symm)
-      · exact Or.inl (hzy.trans hay.symm)
-    · exact False.elim (hab (hay.trans hby.symm))
+  grind
 
 section Propagation
 variable (S : SurfaceRank P) (c : StrictOrdTri P →₀ ℤ)
@@ -277,7 +253,7 @@ theorem surface_zero_change_vertex {a b e t : P}
   · have he : S.rk e = 1 := (S.rk_flag hae het).2.1
     have hpair := surfaceBoundary_vertex_pair S hae hbe het hab
       (exactlyTwo_exhaust (S.two_vertices e he) hae hbe hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rwd [hd, hz] at hpair
     omega
 
 /-- A zero flag coefficient propagates across an edge change inside a face. -/
@@ -293,7 +269,7 @@ theorem surface_zero_change_edge {v a b t : P}
     have hpair := surfaceBoundary_edge_pair S hva hat hvb hbt hab
       (exactlyTwo_exhaust (S.two_edges v t hrk.1 hrk.2.2 (hva.trans hat))
         ⟨hva, hat⟩ ⟨hvb, hbt⟩ hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rwd [hd, hz] at hpair
     omega
 
 /-- A zero flag coefficient crosses an actual shared old edge as soon as the
@@ -309,7 +285,7 @@ theorem surface_zero_change_face {v e a b : P}
   · have he : S.rk e = 1 := (S.rk_flag hve hea).2.1
     have hpair := surfaceBoundary_face_pair S hve hea heb hab
       (exactlyTwo_exhaust (S.two_faces e he) hea heb hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rwd [hd, hz] at hpair
     omega
 
 /-- One zero flag coefficient determines all flags of its actual triangular
@@ -393,17 +369,17 @@ theorem polygonRelative_zero_inner
   have hpole : ∀ a : StrictOrdTri P, f a.1.1 = cC hc → c a = 0 := by
     intro a ha
     have he : polygonCoverPoleCoefficients hc f hf c =
-        polygonCoverPoleCoefficients hc f hf 0 := by rw (config := { transparency := .default }) [map_zero]; exact hpoles
+        polygonCoverPoleCoefficients hc f hf 0 := by rwd [map_zero]; exact hpoles
     have hh := polygonCoverPole_relative_ext hc f hf hM c 0 hsource
       (by intro e _; simp) he a ha
     exact hh
   obtain ⟨v, ⟨hvt, hfv⟩, _⟩ := hf.down t.1.2.2 (cC hc)
-    (by rw (config := { transparency := .default }) [ht]; exact (ctr_lt_inn hc p).le)
+    (by rwd [ht]; exact (ctr_lt_inn hc p).le)
   have hvT : v < t.1.2.2 := lt_of_le_of_ne hvt (by
     intro he
     have hh := hfv.symm.trans ((congrArg f he).trans ht)
     exact (ctr_lt_inn hc p).ne hh)
-  have hvrk : S.rk v = 0 := by change Cell.rk (f v) = 0; rw (config := { transparency := .default }) [hfv]; rfl
+  have hvrk : S.rk v = 0 := by change Cell.rk (f v) = 0; rwd [hfv]; rfl
   have hTrk : S.rk t.1.2.2 = 2 := (S.rk_flag t.2.1 t.2.2).2.2
   obtain ⟨e, _, _, ⟨hve, heT⟩, _, _⟩ := S.two_edges v t.1.2.2 hvrk hTrk hvT
   let a : StrictOrdTri P := ⟨(v, e, t.1.2.2), hve, heT⟩
@@ -423,11 +399,11 @@ theorem polygonRelative_zero_across
   have hdT' : d < t.1.2.2 := lt_of_le_of_ne hdT (by
     intro he
     exact het.ne (hfd.symm.trans (congrArg f he)))
-  obtain ⟨a', ⟨hda, hfa⟩, _⟩ := hf.up d a (by rw (config := { transparency := .default }) [hfd]; exact hea.le)
+  obtain ⟨a', ⟨hda, hfa⟩, _⟩ := hf.up d a (by rwd [hfd]; exact hea.le)
   have hda' : d < a' := lt_of_le_of_ne hda (by
     intro he
     exact hea.ne (hfd.symm.trans ((congrArg f he).trans hfa)))
-  have hdrk : S.rk d = 1 := by change Cell.rk (f d) = 1; rw (config := { transparency := .default }) [hfd]; exact herk
+  have hdrk : S.rk d = 1 := by change Cell.rk (f d) = 1; rwd [hfd]; exact herk
   obtain ⟨v, _, _, hvd, _, _⟩ := S.two_vertices d hdrk
   let z : StrictOrdTri P := ⟨(v, d, a'), hvd, hda'⟩
   let w : StrictOrdTri P := ⟨(v, d, t.1.2.2), hvd, hdT'⟩
@@ -444,7 +420,7 @@ theorem polygonRelative_zero_inner_collar
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0)
     (p : Fin M) (t : StrictOrdTri P) (ht : f t.1.2.2 = cT2 hc p) : c t = 0 := by
   apply polygonRelative_zero_across hc hd f hf c hrel t (cF hc p) (cI hc p) rfl
-  · rw (config := { transparency := .default }) [ht]
+  · rwd [ht]
     exact lt_of_le_of_ne (cF_le_cT2 hc p) (by intro h; cases h)
   · exact lt_of_le_of_ne (cF_le_cI hc p) (by intro h; cases h)
   · exact fun h => h
@@ -458,7 +434,7 @@ theorem polygonRelative_zero_outer_collar
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0)
     (p : Fin M) (t : StrictOrdTri P) (ht : f t.1.2.2 = cT1 hc p) : c t = 0 := by
   apply polygonRelative_zero_across hc hd f hf c hrel t (cG hc p) (cT2 hc p) rfl
-  · rw (config := { transparency := .default }) [ht]
+  · rwd [ht]
     exact lt_of_le_of_ne (cG_le_cT1 hc p) (by intro h; cases h)
   · exact lt_of_le_of_ne (cG_le_cT2 hc p) (by intro h; cases h)
   · exact fun h => h
@@ -488,15 +464,12 @@ theorem PolygonRelativeChain.sub {c d : StrictOrdTri P →₀ ℤ}
   have hn : Comb.bdry2 (strictOrderCx P) (c - d) e ≠ 0 := Finsupp.mem_support_iff.mp he
   by_cases hce : Comb.bdry2 (strictOrderCx P) c e = 0
   · have hde : Comb.bdry2 (strictOrderCx P) d e ≠ 0 := by
-      intro hd0
-      apply hn
-      rw (config := { transparency := .default }) [map_sub, Finsupp.sub_apply, hce, hd0, sub_self]
+      simpa [map_sub, hce] using hn
     exact hd' e (Finsupp.mem_support_iff.mpr hde)
   · exact hc' e (Finsupp.mem_support_iff.mpr hce)
 
 theorem PolygonRelativeChain.zero : PolygonRelativeChain hc f (0 : StrictOrdTri P →₀ ℤ) := by
-  intro e he
-  simp at he
+  simp [PolygonRelativeChain]
 
 theorem PolygonRelativeChain.add {c d : StrictOrdTri P →₀ ℤ}
     (hc' : PolygonRelativeChain hc f c) (hd' : PolygonRelativeChain hc f d) :
@@ -505,9 +478,7 @@ theorem PolygonRelativeChain.add {c d : StrictOrdTri P →₀ ℤ}
   have hn : Comb.bdry2 (strictOrderCx P) (c + d) e ≠ 0 := Finsupp.mem_support_iff.mp he
   by_cases hce : Comb.bdry2 (strictOrderCx P) c e = 0
   · have hde : Comb.bdry2 (strictOrderCx P) d e ≠ 0 := by
-      intro hd0
-      apply hn
-      rw (config := { transparency := .default }) [map_add, Finsupp.add_apply, hce, hd0, add_zero]
+      simpa [map_add, hce] using hn
     exact hd' e (Finsupp.mem_support_iff.mpr hde)
   · exact hc' e (Finsupp.mem_support_iff.mpr hce)
 
@@ -517,8 +488,7 @@ theorem PolygonRelativeChain.smul {c : StrictOrdTri P →₀ ℤ}
   have hn : Comb.bdry2 (strictOrderCx P) (n • c) e ≠ 0 := Finsupp.mem_support_iff.mp he
   have hce : Comb.bdry2 (strictOrderCx P) c e ≠ 0 := by
     intro hzero
-    apply hn
-    rw (config := { transparency := .default }) [map_smul, Finsupp.smul_apply, hzero, smul_zero]
+    simp [map_smul, hzero] at hn
   exact hc' e (Finsupp.mem_support_iff.mpr hce)
 
 include hd in
@@ -532,6 +502,6 @@ theorem polygonRelative_ext
   apply sub_eq_zero.mp
   apply polygonRelative_zero_of_pole_coefficients hc hd f hf (c - d)
     (PolygonRelativeChain.sub hc f hc' hd')
-  rw (config := { transparency := .default }) [map_sub, hpoles, sub_self]
+  rwd [map_sub, hpoles, sub_self]
 
 end FiniteChains.Davis

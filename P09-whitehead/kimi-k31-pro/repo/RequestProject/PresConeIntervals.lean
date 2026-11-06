@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetPartialOrder
 public import RequestProject.StrictOrderChains
 
@@ -8,7 +9,7 @@ public import RequestProject.StrictOrderChains
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-- Valid attaching-circle positions are downward closed in the actual circle order. -/
 theorem tCirc_valid_down {x y : TCirc w} (hxy : x ≤ y)

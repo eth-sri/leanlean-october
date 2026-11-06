@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCxMonodromy
 public import RequestProject.OrderCxNatHtpy
 
@@ -31,7 +32,7 @@ variable {P Q : Type u} [Preorder P] [Preorder Q]
 
 /-- The image of a path under a constant map is null-homotopic: all its edges lie in the
 subposet `{c}`, which has a largest element. -/
-theorem htpy_nil_mapPath_const (c : Q) {u : P} {p : List ((orderCx P).E × Bool)}
+theorem htpy_nil_mapPath_const (c : Q) {u : P} {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p u u) :
     Htpy (orderCx Q) c c
       (mapPath (orderCxMap (fun _ : P => c) monotone_const) p) [] := by
@@ -49,7 +50,7 @@ theorem htpy_nil_mapPath_const (c : Q) {u : P} {p : List ((orderCx P).E × Bool)
 and above a constant, then the image under `f` of every loop is null-homotopic. -/
 theorem htpy_nil_mapPath_of_const_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
     (hfg : ∀ x, f x ≤ g x) (c : Q) (hcg : ∀ x, c ≤ g x) {u : P}
-    {p : List ((orderCx P).E × Bool)}
+    {p : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p u u) :
     Htpy (orderCx Q) (f u) (f u) (mapPath (orderCxMap f hf) p) [] := by
   have hfp : IsPath (orderCx Q).src (orderCx Q).tgt (mapPath (orderCxMap f hf) p) (f u) (f u) :=
@@ -122,7 +123,7 @@ have a largest element: it is enough to have a monotone map `g` on `A`, with val
 ambient poset, which lies above the inclusion and above one fixed element. -/
 theorem htpy_nil_of_pathIn_cone {A : P → Prop} (g : {x : P // A x} → P) (hg : Monotone g)
     (hfg : ∀ x : {x : P // A x}, (x : P) ≤ g x) (d : P) (hdg : ∀ x : {x : P // A x}, d ≤ g x)
-    {v : P} (hv : A v) {l : List ((orderCx P).E × Bool)}
+    {v : P} (hv : A v) {l : FiniteChains.Comb.Oriented (orderCx P).E}
     (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
     Htpy (orderCx P) v v l [] := by
   have hlift := isPath_liftPathIn l hl hv hv hp

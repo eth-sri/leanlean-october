@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordEmbeddingValidPi2
 public import RequestProject.Pi2DictionaryFinsupp
 public import RequestProject.PresUnivCoverIso
@@ -37,7 +38,7 @@ theorem fox_kernel_vanish_iff_univCover (ρ : J → FreeGroup α)
     exact z.property
 
 namespace PresModel.PresWordEmbedding
-variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
+variable {w : J → FiniteChains.Comb.Oriented α} {v : K → FiniteChains.Comb.Oriented β}
   (h : PresWordEmbedding w v)
   (hw : ∀ j, 0 < (w j).length) (hv : ∀ k, 0 < (v k).length)
   (ρ : J → FreeGroup α) (σ : K → FreeGroup β)

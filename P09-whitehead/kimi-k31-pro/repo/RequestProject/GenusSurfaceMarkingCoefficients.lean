@@ -1,18 +1,20 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.NormalizedMarkedPathCoefficients
 public import RequestProject.GenusAllQuotientCorrections
 public import RequestProject.GenusAttachingRelativeOldBoundary
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Sheetwise marking coefficients survive the actual lower-lift / chainMax
 map and order normalization. Written proof terms; no Lean run performed. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
@@ -37,7 +39,7 @@ abbrev namedAttachingDeckHom (g : QuotientMarkingGroup q ρ u) :=
 
 theorem exists_referenceMarkingFirst (i : Fin q × Bool) :
     ∃ e : OrdEdge (namedAttachingCover q ρ u),
-      ∃ p : List (OrdEdge (namedAttachingCover q ρ u) × Bool),
+      ∃ p : FiniteChains.Comb.Oriented (OrdEdge (namedAttachingCover q ρ u)),
         namedAttachingMarkingPath q ρ u hrho 1 i = (e, true) :: p ∧
         e.1.1 = namedAttachingReference q ρ u hrho 1 ∧
         (namedAttachingProjection q ρ u).onE e = markingFirstEdge q i ∧
@@ -66,7 +68,7 @@ def referenceMarkingFirst (i : Fin q × Bool) : OrdEdge (namedAttachingCover q �
   Classical.choose (exists_referenceMarkingFirst q ρ u hrho i)
 
 def referenceMarkingTail (i : Fin q × Bool) :
-    List (OrdEdge (namedAttachingCover q ρ u) × Bool) :=
+    FiniteChains.Comb.Oriented (OrdEdge (namedAttachingCover q ρ u)) :=
   Classical.choose (Classical.choose_spec (exists_referenceMarkingFirst q ρ u hrho i))
 
 theorem referenceMarkingFirst_spec (i : Fin q × Bool) :
@@ -314,8 +316,7 @@ theorem namedSurfaceMarkingChains_factor
     normalizedWeakChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
         (namedAttachingMarkingChains q ρ u hrho c) =
       allNamedSurfaceMarkingChains q ρ u hrho
-        (Finsupp.mapDomain (fun x => (finiteSpineToQuotient ρ q u hrho x.1, x.2)) c) := by
-  exact congrArg
+        (Finsupp.mapDomain (fun x => (finiteSpineToQuotient ρ q u hrho x.1, x.2)) c) := congrArg
     (normalizedWeakChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u))
     (namedAttachingMarkingChains_factor q ρ u hrho c)
 

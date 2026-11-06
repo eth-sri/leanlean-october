@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ReceivedTreeFoxCoordinates
 public import RequestProject.TreeCoverAcyclic
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Edge chains are determined by their non-tree coordinates and off-root boundary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree

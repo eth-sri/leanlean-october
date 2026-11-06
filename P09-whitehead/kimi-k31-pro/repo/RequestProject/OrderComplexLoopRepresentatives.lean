@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderComplexFreeFace
 public import RequestProject.OrderCxNatHtpy
 
@@ -14,7 +15,7 @@ from `C` to `B`. The connecting germs at its base are included explicitly. -/
 theorem loop_representative_of_monotone_map {C B : P → Prop}
     (hBC : ∀ x, B x → C x) (r : {x : P // C x} → P) (hr : Monotone r)
     (hrB : ∀ x, B (r x)) (hle : ∀ x, x.1 ≤ r x)
-    {a : P} {p : List ((orderCx P).E × Bool)} (ha : B a)
+    {a : P} {p : FiniteChains.Comb.Oriented (orderCx P).E} (ha : B a)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) (hC : PathIn C p) :
     ∃ l, IsPath (orderCx P).src (orderCx P).tgt l a a ∧ PathIn B l ∧
       Htpy (orderCx P) a a p l := by
@@ -50,7 +51,7 @@ theorem loop_representative_of_monotone_map {C B : P → Prop}
 theorem loop_representative_delete_free_face {C : P → Prop} {f t a : P}
     (ht : C t) (hft : f ≤ t) (hne : t ≠ f)
     (hunique : ∀ x, C x → f ≤ x → x ≠ f → x = t)
-    {p : List ((orderCx P).E × Bool)} (ha : C a ∧ a ≠ f)
+    {p : FiniteChains.Comb.Oriented (orderCx P).E} (ha : C a ∧ a ≠ f)
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a a) (hC : PathIn C p) :
     ∃ l, IsPath (orderCx P).src (orderCx P).tgt l a a ∧
       PathIn (fun x => C x ∧ x ≠ f) l ∧ Htpy (orderCx P) a a p l := by

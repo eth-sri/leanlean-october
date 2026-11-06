@@ -1,12 +1,14 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresValidPoset
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
@@ -15,14 +17,14 @@ variable {α β γ J K L : Type u}
 
 /-- Literal inclusions of labelled attaching words. This retains positions, including
 the chosen subdivisions, and does not choose new word representatives. -/
-structure PresWordEmbedding (w : J → List (α × Bool)) (v : K → List (β × Bool)) where
+structure PresWordEmbedding (w : J → FiniteChains.Comb.Oriented α) (v : K → FiniteChains.Comb.Oriented β) where
   gen : α ↪ β
   cell : J ↪ K
   word : ∀ j, v (cell j) = (w j).map (fun p => (gen p.1, p.2))
 
 namespace PresWordEmbedding
-variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
-  {z : L → List (γ × Bool)} (h : PresWordEmbedding w v)
+variable {w : J → FiniteChains.Comb.Oriented α} {v : K → FiniteChains.Comb.Oriented β}
+  {z : L → FiniteChains.Comb.Oriented γ} (h : PresWordEmbedding w v)
 
 def roseMap : Rose α ↪o Rose β where
   toFun
@@ -53,7 +55,7 @@ theorem circleFun_le_iff (c d : TCirc w) : h.circleFun c ≤ h.circleFun d ↔ c
   rcases d with ⟨j', k', t'⟩
   change h.circleFun _ = h.circleFun _ ∨ TCirc.lt v _ _ ↔
     (j, k, t) = (j', k', t') ∨ TCirc.lt w _ _
-  rw (config := { transparency := .default }) [h.circleFun_injective.eq_iff]
+  rwd [h.circleFun_injective.eq_iff]
   simp only [circleFun, TCirc.lt, TCirc.csucc, h.cell.injective.eq_iff, h.word_length]
 
 def circleMap : TCirc w ↪o TCirc v where
@@ -166,7 +168,7 @@ def validMap : ValidPresPos w ↪o ValidPresPos v where
 
 @[simp] theorem validMap_base : h.validMap (validPresBase w) = validPresBase v := rfl
 
-def refl (w : J → List (α × Bool)) : PresWordEmbedding w w where
+def refl (w : J → FiniteChains.Comb.Oriented α) : PresWordEmbedding w w where
   gen := Function.Embedding.refl _
   cell := Function.Embedding.refl _
   word _ := by simp

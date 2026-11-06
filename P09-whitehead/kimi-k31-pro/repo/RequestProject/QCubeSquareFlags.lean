@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.QCubeSquareSubdivision
 public import RequestProject.QCubeImmediateFaces
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The eight actual nondegenerate vertex-edge-square flags of a square subdivision. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

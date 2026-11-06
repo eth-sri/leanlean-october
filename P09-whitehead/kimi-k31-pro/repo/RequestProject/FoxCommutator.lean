@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import Mathlib
 public import RequestProject.FoxRequirement
 public import RequestProject.BoundaryRing
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The requirements pass to the commutator subgroup (Lemma 2.1 in the paper's application)
@@ -20,9 +26,6 @@ of `RequestProject/LemmaTwoOne.lean`.
 
 open scoped commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

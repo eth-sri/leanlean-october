@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetPartialOrder
 public import RequestProject.OrderThreeNormalization
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
@@ -31,18 +33,18 @@ theorem roseDimension_strictMono : StrictMono (roseDimension (α := α)) := by
   change Rose.le x y at hl
   cases x <;> cases y <;> simp_all [Rose.le, roseDimension]
 
-noncomputable def circleDimension (w : J → List (α × Bool)) (x : TCirc w) : ℕ := by
+noncomputable def circleDimension (w : J → FiniteChains.Comb.Oriented α) (x : TCirc w) : ℕ := by
   classical
   exact if x.2.1 < (w x.1).length ∧
     (x.2.2 = CPos.cedgL ∨ x.2.2 = CPos.cedgR) then 1 else 0
 
-theorem circleDimension_le_one (w : J → List (α × Bool)) (x : TCirc w) :
+theorem circleDimension_le_one (w : J → FiniteChains.Comb.Oriented α) (x : TCirc w) :
     circleDimension w x ≤ 1 := by
   classical
   unfold circleDimension
   split <;> omega
 
-theorem circleDimension_strictMono (w : J → List (α × Bool)) :
+theorem circleDimension_strictMono (w : J → FiniteChains.Comb.Oriented α) :
     StrictMono (circleDimension w) := by
   classical
   intro x y h
@@ -58,7 +60,7 @@ theorem circleDimension_strictMono (w : J → List (α × Bool)) :
   rcases htags with ⟨ht, ht', _⟩ | ⟨ht, ht', _⟩ | ⟨ht, ht', _⟩ | ⟨ht, ht', _⟩ <;>
     subst t <;> subst t' <;> simp [circleDimension, hk]
 
-theorem circleDimension_lt_aFun (w : J → List (α × Bool)) (x : TCirc w) :
+theorem circleDimension_lt_aFun (w : J → FiniteChains.Comb.Oriented α) (x : TCirc w) :
     circleDimension w x < roseDimension (aFun w x) := by
   classical
   obtain ⟨j, k, t⟩ := x
@@ -68,10 +70,10 @@ theorem circleDimension_lt_aFun (w : J → List (α × Bool)) (x : TCirc w) :
   · have hp : (w j)[k]? = none := List.getElem?_eq_none (by omega)
     cases t <;> simp_all [circleDimension, aFun, roseDimension]
 
-noncomputable def cylinderDimension (w : J → List (α × Bool)) : CylBase w → ℕ :=
+noncomputable def cylinderDimension (w : J → FiniteChains.Comb.Oriented α) : CylBase w → ℕ :=
   Sum.elim roseDimension (circleDimension w)
 
-theorem cylinderDimension_strictMono (w : J → List (α × Bool)) :
+theorem cylinderDimension_strictMono (w : J → FiniteChains.Comb.Oriented α) :
     StrictMono (cylinderDimension w) := by
   intro p q h
   have hn := ne_of_lt h
@@ -91,10 +93,10 @@ theorem cylinderDimension_strictMono (w : J → List (α × Bool)) :
       exact circleDimension_strictMono w (lt_of_le_of_ne hl (by
         intro he; exact hn (congrArg Sum.inr he)))
 
-noncomputable def presPosDimension (w : J → List (α × Bool)) : PresPos w → ℕ :=
+noncomputable def presPosDimension (w : J → FiniteChains.Comb.Oriented α) : PresPos w → ℕ :=
   Sum.elim (cylinderDimension w) (fun _ => 2)
 
-theorem presPosDimension_le_two (w : J → List (α × Bool)) (p : PresPos w) :
+theorem presPosDimension_le_two (w : J → FiniteChains.Comb.Oriented α) (p : PresPos w) :
     presPosDimension w p ≤ 2 := by
   cases p with
   | inl p =>
@@ -103,7 +105,7 @@ theorem presPosDimension_le_two (w : J → List (α × Bool)) (p : PresPos w) :
     | inr c => exact (circleDimension_le_one w c).trans (by decide)
   | inr j => exact le_refl _
 
-theorem presPosDimension_strictMono (w : J → List (α × Bool)) :
+theorem presPosDimension_strictMono (w : J → FiniteChains.Comb.Oriented α) :
     StrictMono (presPosDimension w) := by
   intro p q h
   have hn := ne_of_lt h

@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderConstructionPartialOrder
 public import RequestProject.OrderNerveContiguousHomotopy
 public import Mathlib.Topology.Homotopy.Equiv
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-! An actual homotopy equivalence from the realization of a poset mapping
 cylinder to its base when the outer poset has height at most one. Collapsing
@@ -13,9 +19,6 @@ contiguous homotopies; pointwise order comparison is not mistaken for
 cross-comparability. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory

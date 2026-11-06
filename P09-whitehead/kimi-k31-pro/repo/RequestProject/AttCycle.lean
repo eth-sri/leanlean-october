@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.BlockConnected
 
 @[expose] public section
@@ -77,7 +78,7 @@ variable {α : Type u}
 /-- The label of the vertex at the position `p` of the cycle: even positions are corners of the
 word and carry the base vertex of the rose, odd positions are midpoints of letters and carry the
 midpoint of the loop of the corresponding generator. -/
-def vertLab (l : List (α × Bool)) (p : ℕ) : Rose α :=
+def vertLab (l : FiniteChains.Comb.Oriented α) (p : ℕ) : Rose α :=
   if p % 2 = 0 then Rose.base
   else
     match l[p / 2]? with
@@ -87,28 +88,28 @@ def vertLab (l : List (α × Bool)) (p : ℕ) : Rose α :=
 /-- The label of the edge joining the positions `p` and `p+1` of the cycle: the first half of the
 letter `p/2` for even `p`, its second half for odd `p`, the halves being taken in the order
 prescribed by the sign of the letter. -/
-def edgeLab (l : List (α × Bool)) (p : ℕ) : Rose α :=
+def edgeLab (l : FiniteChains.Comb.Oriented α) (p : ℕ) : Rose α :=
   match l[p / 2]? with
   | some q => Rose.edg q.1 (if p % 2 = 0 then !q.2 else q.2)
   | none => Rose.base
 
-@[simp] theorem vertLab_of_even {l : List (α × Bool)} {p : ℕ} (hp : p % 2 = 0) :
+@[simp] theorem vertLab_of_even {l : FiniteChains.Comb.Oriented α} {p : ℕ} (hp : p % 2 = 0) :
     vertLab l p = Rose.base := if_pos hp
 
-theorem vertLab_of_odd {l : List (α × Bool)} {p : ℕ} {q : α × Bool} (hp : p % 2 = 1)
+theorem vertLab_of_odd {l : FiniteChains.Comb.Oriented α} {p : ℕ} {q : α × Bool} (hp : p % 2 = 1)
     (hq : l[p / 2]? = some q) : vertLab l p = Rose.mid q.1 := by
   simp [vertLab, hp, hq]
 
-theorem edgeLab_eq {l : List (α × Bool)} {p : ℕ} {q : α × Bool} (hq : l[p / 2]? = some q) :
+theorem edgeLab_eq {l : FiniteChains.Comb.Oriented α} {p : ℕ} {q : α × Bool} (hq : l[p / 2]? = some q) :
     edgeLab l p = Rose.edg q.1 (if p % 2 = 0 then !q.2 else q.2) := by
   simp [edgeLab, hq]
 
-theorem getElem?_half {l : List (α × Bool)} {p : ℕ} (hp : p < 2 * l.length) :
+theorem getElem?_half {l : FiniteChains.Comb.Oriented α} {p : ℕ} (hp : p < 2 * l.length) :
     ∃ q, l[p / 2]? = some q :=
   ⟨l[p / 2]'(by omega), List.getElem?_eq_getElem (by omega)⟩
 
 /-- The vertex at a position lies under the edge that starts at it. -/
-theorem vertLab_le_edgeLab {l : List (α × Bool)} {p : ℕ} (hp : p < 2 * l.length) :
+theorem vertLab_le_edgeLab {l : FiniteChains.Comb.Oriented α} {p : ℕ} (hp : p < 2 * l.length) :
     vertLab l p ≤ edgeLab l p := by
   obtain ⟨q, hq⟩ := getElem?_half hp
   rcases Nat.even_or_odd p with he | ho
@@ -120,7 +121,7 @@ theorem vertLab_le_edgeLab {l : List (α × Bool)} {p : ℕ} (hp : p < 2 * l.len
     exact Rose.mid_le_edg _ _
 
 /-- The vertex at the next position lies under the same edge. -/
-theorem vertLab_succ_le_edgeLab {l : List (α × Bool)} {p : ℕ} (hp : p + 1 < 2 * l.length) :
+theorem vertLab_succ_le_edgeLab {l : FiniteChains.Comb.Oriented α} {p : ℕ} (hp : p + 1 < 2 * l.length) :
     vertLab l (p + 1) ≤ edgeLab l p := by
   obtain ⟨q, hq⟩ := getElem?_half (Nat.lt_of_succ_lt hp)
   rcases Nat.even_or_odd p with he | ho
@@ -134,7 +135,7 @@ theorem vertLab_succ_le_edgeLab {l : List (α × Bool)} {p : ℕ} (hp : p + 1 < 
     exact Rose.base_le_edg _ _
 
 /-- Every edge of the cycle carries a one-cell of the rose, so the base vertex lies under it. -/
-theorem base_le_edgeLab {l : List (α × Bool)} {p : ℕ} (hp : p < 2 * l.length) :
+theorem base_le_edgeLab {l : FiniteChains.Comb.Oriented α} {p : ℕ} (hp : p < 2 * l.length) :
     (Rose.base : Rose α) ≤ edgeLab l p := by
   obtain ⟨q, hq⟩ := getElem?_half hp
   rw [edgeLab_eq hq]
@@ -149,13 +150,13 @@ def edgePos (a b : ℕ) : ℕ := if b = a + 1 then a else b
 
 /-- **The label of a simplex of the cycle**: a vertex carries the label of its position, an edge
 the label of its position. -/
-def roseLab (l : List (α × Bool)) {M : ℕ} (σ : Finset (Fin M)) : Rose α :=
+def roseLab (l : FiniteChains.Comb.Oriented α) {M : ℕ} (σ : Finset (Fin M)) : Rose α :=
   if h : σ.Nonempty then
     if σ.card = 1 then vertLab l (σ.min' h).val
     else edgeLab l (edgePos (σ.min' h).val (σ.max' h).val)
   else Rose.base
 
-@[simp] theorem roseLab_singleton (l : List (α × Bool)) {M : ℕ} (v : Fin M) :
+@[simp] theorem roseLab_singleton (l : FiniteChains.Comb.Oriented α) {M : ℕ} (v : Fin M) :
     roseLab l ({v} : Finset (Fin M)) = vertLab l v.val := by
   have h : ({v} : Finset (Fin M)).Nonempty := ⟨v, by simp⟩
   simp [roseLab, h]
@@ -178,7 +179,7 @@ theorem pair_max' {M : ℕ} {x y : Fin M} (hxy : x < y) (h : ({x, y} : Finset (F
   · rw [Finset.mem_singleton] at hb
     exact hb ▸ le_refl _
 
-theorem roseLab_pair (l : List (α × Bool)) {M : ℕ} {x y : Fin M} (hxy : x < y) :
+theorem roseLab_pair (l : FiniteChains.Comb.Oriented α) {M : ℕ} {x y : Fin M} (hxy : x < y) :
     roseLab l ({x, y} : Finset (Fin M)) = edgeLab l (edgePos x.val y.val) := by
   have h : ({x, y} : Finset (Fin M)).Nonempty := ⟨x, by simp⟩
   have hcard : ({x, y} : Finset (Fin M)).card = 2 := Finset.card_pair (ne_of_lt hxy)
@@ -193,12 +194,12 @@ section Att
 variable {α : Type u}
 
 /-- The nerve of the concrete block: the cycle with `2·|u|` vertices. -/
-def cycA (l : List (α × Bool)) (hl : 2 ≤ l.length) : CommRel (Fin (2 * l.length)) :=
+def cycA (l : FiniteChains.Comb.Oriented α) (hl : 2 ≤ l.length) : CommRel (Fin (2 * l.length)) :=
   cycRel _ (by omega)
 
 /-- **The key monotonicity step**: an endpoint of an edge of the cycle carries a label below the
 label of the edge. -/
-theorem roseLab_vertex_le_edge (l : List (α × Bool)) (hl : 2 ≤ l.length)
+theorem roseLab_vertex_le_edge (l : FiniteChains.Comb.Oriented α) (hl : 2 ≤ l.length)
     {x y v : Fin (2 * l.length)} (hlt : x < y)
     (hadj : cycAdj (2 * l.length) x y) (hv : v = x ∨ v = y) :
     vertLab l v.val ≤ edgeLab l (edgePos x.val y.val) := by
@@ -225,7 +226,7 @@ theorem roseLab_vertex_le_edge (l : List (α × Bool)) (hl : 2 ≤ l.length)
     · exact vertLab_le_edgeLab (by omega)
 
 /-- The labelling is monotone on the simplices of the cycle. -/
-theorem roseLab_monotone (l : List (α × Bool)) (hl : 2 ≤ l.length) : Monotone (fun σ : NeSpx (cycA l hl) => roseLab l σ.1) := by
+theorem roseLab_monotone (l : FiniteChains.Comb.Oriented α) (hl : 2 ≤ l.length) : Monotone (fun σ : NeSpx (cycA l hl) => roseLab l σ.1) := by
   rintro ⟨σ, hσne, hσs⟩ ⟨τ, hτne, hτs⟩ (hsub : σ ⊆ τ)
   have hM : 4 ≤ 2 * l.length := by omega
   have hσ2 : σ.card ≤ 2 := card_le_two_of_isSimplex _ hσs

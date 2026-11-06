@@ -1,19 +1,21 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresCylinderInclusionPi1
 public import RequestProject.RoseRootedLoops
 public import RequestProject.PresPosetReadingSurjective
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} (w : J → List (α × Bool))
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α)
 
 /-- Inclusion of the genuine rose generator map is the actual marked free-group map. -/
 theorem roseLoopHom_inclusion :

@@ -1,10 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderComplexDual
 public import RequestProject.SurfaceLink
 public import RequestProject.SurfaceBlockCollapse
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The dual graph of the surface of the block, and the collapse of Lemma 3.2 (ii)
@@ -26,9 +32,6 @@ triangulation is connected — and, with the local conditions already proved, th
 complex over the triangulation of the surface, leaving a two-dimensional spine.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

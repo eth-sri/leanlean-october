@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.GenusOldAugmentationVanishing
 public import RequestProject.GenusCappedSpineFox
 public import RequestProject.TreeCoverAcyclic
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Cockcroftness of the actual capped spine, with no geometric input premise. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -25,17 +28,17 @@ theorem cappedPresentationCycle_treeCycle
   let N := relSub (cappedSpinePresentation q)
   have hN : ∀ f, SpanningTree.treeRel T f ∈ N := by
     intro f
-    rw (config := { transparency := .default }) [cappedSpineTree_rel]
+    rwd [cappedSpineTree_rel]
     exact rel_mem_relSub (cappedSpinePresentation q) f
   have hp : SpanningTree.piE T N (Comb.bdry2 (cappedTreeCover q) c) = 0 := by
-    rw (config := { transparency := .default }) [SpanningTree.piE_bdry2 (hN := hN)]
+    rwd [SpanningTree.piE_bdry2 (hN := hN)]
     change Comb.bdry2 (coverComplex N (SpanningTree.treeRel (cappedSpineTree q)) hN) c = 0
     have hrel : SpanningTree.treeRel (cappedSpineTree q) = cappedSpinePresentation q :=
       cappedSpineTree_rel q
     change Finsupp.linearCombination ℤ
       (fun f => pathChain (liftPath
         (FreeGroup.toWord (SpanningTree.treeRel (cappedSpineTree q) f.2)) f.1)) c = 0
-    rw (config := { transparency := .default }) [hrel]
+    rwd [hrel]
     exact hc
   exact SpanningTree.treeChain_eq_zero (T := T) (N := N) (hN := hN)
     (SpanningTree.support_isTree_of_piE_eq_zero (T := T) (N := N) hp)

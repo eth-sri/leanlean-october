@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderCocycleFlatSections
 
 @[expose] public section
@@ -40,7 +41,7 @@ theorem product_readGerm (c d : OrdCocycle P G) (e : (orderCx P).E × Bool) :
   obtain ⟨e, b⟩ := e
   cases b <;> rfl
 
-theorem product_readPath (c d : OrdCocycle P G) (p : List ((orderCx P).E × Bool)) :
+theorem product_readPath (c d : OrdCocycle P G) (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     (product c d).readPath p = (c.readPath p, d.readPath p) := by
   induction p with
   | nil => rfl

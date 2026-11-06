@@ -1,10 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombCoveringLift
 public import RequestProject.CombPi2
 public import RequestProject.MinimalGap
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The universal cover maps to every covering, and acyclic covers force the Cockcroft property
@@ -27,9 +32,6 @@ is well defined by the homotopy lifting property of
   the paper, and it was previously carried as a hypothesis.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -42,8 +44,8 @@ variable {D K : Complex2.{u}} {p : Hom D K} {x₀ : K.V} {d₀ : D.V}
 
 variable (p d₀) in
 /-- `LiftsTo p d₀ q v`: the edge path `q` of the base lifts to an edge path from `d₀` to `v`. -/
-def LiftsTo (q : List (K.E × Bool)) (v : D.V) : Prop :=
-  ∃ m : List (D.E × Bool), IsPath D.src D.tgt m d₀ v ∧ mapPath p m = q
+def LiftsTo (q : FiniteChains.Comb.Oriented K.E) (v : D.V) : Prop :=
+  ∃ m : FiniteChains.Comb.Oriented D.E, IsPath D.src D.tgt m d₀ v ∧ mapPath p m = q
 
 theorem exists_liftsTo (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (q : PathFrom K x₀) :
     ∃ v, LiftsTo p d₀ q.1 v := by
@@ -51,7 +53,7 @@ theorem exists_liftsTo (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (q : PathF
     exists_liftPathAt hcov q.1 d₀ (endpt K x₀ q.1) (by rw [hd]; exact q.2)
   exact ⟨c, m, hm, hmap⟩
 
-theorem liftsTo_unique (hcov : IsCovering p) {q : List (K.E × Bool)} {v w : D.V}
+theorem liftsTo_unique (hcov : IsCovering p) {q : FiniteChains.Comb.Oriented K.E} {v w : D.V}
     (hv : LiftsTo p d₀ q v) (hw : LiftsTo p d₀ q w) : v = w := by
   obtain ⟨m, hm, hmap⟩ := hv
   obtain ⟨m', hm', hmap'⟩ := hw
@@ -60,7 +62,7 @@ theorem liftsTo_unique (hcov : IsCovering p) {q : List (K.E × Bool)} {v w : D.V
   exact isPath_endpoint_eq hm hm'
 
 /-- The endpoint of a lift only depends on the homotopy class of the path. -/
-theorem liftsTo_htpy (hcov : IsCovering p) (hd : p.onV d₀ = x₀) {q q' : List (K.E × Bool)}
+theorem liftsTo_htpy (hcov : IsCovering p) (hd : p.onV d₀ = x₀) {q q' : FiniteChains.Comb.Oriented K.E}
     {v : D.V} (hv : LiftsTo p d₀ q v) (h : Htpy K x₀ (endpt K x₀ q) q q') :
     LiftsTo p d₀ q' v := by
   obtain ⟨m, hm, hmap⟩ := hv
@@ -189,8 +191,8 @@ theorem base_coverF (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (cf : UF K x�
 /-! ### Paths -/
 
 /-- The image of an edge path of the universal cover. -/
-noncomputable def mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : List (UE K x₀ × Bool)) :
-    List (D.E × Bool) :=
+noncomputable def mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : FiniteChains.Comb.Oriented (UE K x₀)) :
+    FiniteChains.Comb.Oriented D.E :=
   L.map (fun x => (coverE hcov hd x.1, x.2))
 
 theorem germSrc_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (x : UE K x₀ × Bool) :
@@ -210,7 +212,7 @@ theorem germTgt_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (x : UE K x
   | false => exact src_coverE hcov hd ce
 
 theorem isPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) :
-    ∀ (L : List (UE K x₀ × Bool)) (a b : UV K x₀),
+    ∀ (L : FiniteChains.Comb.Oriented (UE K x₀)) (a b : UV K x₀),
       IsPath (uCover K x₀).src (uCover K x₀).tgt L a b →
         IsPath D.src D.tgt (mapUP hcov hd L) (coverV hcov hd a) (coverV hcov hd b) := by
   intro L
@@ -223,7 +225,7 @@ theorem isPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) :
       · have := ih (germTgt (uCover K x₀).src (uCover K x₀).tgt x) b h.2
         rwa [← germTgt_mapUP hcov hd x] at this
 
-theorem mapPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : List (UE K x₀ × Bool)) :
+theorem mapPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : FiniteChains.Comb.Oriented (UE K x₀)) :
     mapPath p (mapUP hcov hd L) = mapPath (univProj K x₀) L := by
   simp only [mapPath, mapUP, List.map_map, Function.comp_def, onE_coverE]
   rfl

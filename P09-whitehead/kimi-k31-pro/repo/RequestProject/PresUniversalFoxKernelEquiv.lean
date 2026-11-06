@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresUniversalFoxColumns
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import RequestProject.PresUniversalFoxColumns
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → List (α × Bool))
+variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → FiniteChains.Comb.Oriented α)
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- Actual relator-chain coordinates in the cell-indexed presentation group ring. -/

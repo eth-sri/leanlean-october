@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresWordEmbeddingRelators
 public import RequestProject.PresWordEmbeddingCocycle
 public import RequestProject.PresUniversalRelatorGroupCoordinates
@@ -13,7 +14,7 @@ public import RequestProject.UnivCoverIncl
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
 variable {α β J K : Type}
-variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
+variable {w : J → FiniteChains.Comb.Oriented α} {v : K → FiniteChains.Comb.Oriented β}
   (h : PresWordEmbedding w v)
 
 /-- The actual functorial lift to the two path-class universal covers. -/

@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderThreeNormalization
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Normalization preserves the actual vertex tuples in the support of finite chains. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

@@ -1,18 +1,21 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ClassicalCellAttachmentMaps
 public import RequestProject.SpanningTree
 public import Mathlib.Topology.Path
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! The literal one-dimensional disk attachment and its oriented graph.
 The interval parametrization uses the original sup-norm characteristic disks. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment

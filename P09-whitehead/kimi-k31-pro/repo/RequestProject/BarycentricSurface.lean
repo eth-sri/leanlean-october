@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.FlagComplex
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The barycentric subdivision of a closed surface is again a closed surface
@@ -30,9 +36,6 @@ Together with `RequestProject/FlagComplex.lean` this verifies, for the subdivisi
 combinatorial hypotheses that the cube complex `C(L_q)` of the paper requires.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 

@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.BlockFamilyFactorComparison
 public import RequestProject.GenusMarkedSpineFamily
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The actual spine factors embed in the simultaneous substituted group
@@ -14,9 +20,6 @@ geometric spine construction, rather than required as new hypotheses.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 

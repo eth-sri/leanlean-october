@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresRelatorCircleEmbedding
 public import RequestProject.FinitePosetCycleNaturality
 
@@ -13,7 +14,7 @@ noncomputable section
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
 
-variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
+variable {A B J K : Type} {w : J → FiniteChains.Comb.Oriented A} {v : K → FiniteChains.Comb.Oriented B}
   (h : PresWordEmbedding w v)
 
 theorem relatorCircleSize_eq (j : J) :
@@ -39,8 +40,7 @@ theorem relatorCircleBoundaryHomeomorph_natural (j : J)
     (x : orderNerveRealization (RelatorCircle w j)) :
     relatorCircleBoundaryHomeomorph v (h.cell j) hv
       (h.relatorCircleRealizationMap j x) =
-        relatorCircleBoundaryHomeomorph w j hw x := by
-  exact (relatorCircleCycle w j hw).boundaryHomeomorph_natural_cast
+        relatorCircleBoundaryHomeomorph w j hw x := (relatorCircleCycle w j hw).boundaryHomeomorph_natural_cast
     (relatorCircleCycle v (h.cell j) hv) (h.relatorCircleSize_eq j)
     (h.relatorCircleMap j) (h.relatorCircleMap j).monotone
     (h.relatorCircleEnumeration_natural j hw hv) x

@@ -1,14 +1,16 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.OrderUniversalPosetHom
 public import RequestProject.CombCellularIso
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Connectivity of the actual path-class universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -24,7 +26,7 @@ theorem uOrderHomInv_vertex (v : UOrder P a) : uOrderHomInv.onV v = v :=
     ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
     ⟨uOrderFace_injective, uOrderFace_surjective⟩ v
 
-theorem uOrderHomInv_path (p : List ((orderCx (UOrder P a)).E × Bool)) :
+theorem uOrderHomInv_path (p : FiniteChains.Comb.Oriented (orderCx (UOrder P a)).E) :
     mapPath uOrderHomInv (mapPath uOrderHom p) = p :=
   mapPath_homInv uOrderHom Function.bijective_id
     ⟨uOrderEdge_injective, uOrderEdge_surjective⟩

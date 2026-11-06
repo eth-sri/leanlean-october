@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.StrictSubposetChains
 public import RequestProject.NormalizedStrictBoundary
 public import RequestProject.PresCylinderCoverCycles
@@ -9,7 +10,7 @@ public import RequestProject.PresCylinderCoverCycles
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
   (f : P → CylBase w) (hf : IsPosetCover f)
 
 def cylinderCoverRoseSet : Set P := {p | ∃ x : Rose α, f p = cylIn (aHom w) x}

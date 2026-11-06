@@ -1,13 +1,15 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombPi2
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Deck transformations act on genuine cellular chains and preserve their boundary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -39,7 +41,7 @@ theorem DeckAction.faceChains_mul (D : DeckAction X G) (g h : G) (c : X.F →₀
 
 /-- Transport a concrete filling along a deck transformation. -/
 theorem DeckAction.transport_filling (D : DeckAction X G) (g : G)
-    (c : X.F →₀ ℤ) (p : List (X.E × Bool)) (hc : bdry2 X c = pathChain p) :
+    (c : X.F →₀ ℤ) (p : FiniteChains.Comb.Oriented X.E) (hc : bdry2 X c = pathChain p) :
     bdry2 X (D.faceChains g c) = pathChain (mapPath (D.cellHom g) p) := by
   rw [D.faceChains_boundary, hc]
   exact (pathChain_map _ _).symm

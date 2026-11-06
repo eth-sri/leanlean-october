@@ -1,8 +1,13 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresPosetAlpha
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # The reading homomorphism of the poset model, and injectivity of the comparison
@@ -26,9 +31,6 @@ Composed with the comparison homomorphism of `RequestProject/PresPosetAlpha.lean
 the presentation group embeds in the fundamental group of the model, marked by the generators.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace PresModel
@@ -37,7 +39,7 @@ open Comb
 
 universe u v
 
-variable {α J : Type u} (w : J → List (α × Bool)) {G : Type v} [Group G] (gen : α → G)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) {G : Type v} [Group G] (gen : α → G)
 
 /-! ### The values of letters and words -/
 
@@ -45,12 +47,12 @@ variable {α J : Type u} (w : J → List (α × Bool)) {G : Type v} [Group G] (g
 def letterVal (p : α × Bool) : G := if p.2 then gen p.1 else (gen p.1)⁻¹
 
 /-- The value of a word. -/
-def wordVal (l : List (α × Bool)) : G := FreeGroup.lift gen (FreeGroup.mk l)
+def wordVal (l : FiniteChains.Comb.Oriented α) : G := FreeGroup.lift gen (FreeGroup.mk l)
 
 @[simp] theorem wordVal_nil : wordVal (gen := gen) [] = 1 := by
   simp [wordVal]
 
-theorem wordVal_append (l l' : List (α × Bool)) :
+theorem wordVal_append (l l' : FiniteChains.Comb.Oriented α) :
     wordVal gen (l ++ l') = wordVal gen l * wordVal gen l' := by
   rw [wordVal, wordVal, wordVal, ← FreeGroup.mul_mk, map_mul]
 

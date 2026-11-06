@@ -1,16 +1,19 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.Statement
 public import RequestProject.SquareBoundary
 public import Mathlib.Topology.Homotopy.Lifting
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! General topological covering/pi2 results moved unchanged from Solution. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology
@@ -19,8 +22,7 @@ open scoped unitInterval Topology
 theorem mapSquare_homotopic_iff_of_covering {E X : Type}
     [TopologicalSpace E] [TopologicalSpace X] (p : C(E, X))
     (hp : IsCoveringMap p) {e : E} (a b : GenLoop (Fin 2) E e) :
-    GenLoop.Homotopic (mapSquare p a) (mapSquare p b) ↔ GenLoop.Homotopic a b := by
-  exact (hp.homotopicRel_iff_comp (f₀ := a.1) (f₁ := b.1) (S := Cube.boundary (Fin 2))
+    GenLoop.Homotopic (mapSquare p a) (mapSquare p b) ↔ GenLoop.Homotopic a b := (hp.homotopicRel_iff_comp (f₀ := a.1) (f₁ := b.1) (S := Cube.boundary (Fin 2))
     ⟨fun _ => 0, ⟨0, Or.inl rfl⟩,
       (GenLoop.boundary a _ ⟨0, Or.inl rfl⟩).trans (GenLoop.boundary b _ ⟨0, Or.inl rfl⟩).symm⟩).symm
 

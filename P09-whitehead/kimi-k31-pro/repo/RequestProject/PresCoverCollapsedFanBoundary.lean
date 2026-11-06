@@ -1,25 +1,27 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.NormalizedStrictBoundary
 public import RequestProject.PresCoverConeCylinderDecomposition
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
-variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
+variable {α J P : Type u} [PartialOrder P] (w : J → FiniteChains.Comb.Oriented α)
 
 /-- The actual cylinder collapse kills the boundary of every genuine finite triangle chain. -/
 theorem cylinderCover_collapse_boundary_zero {f : P → CylBase w}
     (hf : IsPosetCover f) (c : StrictOrdTri P →₀ ℤ) :
     normalizedStrictChain1 (cylinderCoverCollapse w hf) (cylinderCoverCollapse_monotone w hf)
       (Comb.bdry2 (strictOrderCx P) c) = 0 := by
-  rw (config := { transparency := .default }) [← bdry2_normalizedStrictChain2, cylinderCover_normalized_collapse_zero, map_zero]
+  rwd [← bdry2_normalizedStrictChain2, cylinderCover_normalized_collapse_zero, map_zero]
 
 variable (f : P → PresPos w) (hf : IsPosetCover f)
 

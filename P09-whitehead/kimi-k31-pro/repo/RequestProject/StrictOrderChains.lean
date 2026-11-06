@@ -1,15 +1,17 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.StrictOrderComplex
 public import RequestProject.CombHurewicz1Pres
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Integral cellular normalization of weak order chains, without finite cell assumptions. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -41,7 +43,7 @@ noncomputable def normalizeOrdChain2 : (OrdTri P →₀ ℤ) →ₗ[ℤ]
     normalizeOrdChain2 (Finsupp.single t n) = n • normalizeOrdTriangle t := by
   simp [normalizeOrdChain2]
 
-theorem normalizeOrdChain1_pathChain (p : List ((orderCx P).E × Bool)) :
+theorem normalizeOrdChain1_pathChain (p : FiniteChains.Comb.Oriented (orderCx P).E) :
     normalizeOrdChain1 (pathChain p) = pathChain (normalizeOrdPath p) := by
   classical
   induction p with

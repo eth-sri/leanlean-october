@@ -250,8 +250,7 @@ theorem reflTransGen_move {L : ASC V} (hdual : ∀ σ σ', IsTri L σ → IsTri 
     Relation.ReflTransGen (Move L) f g := by
   have hfp := reflTransGen_move_posCube hdual hcover hf (negSet f).card f hf le_rfl
   have hgp := reflTransGen_move_posCube hdual hcover hf (negSet g).card g hg le_rfl
-  have hgp_rev : Relation.ReflTransGen (Move L) (posCube (freeSet f)) g := by
-    exact Relation.ReflTransGen.mono (fun _ _ (step : Move L _ _) => step.symm) _ _
+  have hgp_rev : Relation.ReflTransGen (Move L) (posCube (freeSet f)) g := Relation.ReflTransGen.mono (fun _ _ (step : Move L _ _) => step.symm) _ _
       (Relation.ReflTransGen.swap _ _ hgp)
   exact hfp.trans hgp_rev
 

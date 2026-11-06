@@ -1,13 +1,16 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderComparableCollapse
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Finite strict three-chains witnessing a pointwise order homotopy. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

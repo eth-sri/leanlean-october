@@ -1,15 +1,18 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderNerveDictionary
 public import RequestProject.NerveDegree
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Recover actual cellular two- and three-chains from homogeneous increasing nerve chains. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup

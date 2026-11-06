@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.Oriented
+
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SingularPrism
@@ -10,6 +12,10 @@ public import Mathlib.CategoryTheory.Whiskering
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! # Continuous homotopies induce actual chain homotopies
 
 The prism operator is packaged in Mathlib's `Homotopy`, on the singular
@@ -17,9 +23,6 @@ complex already defined in this project. Consequently homotopic maps have
 equal maps on homology. No homology comparison or exactness is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 

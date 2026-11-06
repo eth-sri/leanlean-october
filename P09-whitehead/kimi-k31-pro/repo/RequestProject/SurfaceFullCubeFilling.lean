@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.BlockSpinePres
 public import RequestProject.OrderCxConeNull
 public import RequestProject.CellularHomotopyChain
@@ -28,7 +29,7 @@ theorem positiveCorner_le_surface (σ : NeSpx A) :
 
 /-- Every actual surface loop contracts through the restored positive corner. -/
 theorem surfaceFullCube_loop_null {σ : NeSpx A}
-    {p : List ((orderCx (NeSpx A)).E × Bool)}
+    {p : FiniteChains.Comb.Oriented (orderCx (NeSpx A)).E}
     (hp : IsPath (orderCx (NeSpx A)).src (orderCx (NeSpx A)).tgt p σ σ) :
     Htpy (orderCx (QCube A)) (surfaceFullCube A σ) (surfaceFullCube A σ)
       (mapPath (orderCxMap (surfaceFullCube A) (surfaceFullCube_monotone A)) p) [] :=

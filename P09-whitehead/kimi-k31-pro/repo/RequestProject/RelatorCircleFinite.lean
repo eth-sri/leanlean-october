@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.PresConeLinkOrderIso
 public import RequestProject.PresValidFinite
 
@@ -8,7 +9,7 @@ public import RequestProject.PresValidFinite
 namespace FiniteChains.PresModel
 open scoped Classical
 universe u
-variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
+variable {α J : Type u} (w : J → FiniteChains.Comb.Oriented α) (j : J)
 
 instance relatorCircle_finite : Finite (RelatorCircle w j) := by
   let f : RelatorCircle w j → Fin (w j).length × CPos :=

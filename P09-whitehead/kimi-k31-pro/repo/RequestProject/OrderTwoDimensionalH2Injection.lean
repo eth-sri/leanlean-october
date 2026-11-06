@@ -1,14 +1,17 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.OrderRealizationCockcroft
 public import RequestProject.OrderThreeNormalization
 public import RequestProject.StrictOrderNormalizationMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+backwardOptions
+
+
+
 
 set_option maxHeartbeats 1600000
 
@@ -35,8 +38,8 @@ theorem strictOrdTet_isEmpty_of_dimension_two [(nerve P).HasDimensionLE 2] :
 theorem normalizeOrdBoundary3_eq_zero_of_dimension_two [(nerve P).HasDimensionLE 2]
     (b : OrdTet P →₀ ℤ) : normalizeOrdChain2 (ordBoundary3 b) = 0 := by
   letI := strictOrdTet_isEmpty_of_dimension_two (P := P)
-  rw (config := { transparency := .default }) [normalizeOrdChain2_ordBoundary3]
+  rwd [normalizeOrdChain2_ordBoundary3]
   have hz : normalizeOrdChain3 b = 0 := Subsingleton.elim _ _
-  rw (config := { transparency := .default }) [hz, map_zero]
+  rwd [hz, map_zero]
 
 end FiniteChains.Comb

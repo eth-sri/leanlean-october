@@ -1,17 +1,19 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombData
 public import RequestProject.ClassicalGraphBoundaryWords
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Finite boundary words map naturally under actual graph maps, including
 their four-side parametrizations. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 open scoped Classical unitInterval
@@ -25,11 +27,11 @@ variable {G H : Comb.Complex2} {X Y : Type} [TopologicalSpace X] [TopologicalSpa
   (he : ∀ e t, f (edge e t) = edge' (h.onE e) t)
 
 include hv he in
-theorem realize_map_apply (l : List (G.E × Bool)) {a b : G.V}
+theorem realize_map_apply (l : FiniteChains.Comb.Oriented G.E) {a b : G.V}
     (hl : Comb.IsPath G.src G.tgt l a b) (t : I) :
     f (realize G.src G.tgt v edge l hl t) =
       realize H.src H.tgt w edge' (Comb.mapPath h l) (Comb.isPath_mapPath h hl) t := by
-  have same_start {a a' b : H.V} (m : List (H.E × Bool)) (ha : a = a')
+  have same_start {a a' b : H.V} (m : FiniteChains.Comb.Oriented H.E) (ha : a = a')
       (h₁ : Comb.IsPath H.src H.tgt m a b) (h₂ : Comb.IsPath H.src H.tgt m a' b) (s : I) :
       realize H.src H.tgt w edge' m h₁ s = realize H.src H.tgt w edge' m h₂ s := by
     subst a'

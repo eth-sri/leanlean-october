@@ -1,9 +1,15 @@
 module
 
+public import RequestProject.Oriented
+
 public import RequestProject.ChamberZPoset
 public import RequestProject.OrderComplexGluing
 
 @[expose] public section
+
+backwardOptions
+
+
 
 /-!
 # When a copy of the base splits off the fundamental group of `Z`
@@ -27,9 +33,6 @@ free-product argument along the simply connected attaching intersections `J_w`, 
 open (see `THEOREM-A-OBLIGATIONS.md`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis

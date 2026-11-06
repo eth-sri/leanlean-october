@@ -1,20 +1,22 @@
 module
 
+public import RequestProject.Oriented
 public import RequestProject.CombUniversalCover
 
 @[expose] public section
 
+backwardOptions
+
+
+
 /-! Path-class identities for comparing covers with chosen reference paths. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {X : Complex2.{u}} {o a b : X.V}
 
 /-- Path extension commutes with every actual deck transformation. -/
-theorem extendList_deckV (g : Pi1 X o) (p : List (X.E × Bool)) (v : UV X o) :
+theorem extendList_deckV (g : Pi1 X o) (p : FiniteChains.Comb.Oriented X.E) (v : UV X o) :
     extendList p (deckV g v) = deckV g (extendList p v) := by
   induction p generalizing v with
   | nil => rfl
@@ -34,7 +36,7 @@ theorem deckV_loop_base (l : Loop X o) :
 
 /-- The endpoint after a path is the translated reference endpoint at its target. -/
 theorem extendList_reference_gauge
-    {r p s : List (X.E × Bool)}
+    {r p s : FiniteChains.Comb.Oriented X.E}
     (hr : IsPath X.src X.tgt r o a) (hp : IsPath X.src X.tgt p a b)
     (hs : IsPath X.src X.tgt s o b) :
     extendList p (extendList r (UV.base X o)) =
